@@ -2,53 +2,57 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use DB;
-use Config;
-use Auditor;
-use Exception;
-use App\Models\Dur;
-use App\Models\Role;
-use App\Models\Team;
-use App\Models\Tool;
-use App\Models\User;
-use App\Models\Dataset;
-use App\Models\Collection;
-use App\Models\Publication;
-use App\Models\TeamHasUser;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Models\DatasetVersion;
-use App\Models\TeamUserHasRole;
-use App\Http\Traits\TrimPayload;
-use App\Http\Traits\IndexElastic;
-use Illuminate\Http\JsonResponse;
-use App\Http\Requests\Team\GetTeam;
-use App\Models\TeamHasNotification;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Team\EditTeam;
 use App\Exceptions\NotFoundException;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Team\CreateTeam;
 use App\Http\Requests\Team\DeleteTeam;
+use App\Http\Requests\Team\EditTeam;
+use App\Http\Requests\Team\GetTeam;
 use App\Http\Requests\Team\UpdateTeam;
-use App\Http\Traits\TeamTransformation;
-use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\CheckAccess;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\IndexElastic;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Traits\TeamTransformation;
+use App\Http\Traits\TrimPayload;
+use App\Models\Collection;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Dur;
+use App\Models\Publication;
+use App\Models\Role;
+use App\Models\Team;
 use App\Models\TeamHasAlias;
+use App\Models\TeamHasNotification;
+use App\Models\TeamHasUser;
+use App\Models\TeamUserHasRole;
+use App\Models\Tool;
+use App\Models\User;
+use Auditor;
+use Config;
+use DB;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class TeamController extends Controller
 {
+    use CheckAccess;
     use GetValueByPossibleKeys;
     use IndexElastic;
-    use CheckAccess;
-    use TeamTransformation;
     use RequestTransformation;
+    use TeamTransformation;
     use TrimPayload;
 
     private $datasets = [];
+
     private $durs = [];
+
     private $tools = [];
+
     private $publications = [];
+
     private $collections = [];
 
     /**
@@ -58,13 +62,18 @@ class TeamController extends Controller
      *      summary="TeamController@index",
      *      description="Returns a list of teams enabled on the system",
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Response(
      *         response="200",
      *         description="Success response",
+     *
      *         @OA\JsonContent(
+     *
      *            @OA\Property(property="current_page", type="integer", example="1"),
      *               @OA\Property(property="data", type="array",
+     *
      *                  @OA\Items(type="object",
+     *
      *                    @OA\Property(property="id", type="integer", example="123"),
      *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -114,7 +123,7 @@ class TeamController extends Controller
             $sort = [];
             $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
             foreach ($sortArray as $item) {
-                $tmp = explode(":", $item);
+                $tmp = explode(':', $item);
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
@@ -130,7 +139,7 @@ class TeamController extends Controller
 
             foreach ($sort as $key => $value) {
                 if ($key === 'created_at' || $key === 'updated_at') {
-                    $query->orderBy('teams.' . $key, strtoupper($value));
+                    $query->orderBy('teams.'.$key, strtoupper($value));
                 }
 
                 if ($key === 'data_provider') {
@@ -148,9 +157,9 @@ class TeamController extends Controller
             $teams['data'] = $this->getTeams($teams['data']);
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => 'Get all',
             ]);
 
@@ -159,16 +168,15 @@ class TeamController extends Controller
             );
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
             throw new Exception($e->getMessage());
         }
     }
-
 
     /**
      * @OA\Get(
@@ -177,22 +185,29 @@ class TeamController extends Controller
      *      summary="TeamController@getNames",
      *      description="Returns a simple list of enabled teams (id and name only)",
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success response",
+     *
      *          @OA\JsonContent(
      *              type="array",
+     *
      *              @OA\Items(
      *                  type="object",
+     *
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Research Data Team")
      *              )
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=500,
      *          description="Server error",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="error")
      *          )
      *      )
@@ -217,9 +232,9 @@ class TeamController extends Controller
             $teams = $query->get();
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => 'Get team names and IDs',
             ]);
 
@@ -227,9 +242,9 @@ class TeamController extends Controller
 
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -240,7 +255,6 @@ class TeamController extends Controller
         }
     }
 
-
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}",
@@ -248,21 +262,26 @@ class TeamController extends Controller
      *      summary="TeamController@show",
      *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="team id",
      *         ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example="123"),
@@ -289,10 +308,13 @@ class TeamController extends Controller
      *              )
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found"),
      *          )
      *      )
@@ -304,13 +326,14 @@ class TeamController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
+
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get()->toArray();
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Get by ' . $teamId,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => 'Get by '.$teamId,
             ]);
 
             return response()->json([
@@ -319,10 +342,10 @@ class TeamController extends Controller
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -331,33 +354,38 @@ class TeamController extends Controller
     }
 
     /**
-    * @OA\Get(
-    *      path="/api/v1/teams/{teamPid}/id",
-    *      tags={"Teams"},
-    *      summary="TeamController@getIdFromPid",
-    *      description="Get the teamId from a Pid. Failure to find such a team results in a successful null response.",
-    *      security={{"bearerAuth":{}}},
-    *      @OA\Parameter(
-    *         name="teamPid",
-    *         in="path",
-    *         description="team pid",
-    *         required=true,
-    *         example="c98b8ef9-f840-4823-b0b7-0d8575ce01e0",
-    *         @OA\Schema(
-    *            type="string",
-    *            description="team pid",
-    *         ),
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Success",
-    *          @OA\JsonContent(
-    *              @OA\Property(property="message", type="string"),
-    *              @OA\Property(property="data", type="number")
-    *          ),
-    *      )
-    * )
-    */
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamPid}/id",
+     *      tags={"Teams"},
+     *      summary="TeamController@getIdFromPid",
+     *      description="Get the teamId from a Pid. Failure to find such a team results in a successful null response.",
+     *      security={{"bearerAuth":{}}},
+     *
+     *      @OA\Parameter(
+     *         name="teamPid",
+     *         in="path",
+     *         description="team pid",
+     *         required=true,
+     *         example="c98b8ef9-f840-4823-b0b7-0d8575ce01e0",
+     *
+     *         @OA\Schema(
+     *            type="string",
+     *            description="team pid",
+     *         ),
+     *      ),
+     *
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *
+     *          @OA\JsonContent(
+     *
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="number")
+     *          ),
+     *      )
+     * )
+     */
     public function getIdFromPid(Request $request, string $pid): JsonResponse
     {
         try {
@@ -379,23 +407,30 @@ class TeamController extends Controller
      *      description="Return an array of teams matching search criteria",
      *      tags={"Teams"},
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="name",
      *         in="query",
      *         description="Name to search for",
      *         required=true,
+     *
      *         @OA\Schema(
      *            type="string",
      *            description="Name to search for",
      *         ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
+     *
      *                  @OA\Items(type="object",
+     *
      *                    @OA\Property(property="id", type="integer", example="123"),
      *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -421,10 +456,13 @@ class TeamController extends Controller
      *              ),
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found"),
      *          )
      *      )
@@ -436,7 +474,7 @@ class TeamController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $teams = Team::where('name', 'like', '%' . $input['name'] . '%')->get();
+            $teams = Team::where('name', 'like', '%'.$input['name'].'%')->get();
             if ($teams) {
                 return response()->json([
                     'message' => 'success',
@@ -451,7 +489,7 @@ class TeamController extends Controller
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e,
             ]);
 
@@ -466,21 +504,26 @@ class TeamController extends Controller
      *      description="Return brief details of a single team",
      *      tags={"Teams"},
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DataProviderColl ID - summary",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="DataProviderColl ID - summary",
      *         ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
@@ -496,10 +539,13 @@ class TeamController extends Controller
      *              )
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found"),
      *          )
      *      )
@@ -514,20 +560,20 @@ class TeamController extends Controller
                     'enabled' => 1,
                 ])->with(['aliases' => function ($query) {
                     $query->select(['id', 'name']);
-                }
+                },
                 ])->first();
 
-            if (!$team) {
-                throw new NotFoundException();
+            if (! $team) {
+                throw new NotFoundException;
             }
-            $service = array_filter(explode(",", $team->service));
+            $service = array_filter(explode(',', $team->service));
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
                     'id' => $team->id,
                     'is_provider' => $team->is_provider,
-                    'team_logo' => (is_null($team->team_logo) || strlen(trim($team->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $team->team_logo) ? $team->team_logo : Config::get('services.media.base_url') . $team->team_logo),
+                    'team_logo' => (is_null($team->team_logo) || strlen(trim($team->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $team->team_logo) ? $team->team_logo : Config::get('services.media.base_url').$team->team_logo),
                     'url' => $team->url,
                     'service' => $service === [] ? null : $service,
                     'name' => $team->name,
@@ -548,21 +594,26 @@ class TeamController extends Controller
      *      description="Return a single team summary (excluding datasets for performance reasons) for use in Data Provider view",
      *      tags={"Teams"},
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DataProviderColl ID - summary",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="DataProviderColl ID - summary",
      *         ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
@@ -578,10 +629,13 @@ class TeamController extends Controller
      *              )
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found"),
      *          )
      *      )
@@ -596,13 +650,13 @@ class TeamController extends Controller
                     'enabled' => 1,
                 ])->with(['aliases' => function ($query) {
                     $query->select(['id', 'name']);
-                }
+                },
                 ])->first();
 
-            if (!$team) {
-                throw new NotFoundException();
+            if (! $team) {
+                throw new NotFoundException;
             }
-            $service = array_filter(explode(",", $team->service));
+            $service = array_filter(explode(',', $team->service));
 
             // Durs: get all active durs owned by the team and also active durs linked to (all versions of) datasets owned by the team
             $ownedDurs = Dur::where(['team_id' => $id, 'status' => Dur::STATUS_ACTIVE])
@@ -621,7 +675,7 @@ class TeamController extends Controller
             );
 
             $linkedDurs = array_map(function ($dur) {
-                return (array)$dur;
+                return (array) $dur;
             }, $linkedDursColl);
 
             $allDurs = [...$ownedDurs, ...$linkedDurs];
@@ -681,9 +735,10 @@ class TeamController extends Controller
             );
 
             $ownedCollectionsColl = array_map(function ($collection) {
-                if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
-                    $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
+                if ($collection->image_link && ! preg_match('/^https?:\/\//', $collection->image_link)) {
+                    $collection->image_link = Config::get('services.media.base_url').$collection->image_link;
                 }
+
                 return $collection;
             }, $ownedCollectionsColl);
 
@@ -692,7 +747,7 @@ class TeamController extends Controller
                 'data' => [
                     'id' => $team->id,
                     'is_provider' => $team->is_provider,
-                    'team_logo' => (is_null($team->team_logo) || strlen(trim($team->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $team->team_logo) ? $team->team_logo : Config::get('services.media.base_url') . $team->team_logo),
+                    'team_logo' => (is_null($team->team_logo) || strlen(trim($team->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $team->team_logo) ? $team->team_logo : Config::get('services.media.base_url').$team->team_logo),
                     'url' => $team->url,
                     'service' => $service === [] ? null : $service,
                     'name' => $team->name,
@@ -718,21 +773,26 @@ class TeamController extends Controller
      *      description="Return whether at least one of a single team's datasets support cohort discovery for use in Data Provider view",
      *      tags={"Teams"},
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DataProviderColl ID - datasets",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="DataProviderColl ID - datasets",
      *         ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
@@ -740,10 +800,13 @@ class TeamController extends Controller
      *              )
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found"),
      *          )
      *      )
@@ -758,18 +821,17 @@ class TeamController extends Controller
                     'enabled' => 1,
                 ])->with(['aliases' => function ($query) {
                     $query->select(['id', 'name']);
-                }
+                },
                 ])->first();
 
-            if (!$team) {
-                throw new NotFoundException();
+            if (! $team) {
+                throw new NotFoundException;
             }
 
             $ownedDatasets = Dataset::where(['team_id' => $id, 'status' => Dataset::STATUS_ACTIVE])
                 ->select([
-                    'is_cohort_discovery'
+                    'is_cohort_discovery',
                 ])->get();
-
 
             $supportsCohortDiscovery = in_array(true, array_pluck($ownedDatasets->toArray(), 'is_cohort_discovery'));
 
@@ -792,21 +854,26 @@ class TeamController extends Controller
      *      description="Return a single team datasets summary for use in Data Provider view",
      *      tags={"Teams"},
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DataProviderColl ID - datasets summary",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="DataProviderColl ID - datasets summary",
      *         ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
@@ -814,10 +881,13 @@ class TeamController extends Controller
      *              )
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found"),
      *          )
      *      )
@@ -832,16 +902,16 @@ class TeamController extends Controller
                     'enabled' => 1,
                 ])->with(['aliases' => function ($query) {
                     $query->select(['id', 'name']);
-                }
+                },
                 ])->first();
 
-            if (!$team) {
-                throw new NotFoundException();
+            if (! $team) {
+                throw new NotFoundException;
             }
 
             $ownedDatasets = Dataset::where(['team_id' => $id, 'status' => Dataset::STATUS_ACTIVE])
                 ->select([
-                    'id','is_cohort_discovery', 'user_id', 'team_id', 'datasetid'
+                    'id', 'is_cohort_discovery', 'user_id', 'team_id', 'datasetid',
                 ])->get();
 
             foreach ($ownedDatasets as $dataset) {
@@ -851,6 +921,7 @@ class TeamController extends Controller
                 $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
                 $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
             }
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
@@ -870,9 +941,11 @@ class TeamController extends Controller
      *      summary="TeamController@store",
      *      description="Creates a new team",
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\RequestBody(
      *          required=true,
      *          description="Team details",
+     *
      *          @OA\JsonContent(
      *              required={
      *                  "name",
@@ -886,6 +959,7 @@ class TeamController extends Controller
      *                  "application_form_updated_by",
      *                  "notifications",
      *              },
+     *
      *              @OA\Property(property="name", type="string", example="someName"),
      *              @OA\Property(property="allows_messaging", type="boolean", example="1"),
      *              @OA\Property(property="workflow_enabled", type="boolean", example="1"),
@@ -907,18 +981,24 @@ class TeamController extends Controller
      *              @OA\Property(property="aliases", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="success"),
      *             @OA\Property(property="data", type="integer", example="100")
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=500,
      *          description="Error",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="error")
      *          )
      *      )
@@ -947,12 +1027,12 @@ class TeamController extends Controller
             if ($team) {
                 foreach ($arrayTeamNotification as $value) {
                     TeamHasNotification::updateOrCreate([
-                        'team_id' => (int)$team->id,
-                        'notification_id' => (int)$value,
+                        'team_id' => (int) $team->id,
+                        'notification_id' => (int) $value,
                     ]);
                 }
 
-                $arrayTeamAlias && $this->updateTeamAlias((int)$team->id, $arrayTeamAlias);
+                $arrayTeamAlias && $this->updateTeamAlias((int) $team->id, $arrayTeamAlias);
 
                 //make sure the super admin is added to this team on creation
                 foreach ($superAdminIds as $adminId) {
@@ -964,24 +1044,24 @@ class TeamController extends Controller
                 $roles = Role::where(['name' => 'custodian.team.admin'])->first();
                 foreach ($arrayTeamUsers as $value) {
                     $teamHasUsers = TeamHasUser::create([
-                        'team_id' => (int)$team->id,
-                        'user_id' => (int)$value,
+                        'team_id' => (int) $team->id,
+                        'user_id' => (int) $value,
                     ]);
 
                     TeamUserHasRole::updateOrCreate([
-                        'team_has_user_id' => (int)$teamHasUsers->id,
-                        'role_id' => (int)$roles->id,
+                        'team_has_user_id' => (int) $teamHasUsers->id,
+                        'role_id' => (int) $roles->id,
                     ]);
                 }
             } else {
-                throw new NotFoundException();
+                throw new NotFoundException;
             }
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team ' . $team->id . ' created',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => 'Team '.$team->id.' created',
             ]);
 
             return response()->json([
@@ -990,10 +1070,10 @@ class TeamController extends Controller
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $team->id,
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -1009,20 +1089,24 @@ class TeamController extends Controller
      *      summary="TeamController@update",
      *      description="Update a team",
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="team id",
      *         ),
      *      ),
+     *
      *      @OA\RequestBody(
      *          required=true,
      *          description="Team definition",
+     *
      *          @OA\JsonContent(
      *              required={
      *                  "name",
@@ -1036,6 +1120,7 @@ class TeamController extends Controller
      *                  "application_form_updated_by",
      *                  "notifications",
      *              },
+     *
      *              @OA\Property(property="name", type="string", example="someName"),
      *              @OA\Property(property="allows_messaging", type="boolean", example="1"),
      *              @OA\Property(property="workflow_enabled", type="boolean", example="1"),
@@ -1056,17 +1141,23 @@ class TeamController extends Controller
      *              @OA\Property(property="service", type="string", example="https://example"),
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found")
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="success"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example="123"),
@@ -1092,10 +1183,13 @@ class TeamController extends Controller
      *              )
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=500,
      *          description="Error",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="error")
      *          )
      *      )
@@ -1145,16 +1239,16 @@ class TeamController extends Controller
             }
 
             $arrayTeamAlias = $input['aliases'] ?? [];
-            $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
+            $this->updateTeamAlias((int) $teamId, $arrayTeamAlias);
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team ' . $teamId . ' updated',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => 'Team '.$teamId.' updated',
             ]);
 
             return response()->json([
@@ -1163,10 +1257,10 @@ class TeamController extends Controller
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'team_id' => (int)$teamId,
+                'user_id' => (int) $jwtUser['id'],
+                'team_id' => (int) $teamId,
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -1181,21 +1275,26 @@ class TeamController extends Controller
      *      summary="TeamController@edit",
      *      description="Edit a team",
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="team id",
      *         ),
      *      ),
+     *
      *      @OA\RequestBody(
      *          required=true,
      *          description="Team definition",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="name", type="string", example="someName"),
      *              @OA\Property(property="allows_messaging", type="boolean", example="1"),
      *              @OA\Property(property="workflow_enabled", type="boolean", example="1"),
@@ -1215,17 +1314,23 @@ class TeamController extends Controller
      *              @OA\Property(property="service", type="string", example="https://example"),
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found")
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="success"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example="123"),
@@ -1251,10 +1356,13 @@ class TeamController extends Controller
      *              )
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=500,
      *          description="Error",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="error")
      *          )
      *      )
@@ -1299,22 +1407,22 @@ class TeamController extends Controller
             TeamHasNotification::where('team_id', $teamId)->delete();
             foreach ($arrayTeamNotification as $value) {
                 TeamHasNotification::updateOrCreate([
-                    'team_id' => (int)$teamId,
-                    'notification_id' => (int)$value,
+                    'team_id' => (int) $teamId,
+                    'notification_id' => (int) $value,
                 ]);
             }
 
             $arrayTeamAlias = $input['aliases'] ?? [];
-            $this->updateTeamAlias((int)$teamId, $arrayTeamAlias);
+            $this->updateTeamAlias((int) $teamId, $arrayTeamAlias);
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team ' . $teamId . ' updated',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => 'Team '.$teamId.' updated',
             ]);
 
             return response()->json([
@@ -1323,9 +1431,9 @@ class TeamController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -1340,35 +1448,46 @@ class TeamController extends Controller
      *      summary="TeamController@destroy",
      *      description="Delete a team",
      *      security={{"bearerAuth":{}}},
+     *
      *      @OA\Parameter(
      *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
      *         example="1",
+     *
      *         @OA\Schema(
      *            type="integer",
      *            description="team id",
      *         ),
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="not found")
      *           ),
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Success",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="success")
      *          ),
      *      ),
+     *
      *      @OA\Response(
      *          response=500,
      *          description="Error",
+     *
      *          @OA\JsonContent(
+     *
      *              @OA\Property(property="message", type="string", example="error")
      *          )
      *      )
@@ -1383,7 +1502,7 @@ class TeamController extends Controller
             $team = Team::findOrFail($teamId);
             $existsDatasets = Dataset::where('team_id', $teamId)->select('id')->first();
 
-            if (!is_null($existsDatasets)) {
+            if (! is_null($existsDatasets)) {
                 throw new Exception('The team cannot be deleted as there are datasets currently assigned to it.');
             }
 
@@ -1396,18 +1515,18 @@ class TeamController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
 
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Team ' . $teamId . ' deleted',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => 'Team '.$teamId.' deleted',
             ]);
 
-            throw new NotFoundException();
+            throw new NotFoundException;
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -1431,19 +1550,19 @@ class TeamController extends Controller
 
             $sortOnMetadata = str_starts_with($sortField, 'metadata.');
             $allFields = collect(Dataset::first())->keys()->toArray();
-            if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
+            if (! $sortOnMetadata && count($allFields) > 0 && ! in_array($sortField, $allFields)) {
                 return response()->json([
-                    'message' => '\"' . $sortField . '\" is not a valid field to sort on',
+                    'message' => '\"'.$sortField.'\" is not a valid field to sort on',
                 ], 400);
             }
 
             $validDirections = ['desc', 'asc'];
 
-            if (!in_array($sortDirection, $validDirections)) {
+            if (! in_array($sortDirection, $validDirections)) {
                 return response()->json([
-                    'message' => 'Sort direction must be either: ' .
-                        implode(' OR ', $validDirections) .
-                        '. Not "' . $sortDirection . '"',
+                    'message' => 'Sort direction must be either: '.
+                        implode(' OR ', $validDirections).
+                        '. Not "'.$sortDirection.'"',
                 ], 400);
             }
 
@@ -1479,7 +1598,7 @@ class TeamController extends Controller
                 $matches[] = $d->id;
             }
 
-            if (!empty($filterTitle)) {
+            if (! empty($filterTitle)) {
                 $titleMatches = [];
 
                 foreach ($matches as $m) {
@@ -1551,7 +1670,7 @@ class TeamController extends Controller
         // check in team
         $roleId = Role::where(['name' => 'custodian.team.admin'])->first()->id;
         $existTeamHasUsers = TeamHasUser::where([
-            'team_id' => (int)$teamId,
+            'team_id' => (int) $teamId,
         ])->get();
         foreach ($existTeamHasUsers as $existTeamHasUser) {
             if (in_array($existTeamHasUser->user_id, $users)) {
@@ -1559,20 +1678,20 @@ class TeamController extends Controller
             }
 
             TeamUserHasRole::where([
-                'team_has_user_id' => (int)$existTeamHasUser->id,
-                'role_id' => (int)$roleId,
+                'team_has_user_id' => (int) $existTeamHasUser->id,
+                'role_id' => (int) $roleId,
             ])->delete();
         }
 
         foreach ($users as $user) {
             $teamhasUser = TeamHasUser::updateOrCreate([
-                'team_id' => (int)$teamId,
-                'user_id' => (int)$user,
+                'team_id' => (int) $teamId,
+                'user_id' => (int) $user,
             ]);
 
             TeamUserHasRole::updateOrCreate([
-                'team_has_user_id' => (int)$teamhasUser->id,
-                'role_id' => (int)$roleId,
+                'team_has_user_id' => (int) $teamhasUser->id,
+                'role_id' => (int) $roleId,
             ]);
         }
     }
@@ -1583,10 +1702,9 @@ class TeamController extends Controller
 
         foreach ($arrayTeamAlias as $aliasId) {
             TeamHasAlias::updateOrCreate([
-                'team_id' => (int)$teamId,
-                'alias_id' => (int)$aliasId,
+                'team_id' => (int) $teamId,
+                'alias_id' => (int) $aliasId,
             ]);
         }
     }
-
 }

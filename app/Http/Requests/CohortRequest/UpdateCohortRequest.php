@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\CohortRequest;
 
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCohortRequest extends BaseFormRequest
 {
@@ -27,12 +27,20 @@ class UpdateCohortRequest extends BaseFormRequest
             'request_status' => [
                 'string',
                 'required',
-                Rule::in(['PENDING', 'APPROVED','REJECTED','BANNED','SUSPENDED']),
+                Rule::in(['PENDING', 'APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED']),
             ],
             'nhse_sde_request_status' => [
                 'string',
                 'nullable',
-                Rule::in([null, 'IN PROCESS', 'APPROVAL REQUESTED', 'APPROVED','REJECTED','BANNED','SUSPENDED']),
+                Rule::in([null, 'IN PROCESS', 'APPROVAL REQUESTED', 'APPROVED', 'REJECTED', 'BANNED', 'SUSPENDED']),
+            ],
+            'workgroup_ids' => [
+                'nullable',
+                'array',
+            ],
+            'workgroup_ids.*' => [
+                'integer',
+                'exists:workgroups,id',
             ],
         ];
     }
