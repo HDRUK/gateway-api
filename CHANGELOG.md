@@ -1,3 +1,9 @@
+## [2.30.2](https://github.com/HDRUK/gateway-api/compare/v2.30.1...v2.30.2) (2026-01-07)
+
+### 🐛 Bug Fixes
+
+* **GAT-8426:** Better handling of nulls for form hydration (#1494) ([451340a](https://github.com/HDRUK/gateway-api/commit/451340a0fd1ac6c1bf558b6db2d712071e7817cc)), closes [GAT-8426](GAT-8426)
+
 ## [2.30.1](https://github.com/HDRUK/gateway-api/compare/v2.30.0...v2.30.1) (2025-12-24)
 
 ### 🐛 Bug Fixes
