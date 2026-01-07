@@ -122,22 +122,25 @@ trait DatasetsV2Helpers
             unset($metadata['metadata']);
             $metadata = $tmpMetadata;
         }
-        if (is_array($metadata) && array_key_exists("metadata", $metadata)) {
-            $this->decodeMetadataHTML($metadata['metadata']);
-        }
 
+        // Middleware will encode certain characters as HTML. This can cause
+        // issues as certain fields require special characeters.
+        // Therefore we decode these characters so we can pass the schema
+        if (is_array($metadata) && array_key_exists("metadata", $metadata)) {
+            $this->decodeMetadataPermittedCharacters($metadata['metadata']);
+        }
         return $metadata;
     }
 
-    private function decodeMetadataHTML(array &$metadataArr)
+    private function decodeMetadataPermittedCharacters(array &$metadataArr)
     {
-        // Some fields may be html encoded by middleware and so will not pass
-        // the schema checks. We need to remove this HTML encoding
-        foreach (Config::get("metadata.html_decode_fields") as $field) {
-            if (Arr::has($metadataArr, $field)) {
-                $val = html_entity_decode(Arr::get($metadataArr, $field));
-                Arr::set($metadataArr, $field, $val);
+        foreach ($metadataArr as $key => &$value) {
+            if (is_array($value)) {
+                $this->decodeMetadataPermittedCharacters($value);
+            } else {
+                $value = htmlspecialchars_decode($value, config("metadata.permitted_characters"));
             }
         }
+        unset($value);
     }
 }
