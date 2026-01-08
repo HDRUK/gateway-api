@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Feature as FeatureModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class FeatureFactory extends Factory
 {
+    protected $model = FeatureModel::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,7 +20,10 @@ class FeatureFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->lexify('feature-????????'),
+            'name' => fake()->unique()->slug(2),
+            'scope' => null,
+            'value' => fake()->boolean(),
+            'description' => fake()->sentence(),
         ];
     }
 }
