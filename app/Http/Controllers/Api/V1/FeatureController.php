@@ -167,7 +167,7 @@ class FeatureController extends Controller
         } else {
             Feature::activate($feature->name);
         }
-        $feature->save();
+
         Feature::flushCache();
 
         

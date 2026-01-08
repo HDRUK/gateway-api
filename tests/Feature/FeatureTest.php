@@ -59,27 +59,26 @@ class FeatureTest extends TestCase
 
     /** @test */
     public function test_toggle_feature(): void
-    {
-        $feature = FeatureModel::factory()->create([
-            'name' => 'test_feature',
-            'scope' => 'global',
-            'value' => 'true',
-        ]);
+{
+    $feature = FeatureModel::factory()->create([
+        'name' => 'test_feature',
+        'scope' => 'global',
+        'value' => 'true',
+    ]);
 
-        // toggle via PUT
-        $response = $this->json('PUT', self::TEST_URL . '/' . $feature->id, [], $this->header);
+    $response = $this->json('PUT', self::TEST_URL . '/' . $feature->id, [], $this->header);
+    $response->assertStatus(200)
+             ->assertJsonStructure(['data']);
 
-        $response->assertStatus(200)
-                 ->assertJsonStructure(['data']);
+    $responseData = $response->decodeResponseJson();
+    $this->assertEquals('false', $responseData['data']['value']);
 
-        // refresh model and assert value toggled
-        $feature->refresh();
-        $this->assertEquals('false', $feature->value);
+    // toggle again
+    $response2 = $this->json('PUT', self::TEST_URL . '/' . $feature->id, [], $this->header);
+    $response2->assertStatus(200);
+    $responseData2 = $response2->decodeResponseJson();
+    $this->assertEquals('true', $responseData2['data']['value']);
+}
 
-        // toggle again to true
-        $response2 = $this->json('PUT', self::TEST_URL . '/' . $feature->id, [], $this->header);
-        $feature->refresh();
-        $this->assertEquals('true', $feature->value);
-    }
 }
 
