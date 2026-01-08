@@ -22,8 +22,7 @@ class FeatureFactory extends Factory
         return [
             'name' => fake()->unique()->slug(2),
             'scope' => null,
-            'value' => fake()->boolean(),
-            'description' => fake()->sentence(),
+            'value' => fake()->boolean()
         ];
     }
 }
