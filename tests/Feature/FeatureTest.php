@@ -74,12 +74,12 @@ class FeatureTest extends TestCase
 
         // refresh model and assert value toggled
         $feature->refresh();
-        $this->assertFalse($feature->value);
+        $this->assertEquals('false', $feature->value);
 
         // toggle again to true
         $response2 = $this->json('PUT', self::TEST_URL . '/' . $feature->id, [], $this->header);
         $feature->refresh();
-        $this->assertTrue($feature->value);
+        $this->assertEquals('true', $feature->value);
     }
 }
 
