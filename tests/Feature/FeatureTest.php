@@ -25,7 +25,7 @@ class FeatureTest extends TestCase
         $feature = FeatureModel::factory()->create([
             'name' => 'test_feature',
             'scope' => 'global',
-            'value' => true,
+            'value' => 'true',
         ]);
 
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
@@ -44,7 +44,7 @@ class FeatureTest extends TestCase
         $feature = FeatureModel::factory()->create([
             'name' => 'test_feature',
             'scope' => 'global',
-            'value' => true,
+            'value' => 'true',
         ]);
 
         $response = $this->json('GET', self::TEST_URL . '/' . $feature->id, [], $this->header);
@@ -63,7 +63,7 @@ class FeatureTest extends TestCase
         $feature = FeatureModel::factory()->create([
             'name' => 'test_feature',
             'scope' => 'global',
-            'value' => true,
+            'value' => 'true',
         ]);
 
         // toggle via PUT
