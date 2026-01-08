@@ -22,7 +22,6 @@ class Feature extends Model
     protected $fillable = [
         'name',
         'scope',
-        'value',
-        'description',
+        'value'
     ];
 }
