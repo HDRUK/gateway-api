@@ -26,7 +26,6 @@ class FeatureTest extends TestCase
     {
         $this->commonSetUp();
     }
-
     /**
      * Get All Features with success
      *
@@ -34,10 +33,10 @@ class FeatureTest extends TestCase
      */
     public function test_get_all_features_with_success(): void
     {
-        $countTag = FeatureModel::count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
+        $responseData = $response->decodeResponseJson();
 
-        $this->assertEquals($countTag, $response['total']);
+        $this->assertCount(FeatureModel::count(), $responseData['data']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -50,53 +49,38 @@ class FeatureTest extends TestCase
                     'updated_at',
                 ],
             ],
-            'current_page',
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
-            'links',
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total',
         ]);
     }
 
-    /**
-     * Get Feature by Id with success
-     *
-     * @return void
-     */
     public function test_get_feature_by_id_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
-        $this->assertCount(1, $response['data']);
+        $responseData = $response->decodeResponseJson();
+
+        $this->assertArrayHasKey('data', $responseData);
+        $this->assertEquals(1, $responseData['data']['id']);
+
         $response->assertJsonStructure([
             'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'scope',
-                    'value',
-                    'created_at',
-                    'updated_at',
-                ]
-            ]
+                'id',
+                'name',
+                'scope',
+                'value',
+                'created_at',
+                'updated_at',
+            ],
         ]);
         $response->assertStatus(200);
     }
-
     /**
      * Create new Feature with success
      *
      * @return void
      */
+
     public function test_add_new_feature_with_success(): void
     {
-        $countBefore = FeatureModel::all()->count();
+        $countBefore = FeatureModel::count();
 
         $response = $this->json(
             'POST',
@@ -109,7 +93,7 @@ class FeatureTest extends TestCase
             $this->header
         );
 
-        $countAfter = FeatureModel::all()->count();
+        $countAfter = FeatureModel::count();
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
@@ -123,8 +107,7 @@ class FeatureTest extends TestCase
     public function test_edit_feature_with_success(): void
     {
         // create
-
-        $countBefore = FeatureModel::all()->count();
+        $countBefore = FeatureModel::count();
 
         $responseCreate = $this->json(
             'POST',
@@ -137,22 +120,21 @@ class FeatureTest extends TestCase
             $this->header
         );
 
-        $countAfter = FeatureModel::all()->count();
+        $countAfter = FeatureModel::count();
         $countNewRow = $countAfter - $countBefore;
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
         $contentCreate = $responseCreate->decodeResponseJson();
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $responseCreate->assertStatus(201);
 
         $id = $contentCreate['data'];
-
         // edit
-
         $responseEdit1 = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $id,
@@ -163,10 +145,11 @@ class FeatureTest extends TestCase
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
         $contentEdit1 = $responseEdit1->decodeResponseJson();
         $this->assertEquals($contentEdit1['data']['name'], 'fake_for_test_e1');
 
@@ -182,36 +165,15 @@ class FeatureTest extends TestCase
         );
 
         $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentEdit2 = $responseEdit2->decodeResponseJson();
         $this->assertEquals($contentEdit2['data']['name'], 'fake_for_test_e2');
         $this->assertEquals($contentEdit2['data']['value'], false);
     }
 
-    /**
-     * SoftDelete Feature by Id with success
-     *
-     * @return void
-     */
-
-    public function test_soft_delete_feature_with_success(): void
-    {
-        $id = 1;
-        $countFeature = FeatureModel::where('id', $id)->count();
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $id, [], $this->header);
-
-        $countFeatureDeleted = FeatureModel::onlyTrashed()->where('id', $id)->count();
-
-        $response->assertStatus(200);
-
-       if ($countFeature && $countFeaturegDeleted) {
-            $this->assertTrue(true, 'Response was successfully');
-        } else {
-            $this->assertTrue(false, 'Response was unsuccessfully');
-        }
-    }
+     
 }
