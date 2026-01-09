@@ -72,11 +72,11 @@ class FeatureTest extends TestCase
         // false to true
         $feature = FeatureModel::factory()->create([
             'name' => fake()->unique()->slug(2),
-            'value' => false,
+            'value' => 'false',
             'scope' => '__laravel_null',
         ]);
 
-        $this->assertEquals(false, Feature::active($feature->name));
+        $this->assertEquals('false', Feature::active($feature->name));
 
         $response = $this->json(
             'PUT',
@@ -86,7 +86,7 @@ class FeatureTest extends TestCase
         );
 
         $response->assertStatus(200);
-        $this->assertEquals(true, Feature::active($feature->name));
+        $this->assertEquals('true', Feature::active($feature->name));
 
         // true to false
         $response = $this->json(
@@ -96,6 +96,6 @@ class FeatureTest extends TestCase
             $this->header
         );
         $response->assertStatus(200);
-        $this->assertEquals(false, Feature::active($feature->name));
+        $this->assertEquals('false', Feature::active($feature->name));
     }
 }
