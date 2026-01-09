@@ -13,7 +13,7 @@ class ValidationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public const TEST_URL = '/api/v1/features';
+    public const TEST_URL = '/api/v1/features/flush';
 
     protected $header = [];
 
