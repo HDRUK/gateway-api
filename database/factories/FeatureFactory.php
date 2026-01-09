@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Feature as FeatureModel;
+use App\Models\Feature;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class FeatureFactory extends Factory
 {
-    protected $model = FeatureModel::class;
+    protected $model = Feature::class;
 
     /**
      * Define the model's default state.
