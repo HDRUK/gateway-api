@@ -73,6 +73,7 @@ class FeatureTest extends TestCase
         $feature = FeatureModel::factory()->create([
             'name' => fake()->unique()->slug(2),
             'value' => false,
+            'scope' => '__laravel_null',
         ]);
 
         $this->assertEquals(false, Feature::active($feature->name));
