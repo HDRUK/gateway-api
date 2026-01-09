@@ -5,21 +5,30 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Laravel\Pennant\Feature;
 use App\Models\Feature as FeatureModel;
+use Tests\Traits\Authorization;
+
+
 
 class FeatureTest extends TestCase
 {
+    use Authorization;
     public const TEST_URL = '/api/v1/features';
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->withUsers();
+        $this->authorisationUser(true);
+        $jwt = $this->getAuthorisationJwt(true);
+
+        $this->header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
     }
 
     public function test_the_application_return_all_features(): void
     {
-        $response = $this->actingAs($this->admin)
-            ->json('GET', self::TEST_URL);
+        $response = $this->json('GET', self::TEST_URL);
 
         $response->assertStatus(200);
         $this->assertArrayHasKey('data', $response);
@@ -30,8 +39,7 @@ class FeatureTest extends TestCase
         $latestFeature = FeatureModel::query()->orderBy('id', 'desc')->first();
         $featureIdTest = $latestFeature ? $latestFeature->id + 1 : 1;
 
-        $response = $this->actingAs($this->admin)
-            ->json(
+         $response = $this->json(
                 'GET',
                 self::TEST_URL . "/{$featureIdTest}"
             );
@@ -46,11 +54,12 @@ class FeatureTest extends TestCase
         $latestFeature = FeatureModel::query()->orderBy('id', 'desc')->first();
         $featureIdTest = $latestFeature ? $latestFeature->id + 1 : 1;
 
-        $response = $this->actingAs($this->admin)
-            ->json(
-                'PUT',
-                self::TEST_URL . "/{$featureIdTest}"
-            );
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . "/{$featureIdTest}",
+            [],
+            $this->header
+        );
 
 
         $response->assertStatus(400);
@@ -68,22 +77,23 @@ class FeatureTest extends TestCase
 
         $this->assertEquals(false, Feature::active($feature->name));
 
-        $response = $this->actingAs($this->admin)
-            ->json(
-                'PUT',
-                self::TEST_URL . "/{$feature->id}"
-            );
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . "/{$feature->id}",
+            [],
+            $this->header
+        );
 
         $response->assertStatus(200);
         $this->assertEquals(true, Feature::active($feature->name));
 
         // true to false
-        $response = $this->actingAs($this->admin)
-            ->json(
-                'PUT',
-                self::TEST_URL . "/{$feature->id}"
-            );
-
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . "/{$feature->id}",
+            [],
+            $this->header
+        );
         $response->assertStatus(200);
         $this->assertEquals(false, Feature::active($feature->name));
     }
