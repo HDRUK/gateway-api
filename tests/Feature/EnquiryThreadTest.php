@@ -103,7 +103,7 @@ class EnquiryThreadTest extends TestCase
      */
     public function test_add_new_dar_enquiry_thread_with_success(): void
     {
-        Feature::define('SDEConciergeServiceEnquiry', 'false');
+        Feature::deactivate('SDEConciergeServiceEnquiry');
 
         // Create user with dar.reviewer role
         $responseCreateUser = $this->json(
@@ -331,7 +331,7 @@ class EnquiryThreadTest extends TestCase
     */
     public function test_add_new_sde_enquiry_thread_with_success(): void
     {
-        Feature::define('SDEConciergeServiceEnquiry', 'true');
+        Feature::activate('SDEConciergeServiceEnquiry');
 
         $uniqueUserId = $this->createUser();
         $teamId = $this->createTeam([$uniqueUserId]);
@@ -510,7 +510,7 @@ class EnquiryThreadTest extends TestCase
      */
     public function test_add_new_single_sde_enquiry_thread_stays_with_sde(): void
     {
-        Feature::define('SDEConciergeServiceEnquiry', 'true');
+        Feature::activate('SDEConciergeServiceEnquiry');
 
         $uniqueUserId = $this->createUser();
         $teamId = $this->createTeam([$uniqueUserId]);
