@@ -2,22 +2,19 @@
 
 namespace App\Http\Traits;
 
-use Config;
-use App\Models\User;
 use App\Models\Alias;
-use App\Models\TeamHasUser;
 use App\Models\Notification;
 use App\Models\TeamHasAlias;
 use App\Models\TeamHasNotification;
+use App\Models\TeamHasUser;
 use App\Models\TeamUserHasNotification;
+use App\Models\User;
+use Config;
 
 trait TeamTransformation
 {
     /**
      * Convert output for Team
-     *
-     * @param array $teams
-     * @return array
      */
     public function getTeams(array $teams): array
     {
@@ -47,13 +44,13 @@ trait TeamTransformation
                 'url' => $team['url'],
                 'introduction' => $team['introduction'],
                 'dar_modal_content' => $team['dar_modal_content'],
-                'team_logo' => (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $team['team_logo']) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']),
+                'team_logo' => (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $team['team_logo']) ? $team['team_logo'] : Config::get('services.media.base_url').$team['team_logo']),
                 'service' => $team['service'],
             ];
 
             $tmpUser = [];
             foreach ($team['users'] as $user) {
-                if ($user['is_admin']) {
+                if ($user['is_admin']) { // what!?
                     continue;
                 }
                 $tmp = [
@@ -82,7 +79,7 @@ trait TeamTransformation
                     'hubspot_id' => $user['hubspot_id'],
                 ];
 
-                $teamHasUserId = (int)$user['pivot']['id'];
+                $teamHasUserId = (int) $user['pivot']['id'];
 
                 $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles', 'roles.permissions')->get()->toArray();
 
@@ -157,19 +154,19 @@ trait TeamTransformation
         return $response;
     }
 
-    private function maskEmail(string|null $email)
+    private function maskEmail(?string $email)
     {
         if (is_null($email)) {
             return $email;
         }
 
         [$username, $domain] = explode('@', $email);
-        $maskedUsername = substr($username, 0, 1) . str_repeat('*', max(strlen($username) - 2, 1)) . substr($username, -1);
+        $maskedUsername = substr($username, 0, 1).str_repeat('*', max(strlen($username) - 2, 1)).substr($username, -1);
         $domainParts = explode('.', $domain);
         $domainName = $domainParts[0];
-        $maskedDomain = substr($domainName, 0, 1) . str_repeat('*', max(strlen($domainName) - 2, 1)) . substr($domainName, -1);
-        $maskedDomain .= '.' . implode('.', array_slice($domainParts, 1));
-        $maskedEmail = $maskedUsername . '@' . $maskedDomain;
+        $maskedDomain = substr($domainName, 0, 1).str_repeat('*', max(strlen($domainName) - 2, 1)).substr($domainName, -1);
+        $maskedDomain .= '.'.implode('.', array_slice($domainParts, 1));
+        $maskedEmail = $maskedUsername.'@'.$maskedDomain;
 
         return $maskedEmail;
     }
