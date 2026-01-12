@@ -67,11 +67,16 @@ class JwtController extends Controller
             $expireTime = $currentTime->addSeconds(intval(config('jwt.expiration')));
 
             $user = User::with('workgroups:id,name,active')->find($userId);
-            $user->workgroups->makeHidden('pivot');
-
             if (Config::get('services.cohort_discovery.add_teams_to_jwt')) {
                 $user->cohortAdminTeams->setVisible(['id', 'name']);
             }
+
+            $userClaim = $user->toArray();
+            $userClaim['workgroups'] = $user->workgroups
+                ->where('active', 1)
+                ->pluck('name')
+                ->values()
+                ->all();
 
             $token = $this->config->builder()
                 ->issuedBy((string) config('app.url')) // iss claim
@@ -81,7 +86,7 @@ class JwtController extends Controller
                 ->issuedAt($currentTime) // iat claim
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim
-                ->withClaim('user', $user) // custom claim - user
+                ->withClaim('user', $userClaim) // custom claim - user
                 ->withClaim('cohort_discovery_url', Config::get('services.cohort_discovery.init_url'))
                 ->getToken($this->config->signer(), $this->config->signingKey());
 
