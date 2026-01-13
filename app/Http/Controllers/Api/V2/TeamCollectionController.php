@@ -29,6 +29,7 @@ use App\Http\Requests\Collection\UpdateTeamCollection;
 use App\Http\Requests\V2\Collection\GetCollectionCountByTeamAndStatus;
 use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasUser;
+use Symfony\Component\HttpFoundation\StreamedJsonResponse;
 
 class TeamCollectionController extends Controller
 {
@@ -413,7 +414,7 @@ class TeamCollectionController extends Controller
      *    ),
      * )
      */
-    public function show(GetCollection $request, int $teamId, int $id): JsonResponse
+    public function show(GetCollection $request, int $teamId, int $id): StreamedJsonResponse | JsonResponse
     {
         try {
             $input = $request->all();
@@ -429,17 +430,15 @@ class TeamCollectionController extends Controller
             $owningTeamId = $initCollection->team_id;
             $this->checkAccess($input, $owningTeamId, null, 'team', $request->header());
 
-            $collection = $this->getCollectionActiveById($id);
-
             Auditor::log([
                 'action_type' => 'SHOW',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'CohortRequest show ' . $id,
             ]);
 
-            return response()->json([
+            return response()->streamJson([
                 'message' => 'success',
-                'data' => $collection,
+                'data' => $this->getCollectionActiveById($id),
             ], 200);
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -687,7 +686,7 @@ class TeamCollectionController extends Controller
      *      )
      * )
      */
-    public function update(UpdateTeamCollection $request, int $teamId, int $id): JsonResponse
+    public function update(UpdateTeamCollection $request, int $teamId, int $id): JsonResponse | StreamedJsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -762,7 +761,7 @@ class TeamCollectionController extends Controller
                 'description' => 'Collection ' . $id . ' updated',
             ]);
 
-            return response()->json([
+            return response()->streamJson([
                 'message' => 'success',
                 'data' => $this->getCollectionActiveById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
@@ -875,7 +874,7 @@ class TeamCollectionController extends Controller
      *      )
      * )
      */
-    public function edit(EditTeamCollection $request, int $teamId, int $id): JsonResponse
+    public function edit(EditTeamCollection $request, int $teamId, int $id): JsonResponse | StreamedJsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -955,7 +954,7 @@ class TeamCollectionController extends Controller
                 'description' => 'Collection ' . $id . ' updated',
             ]);
 
-            return response()->json([
+            return response()->streamJson([
                 'message' => 'success',
                 'data' => $this->getCollectionActiveById($id),
             ], 200);
