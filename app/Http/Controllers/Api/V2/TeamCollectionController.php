@@ -430,8 +430,6 @@ class TeamCollectionController extends Controller
             $owningTeamId = $initCollection->team_id;
             $this->checkAccess($input, $owningTeamId, null, 'team', $request->header());
 
-            $collection = $this->getCollectionActiveById($id);
-
             Auditor::log([
                 'action_type' => 'SHOW',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -440,7 +438,7 @@ class TeamCollectionController extends Controller
 
             return response()->streamJson([
                 'message' => 'success',
-                'data' => $collection,
+                'data' => $this->getCollectionActiveById($id),
             ], 200);
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -754,8 +752,6 @@ class TeamCollectionController extends Controller
             } else {
                 $this->deleteCollectionFromElastic((int) $id);
             }
-
-            $collection = $this->getCollectionActiveById($id);
             
             Auditor::log([
                 'user_id' => $userId,
@@ -767,7 +763,7 @@ class TeamCollectionController extends Controller
 
             return response()->streamJson([
                 'message' => 'success',
-                'data' => $collection,
+                'data' => $this->getCollectionActiveById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (UnauthorizedException $e) {
             return response()->json([
@@ -958,11 +954,9 @@ class TeamCollectionController extends Controller
                 'description' => 'Collection ' . $id . ' updated',
             ]);
 
-            $collection = $this->getCollectionActiveById($id);
-
             return response()->streamJson([
                 'message' => 'success',
-                'data' => $collection,
+                'data' => $this->getCollectionActiveById($id),
             ], 200);
         } catch (UnauthorizedException $e) {
             return response()->json([
