@@ -752,7 +752,7 @@ class TeamCollectionController extends Controller
             } else {
                 $this->deleteCollectionFromElastic((int) $id);
             }
-            
+
             Auditor::log([
                 'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
