@@ -672,6 +672,7 @@ class DatasetController extends Controller
 
         $team = Team::where('id', $teamId)->first()->toArray();
 
+        // dd($input['metadata']);
         $input['metadata'] = $this->extractMetadata($input['metadata']);
         $input['status'] = $status;
         $input['user_id'] = $userId;
@@ -682,6 +683,7 @@ class DatasetController extends Controller
         $inputVersion = $request->query('input_version', null);
 
         // Ensure title is present for creating a dataset
+        // dd($input['metadata']['metadata']);
         if (empty($input['metadata']['metadata']['summary']['title'])) {
             return response()->json([
                 'message' => 'Title is required to save a dataset',
