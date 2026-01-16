@@ -1,3 +1,22 @@
+## [2.31.0](https://github.com/HDRUK/gateway-api/compare/v2.30.2...v2.31.0) (2026-01-16)
+
+### ✨ Features
+
+* **GAT-0000:** Add command to replicate missing GMI linkages. (#1483) ([c9cbb6b](https://github.com/HDRUK/gateway-api/commit/c9cbb6b39c1b006ae57e47baf78d4ffea79ddc01)), closes [GAT-0000](GAT-0000)
+* **GAT-0000:** Silence events in GMI dataset linkages fix (#1484) ([286de36](https://github.com/HDRUK/gateway-api/commit/286de36af66c67f54ea7987b440a678e41f5a734))
+* **GAT-7136:** DAR Document tweaks (#1487) ([40f7a3d](https://github.com/HDRUK/gateway-api/commit/40f7a3d993c86cfaa95c70c3c7fd966586411d85)), closes [GAT-7136](GAT-7136)
+* **GAT-7427:** Add data_provider_dar_type to payload (#1492) ([3c3e59d](https://github.com/HDRUK/gateway-api/commit/3c3e59dd64ab4c95e77cdea8ca046ab3b654f20b)), closes [GAT-7427](GAT-7427)
+* **GAT-8298:** Add Widgets Feature Migration (#1481) ([9b17e12](https://github.com/HDRUK/gateway-api/commit/9b17e127145f619a45820277e3ca07d175d0fc57)), closes [GAT-8298](GAT-8298)
+
+### 🐛 Bug Fixes
+
+* **GAT-7839:** Follow up can't be > 10 years due to HTML encoding (#1489) ([aff5323](https://github.com/HDRUK/gateway-api/commit/aff5323b4c2ee3694b98cb3e45ddf168619e3f34)), closes [GAT-7839](GAT-7839)
+* **GAT-7839:** Revert Follow up can't be > 10 years due to HTML encoding (#1498) ([c5a5252](https://github.com/HDRUK/gateway-api/commit/c5a5252e1a9f341d7b8be70773fab13c5ed711e0)), closes [GAT-7839](GAT-7839)
+* **GAT-8219:** Running out of memory when fetching large collections (#1493) ([02b20d4](https://github.com/HDRUK/gateway-api/commit/02b20d48b45f5346845f112df1e1561a2885022b)), closes [GAT-8219](GAT-8219)
+* **GAT-8363:** Stan fixes (#1488) ([cdde36f](https://github.com/HDRUK/gateway-api/commit/cdde36fa4ecbecb4ff24a72641007d43a4330f91))
+* **GAT-8405:** Update for GAT-8405 (#1490) ([7c340e9](https://github.com/HDRUK/gateway-api/commit/7c340e95d42942b2da922668421516a09c60c6de)), closes [GAT-8405](GAT-8405) [GAT-8405](GAT-8405)
+* **GAT-8426:** Better handling of nulls for form hydration (#1494) ([4326ec0](https://github.com/HDRUK/gateway-api/commit/4326ec091194194e757ff290582e53a841dbd959)), closes [GAT-8426](GAT-8426)
+
 ## [2.30.2](https://github.com/HDRUK/gateway-api/compare/v2.30.1...v2.30.2) (2026-01-07)
 
 ### 🐛 Bug Fixes
