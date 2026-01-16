@@ -568,7 +568,7 @@ class ScanFileUpload implements ShouldQueue
             }
             $componentType = $questionVersion->question_json['field']['component'];
 
-            if ($componentType === 'FileUpload') {
+            if ($componentType === 'FileUpload' || $componentType === 'DocumentExchange') {
                 DataAccessApplicationAnswer::updateOrCreate(
                     [
                         'application_id' => $this->applicationId,
