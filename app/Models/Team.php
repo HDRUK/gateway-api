@@ -71,7 +71,9 @@ class Team extends Model
 
     protected static $htmlDecodedFields = [
         'introduction',
-        'dar_modal_content'
+        'dar_modal_header',
+        'dar_modal_content',
+        'dar_modal_footer'
     ];
 
     /**
