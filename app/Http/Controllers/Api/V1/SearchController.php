@@ -205,15 +205,13 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
+            $validDatasets = [];
             foreach ($matchedIds as $i => $matchedId) {
                 $model = Dataset::with('team')->where('id', $matchedId)
                     ->first();
 
                 if (!$model) {
                     \Log::warning('Elastic found id=' . $matchedId . ' which is not an existing dataset');
-                    if (isset($datasetsArray[$i])) {
-                        unset($datasetsArray[$i]);
-                    }
                     continue;
                 }
 
@@ -263,7 +261,12 @@ class SearchController extends Controller
                 $datasetsArray[$i]['team']['dar_modal_header'] = $model['team']['dar_modal_header'];
                 $datasetsArray[$i]['team']['dar_modal_content'] = $model['team']['dar_modal_content'];
                 $datasetsArray[$i]['team']['dar_modal_footer'] = $model['team']['dar_modal_footer'];
+                
+                $validDatasets[] = $datasetsArray[$i];
             }
+            
+            // Re-index array to ensure contiguous keys
+            $datasetsArray = array_values($validDatasets);
 
             if ($download && strtolower($downloadType) === 'list') {
                 Auditor::log([

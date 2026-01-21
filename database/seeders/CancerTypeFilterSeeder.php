@@ -43,7 +43,7 @@ class CancerTypeFilterSeeder extends Seeder
     private function getFiltersData(): array
     {
         // Try to load from JSON file first
-        $jsonPath = storage_path('app/cancer_type_filters.json');
+        $jsonPath = storage_path('tests/Unit/test_files/cancer_type_filters.json');
         
         if (file_exists($jsonPath)) {
             $jsonContent = file_get_contents($jsonPath);
@@ -53,27 +53,6 @@ class CancerTypeFilterSeeder extends Seeder
                 return $data;
             }
         }
-
-        // If no file, try to get from theFilters constant
-        // You can paste your JSON here or load from a variable
-        return $this->getFiltersFromConstant();
-    }
-
-    /**
-     * Get filters from constant/variable
-     * Paste your JSON data here or load from elsewhere
-     */
-    private function getFiltersFromConstant(): array
-    {
-        // The user provided: const theFilters = {...}
-        // Convert the JavaScript object to PHP array format
-        // For now, return empty - user should provide the data
-        
-        // Option 1: Load from a PHP file that defines the data
-        // Option 2: User can paste JSON directly here
-        // Option 3: Load from environment variable or config
-        
-        return [];
     }
 
     /**
