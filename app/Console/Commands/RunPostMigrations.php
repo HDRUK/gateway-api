@@ -156,6 +156,10 @@ class RunPostMigrations extends Command
                     'sleep' => $sleep,
                 ],
             ],
+            [
+                'command' => 'app:rename-s-n-s-d-e-post-migration',
+                'arguments' => [],
+            ], // update SNSDE to actual name
         ];
 
         foreach ($commands as $commandInfo) {
