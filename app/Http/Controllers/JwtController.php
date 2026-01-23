@@ -69,6 +69,7 @@ class JwtController extends Controller
             $expireTime = $currentTime->addSeconds(intval(config('jwt.expiration')));
 
             $user = User::with('workgroups:id,name,active')->find($userId);
+            $user->workgroups->makeHidden('pivot');
 
             $userClaim = $user->toArray();
             if (Feature::active(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE)) {
