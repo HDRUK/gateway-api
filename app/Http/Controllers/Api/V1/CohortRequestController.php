@@ -690,6 +690,8 @@ class CohortRequestController extends Controller
                     break;
             }
 
+            dump(Feature::active(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE));
+
             if (
                 Feature::active(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE)
                 && isset($input['workgroup_ids'])

@@ -4,9 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
+use App\Models\FeatureFlag;
+use App\Models\UserHasWorkgroup;
+use App\Models\Workgroup;
 use Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -201,6 +205,113 @@ class CohortRequestTest extends TestCase
         ]);
 
         $responseGetOne->assertStatus(200);
+    }
+
+    public function test_update_cohort_request_with_cds_enabled_success(): void
+    {
+        Mail::fake();
+
+        Feature::define(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE, true);
+        Feature::flushCache();
+
+        $user = $this->getUserFromJwt($this->getAuthorisationJwt());
+
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $id = $contentCreate['data'];
+
+        Workgroup::truncate();
+        $existingWgs = Workgroup::factory(2)->create(['active' => true]);
+        $existingWgsIds = [];
+        foreach ($existingWgs as $wg) {
+            UserHasWorkgroup::create([
+                'user_id' => $user['id'],
+                'workgroup_id' => $wg->id,
+            ]);
+            $existingWgsIds[] = $wg->id;
+        }
+
+        foreach ($existingWgsIds as $wgId) {
+            $this->assertDatabaseHas('user_has_workgroups', [
+                'user_id' => $user['id'],
+                'workgroup_id' => $wgId,
+            ]);
+        }
+
+        $newWorkgroups = Workgroup::factory(2)->create(['active' => true]);
+        $newWorkgroupsIds = $newWorkgroups->pluck('id')->toArray();
+
+        [$idToKeep, $idToRemove] = $existingWgsIds;
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL.'/'.$id,
+            [
+                'request_status' => 'APPROVED',
+                'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
+                'nhse_sde_request_status' => null,
+                'workgroup_ids' => [...$newWorkgroupsIds, $idToKeep],
+            ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        // get one
+        $responseGetOne = $this->json('GET', self::TEST_URL.'/'.$id, [], $this->header);
+
+        $responseGetOne->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseGetOne->assertStatus(200);
+
+        //new ids were added
+        foreach ($newWorkgroupsIds as $wgId) {
+            $this->assertDatabaseHas('user_has_workgroups', [
+                'user_id' => $user['id'],
+                'workgroup_id' => $wgId,
+            ]);
+        }
+
+        //existing id was not removed
+        $this->assertDatabaseHas('user_has_workgroups', [
+            'user_id' => $user['id'],
+            'workgroup_id' => $idToKeep,
+        ]);
+
+        //old ids were removed
+        $this->assertDatabaseMissing('user_has_workgroups', [
+            'user_id' => $user['id'],
+            'workgroup_id' => $idToRemove,
+        ]);
+
     }
 
     /**
