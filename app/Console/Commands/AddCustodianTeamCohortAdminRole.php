@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\DataProviderColl;
-use App\Models\DataProviderCollHasTeam;
 use App\Models\Role;
 use Illuminate\Console\Command;
 
@@ -32,7 +30,7 @@ class AddCustodianTeamCohortAdminRole extends Command
     {
         Role::create([
             'name' => 'custodian.team.cohortAdmin',
-        
+
             'full_name' => 'Team Cohort Discovery Admin',
             'enabled' => 1,
         ]);

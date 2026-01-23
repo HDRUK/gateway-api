@@ -169,7 +169,8 @@ class EmailTemplateSeeder extends Seeder
                 ]
             }
           ',
-            ]);
+            ]
+        );
 
         EmailTemplate::create(
             [
