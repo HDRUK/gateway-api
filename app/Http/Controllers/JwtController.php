@@ -42,7 +42,7 @@ class JwtController extends Controller
         $this->secretKey = (string) config('jwt.secret');
 
         $this->config = Configuration::forSymmetricSigner(
-            new Sha256,
+            new Sha256(),
             InMemory::plainText($this->secretKey)
         );
 

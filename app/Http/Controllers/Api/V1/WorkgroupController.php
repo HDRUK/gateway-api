@@ -47,7 +47,8 @@ class WorkgroupController extends Controller
                 'description' => 'Workgroups get all',
             ]);
 
-            return response()->json([
+            return response()->json(
+                [
                 'message' => 'success',
                 'data' => $workgroups,
             ]
