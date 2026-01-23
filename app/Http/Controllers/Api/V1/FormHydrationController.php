@@ -221,7 +221,7 @@ class FormHydrationController extends Controller
         $values = array();
         foreach ($datasets as $dataset) {
             $v = $this->getValueFromPath($dataset, $path);
-            $values[] = is_null($v) ? '' : $this->getValueFromPath($dataset, $path);
+            $values[] = is_scalar($v) ? (string)$v : '';
         }
 
         $countMap = array_count_values($values);
@@ -235,7 +235,7 @@ class FormHydrationController extends Controller
         }
     }
 
-    public function getValueFromPath(array $item, string $path)
+    public function getValueFromPath(array $item, string $path): mixed
     {
         $keys = explode('.', $path);
 
