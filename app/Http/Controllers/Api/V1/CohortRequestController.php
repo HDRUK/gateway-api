@@ -690,24 +690,32 @@ class CohortRequestController extends Controller
                     break;
             }
 
-            $workgroupIds = $input['workgroup_ids'];
-            if (! is_null($workgroupIds)) {
-                $userId = (int) $jwtUser['id'];
+            if (
+                Feature::active(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE)
+                && isset($input['workgroup_ids'])
+            ) {
+                //only can update workgroups once the request has been made
+                // - user would create a request
+                // - the admin would update to add workgroups (when CDS enabled)
+                $workgroupIds = $input['workgroup_ids'];
+                if (! is_null($workgroupIds)) {
+                    $userId = (int) $jwtUser['id'];
 
-                $existingIds = UserHasWorkgroup::where('user_id', $userId)
-                    ->pluck('workgroup_id')
-                    ->toArray();
+                    $existingIds = UserHasWorkgroup::where('user_id', $userId)
+                        ->pluck('workgroup_id')
+                        ->toArray();
 
-                UserHasWorkgroup::where('user_id', $userId)
-                    ->whereNotIn('workgroup_id', $workgroupIds)
-                    ->delete();
+                    UserHasWorkgroup::where('user_id', $userId)
+                        ->whereNotIn('workgroup_id', $workgroupIds)
+                        ->delete();
 
-                $toAdd = array_values(array_diff($workgroupIds, $existingIds));
-                foreach ($toAdd as $workgroupId) {
-                    UserHasWorkgroup::create([
-                        'user_id' => $userId,
-                        'workgroup_id' => $workgroupId,
-                    ]);
+                    $toAdd = array_values(array_diff($workgroupIds, $existingIds));
+                    foreach ($toAdd as $workgroupId) {
+                        UserHasWorkgroup::create([
+                            'user_id' => $userId,
+                            'workgroup_id' => $workgroupId,
+                        ]);
+                    }
                 }
             }
 

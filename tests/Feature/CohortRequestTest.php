@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Config;
-use Tests\TestCase;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
-use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
+use Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
+use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 
 class CohortRequestTest extends TestCase
 {
@@ -24,8 +24,6 @@ class CohortRequestTest extends TestCase
 
     /**
      * Set up the database
-     *
-     * @return void
      */
     public function setUp(): void
     {
@@ -36,14 +34,12 @@ class CohortRequestTest extends TestCase
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
+            'Authorization' => 'Bearer '.$jwt,
         ];
     }
 
     /**
      * Get All Cohort Requests with success
-     *
-     * @return void
      */
     public function test_get_all_cohort_requests_with_success(): void
     {
@@ -69,7 +65,7 @@ class CohortRequestTest extends TestCase
                     'nhse_sde_self_declared_approved_at',
                     'nhse_sde_updated_at',
                     'nhse_sde_request_expire_at',
-                ]
+                ],
             ],
             'first_page_url',
             'from',
@@ -89,15 +85,13 @@ class CohortRequestTest extends TestCase
 
     /**
      * Get Cohort Request by id with success
-     *
-     * @return void
      */
     public function test_get_cohort_request_by_id_with_success(): void
     {
         $randomCohortRequest = CohortRequest::inRandomOrder()->first();
         $randomCohortRequestId = $randomCohortRequest->id;
 
-        $response = $this->json('GET', self::TEST_URL . '/' . $randomCohortRequestId, [], $this->header);
+        $response = $this->json('GET', self::TEST_URL.'/'.$randomCohortRequestId, [], $this->header);
 
         $response->assertJsonStructure([
             'message',
@@ -109,8 +103,6 @@ class CohortRequestTest extends TestCase
 
     /**
      * Create Cohort Request with success
-     *
-     * @return void
      */
     public function test_create_cohort_request_with_success(): void
     {
@@ -127,10 +119,10 @@ class CohortRequestTest extends TestCase
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentCreate = $responseCreate->decodeResponseJson();
         $this->assertEquals(
@@ -141,7 +133,7 @@ class CohortRequestTest extends TestCase
         $id = $contentCreate['data'];
 
         // get one
-        $responseGetOne = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
+        $responseGetOne = $this->json('GET', self::TEST_URL.'/'.$id, [], $this->header);
 
         $responseGetOne->assertJsonStructure([
             'message',
@@ -153,8 +145,6 @@ class CohortRequestTest extends TestCase
 
     /**
      * Update Cohort Request with success
-     *
-     * @return void
      */
     public function test_update_cohort_request_with_success(): void
     {
@@ -171,10 +161,10 @@ class CohortRequestTest extends TestCase
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentCreate = $responseCreate->decodeResponseJson();
         $this->assertEquals(
@@ -187,7 +177,7 @@ class CohortRequestTest extends TestCase
         // update
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $id,
+            self::TEST_URL.'/'.$id,
             [
                 'request_status' => 'APPROVED',
                 'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
@@ -197,13 +187,13 @@ class CohortRequestTest extends TestCase
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         // get one
-        $responseGetOne = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
+        $responseGetOne = $this->json('GET', self::TEST_URL.'/'.$id, [], $this->header);
 
         $responseGetOne->assertJsonStructure([
             'message',
@@ -215,8 +205,6 @@ class CohortRequestTest extends TestCase
 
     /**
      * Check request status update and accept declaration
-     *
-     * @return void
      */
     public function test_request_status_update_and_accept_declaration(): void
     {
@@ -255,11 +243,11 @@ class CohortRequestTest extends TestCase
                 // update
                 $responseUpdate = $this->json(
                     'PUT',
-                    self::TEST_URL . '/' . $id,
+                    self::TEST_URL.'/'.$id,
                     [
                         'request_status' => $status,
                         'nhse_sde_request_status' => $nhseSdeStatus,
-                        'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - ' . strtolower($status),
+                        'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - '.strtolower($status),
                     ],
                     $this->header,
                 );
@@ -279,7 +267,7 @@ class CohortRequestTest extends TestCase
         }
 
         // Soft delete
-        $responseDelete = $this->json('DELETE', self::TEST_URL . '/' . $id, [], $this->header);
+        $responseDelete = $this->json('DELETE', self::TEST_URL.'/'.$id, [], $this->header);
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
@@ -290,8 +278,6 @@ class CohortRequestTest extends TestCase
 
     /**
      * Download Cohort Request Admin dashboard export with success
-     *
-     * @return void
      */
     public function test_download_cohort_request_dashboard_with_success(): void
     {
@@ -305,7 +291,7 @@ class CohortRequestTest extends TestCase
 
         $responseDownload = $this->json(
             'GET',
-            self::TEST_URL . '/export',
+            self::TEST_URL.'/export',
             [],
             $this->header,
         );
@@ -314,14 +300,12 @@ class CohortRequestTest extends TestCase
         $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Cohort_Discovery_Admin.csv"');
         $this->assertEquals(
             substr($content, 0, 9),
-            "\"User ID\""
+            '"User ID"'
         );
     }
 
     /**
      * Delete Cohort Request with success
-     *
-     * @return void
      */
     public function test_delete_cohort_request_with_success(): void
     {
@@ -338,10 +322,10 @@ class CohortRequestTest extends TestCase
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentCreate = $responseCreate->decodeResponseJson();
         $this->assertEquals(
@@ -354,7 +338,7 @@ class CohortRequestTest extends TestCase
         // update
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $id,
+            self::TEST_URL.'/'.$id,
             [
                 'request_status' => 'APPROVED',
                 'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
@@ -364,13 +348,13 @@ class CohortRequestTest extends TestCase
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         // get one
-        $responseGetOne = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
+        $responseGetOne = $this->json('GET', self::TEST_URL.'/'.$id, [], $this->header);
 
         $responseGetOne->assertJsonStructure([
             'message',
@@ -382,21 +366,19 @@ class CohortRequestTest extends TestCase
         // delete
         $responseDelete = $this->json(
             'DELETE',
-            self::TEST_URL . '/' . $id,
+            self::TEST_URL.'/'.$id,
             [],
             $this->header,
         );
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-        ]);
+            ->assertJsonStructure([
+                'message',
+            ]);
     }
 
     /**
      * Assign / Remove admin permission
-     *
-     * @return void
      */
     public function test_assign_remove_admin_cohort_request_with_success(): void
     {
@@ -413,10 +395,10 @@ class CohortRequestTest extends TestCase
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentCreate = $responseCreate->decodeResponseJson();
         $this->assertEquals(
@@ -429,7 +411,7 @@ class CohortRequestTest extends TestCase
         // update
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL . '/' . $id,
+            self::TEST_URL.'/'.$id,
             [
                 'request_status' => 'APPROVED',
                 'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
@@ -439,13 +421,13 @@ class CohortRequestTest extends TestCase
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         // get one
-        $responseGetOne = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
+        $responseGetOne = $this->json('GET', self::TEST_URL.'/'.$id, [], $this->header);
 
         $responseGetOne->assertJsonStructure([
             'message',
@@ -457,51 +439,51 @@ class CohortRequestTest extends TestCase
         // assign admin permission
         $responseAssignAdmin = $this->json(
             'POST',
-            self::TEST_URL . '/' . $id . '/admin',
+            self::TEST_URL.'/'.$id.'/admin',
             [],
             $this->header,
         );
         $responseAssignAdmin->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-        $countPermissions = CohortRequestHasPermission::where([ 'cohort_request_id' => $id])->count();
+        $countPermissions = CohortRequestHasPermission::where(['cohort_request_id' => $id])->count();
         $this->assertTrue((int) $countPermissions === 2);
 
         // remove admin permission
         $responseAssignAdmin = $this->json(
             'DELETE',
-            self::TEST_URL . '/' . $id . '/admin',
+            self::TEST_URL.'/'.$id.'/admin',
             [],
             $this->header,
         );
         $responseAssignAdmin->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-        $countPermissions = CohortRequestHasPermission::where([ 'cohort_request_id' => $id])->count();
+        $countPermissions = CohortRequestHasPermission::where(['cohort_request_id' => $id])->count();
         $this->assertTrue((int) $countPermissions === 1);
 
         // delete
         $responseDelete = $this->json(
             'DELETE',
-            self::TEST_URL . '/' . $id,
+            self::TEST_URL.'/'.$id,
             [],
             $this->header,
         );
 
         $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-        ]);
+            ->assertJsonStructure([
+                'message',
+            ]);
     }
 
     public function runMockHubspot()
     {
         Http::fake([
             // DELETE
-            "http://hub.local/contacts/v1/contact/vid/*" => function ($request) {
+            'http://hub.local/contacts/v1/contact/vid/*' => function ($request) {
                 if ($request->method() === 'DELETE') {
                     return Http::response([], 200);
                 }
             },
 
             // GET (by vid)
-            "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
+            'http://hub.local/contacts/v1/contact/vid/*/profile' => function ($request) {
                 if ($request->method() === 'GET') {
                     return Http::response(['vid' => 12345, 'properties' => []], 200);
                 } elseif ($request->method() === 'POST') {
@@ -510,7 +492,7 @@ class CohortRequestTest extends TestCase
             },
 
             // GET (by email)
-            "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
+            'http://hub.local/contacts/v1/contact/email/*/profile' => function ($request) {
                 if ($request->method() === 'GET') {
                     return Http::response(['vid' => 12345], 200);
                 }
