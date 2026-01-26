@@ -15,25 +15,29 @@ class WorkgroupController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v1/workgroups",
-     *    operationId="fetch_all_workgroups",
-     *    tags={"Workgroups"},
-     *    summary="WorkgroupController@index",
-     *    description="Get All Workgroups",
-     *    security={{"bearerAuth":{}}},
+     *   path="/api/v1/workgroups",
+     *   operationId="fetch_all_workgroups",
+     *   tags={"Workgroups"},
+     *   summary="WorkgroupController@index",
+     *   description="Get All Workgroups",
+     *   security={{"bearerAuth":{}}},
      *
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success response",
      *
-     *       @OA\JsonContent(
+     *     @OA\JsonContent(
+     *       type="object",
      *
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]"
-     *       ),
-     *    ),
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *
+     *         @OA\Items(type="object"),
+     *         example={}
+     *       )
+     *     )
+     *   )
      * )
      */
     public function index(): JsonResponse
