@@ -49,9 +49,9 @@ class WorkgroupController extends Controller
 
             return response()->json(
                 [
-                'message' => 'success',
-                'data' => $workgroups,
-            ]
+                    'message' => 'success',
+                    'data' => $workgroups,
+                ]
             );
         } catch (Exception $e) {
             Auditor::log([

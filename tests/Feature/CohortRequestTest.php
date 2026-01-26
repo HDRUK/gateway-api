@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
-use App\Models\FeatureFlag;
 use App\Models\UserHasWorkgroup;
 use App\Models\Workgroup;
 use Config;
@@ -211,9 +210,8 @@ class CohortRequestTest extends TestCase
     {
         Mail::fake();
 
-        Feature::define(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE, true);
         Feature::flushCache();
-
+        Feature::activate('CohortDiscoveryService', true);
         $user = $this->getUserFromJwt($this->getAuthorisationJwt());
 
         // create

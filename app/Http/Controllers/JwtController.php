@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\UnauthorizedException;
 use App\Http\Traits\UserRolePermissions;
-use App\Models\FeatureFlag;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Config;
@@ -72,7 +71,7 @@ class JwtController extends Controller
             $user->workgroups->makeHidden('pivot');
 
             $userClaim = $user->toArray();
-            if (Feature::active(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE)) {
+            if (Feature::active('CohortDiscoveryService')) {
                 $user->cohortAdminTeams->setVisible(['id', 'name']);
 
                 $userClaim['workgroups'] = $user->workgroups

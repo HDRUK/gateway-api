@@ -17,7 +17,6 @@ use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
 use App\Models\CohortRequestLog;
 use App\Models\EmailTemplate;
-use App\Models\FeatureFlag;
 use App\Models\OauthClient;
 use App\Models\OauthUser;
 use App\Models\Permission;
@@ -691,7 +690,7 @@ class CohortRequestController extends Controller
             }
 
             if (
-                Feature::active(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE)
+                Feature::active('CohortDiscoveryService')
                 && isset($input['workgroup_ids'])
             ) {
                 //only can update workgroups once the request has been made
@@ -1325,11 +1324,11 @@ class CohortRequestController extends Controller
             return $guard;
         }
 
-        /*if (! Feature::active(FeatureFlag::KEY_COHORT_DISCOVERY_SERVICE)) {
+        if (! Feature::active('CohortDiscoveryService')) {
             return response()->json([
                 'message' => 'Cohort Discovery is not enabled',
             ], Config::get('statuscodes.STATUS_NOT_IMPLEMENTED.code'));
-        }*/
+        }
 
         $cohortDiscoveryUrl = $this->buildCohortDiscoveryRedirectUrl();
 
@@ -1381,11 +1380,11 @@ class CohortRequestController extends Controller
             return $guard;
         }
 
-        //if (! Feature::active(FeatureFlag::KEY_RQUEST)) {
-        //    return response()->json([
-        //        'message' => 'RQUEST is not enabled',
-        //    ], Config::get('statuscodes.STATUS_NOT_IMPLEMENTED.code'));
-        // }
+        if (! Feature::active('RQuest')) {
+            return response()->json([
+                'message' => 'RQUEST is not enabled',
+            ], Config::get('statuscodes.STATUS_NOT_IMPLEMENTED.code'));
+        }
 
         $rquestUrl = Config::get('services.rquest.init_url');
 
