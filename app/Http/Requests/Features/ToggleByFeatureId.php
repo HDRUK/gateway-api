@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Http\Requests\Feature;
+namespace App\Http\Requests\Features;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GetFeature extends BaseFormRequest
+class ToggleByFeatureId extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'id' => [
+            'featureId' => [
                 'required',
-                'int',
+                'integer',
                 'exists:features,id',
             ],
         ];
@@ -29,6 +29,6 @@ class GetFeature extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge(['featureId' => $this->route('featureId')]);
     }
 }

@@ -252,82 +252,53 @@ return [
 
     // features
     [
-        'name' => 'features',
-        'method' => 'get',
-        'path' => '/features',
-        'methodController' => 'FeatureController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
+    'name' => 'features.index',
+    'method' => 'get',
+    'path' => '/features',
+    'methodController' => 'FeatureController@index',
+    'namespaceController' => 'App\Http\Controllers\Api\V1',
+    'middleware' => [],
+    'constraint' => [],
     ],
     [
-        'name' => 'features',
+        'name' => 'features.show',
         'method' => 'get',
-        'path' => '/features/{id}',
+        'path' => '/features/{featureId}',
         'methodController' => 'FeatureController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'id' => '[0-9]+',
+            'featureId' => '[0-9]+',
         ],
     ],
     [
-        'name' => 'features',
-        'method' => 'post',
-        'path' => '/features',
-        'methodController' => 'FeatureController@store',
+        'name' => 'features.toggle',
+        'method' => 'put',
+        'path' => '/features/{featureId}',
+        'methodController' => 'FeatureController@toggleByFeatureId',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,features.create',
+                'jwt.verify',
+                'check.access:roles,hdruk.superadmin',
+            ],
+        'constraint' => [
+            'featureId' => '[0-9]+',
         ],
+    ],
+    [
+        'name' => 'features.flush',
+        'method' => 'post',
+        'path' => '/features/flush',
+        'methodController' => 'FeatureController@flushAllFeatures',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+                'jwt.verify',
+                'check.access:roles,hdruk.superadmin',
+            ],
         'constraint' => [],
     ],
-    [
-        'name' => 'features',
-        'method' => 'put',
-        'path' => '/features/{id}',
-        'methodController' => 'FeatureController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,features.update',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'features',
-        'method' => 'patch',
-        'path' => '/features/{id}',
-        'methodController' => 'FeatureController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,features.update',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'features',
-        'method' => 'delete',
-        'path' => '/features/{id}',
-        'methodController' => 'FeatureController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,features.delete',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
+
+
 
     // filters
     [
@@ -492,24 +463,8 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
-    [
-        'name' => 'flags',
-        'method' => 'post',
-        'path' => '/feature-flags',
-        'methodController' => 'FeatureFlagController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'flags',
-        'method' => 'get',
-        'path' => '/feature-flags/enabled',
-        'methodController' => 'FeatureFlagController@getEnabledFeatures',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
-    ],
+  
+
     // TODO - Add DAR.decision rule and route
 
     // teams

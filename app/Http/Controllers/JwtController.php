@@ -42,7 +42,7 @@ class JwtController extends Controller
         $this->secretKey = (string) config('jwt.secret');
 
         $this->config = Configuration::forSymmetricSigner(
-            new Sha256(),
+            new Sha256,
             InMemory::plainText($this->secretKey)
         );
 
@@ -91,7 +91,7 @@ class JwtController extends Controller
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim
                 ->withClaim('user', $user) // custom claim - user
-                ->withClaim('cohort_discovery_url', Config::get('services.cohort_discovery.init_url'))
+                ->withClaim('cohort_discovery_url', Config::get('services.cohort_discovery_service.init_url'))
                 ->getToken($this->config->signer(), $this->config->signingKey());
 
             $jwt = $token->toString();

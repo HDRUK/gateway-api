@@ -2,212 +2,100 @@
 
 namespace Tests\Feature;
 
-use Config;
 use Tests\TestCase;
-use Tests\Traits\MockExternalApis;
+use Laravel\Pennant\Feature;
 use App\Models\Feature as FeatureModel;
+use Tests\Traits\Authorization;
+
+
 
 class FeatureTest extends TestCase
 {
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
-
+    use Authorization;
     public const TEST_URL = '/api/v1/features';
 
-    protected $header = [];
-
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
     public function setUp(): void
     {
-        $this->commonSetUp();
+        parent::setUp();
+        $this->authorisationUser(true);
+        $jwt = $this->getAuthorisationJwt(true);
+
+        $this->header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
     }
 
-    /**
-     * Get All Features with success
-     *
-     * @return void
-     */
-    public function test_get_all_features_with_success(): void
+    public function test_the_application_return_all_features(): void
     {
-        $countTag = FeatureModel::where('enabled', 1)->count();
-        $response = $this->json('GET', self::TEST_URL, [], $this->header);
+        $response = $this->json('GET', self::TEST_URL);
 
-        $this->assertEquals($countTag, $response['total']);
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'enabled',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                ],
-            ],
-            'current_page',
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
-            'links',
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total',
-        ]);
+        $this->assertArrayHasKey('data', $response);
     }
 
-    /**
-     * Get Feature by Id with success
-     *
-     * @return void
-     */
-    public function test_get_feature_by_id_with_success(): void
+    public function test_the_application_cannot_get_feature_by_feature_id(): void
     {
-        $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
-        $this->assertCount(1, $response['data']);
-        $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'enabled',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                ]
-            ]
-        ]);
-        $response->assertStatus(200);
+        $latestFeature = FeatureModel::query()->orderBy('id', 'desc')->first();
+        $featureIdTest = $latestFeature ? $latestFeature->id + 1 : 1;
+
+         $response = $this->json(
+                'GET',
+                self::TEST_URL . "/{$featureIdTest}"
+            );
+
+        $response->assertStatus(400);
+        $message = $response->decodeResponseJson()['message'];
+        $this->assertEquals('Invalid argument(s)', $message);
     }
 
-    /**
-     * Create new Feature with success
-     *
-     * @return void
-     */
-    public function test_add_new_feature_with_success(): void
+    public function test_the_application_cannot_toggle_feature_by_feature_id(): void
     {
-        $countBefore = FeatureModel::all()->count();
+        $latestFeature = FeatureModel::query()->orderBy('id', 'desc')->first();
+        $featureIdTest = $latestFeature ? $latestFeature->id + 1 : 1;
 
         $response = $this->json(
-            'POST',
-            self::TEST_URL . '/',
-            [
-                'name' => 'fake_for_test',
-                'enabled' => true,
-            ],
+            'PUT',
+            self::TEST_URL . "/{$featureIdTest}",
+            [],
             $this->header
         );
 
-        $countAfter = FeatureModel::all()->count();
-        $countNewRow = $countAfter - $countBefore;
 
-        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
-        $response->assertStatus(201);
+        $response->assertStatus(400);
+        $message = $response->decodeResponseJson()['message'];
+        $this->assertEquals('Invalid argument(s)', $message);
     }
 
-    /**
-     * Edit Feature with success
-     *
-     * @return void
-     */
-    public function test_edit_feature_with_success(): void
+    public function test_the_application_toggles_features_by_feature_id(): void
     {
-        // create
-        $countBefore = FeatureModel::all()->count();
-
-        $responseCreate = $this->json(
-            'POST',
-            self::TEST_URL,
-            [
-                'name' => 'fake_for_test',
-                'enabled' => true,
-            ],
-            $this->header
-        );
-
-        $countAfter = FeatureModel::all()->count();
-        $countNewRow = $countAfter - $countBefore;
-
-        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
+        // false to true
+        $feature = FeatureModel::factory()->create([
+            'name' => fake()->unique()->slug(2),
+            'value' => 'false',
+            'scope' => '__laravel_null',
         ]);
 
-        $contentCreate = $responseCreate->decodeResponseJson();
-        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
-        $responseCreate->assertStatus(201);
+        $this->assertEquals(false, Feature::active($feature->name));
 
-        $id = $contentCreate['data'];
-
-        // edit
-        $responseEdit1 = $this->json(
-            'PATCH',
-            self::TEST_URL . '/' . $id,
-            [
-                'name' => 'fake_for_test_e1',
-            ],
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . "/{$feature->id}",
+            [],
             $this->header
         );
-        $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentEdit1 = $responseEdit1->decodeResponseJson();
-        $this->assertEquals($contentEdit1['data']['name'], 'fake_for_test_e1');
-
-        // edit
-        $responseEdit2 = $this->json(
-            'PATCH',
-            self::TEST_URL . '/' . $id,
-            [
-                'name' => 'fake_for_test_e2',
-                'enabled' => false,
-            ],
-            $this->header
-        );
-        $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-
-        $contentEdit2 = $responseEdit2->decodeResponseJson();
-        $this->assertEquals($contentEdit2['data']['name'], 'fake_for_test_e2');
-        $this->assertEquals($contentEdit2['data']['enabled'], false);
-    }
-
-    /**
-     * SoftDelete Feature by Id with success
-     *
-     * @return void
-     */
-    public function test_soft_delete_feature_with_success(): void
-    {
-        $id = 1;
-        $countFeature = FeatureModel::where('id', $id)->count();
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $id, [], $this->header);
-
-        $countFeaturegDeleted = FeatureModel::onlyTrashed()->where('id', $id)->count();
 
         $response->assertStatus(200);
+        $this->assertEquals(true, Feature::active($feature->name));
 
-        if ($countFeature && $countFeaturegDeleted) {
-            $this->assertTrue(true, 'Response was successfully');
-        } else {
-            $this->assertTrue(false, 'Response was unsuccessfully');
-        }
+        // true to false
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . "/{$feature->id}",
+            [],
+            $this->header
+        );
+        $response->assertStatus(200);
+        $this->assertEquals(false, Feature::active($feature->name));
     }
 }
