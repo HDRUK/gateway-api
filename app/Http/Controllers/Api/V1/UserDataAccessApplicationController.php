@@ -25,7 +25,6 @@ use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
 use App\Models\DataAccessApplicationStatus;
-use App\Models\DataAccessTemplate;
 use App\Models\EmailTemplate;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;

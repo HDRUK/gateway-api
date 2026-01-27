@@ -182,7 +182,8 @@ class UpdateEmailTemplatesForLocalMJML extends Command
                 ]
             }
           ',
-            ]);
+            ]
+        );
 
         EmailTemplate::updateOrCreate(
             [

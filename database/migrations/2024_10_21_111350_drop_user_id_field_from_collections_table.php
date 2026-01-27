@@ -2,9 +2,9 @@
 
 use App\Models\Collection;
 use App\Models\CollectionHasUser;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
     /**
@@ -15,14 +15,16 @@ return new class () extends Migration {
         Schema::disableForeignKeyConstraints();
 
         Schema::table('collections', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->dropForeign(['user_id']);
+            }
         });
 
         if (Schema::hasColumn('collections', 'user_id')) {
             $collections = Collection::select(['id', 'user_id'])->get();
 
             foreach ($collections as $collection) {
-                if (!is_null($collection->user_id)) {
+                if (! is_null($collection->user_id)) {
                     CollectionHasUser::create([
                         'collection_id' => $collection->id,
                         'user_id' => $collection->user_id,
@@ -32,8 +34,10 @@ return new class () extends Migration {
             }
 
             Schema::table('collections', function (Blueprint $table) {
-                $table->dropIndex(['user_id']);
-                $table->dropColumn(['user_id']);
+                if (DB::getDriverName() !== 'sqlite') {
+                    $table->dropIndex(['user_id']);
+                    $table->dropColumn(['user_id']);
+                }
             });
         }
 
@@ -47,7 +51,7 @@ return new class () extends Migration {
     {
         Schema::disableForeignKeyConstraints();
         if (Schema::hasTable('collection_has_users')) {
-            if (!Schema::hasColumn('collections', 'user_id')) {
+            if (! Schema::hasColumn('collections', 'user_id')) {
                 Schema::table('collections', function (Blueprint $table) {
                     $table->bigInteger('user_id')->nullable()->default(null)->unsigned()->index();
                     $table->foreign('user_id')->references('id')->on('users');
@@ -65,5 +69,4 @@ return new class () extends Migration {
         }
         Schema::enableForeignKeyConstraints();
     }
-
 };

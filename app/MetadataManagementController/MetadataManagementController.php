@@ -133,7 +133,7 @@ class MetadataManagementController
 
         try {
 
-            
+
             $urlString = sprintf(
                 '%s/validate?input_schema=%s&input_version=%s',
                 config('services.traser.url'),

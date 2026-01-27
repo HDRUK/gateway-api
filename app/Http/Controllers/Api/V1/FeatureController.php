@@ -12,7 +12,6 @@ use App\Http\Requests\Features\ToggleByFeatureId;
 
 class FeatureController extends Controller
 {
-
     /**
      * @OA\Get(
      *    path="/api/v1/features",
@@ -104,11 +103,11 @@ class FeatureController extends Controller
         if (!$feature) {
             throw new NotFoundException();
         }
-        
 
-       return response()->json([
-                'data' => $feature,
-            ], 200);
+
+        return response()->json([
+                 'data' => $feature,
+             ], 200);
     }
 
     /**
@@ -154,9 +153,9 @@ class FeatureController extends Controller
      */
     public function toggleByFeatureId(ToggleByFeatureId $request, int $featureId)
     {
-  
+
         $feature = FeatureModel::where('id', $featureId)->first();
-      
+
 
         if (is_null($feature)) {
             throw new NotFoundException();
@@ -170,7 +169,7 @@ class FeatureController extends Controller
 
         Feature::flushCache();
 
-        
+
         return response()->json([
                 'data' => $feature,
             ], 200);
