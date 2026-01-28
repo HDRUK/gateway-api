@@ -1,3 +1,10 @@
+## [2.32.0](https://github.com/HDRUK/gateway-api/compare/v2.31.0...v2.32.0) (2026-01-28)
+
+### ✨ Features
+
+* **GAT-0000:** run lint (#1501) ([84cf950](https://github.com/HDRUK/gateway-api/commit/84cf950fe76ccd9158466fb0a270dc6bfa5e05c0)), closes [GAT-0000](GAT-0000)
+* **GAT-8453:** Add dar header and footer (#1499) ([6b6e8f6](https://github.com/HDRUK/gateway-api/commit/6b6e8f6a3d3e3f2a800159a7a65fe2b3f571fe6d)), closes [GAT-8453](GAT-8453)
+
 ## [2.31.0](https://github.com/HDRUK/gateway-api/compare/v2.30.2...v2.31.0) (2026-01-16)
 
 ### ✨ Features
