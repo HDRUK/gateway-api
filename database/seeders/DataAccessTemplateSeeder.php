@@ -6,6 +6,7 @@ use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
 use App\Models\QuestionBank;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DataAccessTemplateSeeder extends Seeder
 {
@@ -14,9 +15,12 @@ class DataAccessTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        DataAccessTemplate::query()->delete();
-        DataAccessTemplateHasQuestion::query()->delete();
-        DataAccessTemplate::factory(3)->create();
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        DataAccessTemplate::truncate();
+        DataAccessTemplateHasQuestion::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        DataAccessTemplate::factory(3)->create();        
 
         DataAccessTemplate::all()->each(function ($model) {
 
