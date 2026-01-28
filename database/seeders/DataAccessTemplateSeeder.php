@@ -15,10 +15,14 @@ class DataAccessTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        DataAccessTemplate::truncate();
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        }
         DataAccessTemplateHasQuestion::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        DataAccessTemplate::truncate();        
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }        
 
         DataAccessTemplate::factory(3)->create();        
 
