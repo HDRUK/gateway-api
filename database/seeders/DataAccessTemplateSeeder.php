@@ -14,8 +14,8 @@ class DataAccessTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        DataAccessTemplate::truncate();
-        DataAccessTemplateHasQuestion::truncate();
+        DataAccessTemplate::query()->delete();
+        DataAccessTemplateHasQuestion::query()->delete();
         DataAccessTemplate::factory(3)->create();
 
         DataAccessTemplate::all()->each(function ($model) {
