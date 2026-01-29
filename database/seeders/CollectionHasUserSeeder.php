@@ -19,7 +19,7 @@ class CollectionHasUserSeeder extends Seeder
         foreach ($collections as $collection) {
             $userId = User::all()->random()->id;
 
-            CollectionHasUser::create([
+            CollectionHasUser::updateOrCreate([
                 'collection_id' => $collection->id,
                 'user_id' => $userId,
                 'role' => 'CREATOR',
