@@ -69,6 +69,17 @@ return [
         ],
     ],
 
+    // workgroups
+    [
+        'name' => 'workgroup',
+        'method' => 'get',
+        'path' => '/workgroups',
+        'methodController' => 'WorkgroupController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
     // tags
     [
         'name' => 'tags',
@@ -147,7 +158,7 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-     [
+    [
         'name' => 'widgets',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets',
@@ -158,7 +169,7 @@ return [
             'check.access:permissions,widgets.read',
 
         ],
-       'constraint' => [
+        'constraint' => [
             'teamId' => '[0-9]+',
         ],
     ],
@@ -173,8 +184,8 @@ return [
             'check.access:permissions,widgets.read',
 
         ],
-       'constraint' => [
-          'teamId' => '[0-9]+',
+        'constraint' => [
+            'teamId' => '[0-9]+',
             'id' => '[0-9]+',
         ],
     ],
@@ -185,8 +196,8 @@ return [
         'methodController' => 'TeamWidgetController@retrieveData',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
-       'constraint' => [
-          'teamId' => '[0-9]+',
+        'constraint' => [
+            'teamId' => '[0-9]+',
             'id' => '[0-9]+',
         ],
     ],
@@ -236,7 +247,7 @@ return [
     [
         'name' => 'delete_widgets',
         'method' => 'delete',
-       'path' => '/teams/{teamId}/widgets/{id}',
+        'path' => '/teams/{teamId}/widgets/{id}',
         'methodController' => 'TeamWidgetController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -244,13 +255,11 @@ return [
             'check.access:permissions,widgets.read',
 
         ],
-         'constraint' => [
+        'constraint' => [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
-        ]
+        ],
     ],
-
-
 
     // features
     [
@@ -482,7 +491,7 @@ return [
         'constraint' => [],
     ],
 
-[
+    [
         'name' => 'teams',
         'method' => 'get',
         'path' => '/teams/names',
@@ -682,7 +691,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -695,7 +704,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -710,7 +719,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -724,7 +733,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -742,7 +751,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.read',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -756,7 +765,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.read',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -772,7 +781,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.create',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -786,7 +795,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.update',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -802,7 +811,7 @@ return [
             'jwt.verify',
             'check.access:permissions,tools.update',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -817,7 +826,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1194,12 +1203,12 @@ return [
         'middleware' => [
         ],
         'constraint' => [
-                'uuid' => '[0-9a-fA-F\-]{36}',
+            'uuid' => '[0-9a-fA-F\-]{36}',
 
         ],
     ],
 
-        [
+    [
         'name' => 'users',
         'method' => 'post',
         'path' => '/users/{id}/resend-secondary-verification',
@@ -1595,7 +1604,7 @@ return [
             'jwt.verify',
             'sanitize.input',
             'check.access:permissions,collections.create',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -1609,7 +1618,7 @@ return [
             'jwt.verify',
             'sanitize.input',
             'check.access:permissions,collections.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1625,7 +1634,7 @@ return [
             'jwt.verify',
             'sanitize.input',
             'check.access:permissions,collections.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1640,7 +1649,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1657,7 +1666,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.read',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -1670,7 +1679,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.read',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1685,7 +1694,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.create',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -1698,7 +1707,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1713,7 +1722,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1728,7 +1737,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1830,7 +1839,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.read',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -1843,7 +1852,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.read',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1859,7 +1868,7 @@ return [
             'jwt.verify',
             'check.access:permissions,dur.create',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -1873,7 +1882,7 @@ return [
             'jwt.verify',
             'check.access:permissions,dur.update',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1889,7 +1898,7 @@ return [
             'jwt.verify',
             'check.access:permissions,dur.update',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1904,7 +1913,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2306,7 +2315,7 @@ return [
             'jwt.verify',
             //'sanitize.input',
             'check.access:permissions,datasets.create',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -2320,10 +2329,10 @@ return [
             'jwt.verify',
             //'sanitize.input',
             'check.access:permissions,datasets.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
-            'id', '[0-9]+'
+            'id', '[0-9]+',
         ],
     ],
     [
@@ -2335,10 +2344,10 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
-            'id', '[0-9]+'
+            'id', '[0-9]+',
         ],
     ],
     [
@@ -2350,10 +2359,10 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
-            'id', '[0-9]+'
+            'id', '[0-9]+',
         ],
     ],
     [
@@ -2410,7 +2419,6 @@ return [
         'constraint' => [],
     ],
 
-
     // datasets integrations
     [
         'name' => 'datasets.integrations',
@@ -2421,7 +2429,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.read',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -2434,7 +2442,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.read',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2450,7 +2458,7 @@ return [
             'jwt.verify',
             'check.access:permissions,datasets.create',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -2464,7 +2472,7 @@ return [
             'jwt.verify',
             'check.access:permissions,datasets.update',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -2477,10 +2485,10 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
-            'id', '[0-9]+'
+            'id', '[0-9]+',
         ],
     ],
     [
@@ -2492,7 +2500,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -3162,7 +3170,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.create',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3177,7 +3185,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3192,7 +3200,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3207,7 +3215,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3233,7 +3241,6 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
-
 
     // organisations
     [
@@ -3283,7 +3290,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.create',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [
         ],
@@ -3297,7 +3304,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -3310,7 +3317,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.update',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -3323,7 +3330,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.delete',
-            'sunset'
+            'sunset',
         ],
         'constraint' => [],
     ],
@@ -4476,7 +4483,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+            'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
         ],
     ],
     [
@@ -4490,7 +4497,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+            'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
             'userId' => '[0-9]+',
         ],
     ],
@@ -4553,7 +4560,7 @@ return [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
-            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+            'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
         ],
     ],
     [
@@ -4569,7 +4576,7 @@ return [
             'id' => '[0-9]+',
             'userId' => '[0-9]+',
             'reviewId' => '[0-9]+',
-            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+            'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
         ],
     ],
     [
@@ -4714,7 +4721,7 @@ return [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
             'reviewId' => '[0-9]+',
-            'fileId' => "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+            'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
         ],
     ],
 
@@ -4870,7 +4877,7 @@ return [
                 'teamId' => '[0-9]+',
                 'fileId' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
             ],
-        ]
+        ],
     ],
 
     // dar/sections

@@ -8,6 +8,10 @@ use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use League\OAuth2\Server\Exception\OAuthServerException;
 
+use League\OAuth2\Server\Exception\OAuthServerException as LeagueOAuthException;
+use Laravel\Passport\Exceptions\OAuthServerException as PassportOAuthException;
+
+
 class CustomAccessTokenController extends PassportAccessTokenController
 {
     public function issueOAuthToken(Request $request)
@@ -24,9 +28,25 @@ class CustomAccessTokenController extends PassportAccessTokenController
 
         try {
             return parent::issueToken($psrRequest);
-        } catch (OAuthServerException $e) {
+        } catch (LeagueOAuthException $e) {
             return response()->json([
-                'code' => $e->getCode(),
+                'error'   => $e->getErrorType(),
+                'message' => $e->getMessage(),
+                'hint'    => method_exists($e, 'getHint') ? $e->getHint() : null,
+            ], $e->getHttpStatusCode());
+        } catch (PassportOAuthException $e) {
+            $prev = $e->getPrevious();
+            if ($prev instanceof LeagueOAuthException) {
+                return response()->json([
+                    'error'   => $prev->getErrorType(),
+                    'message' => $prev->getMessage(),
+                    'hint'    => method_exists($prev, 'getHint') ? $prev->getHint() : null,
+                ], $prev->getHttpStatusCode());
+            }
+
+            // Fallback
+            return response()->json([
+                'error'   => 'oauth_error',
                 'message' => $e->getMessage(),
             ], 400);
         }
