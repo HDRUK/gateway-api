@@ -12,7 +12,7 @@ class TestDevUsersSeeder extends Seeder
 {
     public function run()
     {
-        if (!app()->environment(['local', 'development'])) {
+        if (!app()->environment(['local', 'dev'])) {
             return;
         }
         $teamId = 21;
