@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Illuminate\Http\Request;
-use Laravel\Pennant\Feature;
-use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Models\Feature as FeatureModel;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Features\GetFeatureById;
 use App\Http\Requests\Features\ToggleByFeatureId;
+use App\Models\Feature as FeatureModel;
+use Illuminate\Http\Request;
+use Laravel\Pennant\Feature;
 
 class FeatureController extends Controller
 {
@@ -24,7 +24,9 @@ class FeatureController extends Controller
      *    @OA\Response(
      *       response=200,
      *       description="Success",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string"),
      *          @OA\Property(property="data", type="object",
      *            @OA\Property(property="id", type="integer", example="123"),
@@ -37,10 +39,13 @@ class FeatureController extends Controller
      *          )
      *       ),
      *    ),
+     *
      *    @OA\Response(
      *       response=404,
      *       description="Not found response",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string", example="not found"),
      *       )
      *    )
@@ -67,7 +72,9 @@ class FeatureController extends Controller
      *    @OA\Response(
      *       response=200,
      *       description="Success",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string"),
      *          @OA\Property(property="data", type="object",
      *            @OA\Property(property="id", type="integer", example="123"),
@@ -80,17 +87,23 @@ class FeatureController extends Controller
      *          )
      *       ),
      *    ),
+     *
      *    @OA\Response(
      *       response=400,
      *       description="Invalid argument(s)",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string", example="Invalid argument(s)")
      *       ),
      *    ),
+     *
      *    @OA\Response(
      *       response=404,
      *       description="Not found response",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string", example="not found"),
      *       )
      *    )
@@ -100,14 +113,13 @@ class FeatureController extends Controller
     {
         $feature = FeatureModel::find($featureId);
 
-        if (!$feature) {
+        if (! $feature) {
             throw new NotFoundException();
         }
 
-
         return response()->json([
-                 'data' => $feature,
-             ], 200);
+            'data' => $feature,
+        ], 200);
     }
 
     /**
@@ -122,7 +134,9 @@ class FeatureController extends Controller
      *    @OA\Response(
      *       response=200,
      *       description="Success",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string"),
      *          @OA\Property(property="data", type="object",
      *            @OA\Property(property="id", type="integer", example="123"),
@@ -135,17 +149,23 @@ class FeatureController extends Controller
      *          )
      *       ),
      *    ),
+     *
      *    @OA\Response(
      *       response=400,
      *       description="Invalid argument(s)",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string", example="Invalid argument(s)")
      *       ),
      *    ),
+     *
      *    @OA\Response(
      *       response=404,
      *       description="Not found response",
+     *
      *       @OA\JsonContent(
+     *
      *          @OA\Property(property="message", type="string", example="not found"),
      *       )
      *    )
@@ -155,7 +175,6 @@ class FeatureController extends Controller
     {
 
         $feature = FeatureModel::where('id', $featureId)->first();
-
 
         if (is_null($feature)) {
             throw new NotFoundException();
@@ -169,19 +188,19 @@ class FeatureController extends Controller
 
         Feature::flushCache();
 
-
         return response()->json([
-                'data' => $feature,
-            ], 200);
+            'data' => $feature,
+        ], 200);
     }
 
     // Hide from swagger docs
     public function flushAllFeatures(Request $request)
     {
         Feature::flushCache();
+
         return response()->json([
-                'message' => 'Feature cache flushed successfully.',
-            ], 200);
+            'message' => 'Feature cache flushed successfully.',
+        ], 200);
 
     }
 }

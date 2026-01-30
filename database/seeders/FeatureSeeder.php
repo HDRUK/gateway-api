@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Feature;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 class FeatureSeeder extends Seeder
 {
@@ -12,8 +13,11 @@ class FeatureSeeder extends Seeder
      */
     public function run(): void
     {
-        $now = now();
+        Feature::truncate();
 
+        $now = Carbon::now();
+
+        // Seed features with global scope
         $globalFeatures = [
             ['name' => 'SDEConciergeServiceEnquiry', 'value' => 'true'],
             ['name' => 'Aliases', 'value' => 'true'],
@@ -24,10 +28,17 @@ class FeatureSeeder extends Seeder
         ];
 
         foreach ($globalFeatures as $feature) {
-            Feature::updateOrCreate(
-                ['name' => $feature['name'], 'scope' => '__laravel_null'],
-                ['value' => $feature['value'], 'updated_at' => $now]
-            );
+            Feature::create([
+                'name' => $feature['name'],
+                'scope' => '__laravel_null',
+                'value' => $feature['value'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
         }
+
+        $this->command->newLine();
+        $this->command->info('All feature flags seeded successfully!');
+        $this->command->newLine();
     }
 }

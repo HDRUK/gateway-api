@@ -90,8 +90,8 @@ return [
     ],
 
     'cohort_discovery_service' => [
-        'init_url' => env('COHORT_DISCOVERY_URL', 'http://locahost:3000'),
-        'auth_url' => env('COHORT_DISCOVERY_AUTH_URL', 'http://locahost:3000'),
+        'init_url' => env('COHORT_DISCOVERY_URL'),
+        'auth_url' => env('COHORT_DISCOVERY_AUTH_URL'),
         'service_account' => env('COHORT_DISCOVERY_SERVICE_ACCOUNT', 'cohort-service@hdruk.ac.uk'),
     ],
 

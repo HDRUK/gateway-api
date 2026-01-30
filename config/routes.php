@@ -252,13 +252,13 @@ return [
 
     // features
     [
-    'name' => 'features.index',
-    'method' => 'get',
-    'path' => '/features',
-    'methodController' => 'FeatureController@index',
-    'namespaceController' => 'App\Http\Controllers\Api\V1',
-    'middleware' => [],
-    'constraint' => [],
+        'name' => 'features.index',
+        'method' => 'get',
+        'path' => '/features',
+        'methodController' => 'FeatureController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
     ],
     [
         'name' => 'features.show',
@@ -278,9 +278,9 @@ return [
         'methodController' => 'FeatureController@toggleByFeatureId',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-                'jwt.verify',
-                'check.access:roles,hdruk.superadmin',
-            ],
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
         'constraint' => [
             'featureId' => '[0-9]+',
         ],
@@ -292,13 +292,11 @@ return [
         'methodController' => 'FeatureController@flushAllFeatures',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-                'jwt.verify',
-                'check.access:roles,hdruk.superadmin',
-            ],
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
         'constraint' => [],
     ],
-
-
 
     // filters
     [
@@ -463,7 +461,6 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
-
 
     // TODO - Add DAR.decision rule and route
 
