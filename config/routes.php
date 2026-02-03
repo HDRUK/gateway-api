@@ -465,7 +465,7 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
-  
+
 
     // TODO - Add DAR.decision rule and route
 

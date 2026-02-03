@@ -23,7 +23,7 @@ class FeatureSeeder extends Seeder
             ['name' => 'Aliases', 'value' => 'true'],
             ['name' => 'NhsSdeApplicationsEnabled', 'value' => 'false'],
             ['name' => 'Widgets', 'value' => 'false'],
-            
+
         ];
 
         foreach ($globalFeatures as $feature) {

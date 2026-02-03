@@ -4,19 +4,24 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Pennant\Migrations\PennantMigration;
 
-return new class extends PennantMigration
-{
+return new class () extends PennantMigration {
     public function up(): void
     {
         if (Schema::hasColumn('features', 'name')) {
             Schema::table('features', function (Blueprint $table) {
-                try { $table->dropUnique(['name']); } catch (\Throwable $e) {}
+                try {
+                    $table->dropUnique(['name']);
+                } catch (\Throwable $e) {
+                }
             });
         }
 
         if (Schema::hasColumn('features', 'deleted_at')) {
             Schema::table('features', function (Blueprint $table) {
-                try { $table->dropIndex(['deleted_at']); } catch (\Throwable $e) {}
+                try {
+                    $table->dropIndex(['deleted_at']);
+                } catch (\Throwable $e) {
+                }
             });
         }
 
@@ -48,14 +53,20 @@ return new class extends PennantMigration
         }
 
         Schema::table('features', function (Blueprint $table) {
-            try { $table->unique(['name', 'scope']); } catch (\Throwable $e) {}
+            try {
+                $table->unique(['name', 'scope']);
+            } catch (\Throwable $e) {
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('features', function (Blueprint $table) {
-            try { $table->dropUnique(['name', 'scope']); } catch (\Throwable $e) {}
+            try {
+                $table->dropUnique(['name', 'scope']);
+            } catch (\Throwable $e) {
+            }
         });
 
         if (! Schema::hasColumn('features', 'enabled')) {
@@ -86,7 +97,10 @@ return new class extends PennantMigration
         });
 
         Schema::table('features', function (Blueprint $table) {
-            try { $table->unique('name'); } catch (\Throwable $e) {}
+            try {
+                $table->unique('name');
+            } catch (\Throwable $e) {
+            }
         });
     }
 };
