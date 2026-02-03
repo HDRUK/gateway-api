@@ -2,16 +2,15 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Laravel\Pennant\Feature;
 use App\Models\Feature as FeatureModel;
+use Laravel\Pennant\Feature;
+use Tests\TestCase;
 use Tests\Traits\Authorization;
-
-
 
 class FeatureTest extends TestCase
 {
     use Authorization;
+
     public const TEST_URL = '/api/v1/features';
 
     public function setUp(): void
@@ -22,7 +21,7 @@ class FeatureTest extends TestCase
 
         $this->header = [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
+            'Authorization' => 'Bearer '.$jwt,
         ];
     }
 
@@ -39,10 +38,10 @@ class FeatureTest extends TestCase
         $latestFeature = FeatureModel::query()->orderBy('id', 'desc')->first();
         $featureIdTest = $latestFeature ? $latestFeature->id + 1 : 1;
 
-         $response = $this->json(
-                'GET',
-                self::TEST_URL . "/{$featureIdTest}"
-            );
+        $response = $this->json(
+            'GET',
+            self::TEST_URL."/{$featureIdTest}"
+        );
 
         $response->assertStatus(400);
         $message = $response->decodeResponseJson()['message'];
@@ -56,11 +55,10 @@ class FeatureTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            self::TEST_URL . "/{$featureIdTest}",
+            self::TEST_URL."/{$featureIdTest}",
             [],
             $this->header
         );
-
 
         $response->assertStatus(400);
         $message = $response->decodeResponseJson()['message'];
@@ -80,7 +78,7 @@ class FeatureTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            self::TEST_URL . "/{$feature->id}",
+            self::TEST_URL."/{$feature->id}",
             [],
             $this->header
         );
@@ -91,7 +89,7 @@ class FeatureTest extends TestCase
         // true to false
         $response = $this->json(
             'PUT',
-            self::TEST_URL . "/{$feature->id}",
+            self::TEST_URL."/{$feature->id}",
             [],
             $this->header
         );

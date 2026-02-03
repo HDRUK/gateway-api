@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Feature;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
 class FeatureSeeder extends Seeder
@@ -23,14 +23,15 @@ class FeatureSeeder extends Seeder
             ['name' => 'Aliases', 'value' => 'true'],
             ['name' => 'NhsSdeApplicationsEnabled', 'value' => 'false'],
             ['name' => 'Widgets', 'value' => 'false'],
-            
+            ['name' => 'RQuest', 'value' => 'true'],
+            ['name' => 'CohortDiscoveryService', 'value' => 'false'],
         ];
 
         foreach ($globalFeatures as $feature) {
             Feature::create([
-                'name'       => $feature['name'],
-                'scope'      => '__laravel_null',
-                'value'      => $feature['value'],
+                'name' => $feature['name'],
+                'scope' => '__laravel_null',
+                'value' => $feature['value'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);

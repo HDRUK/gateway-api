@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\SSO;
 
+use App\Http\Controllers\Controller;
+use App\Http\Traits\HandlesOAuthErrors;
 use App\Models\OauthUser;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
 use Laravel\Passport\Bridge\User;
-use App\Http\Controllers\Controller;
 use Laravel\Passport\ClientRepository;
-use App\Http\Traits\HandlesOAuthErrors;
+use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
+use League\OAuth2\Server\AuthorizationServer;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
-use League\OAuth2\Server\AuthorizationServer;
-use Illuminate\Contracts\Routing\ResponseFactory;
-use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
 
 class OAuth2Controller extends Controller
 {
@@ -20,6 +20,7 @@ class OAuth2Controller extends Controller
     use RetrievesAuthRequestFromSession;
 
     protected AuthorizationServer $server;
+
     protected ResponseFactory $response;
 
     public function __construct(AuthorizationServer $server, ResponseFactory $response)
@@ -35,8 +36,8 @@ class OAuth2Controller extends Controller
     ) {
         $userId = session('cr_uid') ?? config('passport.cr_uid_debug');
 
-        if (!$userId) {
-            abort(401, 'User not authenticated');
+        if (! $userId) {
+            abort(401, 'User not authenticated!');
         }
 
         OAuthUser::updateOrCreate([
