@@ -57,7 +57,7 @@ return [
         'client_id' => env('AZURE_CLIENT_ID'),
         'client_secret' => env('AZURE_CLIENT_SECRET'),
         'redirect' => env('AZURE_REDIRECT_URL'),
-        'proxy' => env('AZURE_PROXY')
+        'proxy' => env('AZURE_PROXY'),
     ],
 
     'googlepubsub' => [
@@ -85,12 +85,14 @@ return [
         'key' => env('HUBSPOT_KEY', 'hubspot_key'),
     ],
 
-    'cohort_discovery' => [
-        'init_url' => env('COHORT_DISCOVERY_URL', env('RQUEST_INIT_URL', 'http://rquest.local')),
-        'auth_url' => env('COHORT_DISCOVERY_AUTH_URL', 'http://auth.rquest.local'),
+    'rquest' => [
+        'init_url' => env('RQUEST_INIT_URL', 'http://rquest.local'),
+    ],
+
+    'cohort_discovery_service' => [
+        'init_url' => env('COHORT_DISCOVERY_URL'),
+        'auth_url' => env('COHORT_DISCOVERY_AUTH_URL'),
         'service_account' => env('COHORT_DISCOVERY_SERVICE_ACCOUNT', 'cohort-service@hdruk.ac.uk'),
-        'use_oauth2' => env('COHORT_DISCOVERY_USE_OAUTH2', false),
-        'add_teams_to_jwt' => env('COHORT_DISCOVERY_ADD_TEAMS_TO_JWT', false),
     ],
 
     'traser' => [
@@ -112,16 +114,16 @@ return [
     ],
 
     'dta' => [
-        'api_url' => env("DTA_API_URL", ""),
-        'url' => env("DTA_URL", ""),
+        'api_url' => env('DTA_API_URL', ''),
+        'url' => env('DTA_URL', ''),
     ],
 
     'mauro' => [
-        'app_key' => env("MAURO_APP_KEY"),
-        'api_url' => env("MAURO_API_URL"),
+        'app_key' => env('MAURO_APP_KEY'),
+        'api_url' => env('MAURO_API_URL'),
     ],
 
     'media' => [
         'base_url' => env('MEDIA_URL', 'http://media.local'),
-    ]
+    ],
 ];
