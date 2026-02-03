@@ -7,8 +7,6 @@ use Laravel\Pennant\Feature;
 use App\Models\Feature as FeatureModel;
 use Tests\Traits\Authorization;
 
-
-
 class FeatureTest extends TestCase
 {
     use Authorization;
@@ -39,10 +37,10 @@ class FeatureTest extends TestCase
         $latestFeature = FeatureModel::query()->orderBy('id', 'desc')->first();
         $featureIdTest = $latestFeature ? $latestFeature->id + 1 : 1;
 
-         $response = $this->json(
-                'GET',
-                self::TEST_URL . "/{$featureIdTest}"
-            );
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . "/{$featureIdTest}"
+        );
 
         $response->assertStatus(400);
         $message = $response->decodeResponseJson()['message'];

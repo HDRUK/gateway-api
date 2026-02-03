@@ -29,4 +29,8 @@ return [
         'code' => 500,
         'message' => 'internal server error',
     ],
+    'STATUS_NOT_IMPLEMENTED' => [
+        'code' => 501,
+        'message' => 'not implemented',
+    ],
 ];
