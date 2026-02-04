@@ -41,7 +41,7 @@ class JwtController extends Controller
         $this->secretKey = (string) config('jwt.secret');
 
         $this->config = Configuration::forSymmetricSigner(
-            new Sha256(),
+            new Sha256,
             InMemory::plainText($this->secretKey)
         );
 
@@ -67,8 +67,8 @@ class JwtController extends Controller
             $currentTime = CarbonImmutable::now();
             $expireTime = $currentTime->addSeconds(intval(config('jwt.expiration')));
 
-            $user = User::with('workgroups:id,name,active')->find($userId);
-            $user->workgroups->makeHidden('pivot');
+            $user = User::find($userId);
+            //$user->workgroups->makeHidden('pivot');
 
             if (Feature::active('CohortDiscoveryService')) {
                 $user->cohortAdminTeams->setVisible(['id', 'name']);
