@@ -1587,7 +1587,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException;
+            throw new UnauthorizedException();
         }
 
         try {
@@ -1659,7 +1659,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException;
+            throw new UnauthorizedException();
         }
 
         try {
@@ -1779,7 +1779,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException;
+            throw new UnauthorizedException();
         }
 
         try {

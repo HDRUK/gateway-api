@@ -12,6 +12,8 @@ class FeatureTest extends TestCase
     use Authorization;
     public const TEST_URL = '/api/v1/features';
 
+    private ?array $header = null;
+
     public function setUp(): void
     {
         parent::setUp();
