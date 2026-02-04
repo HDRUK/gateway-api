@@ -142,7 +142,7 @@ class DatasetController extends Controller
                 ->paginate($perPage, ['*'], 'page');
 
             if ($withMetadata) {
-                $datasets->getCollection()->load('latestMetadata');
+                $datasets->through(fn ($dataset) => $dataset->load('latestMetadata'));
             }
 
             Auditor::log([
