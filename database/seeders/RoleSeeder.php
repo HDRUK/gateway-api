@@ -138,6 +138,8 @@ class RoleSeeder extends Seeder
                     'cohort.read',
                     'cohort.update',
                     'cohort.delete',
+                    'SYSTEM_ADMIN', //cohort
+                    'GENERAL_ACCESS', //cohort
                 ],
             ],
             'custodian.team.admin' => [

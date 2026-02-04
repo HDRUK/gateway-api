@@ -16,7 +16,7 @@ class CohortServiceUserSeeder extends Seeder
 
     public function run(): void
     {
-        $email = Config::get('services.cohort_discovery.service_account');
+        $email = Config::get('services.cohort_discovery_service.service_account');
         $clientName = 'cohort-discovery-oauth-client';
 
         $existingUser = User::where('email', $email)->first();
@@ -46,7 +46,7 @@ class CohortServiceUserSeeder extends Seeder
             'name' => $clientName,
             'secret' => Hash::make(Str::random(40)),
             'provider' => null,
-            'redirect' => Config::get('services.cohort_discovery.auth_url'),
+            'redirect' => Config::get('services.cohort_discovery_service.auth_url'),
             'personal_access_client' => false,
             'password_client' => false,
             'revoked' => false,
