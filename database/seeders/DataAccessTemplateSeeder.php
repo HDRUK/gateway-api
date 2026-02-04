@@ -19,12 +19,12 @@ class DataAccessTemplateSeeder extends Seeder
             DB::statement('SET FOREIGN_KEY_CHECKS=0');
         }
         DataAccessTemplateHasQuestion::truncate();
-        DataAccessTemplate::truncate();        
+        DataAccessTemplate::truncate();
         if (DB::getDriverName() !== 'sqlite') {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
-        }        
+        }
 
-        DataAccessTemplate::factory(3)->create();        
+        DataAccessTemplate::factory(3)->create();
 
         DataAccessTemplate::all()->each(function ($model) {
 
