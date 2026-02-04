@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\RoleHasPermission;
 use Illuminate\Database\Seeder;
 
@@ -20,7 +20,7 @@ class RoleSeeder extends Seeder
             'hdruk.superadmin' => [
                 'permissions' => [
                     'perms' => 'all',
-                ]
+                ],
             ],
             'hdruk.admin' => [
                 'full_name' => 'HDR UK Admin',
@@ -138,6 +138,8 @@ class RoleSeeder extends Seeder
                     'cohort.read',
                     'cohort.update',
                     'cohort.delete',
+                    'SYSTEM_ADMIN', //cohort
+                    'GENERAL_ACCESS', //cohort
                 ],
             ],
             'custodian.team.admin' => [
@@ -208,6 +210,10 @@ class RoleSeeder extends Seeder
             'custodian.team.cohortAdmin' => [
                 'full_name' => 'Team Cohort Discovery Admin',
                 'permissions' => [
+                    'cohort.team.create',
+                    'cohort.team.read',
+                    'cohort.team.update',
+                    'cohort.team.delete',
                 ],
             ],
             'developer' => [
@@ -365,25 +371,25 @@ class RoleSeeder extends Seeder
         foreach ($perms as $perm) {
             Permission::updateOrCreate(
                 [
-                'name' => trim($perm),
-            ],
+                    'name' => trim($perm),
+                ],
                 [
-                'name' => trim($perm),
-                'application' => 'gateway'
-            ]
+                    'name' => trim($perm),
+                    'application' => 'gateway',
+                ]
             );
         }
 
         foreach ($roles as $k => $v) {
             $role = Role::updateOrCreate(
                 [
-                'name' => $k,
-            ],
+                    'name' => $k,
+                ],
                 [
-                'name' => $k,
-                'enabled' => true,
-                'full_name' => array_key_exists('full_name', $v) ? $v['full_name'] : null,
-            ]
+                    'name' => $k,
+                    'enabled' => true,
+                    'full_name' => array_key_exists('full_name', $v) ? $v['full_name'] : null,
+                ]
             );
 
             RoleHasPermission::where([
