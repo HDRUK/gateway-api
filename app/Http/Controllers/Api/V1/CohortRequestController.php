@@ -617,6 +617,8 @@ class CohortRequestController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
+        error_log('here i am!');
+
         try {
             $requestStatus = strtoupper(trim($input['request_status']));
             $nhseSdeRequestStatus = strtoupper(trim($input['nhse_sde_request_status']));
@@ -654,6 +656,8 @@ class CohortRequestController extends Controller
                     ...(($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) ? ['nhse_sde_request_expire_at' => $nhseSdeRequestExpireAt] : []),
                 ]);
             }
+
+            error_log($requestStatus);
 
             switch ($requestStatus) {
                 case 'PENDING':
