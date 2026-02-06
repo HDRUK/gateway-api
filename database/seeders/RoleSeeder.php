@@ -298,6 +298,9 @@ class RoleSeeder extends Seeder
                     'data-access-applications.status.read',
                     'data-access-applications.status.create',
 
+                    'file-based-data-access-application.create',
+                    'file-based-data-access-application.update',
+
                     'workflows.read',
                     'workflows.create',
                     'workflows.update',
