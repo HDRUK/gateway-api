@@ -250,6 +250,50 @@ return [
         ],
     ],
 
+    // team widget settings
+    [
+        'name' => 'widget_settings',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widget_settings',
+        'methodController' => 'TeamWidgetSettingController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'widget_settings',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/widget_settings',
+        'methodController' => 'TeamWidgetSettingController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'widget_settings',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/widget_settings/{id}',
+        'methodController' => 'TeamWidgetSettingController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+
+
     // features
     [
         'name' => 'features.index',
