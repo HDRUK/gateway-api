@@ -255,7 +255,7 @@ return [
         'name' => 'widget_settings',
         'method' => 'get',
         'path' => '/teams/{teamId}/widget_settings',
-        'methodController' => 'TeamWidgetSettingController@get',
+        'methodController' => 'TeamWidgetSettingController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

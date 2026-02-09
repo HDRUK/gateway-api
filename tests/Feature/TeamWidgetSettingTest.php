@@ -44,7 +44,7 @@ class TeamWidgetSettingTest extends TestCase
         WidgetSetting::where('team_id', $teamId)->delete();
         WidgetSetting::create([
             'team_id' => $teamId,
-            'colors' => [
+            'colours' => [
                     'primary' => '#005EB8',
                     'seconday' => '#006747',
                     'neutral' => '#E8EDEE',
@@ -62,7 +62,7 @@ class TeamWidgetSettingTest extends TestCase
                         'created_at',
                         'updated_at',
                         'team_id',
-                        'colors',
+                        'colours',
                         'team',
                     ],
                 ],
@@ -78,7 +78,7 @@ class TeamWidgetSettingTest extends TestCase
             'POST',
             "api/v1/teams/{$randomTeam->id}/widget_settings",
             [
-                'colors' => [
+                'colours' => [
                     'primary' => '#005EB8',
                     'seconday' => '#006747',
                     'neutral' => '#E8EDEE',
@@ -99,7 +99,7 @@ class TeamWidgetSettingTest extends TestCase
                         'created_at',
                         'updated_at',
                         'team_id',
-                        'colors',
+                        'colours',
                         'team',
                     ],
                 ],
@@ -115,7 +115,7 @@ class TeamWidgetSettingTest extends TestCase
             'POST',
             "api/v1/teams/{$teamIdTest}/widget_settings",
             [
-                'colors' => [
+                'colours' => [
                     'primary' => '#005EB8',
                     'seconday' => '#006747',
                     'neutral' => '#E8EDEE',
@@ -142,7 +142,7 @@ class TeamWidgetSettingTest extends TestCase
             'POST',
             "api/v1/teams/{$teamId}/widget_settings",
             [
-                'colors' => [
+                'colours' => [
                     'primary' => '#005EB8',
                     'seconday' => '#006747',
                     'neutral' => '#E8EDEE',
@@ -165,7 +165,7 @@ class TeamWidgetSettingTest extends TestCase
                         'created_at',
                         'updated_at',
                         'team_id',
-                        'colors',
+                        'colours',
                         'team',
                     ],
                 ],
@@ -191,7 +191,7 @@ class TeamWidgetSettingTest extends TestCase
             'POST',
             "api/v1/teams/{$teamId}/widget_settings",
             [
-                'colors' => [
+                'colours' => [
                     'primary' => '#005EB8',
                     'seconday' => '#006747',
                     'neutral' => '#E8EDEE',

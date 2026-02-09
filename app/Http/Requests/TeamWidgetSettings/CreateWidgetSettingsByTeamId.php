@@ -19,8 +19,9 @@ class CreateWidgetSettingsByTeamId extends BaseFormRequest
                 'required',
                 'exists:teams,id',
             ],
-            'colors' => [
-                'required',
+            'colours' => [
+                'nullable',
+                'array'
             ]
         ];
     }

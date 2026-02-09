@@ -19,11 +19,11 @@ class WidgetSetting extends Model
 
     protected $fillable = [
         'team_id',
-        'colors',
+        'colours',
     ];
 
     protected $casts = [
-        'colors' => 'array',
+        'colours' => 'array',
     ];
 
     public function team(): BelongsTo

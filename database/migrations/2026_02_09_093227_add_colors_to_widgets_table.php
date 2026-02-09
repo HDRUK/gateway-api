@@ -11,7 +11,7 @@ return new class () extends Migration {
     public function up(): void
     {
         Schema::table('widgets', function (Blueprint $table) {
-            $table->json('colors')->default(null)->nullable();
+            $table->json('colours')->default(null)->nullable();
         });
     }
 
@@ -21,7 +21,7 @@ return new class () extends Migration {
     public function down(): void
     {
         Schema::table('widgets', function (Blueprint $table) {
-            $table->dropColumn('colors');
+            $table->dropColumn('colours');
         });
     }
 };

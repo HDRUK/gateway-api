@@ -65,7 +65,7 @@ class TeamWidgetController extends Controller
                     'updated_at',
                     'unit',
                     'team_id',
-                    'colors',
+                    'colours',
                 ])
                 ->map(function ($widget) {
                     return [
@@ -520,7 +520,7 @@ class TeamWidgetController extends Controller
                     'include_search_bar'  => $widget->include_search_bar,
                     'include_cohort_link'  => $widget->include_cohort_link,
                     'keep_proportions' => $widget->keep_proportions,
-                    'colors' => $widget->colors,
+                    'colours' => $widget->colours,
                 ]
             ]], Config::get('statuscodes.STATUS_OK.code'));
 
@@ -653,7 +653,7 @@ class TeamWidgetController extends Controller
                 'included_data_uses'   => 'nullable|array',
                 'included_scripts'     => 'nullable|array',
                 'included_collections' => 'nullable|array',
-                'colors'               => 'nullable|array',
+                'colours'               => 'nullable|array',
             ]);
 
             $validated['team_id'] = $teamId;
@@ -809,7 +809,7 @@ class TeamWidgetController extends Controller
                 'included_scripts'     => 'sometimes|array|nullable',
                 'included_collections' => 'sometimes|array|nullable',
                 'data_custodian_entities_ids' => 'sometimes|array|nullable',
-                'colors'               => 'sometimes|array|nullable',
+                'colours'               => 'sometimes|array|nullable',
             ]);
             foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'data_custodian_entities_ids'] as $field) {
                 if (isset($validated[$field]) && is_array($validated[$field])) {

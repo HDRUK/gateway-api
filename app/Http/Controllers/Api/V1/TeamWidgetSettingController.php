@@ -23,7 +23,7 @@ class TeamWidgetSettingController extends Controller
      *    path="/api/v1/teams/{teamId}/widget_settings",
      *    operationId="fetch_by_teamid_widgets_settings",
      *    tags={"WidgetSettings"},
-     *    summary="TeamWidgetSettingController@get",
+     *    summary="TeamWidgetSettingController@index",
      *    description="Get Widget Settings by Team Id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -50,7 +50,7 @@ class TeamWidgetSettingController extends Controller
      *    )
      * )
      */
-    public function get(GetWidgetSettingsByTeamId $request, int $teamId): JsonResponse
+    public function index(GetWidgetSettingsByTeamId $request, int $teamId): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -99,7 +99,7 @@ class TeamWidgetSettingController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="colors", type="array", @OA\Items()),
+     *             @OA\Property(property="colours", type="array", @OA\Items()),
      *          )
      *       )
      *    ),
@@ -139,7 +139,7 @@ class TeamWidgetSettingController extends Controller
 
             $widgetSettings = WidgetSetting::create([
                 'team_id' => $teamId,
-                'colors' => $input['colors'],
+                'colours' => $input['colours'],
             ]);
 
             return response()->json([

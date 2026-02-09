@@ -15,7 +15,7 @@ return new class () extends Migration {
             $table->timestamps();
 
             $table->unsignedBigInteger('team_id');
-            $table->json('colors')->default(null)->nullable();
+            $table->json('colours')->default(null)->nullable();
 
             $table->foreign('team_id')->references('id')->on('teams');
         });

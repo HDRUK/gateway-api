@@ -34,11 +34,11 @@ class Widget extends Model
         'keep_proportions',
         'widget_name',
         'permitted_domains',
-        'colors',
+        'colours',
     ];
 
     protected $casts = [
-        'colors' => 'array', // or 'json'
+        'colours' => 'array', // or 'json'
     ];
 
     public function team(): BelongsTo

@@ -22,7 +22,7 @@ class TeamWidgetSettingSeeder extends Seeder
         if (!is_null($team)) {
             WidgetSetting::create([
                 'team_id' => $team->id,
-                'colors' => [
+                'colours' => [
                     'primary' => '#005EB8',
                     'seconday' => '#006747',
                     'neutral' => '#E8EDEE',
