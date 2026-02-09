@@ -76,6 +76,7 @@ class BaseDatabaseSeeder extends Seeder
             DatasetVersionHasToolSeeder::class,
             PublicationHasToolSeeder::class,
             ReviewSeeder::class,
+            TeamWidgetSettingSeeder::class,
         ]);
     }
 }

@@ -64,7 +64,8 @@ class TeamWidgetController extends Controller
                     'size_height',
                     'updated_at',
                     'unit',
-                    'team_id'
+                    'team_id',
+                    'colors',
                 ])
                 ->map(function ($widget) {
                     return [
@@ -519,6 +520,7 @@ class TeamWidgetController extends Controller
                     'include_search_bar'  => $widget->include_search_bar,
                     'include_cohort_link'  => $widget->include_cohort_link,
                     'keep_proportions' => $widget->keep_proportions,
+                    'colors' => $widget->colors,
                 ]
             ]], Config::get('statuscodes.STATUS_OK.code'));
 
@@ -651,6 +653,7 @@ class TeamWidgetController extends Controller
                 'included_data_uses'   => 'nullable|array',
                 'included_scripts'     => 'nullable|array',
                 'included_collections' => 'nullable|array',
+                'colors'               => 'nullable|array',
             ]);
 
             $validated['team_id'] = $teamId;
@@ -793,21 +796,21 @@ class TeamWidgetController extends Controller
             }
 
             $validated = $request->validate([
-            'widget_name'          => 'sometimes|string|max:255',
-            'size_width'           => 'sometimes|integer',
-            'size_height'          => 'sometimes|integer',
-            'unit'                 => 'sometimes|string|in:px,%,rem',
-            'include_search_bar'   => 'sometimes|boolean',
-            'include_cohort_link'  => 'sometimes|boolean',
-            'keep_proportions'     => 'sometimes|boolean',
-            'permitted_domains'    => 'sometimes|array|nullable',
-            'included_datasets'    => 'sometimes|array|nullable',
-            'included_data_uses'   => 'sometimes|array|nullable',
-            'included_scripts'     => 'sometimes|array|nullable',
-            'included_collections' => 'sometimes|array|nullable',
-            'data_custodian_entities_ids' => 'sometimes|array|nullable',
-
-        ]);
+                'widget_name'          => 'sometimes|string|max:255',
+                'size_width'           => 'sometimes|integer',
+                'size_height'          => 'sometimes|integer',
+                'unit'                 => 'sometimes|string|in:px,%,rem',
+                'include_search_bar'   => 'sometimes|boolean',
+                'include_cohort_link'  => 'sometimes|boolean',
+                'keep_proportions'     => 'sometimes|boolean',
+                'permitted_domains'    => 'sometimes|array|nullable',
+                'included_datasets'    => 'sometimes|array|nullable',
+                'included_data_uses'   => 'sometimes|array|nullable',
+                'included_scripts'     => 'sometimes|array|nullable',
+                'included_collections' => 'sometimes|array|nullable',
+                'data_custodian_entities_ids' => 'sometimes|array|nullable',
+                'colors'               => 'sometimes|array|nullable',
+            ]);
             foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'data_custodian_entities_ids'] as $field) {
                 if (isset($validated[$field]) && is_array($validated[$field])) {
                     $validated[$field] = implode(',', $validated[$field]);

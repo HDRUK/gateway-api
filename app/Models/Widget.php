@@ -12,6 +12,13 @@ class Widget extends Model
     use HasFactory;
     use SoftDeletes;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'widgets';
+
     protected $fillable = [
         'team_id',
         'data_custodian_entities_ids',
@@ -27,6 +34,11 @@ class Widget extends Model
         'keep_proportions',
         'widget_name',
         'permitted_domains',
+        'colors',
+    ];
+
+    protected $casts = [
+        'colors' => 'array', // or 'json'
     ];
 
     public function team(): BelongsTo
