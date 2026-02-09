@@ -25,7 +25,9 @@ class Search extends BaseFormRequest
         return [
             'query' => [
                 'nullable',
-                'max:255'
+                'max:255',
+                'regex:/^[^<>${}\x00]*$/',
+                'not_regex:/::char|::integer|::text|--|\/\*|\*\/|;\s*(DROP|DELETE|INSERT|UPDATE)/i',
             ],
             'sort' => [
                 'regex:/^(projectTitle|updated_at|name|score|date|title):(asc|desc)$/i',
