@@ -824,7 +824,7 @@ class DataCustodianNetworksController extends Controller
                 }
             }
 
-            $this->indexElasticDataProviderColl((int) $id);
+            $this->indexElasticDataCustodianNetwork((int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -938,7 +938,7 @@ class DataCustodianNetworksController extends Controller
                 }
             }
 
-            $this->indexElasticDataProviderColl((int) $id);
+            $this->indexElasticDataCustodianNetwork((int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
