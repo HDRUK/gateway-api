@@ -549,8 +549,6 @@ class SocialLoginController extends Controller
         } else {
             $user->providerid = $data['providerid'];
             $user->name = $data['name'];
-            $user->firstname = $data['firstname'];
-            $user->lastname = $data['lastname'];
             $user->email = $data['email'];
             $user->provider = $data['provider'];
             $user->password = $data['password'];
