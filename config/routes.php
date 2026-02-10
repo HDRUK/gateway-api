@@ -304,6 +304,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'features.me',
+        'method' => 'get',
+        'path' => '/features/me',
+        'methodController' => 'FeatureController@indexForMe',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
         'name' => 'features.user.index',
         'method' => 'get',
         'path' => '/features/users/{userId}',

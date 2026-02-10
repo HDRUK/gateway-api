@@ -56,12 +56,9 @@ class FeatureController extends Controller
     {
         $this->requirePennantDatabaseStore();
 
-        $names = \DB::table('features')
-            ->distinct()
-            ->orderBy('name')
-            ->pluck('name')
-            ->all();
+        $names = $this->featureNames();
 
+        // global configuration (null scope)
         $values = Feature::for(null)->values($names);
 
         return response()->json([
@@ -129,18 +126,74 @@ class FeatureController extends Controller
                 ], 404);
             }
 
-            $this->requirePennantDatabaseStore();
+            return response()->json([
+                'data' => $this->effectiveValuesForUser($user),
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
 
-            $names = \DB::table('features')
-                ->distinct()
-                ->orderBy('name')
-                ->pluck('name')
-                ->all();
+            throw new Exception($e->getMessage());
+        }
+    }
 
-            $values = Feature::for($user)->values($names);
+    /**
+     * @OA\Get(
+     *   path="/api/v1/features/me",
+     *   operationId="FeatureIndexForMe",
+     *   tags={"Feature"},
+     *   summary="List feature flags and their resolved values for the current jwt user",
+     *   description="Returns a key/value map of feature names to their resolved values for the given user scope. Requires PENNANT_STORE=database.",
+     *   security={{"bearerAuth":{}}},
+     *
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *
+     *     @OA\JsonContent(
+     *       type="object",
+     *
+     *       @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         description="Map of feature name to resolved value for the user scope",
+     *         additionalProperties=@OA\Schema(
+     *           oneOf={
+     *
+     *             @OA\Schema(type="boolean"),
+     *             @OA\Schema(type="string"),
+     *             @OA\Schema(type="integer"),
+     *             @OA\Schema(type="number"),
+     *             @OA\Schema(type="array"),
+     *             @OA\Schema(type="object")
+     *           }
+     *         ),
+     *         example={
+     *           "Widgets"=true,
+     *           "RQuest"=true
+     *         }
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function indexForMe(Request $request)
+    {
+        try {
+            $user = $this->jwtUser($request);
+
+            if (! $user) {
+                return response()->json([
+                    'message' => 'Cannot find this user',
+                    'data' => [],
+                ], 404);
+            }
 
             return response()->json([
-                'data' => $values,
+                'data' => $this->effectiveValuesForUser($user),
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
@@ -192,6 +245,7 @@ class FeatureController extends Controller
     {
         try {
             $this->requirePennantDatabaseStore();
+
             $exists = \DB::table('features')->where('name', $name)->exists();
             if (! $exists) {
                 return response()->json([
@@ -201,8 +255,7 @@ class FeatureController extends Controller
             }
 
             $global = Feature::for(null);
-
-            $global->active($name) ? $global->deactivate($name) : $global->activate($name);
+            $global->active($name) ? Feature::deactivateForEveryone($name) : Feature::activateForEveryone($name);
 
             Feature::flushCache();
 
@@ -427,11 +480,7 @@ class FeatureController extends Controller
                 throw new NotFoundException;
             }
 
-            $names = \DB::table('features')
-                ->distinct()
-                ->orderBy('name')
-                ->pluck('name')
-                ->all();
+            $names = $this->featureNames();
 
             $scoped = Feature::for($user);
 
@@ -473,5 +522,58 @@ class FeatureController extends Controller
                 'This endpoint requires PENNANT_STORE=database because it lists/toggles features from the database store.'
             );
         }
+    }
+
+    private function featureNames(): array
+    {
+        return \DB::table('features')
+            ->distinct()
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+    }
+
+    private function jwtUser(Request $request): ?User
+    {
+        $input = $request->all();
+        $jwtUser = $input['jwt_user'] ?? null;
+        $id = is_array($jwtUser) ? ($jwtUser['id'] ?? null) : null;
+
+        return $id ? User::find($id) : null;
+    }
+
+    private function userOverrideValues(User $user, array $names): array
+    {
+        return \DB::table('features')
+            ->where('scope', get_class($user).'|'.$user->getKey())
+            ->whereIn('name', $names)
+            ->pluck('value', 'name')
+            ->map(function ($value) {
+                $decoded = json_decode($value, true);
+
+                return json_last_error() === JSON_ERROR_NONE ? $decoded : $value;
+            })
+            ->all();
+    }
+
+    private function effectiveValuesForUser(User $user): array
+    {
+        $this->requirePennantDatabaseStore();
+
+        $names = $this->featureNames();
+
+        $globalValues = Feature::for(null)->values($names);
+
+        // Feature::for($user) scope defaults to false if the feature doesnt exist
+        // - i cant work out how to get it default for the Feature::for(null) scope
+        //   if the value doesnt exist (which could be true), rather than default to false
+
+        //$userValues = Feature::for($user)->values($names);
+
+        // I've done this manually myself instead via:
+        // - i dont love it, but it does work
+        $userOverrides = $this->userOverrideValues($user, $names);
+
+        return array_replace($globalValues, $userOverrides);
     }
 }

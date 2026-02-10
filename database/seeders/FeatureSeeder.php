@@ -15,7 +15,7 @@ class FeatureSeeder extends Seeder
         'Widgets' => false,
         'RQuest' => true,
         'CohortDiscoveryService' => false,
-        'ttest4' => true,
+        'ttest54' => true,
         'ttedast5' => false,
     ];
 
