@@ -712,7 +712,7 @@ class DataCustodianNetworksController extends Controller
                 ]);
             }
 
-            $this->indexElasticDataProviderColl((int) $dpc->id);
+            $this->indexElasticDataCustodianNetwork((int) $dpc->id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
