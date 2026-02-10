@@ -194,7 +194,10 @@ class FeatureController extends Controller
             $this->requirePennantDatabaseStore();
             $exists = \DB::table('features')->where('name', $name)->exists();
             if (! $exists) {
-                throw new NotFoundException;
+                return response()->json([
+                    'message' => 'Cannot find feature='.$name,
+                    'data' => [],
+                ], 404);
             }
 
             $global = Feature::for(null);
