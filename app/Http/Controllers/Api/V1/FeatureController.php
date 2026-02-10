@@ -2,186 +2,172 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\NotFoundException;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Laravel\Pennant\Feature;
-use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
-use App\Models\Feature as FeatureModel;
-use App\Http\Requests\Features\GetFeatureById;
-use App\Http\Requests\Features\ToggleByFeatureId;
 
 class FeatureController extends Controller
 {
     /**
      * @OA\Get(
-     *    path="/api/v1/features",
-     *    summary="Return a list of Feature entries",
-     *    description="Return a list of Feature entries",
-     *    tags={"Feature"},
-     *    summary="Feature@index",
-     *    security={{"bearerAuth":{}}},
+     *   path="/api/v1/features",
+     *   operationId="FeatureIndex",
+     *   tags={"Feature"},
+     *   summary="List feature flags and their resolved values (global scope)",
+     *   description="Returns a key/value map of feature names to their resolved values for the global (null) scope.",
+     *   security={{"bearerAuth":{}}},
      *
-     *    @OA\Response(
-     *       response=200,
-     *       description="Success",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string"),
-     *          @OA\Property(property="data", type="object",
-     *            @OA\Property(property="id", type="integer", example="123"),
-     *             @OA\Property(property="name", type="string", example="feature"),
-     *             @OA\Property(property="scope", type="string", example="\App\Model|User:1"),
-     *             @OA\Property(property="value", type="boolean", example="true"),
-     *             @OA\Property(property="description", type="string", example="description"),
-     *             @OA\Property(property="created_at", type="string", example="2024-02-04 12:00:00"),
-     *             @OA\Property(property="updated_at", type="string", example="2024-02-04 12:01:00"),
-     *          )
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=404,
-     *       description="Not found response",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="not found"),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *
+     *     @OA\JsonContent(
+     *       type="object",
+     *
+     *       @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         description="Map of feature name to resolved value",
+     *         additionalProperties=@OA\Schema(
+     *           oneOf={
+     *
+     *             @OA\Schema(type="boolean"),
+     *             @OA\Schema(type="string"),
+     *             @OA\Schema(type="integer"),
+     *             @OA\Schema(type="number"),
+     *             @OA\Schema(type="array"),
+     *             @OA\Schema(type="object")
+     *           }
+     *         ),
+     *         example={
+     *           "new-checkout"=true,
+     *           "beta-dashboard"=false
+     *         }
      *       )
-     *    )
+     *     )
+     *   )
      * )
      */
     public function index(Request $request)
     {
-        $features = FeatureModel::all();
+
+        $driver = $this->pennantDriver();
+        if ($driver !== 'database') {
+            return response()->json([
+                'message' => 'This endpoint requires PENNANT_STORE=database because it lists features from the database store.',
+                'data' => [],
+            ], 501);
+        }
+
+        $names = \DB::table('features')
+            ->distinct()
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+
+        //this will allow us to control user specific flags if need be
+        $user = $request->user();
+        $values = Feature::for($user)->values($names);
 
         return response()->json([
-            'data' => $features,
+            'data' => $values,
         ], 200);
     }
 
     /**
-     * @OA\Get(
-     *    path="/api/v1/features/{featureId}",
-     *    summary="Return a Feature entry by its ID",
-     *    description="Return a Feature entry by its ID",
-     *    tags={"Feature"},
-     *    summary="Feature@show",
-     *    security={{"bearerAuth":{}}},
-     *
-     *    @OA\Response(
-     *       response=200,
-     *       description="Success",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string"),
-     *          @OA\Property(property="data", type="object",
-     *            @OA\Property(property="id", type="integer", example="123"),
-     *             @OA\Property(property="name", type="string", example="feature"),
-     *             @OA\Property(property="scope", type="string", example="\App\Model|User:1"),
-     *             @OA\Property(property="value", type="boolean", example="true"),
-     *             @OA\Property(property="description", type="string", example="description"),
-     *             @OA\Property(property="created_at", type="string", example="2024-02-04 12:00:00"),
-     *             @OA\Property(property="updated_at", type="string", example="2024-02-04 12:01:00"),
-     *          )
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=400,
-     *       description="Invalid argument(s)",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="Invalid argument(s)")
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=404,
-     *       description="Not found response",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="not found"),
-     *       )
-     *    )
-     * )
-     */
-    public function show(GetFeatureById $request, int $featureId)
-    {
-        $feature = FeatureModel::find($featureId);
-
-        if (!$feature) {
-            throw new NotFoundException();
-        }
-
-
-        return response()->json([
-                 'data' => $feature,
-             ], 200);
-    }
-
-    /**
      * @OA\Put(
-     *    path="/api/v1/features/{featureId}",
-     *    summary="Toggle and return a Feature entry by its ID",
-     *    description="Toggle and return a Feature entry by its ID",
-     *    tags={"Feature"},
-     *    summary="Feature@show",
-     *    security={{"bearerAuth":{}}},
+     *   path="/api/v1/features/{name}",
+     *   operationId="FeatureToggleByName",
+     *   tags={"Feature"},
+     *   summary="Toggle a feature flag by name",
+     *   description="Toggles the global (null-scope) value of a feature flag by name and returns the resolved active state for the authenticated user.",
+     *   security={{"bearerAuth":{}}},
      *
-     *    @OA\Response(
-     *       response=200,
-     *       description="Success",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string"),
-     *          @OA\Property(property="data", type="object",
-     *            @OA\Property(property="id", type="integer", example="123"),
-     *             @OA\Property(property="name", type="string", example="feature"),
-     *             @OA\Property(property="scope", type="string", example="\App\Model|User:1"),
-     *             @OA\Property(property="value", type="boolean", example="true"),
-     *             @OA\Property(property="description", type="string", example="description"),
-     *             @OA\Property(property="created_at", type="string", example="2024-02-04 12:00:00"),
-     *             @OA\Property(property="updated_at", type="string", example="2024-02-04 12:01:00"),
-     *          )
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=400,
-     *       description="Invalid argument(s)",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="Invalid argument(s)")
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=404,
-     *       description="Not found response",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="not found"),
+     *   @OA\Parameter(
+     *     name="name",
+     *     in="path",
+     *     required=true,
+     *     description="Feature flag name",
+     *
+     *     @OA\Schema(type="string", example="new-checkout")
+     *   ),
+     *
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *
+     *     @OA\JsonContent(
+     *       type="object",
+     *
+     *       @OA\Property(
+     *         property="data",
+     *         type="boolean",
+     *         description="Resolved active state for the authenticated user after toggling",
+     *         example=true
      *       )
-     *    )
+     *     )
+     *   ),
+     *
+     *   @OA\Response(
+     *     response=404,
+     *     description="Feature not found",
+     *
+     *     @OA\JsonContent(
+     *       type="object",
+     *
+     *       @OA\Property(property="message", type="string", example="not found")
+     *     )
+     *   )
      * )
      */
-    public function toggleByFeatureId(ToggleByFeatureId $request, int $featureId)
+    public function toggleByName(Request $request, string $name)
     {
 
-        $feature = FeatureModel::where('id', $featureId)->first();
-
-
-        if (is_null($feature)) {
-            throw new NotFoundException();
+        $driver = $this->pennantDriver();
+        if ($driver !== 'database') {
+            return response()->json([
+                'message' => 'This endpoint requires PENNANT_STORE=database to toggle stored feature flags.',
+            ], 501);
         }
 
-        if (Feature::active($feature->name)) {
-            Feature::deactivate($feature->name);
+        $user = $request->user();
+        $exists = \DB::table('features')
+            ->where('name', $name)
+            ->exists();
+
+        if (! $exists) {
+            throw new NotFoundException;
+        }
+
+        if (Feature::active($name)) {
+            Feature::deactivate($name);
         } else {
-            Feature::activate($feature->name);
+            Feature::activate($name);
         }
 
         Feature::flushCache();
 
-
         return response()->json([
-                'data' => $feature,
-            ], 200);
+            'data' => Feature::for($user)->active($name),
+        ], 200);
     }
 
     // Hide from swagger docs
     public function flushAllFeatures(Request $request)
     {
         Feature::flushCache();
-        return response()->json([
-                'message' => 'Feature cache flushed successfully.',
-            ], 200);
 
+        return response()->json([
+            'message' => 'Feature cache flushed successfully.',
+        ], 200);
+
+    }
+
+    private function pennantDriver(): string
+    {
+        $storeName = config('pennant.default', 'array');
+
+        return config("pennant.stores.$storeName.driver", 'array');
     }
 }

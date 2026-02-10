@@ -13,11 +13,8 @@ class FeatureSeeder extends Seeder
      */
     public function run(): void
     {
-        Feature::truncate();
-
         $now = Carbon::now();
 
-        // Seed features with global scope
         $globalFeatures = [
             ['name' => 'SDEConciergeServiceEnquiry', 'value' => 'true'],
             ['name' => 'Aliases', 'value' => 'true'],
@@ -27,18 +24,36 @@ class FeatureSeeder extends Seeder
             ['name' => 'CohortDiscoveryService', 'value' => 'false'],
         ];
 
+        $created = 0;
+        $existing = 0;
+
         foreach ($globalFeatures as $feature) {
-            Feature::create([
-                'name' => $feature['name'],
-                'scope' => '__laravel_null',
-                'value' => $feature['value'],
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            $model = Feature::firstOrCreate(
+                ['name' => $feature['name'], 'scope' => '__laravel_null'],
+                ['value' => $feature['value'], 'created_at' => $now, 'updated_at' => $now]
+            );
+
+            if ($model->wasRecentlyCreated) {
+                $created++;
+                $this->command->info(sprintf(
+                    'CREATED: %s (scope=%s, value=%s)',
+                    $model->name,
+                    $model->scope,
+                    $model->value
+                ));
+            } else {
+                $existing++;
+                $this->command->line(sprintf(
+                    'EXISTS : %s (scope=%s, current_value=%s)',
+                    $model->name,
+                    $model->scope,
+                    $model->value
+                ));
+            }
         }
 
         $this->command->newLine();
-        $this->command->info('All feature flags seeded successfully!');
+        $this->command->info("Feature flags seeded. Created: {$created}, Existing: {$existing}");
         $this->command->newLine();
     }
 }

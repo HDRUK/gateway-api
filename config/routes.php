@@ -293,7 +293,6 @@ return [
         ],
     ],
 
-
     // features
     [
         'name' => 'features.index',
@@ -305,21 +304,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'features.show',
-        'method' => 'get',
-        'path' => '/features/{featureId}',
-        'methodController' => 'FeatureController@show',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [
-            'featureId' => '[0-9]+',
-        ],
-    ],
-    [
         'name' => 'features.toggle',
         'method' => 'put',
-        'path' => '/features/{featureId}',
-        'methodController' => 'FeatureController@toggleByFeatureId',
+        'path' => '/features/{name}',
+        'methodController' => 'FeatureController@toggleByName',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

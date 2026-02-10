@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use Config;
-use Laravel\Passport\Passport;
-use Illuminate\Support\ServiceProvider;
 use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\DataAccessApplication;
 use App\Observers\DataAccessApplicationObserver;
+use Config;
+use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,9 +31,9 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
-                $sql = str_replace(array('%', '?'), array('%%', '%s'), $query->sql);
+                $sql = str_replace(['%', '?'], ['%%', '%s'], $query->sql);
                 $sql = vsprintf($sql, $bindings);
-                \Log::warning("SQL query: " . $sql, ['time' => $query->time]);
+                \Log::warning('SQL query: '.$sql, ['time' => $query->time]);
             });
         }
 
@@ -64,5 +64,4 @@ class AppServiceProvider extends ServiceProvider
 
         DataAccessApplication::observe(DataAccessApplicationObserver::class);
     }
-
 }
