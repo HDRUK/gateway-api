@@ -123,7 +123,10 @@ class FeatureController extends Controller
         try {
             $user = User::find($userId);
             if (! $user) {
-                throw new NotFoundException;
+                return response()->json([
+                    'message' => 'Cannot find this user',
+                    'data' => [],
+                ], 404);
             }
 
             $this->requirePennantDatabaseStore();

@@ -304,6 +304,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'features.user.index',
+        'method' => 'get',
+        'path' => '/features/users/{userId}',
+        'methodController' => 'FeatureController@indexForUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => ['userId' => '[0-9]+'],
+    ],
+    [
         'name' => 'features.toggle',
         'method' => 'put',
         'path' => '/features/{name}',
