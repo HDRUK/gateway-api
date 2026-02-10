@@ -384,6 +384,75 @@ class FeatureController extends Controller
         ], 200);
     }
 
+    // Hidden from swagger docs intentionally (no @OA annotation)
+    public function flushAllUserFeatures(Request $request)
+    {
+        try {
+            $this->requirePennantDatabaseStore();
+
+            \DB::table('features')
+                ->whereNotNull('scope')
+                ->delete();
+
+            Feature::flushCache();
+
+            return response()->json([
+                'message' => 'All user-scoped feature overrides flushed successfully (now falling back to global).',
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    // Hidden from swagger docs intentionally (no @OA annotation)
+    public function flushUserFeatures(Request $request, int $userId)
+    {
+        try {
+            $this->requirePennantDatabaseStore();
+
+            $user = User::find($userId);
+            if (! $user) {
+                throw new NotFoundException;
+            }
+
+            $names = \DB::table('features')
+                ->distinct()
+                ->orderBy('name')
+                ->pluck('name')
+                ->all();
+
+            $scoped = Feature::for($user);
+
+            foreach ($names as $name) {
+                $scoped->forget($name);
+            }
+
+            Feature::flushCache();
+
+            return response()->json([
+                'message' => 'User-scoped feature overrides flushed successfully',
+                'data' => [
+                    'userId' => $userId,
+                    'features_processed' => count($names),
+                ],
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
     private function pennantDriver(): string
     {
         $storeName = config('pennant.default', 'array');

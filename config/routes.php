@@ -314,11 +314,11 @@ return [
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
-            'featureId' => '[0-9]+',
+            'name' => '[A-Za-z0-9\-_\.]+',
         ],
     ],
     [
-        'name' => 'features.toggle',
+        'name' => 'features.user.toggle',
         'method' => 'put',
         'path' => '/features/users/{userId}/{name}',
         'methodController' => 'FeatureController@toggleByNameForUser',
@@ -328,7 +328,8 @@ return [
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
-            'featureId' => '[0-9]+',
+            'userId' => '[0-9]+',
+            'name' => '[A-Za-z0-9\-_\.]+',
         ],
     ],
     [
@@ -343,6 +344,7 @@ return [
         ],
         'constraint' => [
             'userId' => '[0-9]+',
+            'name' => '[A-Za-z0-9\-_\.]+',
         ],
     ],
     [
@@ -356,6 +358,32 @@ return [
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'features.users.flush',
+        'method' => 'post',
+        'path' => '/features/users/flush',
+        'methodController' => 'FeatureController@flushAllUserFeatures',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'features.user.flush',
+        'method' => 'post',
+        'path' => '/features/users/{userId}/flush',
+        'methodController' => 'FeatureController@flushUserFeatures',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
     ],
 
     // filters
