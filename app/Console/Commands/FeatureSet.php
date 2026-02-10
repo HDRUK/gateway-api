@@ -10,7 +10,7 @@ class FeatureSet extends Command
 {
     protected $signature = 'feature:set
         {name : The feature flag name}
-        {--user= : Apply to a specific user id}
+        {--userEmail= : Apply to a specific user by email}
         {--on : Activate the flag}
         {--off : Deactivate the flag}
         {--forget : Remove the scoped override (falls back to global)}';
@@ -21,7 +21,7 @@ class FeatureSet extends Command
     {
         $name = (string) $this->argument('name');
 
-        $userId = $this->option('user');
+        $userEmail = $this->option('userEmail');
 
         $on = (bool) $this->option('on');
         $off = (bool) $this->option('off');
@@ -35,15 +35,15 @@ class FeatureSet extends Command
 
         $store = Feature::for(null);
         $scopeLabel = 'global';
-        if ($userId) {
-            $user = User::find($userId);
+        if ($userEmail) {
+            $user = User::where('email', $userEmail)->first();
             if (! $user) {
-                $this->error("User {$userId} not found.");
+                $this->error("User {$userEmail} not found.");
 
                 return self::FAILURE;
             }
             $store = Feature::for($user);
-            $scopeLabel = "user {$userId}";
+            $scopeLabel = "user {$userEmail}";
         }
 
         if ($forget) {

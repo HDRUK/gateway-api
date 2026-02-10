@@ -300,7 +300,7 @@ return [
         'path' => '/features',
         'methodController' => 'FeatureController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
     [
@@ -315,6 +315,34 @@ return [
         ],
         'constraint' => [
             'featureId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'features.toggle',
+        'method' => 'put',
+        'path' => '/features/users/{userId}/{name}',
+        'methodController' => 'FeatureController@toggleByNameForUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'featureId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'features.user.delete',
+        'method' => 'delete',
+        'path' => '/features/users/{userId}/{name}',
+        'methodController' => 'FeatureController@deleteByNameForUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
         ],
     ],
     [

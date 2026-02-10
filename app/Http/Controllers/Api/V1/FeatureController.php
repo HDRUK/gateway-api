@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\NotFoundException;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Auditor;
+use Exception;
 use Illuminate\Http\Request;
 use Laravel\Pennant\Feature;
 
@@ -15,7 +18,7 @@ class FeatureController extends Controller
      *   operationId="FeatureIndex",
      *   tags={"Feature"},
      *   summary="List feature flags and their resolved values (global scope)",
-     *   description="Returns a key/value map of feature names to their resolved values for the global (null) scope.",
+     *   description="Returns a key/value map of feature names to their resolved values for the global (null) scope. Requires PENNANT_STORE=database.",
      *   security={{"bearerAuth":{}}},
      *
      *   @OA\Response(
@@ -28,7 +31,7 @@ class FeatureController extends Controller
      *       @OA\Property(
      *         property="data",
      *         type="object",
-     *         description="Map of feature name to resolved value",
+     *         description="Map of feature name to resolved value (global scope)",
      *         additionalProperties=@OA\Schema(
      *           oneOf={
      *
@@ -41,8 +44,8 @@ class FeatureController extends Controller
      *           }
      *         ),
      *         example={
-     *           "new-checkout"=true,
-     *           "beta-dashboard"=false
+     *           "RQuest"=true,
+     *           "Widgets"=false,
      *         }
      *       )
      *     )
@@ -51,14 +54,7 @@ class FeatureController extends Controller
      */
     public function index(Request $request)
     {
-
-        $driver = $this->pennantDriver();
-        if ($driver !== 'database') {
-            return response()->json([
-                'message' => 'This endpoint requires PENNANT_STORE=database because it lists features from the database store.',
-                'data' => [],
-            ], 501);
-        }
+        $this->requirePennantDatabaseStore();
 
         $names = \DB::table('features')
             ->distinct()
@@ -66,9 +62,7 @@ class FeatureController extends Controller
             ->pluck('name')
             ->all();
 
-        //this will allow us to control user specific flags if need be
-        $user = $request->user();
-        $values = Feature::for($user)->values($names);
+        $values = Feature::for(null)->values($names);
 
         return response()->json([
             'data' => $values,
@@ -76,12 +70,93 @@ class FeatureController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *   path="/api/v1/users/{userId}/features",
+     *   operationId="FeatureIndexForUser",
+     *   tags={"Feature"},
+     *   summary="List feature flags and their resolved values for a user",
+     *   description="Returns a key/value map of feature names to their resolved values for the given user scope. Requires PENNANT_STORE=database.",
+     *   security={{"bearerAuth":{}}},
+     *
+     *   @OA\Parameter(
+     *     name="userId",
+     *     in="path",
+     *     required=true,
+     *     description="User ID",
+     *
+     *     @OA\Schema(type="integer", example=123)
+     *   ),
+     *
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *
+     *     @OA\JsonContent(
+     *       type="object",
+     *
+     *       @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         description="Map of feature name to resolved value for the user scope",
+     *         additionalProperties=@OA\Schema(
+     *           oneOf={
+     *
+     *             @OA\Schema(type="boolean"),
+     *             @OA\Schema(type="string"),
+     *             @OA\Schema(type="integer"),
+     *             @OA\Schema(type="number"),
+     *             @OA\Schema(type="array"),
+     *             @OA\Schema(type="object")
+     *           }
+     *         ),
+     *         example={
+     *           "Widgets"=true,
+     *           "RQuest"=true
+     *         }
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function indexForUser(Request $request, int $userId)
+    {
+        try {
+            $user = User::find($userId);
+            if (! $user) {
+                throw new NotFoundException;
+            }
+
+            $this->requirePennantDatabaseStore();
+
+            $names = \DB::table('features')
+                ->distinct()
+                ->orderBy('name')
+                ->pluck('name')
+                ->all();
+
+            $values = Feature::for($user)->values($names);
+
+            return response()->json([
+                'data' => $values,
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Put(
      *   path="/api/v1/features/{name}",
      *   operationId="FeatureToggleByName",
      *   tags={"Feature"},
-     *   summary="Toggle a feature flag by name",
-     *   description="Toggles the global (null-scope) value of a feature flag by name and returns the resolved active state for the authenticated user.",
+     *   summary="Toggle a feature flag globally by name",
+     *   description="Toggles the global (null-scope) value of a stored feature flag by name and returns the global active state after toggling. Requires PENNANT_STORE=database.",
      *   security={{"bearerAuth":{}}},
      *
      *   @OA\Parameter(
@@ -103,57 +178,203 @@ class FeatureController extends Controller
      *       @OA\Property(
      *         property="data",
      *         type="boolean",
-     *         description="Resolved active state for the authenticated user after toggling",
+     *         description="Global (null-scope) active state after toggling",
      *         example=true
      *       )
-     *     )
-     *   ),
-     *
-     *   @OA\Response(
-     *     response=404,
-     *     description="Feature not found",
-     *
-     *     @OA\JsonContent(
-     *       type="object",
-     *
-     *       @OA\Property(property="message", type="string", example="not found")
      *     )
      *   )
      * )
      */
     public function toggleByName(Request $request, string $name)
     {
+        try {
+            $this->requirePennantDatabaseStore();
+            $exists = \DB::table('features')->where('name', $name)->exists();
+            if (! $exists) {
+                throw new NotFoundException;
+            }
 
-        $driver = $this->pennantDriver();
-        if ($driver !== 'database') {
+            $global = Feature::for(null);
+
+            $global->active($name) ? $global->deactivate($name) : $global->activate($name);
+
+            Feature::flushCache();
+
             return response()->json([
-                'message' => 'This endpoint requires PENNANT_STORE=database to toggle stored feature flags.',
-            ], 501);
+                'data' => $global->active($name),
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
         }
-
-        $user = $request->user();
-        $exists = \DB::table('features')
-            ->where('name', $name)
-            ->exists();
-
-        if (! $exists) {
-            throw new NotFoundException;
-        }
-
-        if (Feature::active($name)) {
-            Feature::deactivate($name);
-        } else {
-            Feature::activate($name);
-        }
-
-        Feature::flushCache();
-
-        return response()->json([
-            'data' => Feature::for($user)->active($name),
-        ], 200);
     }
 
-    // Hide from swagger docs
+    /**
+     * @OA\Put(
+     *   path="/api/v1/users/{userId}/features/{name}",
+     *   operationId="FeatureToggleByNameForUser",
+     *   tags={"Feature"},
+     *   summary="Toggle a feature flag for a specific user",
+     *   description="Toggles the value of a stored feature flag for the given user scope and returns the user's active state after toggling. Requires PENNANT_STORE=database. Returns 501 if PENNANT_STORE is not database.",
+     *   security={{"bearerAuth":{}}},
+     *
+     *   @OA\Parameter(
+     *     name="userId",
+     *     in="path",
+     *     required=true,
+     *     description="User ID",
+     *
+     *     @OA\Schema(type="integer", example=123)
+     *   ),
+     *
+     *   @OA\Parameter(
+     *     name="name",
+     *     in="path",
+     *     required=true,
+     *     description="Feature flag name",
+     *
+     *     @OA\Schema(type="string", example="new-checkout")
+     *   ),
+     *
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *
+     *     @OA\JsonContent(
+     *       type="object",
+     *
+     *       @OA\Property(
+     *         property="data",
+     *         type="boolean",
+     *         description="User-scoped active state after toggling",
+     *         example=true
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function toggleByNameForUser(Request $request, int $userId, string $name)
+    {
+        try {
+            $driver = $this->pennantDriver();
+            if ($driver !== 'database') {
+                return response()->json([
+                    'message' => 'This endpoint requires PENNANT_STORE=database to toggle stored feature flags.',
+                ], 501);
+            }
+
+            $user = User::find($userId);
+            if (! $user) {
+                throw new NotFoundException;
+            }
+
+            $exists = \DB::table('features')->where('name', $name)->exists();
+            if (! $exists) {
+                throw new NotFoundException;
+            }
+
+            $scoped = Feature::for($user);
+
+            $scoped->active($name) ? $scoped->deactivate($name) : $scoped->activate($name);
+
+            Feature::flushCache();
+
+            return response()->json([
+                'data' => $scoped->active($name),
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *   path="/api/v1/users/{userId}/features/{name}",
+     *   operationId="FeatureDeleteByNameForUser",
+     *   tags={"Feature"},
+     *   summary="Delete (forget) a user-scoped feature override",
+     *   description="Removes the stored override for the given feature name in the given user scope (falls back to global/default evaluation). Requires PENNANT_STORE=database.",
+     *   security={{"bearerAuth":{}}},
+     *
+     *   @OA\Parameter(
+     *     name="userId",
+     *     in="path",
+     *     required=true,
+     *     description="User ID",
+     *
+     *     @OA\Schema(type="integer", example=123)
+     *   ),
+     *
+     *   @OA\Parameter(
+     *     name="name",
+     *     in="path",
+     *     required=true,
+     *     description="Feature flag name",
+     *
+     *     @OA\Schema(type="string", example="new-checkout")
+     *   ),
+     *
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *
+     *     @OA\JsonContent(
+     *       type="object",
+     *
+     *       @OA\Property(
+     *         property="data",
+     *         type="boolean",
+     *         description="User-scoped active state after deletion (may now reflect global/default evaluation)",
+     *         example=false
+     *       )
+     *     )
+     *   )
+     */
+    public function deleteByNameForUser(Request $request, int $userId, string $name)
+    {
+        try {
+            $this->requirePennantDatabaseStore();
+
+            $user = User::find($userId);
+            if (! $user) {
+                throw new NotFoundException;
+            }
+
+            $exists = \DB::table('features')->where('name', $name)->exists();
+            if (! $exists) {
+                throw new NotFoundException;
+            }
+
+            $scoped = Feature::for($user);
+            $scoped->forget($name);
+            Feature::flushCache();
+
+            return response()->json([
+                'data' => $scoped->active($name),
+            ], 200);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    // Hidden from swagger docs intentionally (no @OA annotation)
     public function flushAllFeatures(Request $request)
     {
         Feature::flushCache();
@@ -161,7 +382,6 @@ class FeatureController extends Controller
         return response()->json([
             'message' => 'Feature cache flushed successfully.',
         ], 200);
-
     }
 
     private function pennantDriver(): string
@@ -169,5 +389,14 @@ class FeatureController extends Controller
         $storeName = config('pennant.default', 'array');
 
         return config("pennant.stores.$storeName.driver", 'array');
+    }
+
+    private function requirePennantDatabaseStore(): void
+    {
+        if ($this->pennantDriver() !== 'database') {
+            throw new Exception(
+                'This endpoint requires PENNANT_STORE=database because it lists/toggles features from the database store.'
+            );
+        }
     }
 }
