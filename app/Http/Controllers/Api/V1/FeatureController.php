@@ -126,13 +126,12 @@ class FeatureController extends Controller
                 ], 404);
             }
 
-            $names = $this->featureNames();
-            $userValues = Feature::for($user)->values($names);
+            //$names = $this->featureNames();
+            //$userValues = Feature::for($user)->values($names);
             $values = $this->effectiveValuesForUser($user);
 
             return response()->json([
                 'data' => $values,
-                'userValues' => $userValues,
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
