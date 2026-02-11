@@ -66,6 +66,7 @@ class TeamWidgetController extends Controller
                     'unit',
                     'team_id',
                     'include_search_bar',
+                    'colours',
                 ])
                 ->map(function ($widget) {
                     return [
@@ -78,6 +79,7 @@ class TeamWidgetController extends Controller
                         'team_id' => $widget->team_id,
                         'team_name' => $widget->team['name'],
                         'include_search_bar' => $widget->include_search_bar,
+                        'colours' => $widget->colours,
                     ];
                 });
 
