@@ -144,7 +144,6 @@ class PermissionSeeder extends Seeder
 
         foreach ($permissions as $app => $perms) {
             foreach ($perms as $perm) {
-                dump($app.' -> '.$perm);
                 Permission::firstOrCreate([
                     'application' => $app,
                     'name' => $perm,
