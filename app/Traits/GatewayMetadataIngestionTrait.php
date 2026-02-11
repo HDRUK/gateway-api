@@ -5,16 +5,13 @@ namespace App\Traits;
 use Http;
 use Config;
 use MetadataManagementController as MMC;
-
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
-
 use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\Federation;
 use App\Models\DatasetVersion;
 use App\Http\Traits\MetadataVersioning;
-
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 
@@ -249,7 +246,7 @@ trait GatewayMetadataIngestionTrait
     public function determineAuthType(Federation|array $federation, GoogleSecretManagerService $gsms, bool $testMode = false): array
     {
         if (!is_array($federation) && !$testMode) {
-            switch($federation->auth_type) {
+            switch ($federation->auth_type) {
                 case 'BEARER':
                     $key = $gsms->getSecret($federation->auth_secret_key_location);
                     return [

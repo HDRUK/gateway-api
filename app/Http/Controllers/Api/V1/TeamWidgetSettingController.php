@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-
 use App\Models\WidgetSetting;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\LoggingContext;

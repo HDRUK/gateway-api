@@ -14,7 +14,6 @@ use App\Models\Federation;
 use App\Http\Traits\MetadataVersioning;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
-
 use App\Traits\GatewayMetadataIngestionTrait;
 
 class TestFederation implements ShouldQueue
