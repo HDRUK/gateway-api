@@ -334,12 +334,12 @@ class FeatureController extends Controller
 
             $user = User::find($userId);
             if (! $user) {
-                throw new NotFoundException();
+                throw new NotFoundException;
             }
 
             $exists = \DB::table('features')->where('name', $name)->exists();
             if (! $exists) {
-                throw new NotFoundException();
+                throw new NotFoundException;
             }
 
             $scoped = Feature::for($user);
@@ -404,6 +404,7 @@ class FeatureController extends Controller
      *       )
      *     )
      *   )
+     * )
      */
     public function deleteByNameForUser(Request $request, int $userId, string $name)
     {
@@ -412,12 +413,12 @@ class FeatureController extends Controller
 
             $user = User::find($userId);
             if (! $user) {
-                throw new NotFoundException();
+                throw new NotFoundException;
             }
 
             $exists = \DB::table('features')->where('name', $name)->exists();
             if (! $exists) {
-                throw new NotFoundException();
+                throw new NotFoundException;
             }
 
             $scoped = Feature::for($user);
@@ -482,7 +483,7 @@ class FeatureController extends Controller
 
             $user = User::find($userId);
             if (! $user) {
-                throw new NotFoundException();
+                throw new NotFoundException;
             }
 
             $names = $this->featureNames();
