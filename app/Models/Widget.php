@@ -39,6 +39,7 @@ class Widget extends Model
 
     protected $casts = [
         'colours' => 'array', // or 'json'
+        'include_search_bar' => 'boolean',
     ];
 
     public function team(): BelongsTo
