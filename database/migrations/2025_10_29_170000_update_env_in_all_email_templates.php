@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-
 use App\Models\EmailTemplate;
 
 return new class () extends Migration {

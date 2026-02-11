@@ -19,6 +19,7 @@ yarn-error.log
 /.vscode
 /.phpunit.cache
 composer.lock
+package-lock.json
 .phpstorm.meta.php
 .phpunit.result.cache
 tiltconf.json

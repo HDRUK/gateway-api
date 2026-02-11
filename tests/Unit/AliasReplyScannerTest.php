@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use Mockery;
 use App\Mail\Email;
 use Tests\TestCase;
-use App\Models\Role;
 use App\Models\Team;
 use Webklex\PHPIMAP\Message;
 use AliasReplyScanner as ARS;
