@@ -151,7 +151,7 @@ return [
         'name' => 'widgets',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets',
-        'methodController' => 'TeamWidgetController@get',
+        'methodController' => 'TeamWidgetController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
