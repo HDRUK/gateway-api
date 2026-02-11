@@ -293,7 +293,6 @@ return [
         ],
     ],
 
-
     // features
     [
         'name' => 'features.index',
@@ -301,32 +300,69 @@ return [
         'path' => '/features',
         'methodController' => 'FeatureController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
     [
-        'name' => 'features.show',
+        'name' => 'features.me',
         'method' => 'get',
-        'path' => '/features/{featureId}',
-        'methodController' => 'FeatureController@show',
+        'path' => '/features/me',
+        'methodController' => 'FeatureController@indexForMe',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [
-            'featureId' => '[0-9]+',
-        ],
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'features.user.index',
+        'method' => 'get',
+        'path' => '/features/users/{userId}',
+        'methodController' => 'FeatureController@indexForUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => ['userId' => '[0-9]+'],
     ],
     [
         'name' => 'features.toggle',
         'method' => 'put',
-        'path' => '/features/{featureId}',
-        'methodController' => 'FeatureController@toggleByFeatureId',
+        'path' => '/features/{name}',
+        'methodController' => 'FeatureController@toggleByName',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
-            'featureId' => '[0-9]+',
+            'name' => '[A-Za-z0-9\-_\.]+',
+        ],
+    ],
+    [
+        'name' => 'features.user.toggle',
+        'method' => 'put',
+        'path' => '/features/users/{userId}/{name}',
+        'methodController' => 'FeatureController@toggleByNameForUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'name' => '[A-Za-z0-9\-_\.]+',
+        ],
+    ],
+    [
+        'name' => 'features.user.delete',
+        'method' => 'delete',
+        'path' => '/features/users/{userId}/{name}',
+        'methodController' => 'FeatureController@deleteByNameForUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+            'name' => '[A-Za-z0-9\-_\.]+',
         ],
     ],
     [
@@ -340,6 +376,32 @@ return [
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'features.users.flush',
+        'method' => 'post',
+        'path' => '/features/users/flush',
+        'methodController' => 'FeatureController@flushAllUserFeatures',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'features.user.flush',
+        'method' => 'post',
+        'path' => '/features/users/{userId}/flush',
+        'methodController' => 'FeatureController@flushUserFeatures',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
     ],
 
     // filters

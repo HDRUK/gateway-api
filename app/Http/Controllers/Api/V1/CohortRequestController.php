@@ -1289,12 +1289,18 @@ class CohortRequestController extends Controller
      */
     public function checkAccessCohortDiscoveryService(Request $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = $input['jwt_user'];
+        $id = is_array($jwtUser) ? ($jwtUser['id'] ?? null) : null;
+        $user = User::find($id);
+
         $guard = $this->guardAccessOrReturnResponse($request, __FUNCTION__);
         if ($guard instanceof JsonResponse) {
             return $guard;
         }
 
-        if (! Feature::active('CohortDiscoveryService')) {
+        // fail if either the user feature flag or global feature flag is turned off
+        if (! (Feature::for($user)->active('CohortDiscoveryService') || Feature::active('CohortDiscoveryService'))) {
             return response()->json([
                 'message' => 'Cohort Discovery is not enabled',
             ], Config::get('statuscodes.STATUS_NOT_IMPLEMENTED.code'));
@@ -1345,12 +1351,17 @@ class CohortRequestController extends Controller
      */
     public function checkAccessRquest(Request $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = $input['jwt_user'];
+        $id = is_array($jwtUser) ? ($jwtUser['id'] ?? null) : null;
+        $user = User::find($id);
+
         $guard = $this->guardAccessOrReturnResponse($request, __FUNCTION__);
         if ($guard instanceof JsonResponse) {
             return $guard;
         }
 
-        if (! Feature::active('RQuest')) {
+        if (! (Feature::for($user)->active('RQuest') || Feature::active('RQuest'))) {
             return response()->json([
                 'message' => 'RQUEST is not enabled',
             ], Config::get('statuscodes.STATUS_NOT_IMPLEMENTED.code'));
@@ -1587,7 +1598,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException;
         }
 
         try {
@@ -1659,7 +1670,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException;
         }
 
         try {
@@ -1779,7 +1790,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException;
         }
 
         try {

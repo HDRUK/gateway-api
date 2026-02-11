@@ -2,43 +2,65 @@
 
 namespace Database\Seeders;
 
-use App\Models\Feature;
+use Exception;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
+use Laravel\Pennant\Feature;
 
 class FeatureSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    private static array $defaults = [
+        'SDEConciergeServiceEnquiry' => true,
+        'Aliases' => true,
+        'NhsSdeApplicationsEnabled' => false,
+        'Widgets' => false,
+        'RQuest' => true,
+        'CohortDiscoveryService' => false,
+    ];
+
     public function run(): void
     {
-        Feature::truncate();
+        $this->requirePennantDatabaseStore();
 
-        $now = Carbon::now();
+        $created = 0;
+        $existing = 0;
 
-        // Seed features with global scope
-        $globalFeatures = [
-            ['name' => 'SDEConciergeServiceEnquiry', 'value' => 'true'],
-            ['name' => 'Aliases', 'value' => 'true'],
-            ['name' => 'NhsSdeApplicationsEnabled', 'value' => 'false'],
-            ['name' => 'Widgets', 'value' => 'false'],
-            ['name' => 'RQuest', 'value' => 'true'],
-            ['name' => 'CohortDiscoveryService', 'value' => 'false'],
-        ];
+        $storedNames = \DB::table('features')
+            ->distinct()
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
 
-        foreach ($globalFeatures as $feature) {
-            Feature::create([
-                'name' => $feature['name'],
-                'scope' => '__laravel_null',
-                'value' => $feature['value'],
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+        foreach (self::$defaults as $name => $defaultValue) {
+            if (in_array($name, $storedNames, true)) {
+                $existing++;
+
+                continue;
+            }
+            if ($defaultValue) {
+                Feature::activate($name);
+            } else {
+                Feature::deactivate($name);
+            }
+            $this->command->info(
+                'CREATED: '.$name.' = '.var_export($defaultValue, true)
+            );
+            $created++;
         }
 
+        Feature::flushCache();
+
         $this->command->newLine();
-        $this->command->info('All feature flags seeded successfully!');
+        $this->command->info("Feature flags seeded. Created: {$created}, Existing: {$existing}");
         $this->command->newLine();
+    }
+
+    private function requirePennantDatabaseStore(): void
+    {
+        $storeName = config('pennant.default', 'array');
+        $driver = config("pennant.stores.$storeName.driver", 'array');
+
+        if ($driver !== 'database') {
+            throw new Exception('FeatureSeeder requires PENNANT_STORE=database.');
+        }
     }
 }
