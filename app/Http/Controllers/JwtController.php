@@ -41,7 +41,7 @@ class JwtController extends Controller
         $this->secretKey = (string) config('jwt.secret');
 
         $this->config = Configuration::forSymmetricSigner(
-            new Sha256(),
+            new Sha256,
             InMemory::plainText($this->secretKey)
         );
 
@@ -68,22 +68,20 @@ class JwtController extends Controller
             $expireTime = $currentTime->addSeconds(intval(config('jwt.expiration')));
 
             $user = User::find($userId);
-            //$user->workgroups->makeHidden('pivot');
+            $userClaim = $user->toArray();
+            $userClaim['workgroups'] = [];
 
-            if (Feature::active('CohortDiscoveryService')) {
+            if (Feature::for($user)->active('CohortDiscoveryService') || Feature::active('CohortDiscoveryService')) {
+                $user->workgroups->makeHidden('pivot');
                 $user->cohortAdminTeams->setVisible(['id', 'name']);
 
-                /*
-                - cohort discovery service will self manage workgroups now
-                - leave this code in, incase we want to return to gateway managed
-                $userClaim = $user->toArray();
                 $userClaim['workgroups'] = $user->workgroups
                     ->where('active', 1)
                     ->pluck('name')
                     ->values()
                     ->all();
-                */
 
+                $userClaim['cohort_admin_teams'] = $user->cohortAdminTeams->toArray();
             }
 
             $token = $this->config->builder()
@@ -94,7 +92,7 @@ class JwtController extends Controller
                 ->issuedAt($currentTime) // iat claim
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim
-                ->withClaim('user', $user) // custom claim - user
+                ->withClaim('user', $userClaim) // custom claim - user
                 ->withClaim('cohort_discovery_url', Config::get('services.cohort_discovery_service.init_url'))
                 ->getToken($this->config->signer(), $this->config->signingKey());
 
