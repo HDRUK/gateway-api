@@ -15,8 +15,6 @@ class FeatureSeeder extends Seeder
         'Widgets' => false,
         'RQuest' => true,
         'CohortDiscoveryService' => false,
-        'ttest54' => true,
-        'ttedast5' => false,
     ];
 
     public function run(): void
@@ -26,7 +24,7 @@ class FeatureSeeder extends Seeder
         $created = 0;
         $existing = 0;
 
-        $store = Feature::store();
+        //$store = Feature::store();
         $storedNames = \DB::table('features')
             ->distinct()
             ->orderBy('name')
@@ -39,8 +37,11 @@ class FeatureSeeder extends Seeder
 
                 continue;
             }
-
-            $store->set($name, null, $defaultValue);
+            if ($defaultValue) {
+                Feature::activate($name);
+            } else {
+                Feature::deactivate($name);
+            }
             $this->command->info(
                 'CREATED: '.$name.' = '.var_export($defaultValue, true)
             );

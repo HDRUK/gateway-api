@@ -8,6 +8,7 @@ use App\Observers\DataAccessApplicationObserver;
 use Config;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
+use Laravel\Pennant\Feature;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -63,5 +64,7 @@ class AppServiceProvider extends ServiceProvider
         Passport::refreshTokensExpireIn(now()->addDays(30));
 
         DataAccessApplication::observe(DataAccessApplicationObserver::class);
+
+        Feature::resolveScopeUsing(fn ($driver) => null);
     }
 }

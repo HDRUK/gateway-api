@@ -126,8 +126,13 @@ class FeatureController extends Controller
                 ], 404);
             }
 
+            $names = $this->featureNames();
+            $userValues = Feature::for($user)->values($names);
+            $values = $this->effectiveValuesForUser($user);
+
             return response()->json([
-                'data' => $this->effectiveValuesForUser($user),
+                'data' => $values,
+                'userValues' => $userValues,
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
@@ -567,8 +572,6 @@ class FeatureController extends Controller
         // Feature::for($user) scope defaults to false if the feature doesnt exist
         // - i cant work out how to get it default for the Feature::for(null) scope
         //   if the value doesnt exist (which could be true), rather than default to false
-
-        //$userValues = Feature::for($user)->values($names);
 
         // I've done this manually myself instead via:
         // - i dont love it, but it does work
