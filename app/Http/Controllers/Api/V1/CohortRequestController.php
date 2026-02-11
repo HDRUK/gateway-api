@@ -617,8 +617,6 @@ class CohortRequestController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
-        error_log('here i am!');
-
         try {
             $requestStatus = strtoupper(trim($input['request_status']));
             $nhseSdeRequestStatus = strtoupper(trim($input['nhse_sde_request_status']));
@@ -656,8 +654,6 @@ class CohortRequestController extends Controller
                     ...(($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) ? ['nhse_sde_request_expire_at' => $nhseSdeRequestExpireAt] : []),
                 ]);
             }
-
-            error_log($requestStatus);
 
             switch ($requestStatus) {
                 case 'PENDING':
@@ -1303,7 +1299,7 @@ class CohortRequestController extends Controller
             return $guard;
         }
 
-        // if either user flag or the global flag does not have cohort discovery enabled
+        // fail if either the user feature flag or global feature flag is turned off
         if (! (Feature::for($user)->active('CohortDiscoveryService') || Feature::active('CohortDiscoveryService'))) {
             return response()->json([
                 'message' => 'Cohort Discovery is not enabled',
@@ -1602,7 +1598,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException;
         }
 
         try {
@@ -1674,7 +1670,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException;
         }
 
         try {
@@ -1794,7 +1790,7 @@ class CohortRequestController extends Controller
 
         // Check that the user is asking only for their own record.
         if (! ($jwtUser['id'] === $id)) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException;
         }
 
         try {
