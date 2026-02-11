@@ -698,7 +698,7 @@ class CohortRequestController extends Controller
                 // - the admin updates to add workgroups
                 $workgroupIds = $input['workgroup_ids'];
                 if (! is_null($workgroupIds)) {
-                    $userId = (int) $jwtUser['id'];
+                    $userId = $currCohortRequest->user_id;
 
                     $existingIds = UserHasWorkgroup::where('user_id', $userId)
                         ->pluck('workgroup_id')

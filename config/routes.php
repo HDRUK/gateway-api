@@ -5141,4 +5141,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    [
+        'name' => 'workgroups',
+        'method' => 'get',
+        'path' => '/workgroups',
+        'methodController' => 'WorkgroupController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+        ],
+    ],
 ];
