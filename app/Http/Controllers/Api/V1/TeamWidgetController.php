@@ -27,7 +27,7 @@ class TeamWidgetController extends Controller
      *    path="/api/v1/teams/{teamId}/widgets",
      *    operationId="fetch_all_widgets",
      *    tags={"Widgets"},
-     *    summary="WidgetController@get",
+     *    summary="WidgetController@index",
      *    description="Get All Widgets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
@@ -47,7 +47,7 @@ class TeamWidgetController extends Controller
      *    )
      * )
      */
-    public function get(Request $request, int $teamId): JsonResponse
+    public function index(Request $request, int $teamId): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -65,7 +65,7 @@ class TeamWidgetController extends Controller
                     'updated_at',
                     'unit',
                     'team_id',
-                    'colours',
+                    'include_search_bar',
                 ])
                 ->map(function ($widget) {
                     return [
@@ -77,6 +77,7 @@ class TeamWidgetController extends Controller
                         'unit' => $widget->unit,
                         'team_id' => $widget->team_id,
                         'team_name' => $widget->team['name'],
+                        'include_search_bar' => $widget->include_search_bar,
                     ];
                 });
 
