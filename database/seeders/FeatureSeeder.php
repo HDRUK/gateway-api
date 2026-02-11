@@ -24,7 +24,6 @@ class FeatureSeeder extends Seeder
         $created = 0;
         $existing = 0;
 
-        //$store = Feature::store();
         $storedNames = \DB::table('features')
             ->distinct()
             ->orderBy('name')
