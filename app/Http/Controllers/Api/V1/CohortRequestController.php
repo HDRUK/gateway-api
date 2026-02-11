@@ -21,6 +21,7 @@ use App\Models\OauthClient;
 use App\Models\OauthUser;
 use App\Models\Permission;
 use App\Models\User;
+use App\Models\UserHasWorkgroup;
 use Auditor;
 use Config;
 use Exception;
@@ -346,7 +347,7 @@ class CohortRequestController extends Controller
         try {
             $cohortRequests = CohortRequest::where('id', $id)
                 ->with([
-                    'user',
+                    'user.workgroups',
                     'logs' => function ($q) {
                         $q->orderBy('id', 'desc');
                     },
@@ -688,7 +689,37 @@ class CohortRequestController extends Controller
                     break;
             }
 
+            if (
+                Feature::active('CohortDiscoveryService')
+                && isset($input['workgroup_ids'])
+            ) {
+                //only can update workgroups once the request has been made
+                // - user would create a request
+                // - the admin updates to add workgroups
+                $workgroupIds = $input['workgroup_ids'];
+                if (! is_null($workgroupIds)) {
+                    $userId = (int) $jwtUser['id'];
+
+                    $existingIds = UserHasWorkgroup::where('user_id', $userId)
+                        ->pluck('workgroup_id')
+                        ->toArray();
+
+                    UserHasWorkgroup::where('user_id', $userId)
+                        ->whereNotIn('workgroup_id', $workgroupIds)
+                        ->delete();
+
+                    $toAdd = array_values(array_diff($workgroupIds, $existingIds));
+                    foreach ($toAdd as $workgroupId) {
+                        UserHasWorkgroup::create([
+                            'user_id' => $userId,
+                            'workgroup_id' => $workgroupId,
+                        ]);
+                    }
+                }
+            }
+
             // TODO: only send an email if there's a change.
+            // - note: we might want to add what workgroups they're in to the email?
             $this->sendEmail($id);
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
