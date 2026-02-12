@@ -1,3 +1,30 @@
+## [2.33.0](https://github.com/HDRUK/gateway-api/compare/v2.32.0...v2.33.0) (2026-02-12)
+
+### ✨ Features
+
+* **GAT-8427:** Feature Flagging Table (#1496) ([0ed1b0b](https://github.com/HDRUK/gateway-api/commit/0ed1b0babfa934d7f65a4b2d0c11bc1bf6b0048a)), closes [GAT-8427](GAT-8427)
+* **GAT-8431:** Add missing elements from initial widget build (#1520) ([5972670](https://github.com/HDRUK/gateway-api/commit/5972670d089ae7660cb2df0a130d76c21703387b)), closes [GAT-8431](GAT-8431)
+* **GAT-8435:** update reindex data custodian network (#1517) ([8cd6d9d](https://github.com/HDRUK/gateway-api/commit/8cd6d9d0077b460caf2f319464e9a34950bc81b5)), closes [GAT-8435](GAT-8435)
+* **GAT-8466:** colour options to widget (#1514) ([4e0aa70](https://github.com/HDRUK/gateway-api/commit/4e0aa7083f3a48a2035c1aa8df364c256770b6ec)), closes [GAT-8466](GAT-8466)
+* **GAT-8472:** added permissions for dar manager (#1513) ([cb22024](https://github.com/HDRUK/gateway-api/commit/cb22024c0a93c45db20724f3452a212a5dff7e6b)), closes [GAT-8472](GAT-8472)
+* **GAT-8486:** Feature Flags enable for cohort discovery (#1508) ([c39faf7](https://github.com/HDRUK/gateway-api/commit/c39faf75fcf86e5fb5e445a57260fecceb146fcb)), closes [GAT-8486](GAT-8486)
+* **GAT-8486:** missed file (#1509) ([fb51cae](https://github.com/HDRUK/gateway-api/commit/fb51caeb0b940d2c97f6377e82556730eacd1b84)), closes [GAT-8486](GAT-8486)
+* **GAT-8486:** Missing some permissions (#1510) ([46b3846](https://github.com/HDRUK/gateway-api/commit/46b3846ec67b82f0dfb8279c2bc0247e1446c639)), closes [GAT-8486](GAT-8486)
+* **GAT-8486:** Service account config name is wrong (#1511) ([e111f7e](https://github.com/HDRUK/gateway-api/commit/e111f7e3282d1aa014c99d0840ac80d983c72e72)), closes [GAT-8486](GAT-8486)
+* **GAT-8521:** Enable a workgroup controller (#1521) ([e5d960c](https://github.com/HDRUK/gateway-api/commit/e5d960c027cae3c7ea95649bde5ab45b50134253)), closes [GAT-8521](GAT-8521)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** Correct test user migration env name (#1507) ([72e3007](https://github.com/HDRUK/gateway-api/commit/72e300754aba63b67c1d929f4b557b322c0027be)), closes [GAT-0000](GAT-0000)
+* **GAT-0000:** Fix CollectionHasUserSeeder (#1505) ([47d8efc](https://github.com/HDRUK/gateway-api/commit/47d8efc6755c8690ea356589b0722c18113434aa))
+* **GAT-0000:** Fix issue with data access seeder (#1504) ([0023db4](https://github.com/HDRUK/gateway-api/commit/0023db4e0d5ff3442e75e1bb9c23593a78d29cf6))
+* **GAT-0000:** package pint update (#1523) ([d5b2076](https://github.com/HDRUK/gateway-api/commit/d5b207613198768074883b66867adcd23c54af6f)), closes [GAT-0000](GAT-0000)
+* **GAT-7452:** sorting by most recently updated datasets (#1522) ([8e27b0f](https://github.com/HDRUK/gateway-api/commit/8e27b0f80ea497fd6cf919ad717eb1a4834d7a45)), closes [GAT-7452](GAT-7452) [most](ost)
+* **GAT-7844:** Updates to personal profile (#1518) ([a2cce59](https://github.com/HDRUK/gateway-api/commit/a2cce590732fc902a291a851456889a2802e3df0)), closes [GAT-7844](GAT-7844)
+* **GAT-8009:** Data issue causing bug when adding Dataset (#1512) ([9f8c9ce](https://github.com/HDRUK/gateway-api/commit/9f8c9ce74c9d709851665d10094f02d6bb45776c)), closes [GAT-8009](GAT-8009)
+* **GAT-8420:** Content Variance SQL Injection (#1515) ([6fa8484](https://github.com/HDRUK/gateway-api/commit/6fa84846668c823d5c5febc8c1dc0dd9e55f8d85)), closes [GAT-8420](GAT-8420)
+* **GAT-8523:** Reworking Feature Flags for users (#1519) ([98a7082](https://github.com/HDRUK/gateway-api/commit/98a708249a54b2b3e0a6fb1e5162f457b69523d3)), closes [GAT-8523](GAT-8523)
+
 ## [2.32.0](https://github.com/HDRUK/gateway-api/compare/v2.31.0...v2.32.0) (2026-01-28)
 
 ### ✨ Features
