@@ -180,7 +180,7 @@ class TeamDurController extends Controller
     {
         $input = $request->all();
 
-        $this->checkAccess($input, $teamId, null, 'team', $request->header());
+        $this->checkAccess($input, $teamId, null, 'team', $request->headers->all());
 
         try {
             $projectTitle = $request->query('project_title', null);
@@ -201,20 +201,6 @@ class TeamDurController extends Controller
                     'publications',
                     'tools',
                     'keywords',
-                    // SC: I can't get these fields to work properly when applying a status=ACTIVE condition to the underlying entity.
-                    // I don't think the FE ever uses this information, so I'm disabling it until it ever is required again.
-                    // 'userDatasets' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
-                    // 'userPublications' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
-                    // 'applicationDatasets' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
-                    // 'applicationPublications' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
                     'user',
                     'team',
                     'application',
@@ -236,35 +222,6 @@ class TeamDurController extends Controller
 
                 return $dur;
             });
-
-            // SC: disabling for now (see comment above)
-            // $durs->getCollection()->transform(function ($dur) {
-            //     $userDatasets = $dur->userDatasets;
-            //     $userPublications = $dur->userPublications;
-            //     $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
-            //     $applicationDatasets = $dur->applicationDatasets;
-            //     $applicationPublications = $dur->applicationPublications;
-            //     $users = $userDatasets->merge($userPublications)->unique('id');
-            //     $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
-            //     $dur->setRelation('users', $users);
-            //     $dur->setRelation('applications', $applications);
-
-
-            //     unset(
-            //         $users,
-            //         $userDatasets,
-            //         $userPublications,
-            //         $applications,
-            //         $applicationDatasets,
-            //         $applicationPublications,
-            //         $dur->userDatasets,
-            //         $dur->userPublications,
-            //         $dur->applicationDatasets,
-            //         $dur->applicationPublications
-            //     );
-
-            //     return $dur;
-            // });
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -330,7 +287,7 @@ class TeamDurController extends Controller
      */
     public function count(GetDurCountByTeamAndStatus $request, int $teamId, string $field): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
+        $this->checkAccess($request->all(), $teamId, null, 'team', $request->headers->all());
 
         try {
             $counts = Dur::where('team_id', $teamId)->applyCount();
@@ -453,7 +410,7 @@ class TeamDurController extends Controller
     public function show(GetDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $this->checkAccess($input, $teamId, null, 'team', $request->header());
+        $this->checkAccess($input, $teamId, null, 'team', $request->headers->all());
 
         try {
             $dur = $this->getDurById($id, teamId: $teamId);
@@ -605,7 +562,7 @@ class TeamDurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
-        $this->checkAccess($input, $teamId, null, 'team', $request->header());
+        $this->checkAccess($input, $teamId, null, 'team', $request->headers->all());
 
         $arrayKeys = [
             'non_gateway_datasets',
@@ -879,7 +836,7 @@ class TeamDurController extends Controller
         if (!$initDur) {
             throw new NotFoundException();
         }
-        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->headers->all());
         if ($initDur->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
@@ -1163,7 +1120,7 @@ class TeamDurController extends Controller
         if (!$initDur) {
             throw new NotFoundException();
         }
-        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->headers->all());
         if ($initDur->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
@@ -1322,7 +1279,7 @@ class TeamDurController extends Controller
         if (!$initDur) {
             throw new NotFoundException();
         }
-        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->headers->all());
         if ($initDur->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
