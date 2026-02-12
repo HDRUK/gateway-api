@@ -63,7 +63,7 @@ trait DatasetFetch
         $datasetIds = DatasetVersion::whereIn('id', $versionIds)->distinct()->pluck('dataset_id')->toArray();
 
         // Step 3: Retrieve all active datasets using the collected dataset IDs
-        $datasets = Dataset::whereIn('id', $datasetIds)->where('status', 'ACTIVE')->get();
+        $datasets = Dataset::whereIn('id', $datasetIds)->where('status', Dataset::STATUS_ACTIVE)->get();
 
         // Iterate through each dataset and add associated dataset versions
         foreach ($datasets as $dataset) {
@@ -72,9 +72,8 @@ trait DatasetFetch
 
             $datasetTitle = DatasetVersion::where('dataset_id', $dataset->id)->whereIn('id', $versionIds)->orderByDesc('version')->value('title');
 
-            if (!is_null($datasetTitle)) {
-                $dataset->setAttribute('name', $datasetTitle); // This can be modified to return metadata
-            }
+            $dataset->setAttribute('name', $datasetTitle ?? null); // This can be modified to return metadata
+
             // Add associated dataset versions to the dataset object
             $dataset->setAttribute('dataset_version_ids', $datasetVersionIds);
             // Add extra fields as required for DatasetVersionHasTool case.
