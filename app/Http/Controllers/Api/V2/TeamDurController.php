@@ -180,7 +180,7 @@ class TeamDurController extends Controller
     {
         $input = $request->all();
 
-        $this->checkAccess($input, $teamId, null, 'team', $request->headers->all());
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $projectTitle = $request->query('project_title', null);
@@ -287,7 +287,7 @@ class TeamDurController extends Controller
      */
     public function count(GetDurCountByTeamAndStatus $request, int $teamId, string $field): JsonResponse
     {
-        $this->checkAccess($request->all(), $teamId, null, 'team', $request->headers->all());
+        $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
 
         try {
             $counts = Dur::where('team_id', $teamId)->applyCount();
@@ -410,7 +410,7 @@ class TeamDurController extends Controller
     public function show(GetDurByTeamAndId $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $this->checkAccess($input, $teamId, null, 'team', $request->headers->all());
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
             $dur = $this->getDurById($id, teamId: $teamId);
@@ -562,7 +562,7 @@ class TeamDurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
-        $this->checkAccess($input, $teamId, null, 'team', $request->headers->all());
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         $arrayKeys = [
             'non_gateway_datasets',
@@ -836,7 +836,7 @@ class TeamDurController extends Controller
         if (!$initDur) {
             throw new NotFoundException();
         }
-        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->headers->all());
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
         if ($initDur->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
@@ -1120,7 +1120,7 @@ class TeamDurController extends Controller
         if (!$initDur) {
             throw new NotFoundException();
         }
-        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->headers->all());
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
         if ($initDur->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
@@ -1279,7 +1279,7 @@ class TeamDurController extends Controller
         if (!$initDur) {
             throw new NotFoundException();
         }
-        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->headers->all());
+        $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
         if ($initDur->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
