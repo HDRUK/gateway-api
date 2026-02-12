@@ -102,10 +102,7 @@ class DatasetVersion extends Model
     */
     public function scopeFilterTitle(Builder $query, string $filterTitle): Builder
     {
-        return $query->whereRaw(
-            "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER(?)",
-            ["%$filterTitle%"]
-        );
+        return $query->where('title', 'LIKE', "%{$filterTitle}%");
     }
 
     /**

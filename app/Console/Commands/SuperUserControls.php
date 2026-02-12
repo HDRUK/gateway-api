@@ -36,7 +36,7 @@ class SuperUserControls extends Command
             return 1; // Exit with error code
         }
 
-        switch($action) {
+        switch ($action) {
             case 'add':
                 $role = UserHasRole::where('user_id', $user->id)
                     ->where('role_id', 1)->first();

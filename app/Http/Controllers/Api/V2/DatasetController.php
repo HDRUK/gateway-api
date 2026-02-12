@@ -117,51 +117,33 @@ class DatasetController extends Controller
         try {
             $matches = [];
             $filterStatus = $request->query('status', null);
-            $withMetadata = $request->boolean('with_metadata', true);
-
-            // apply any initial filters to get initial datasets // TODO: remove this status field?
-            $initialDatasets = Dataset::when($filterStatus, function ($query) use ($filterStatus) {
-                return $query->where('status', '=', $filterStatus);
-            })->select(['id'])->get();
-
-            // Map initially found datasets to just ids.
-            foreach ($initialDatasets as $ds) {
-                $matches[] = $ds->id;
-            }
-
             $filterTitle = $request->query('title', null);
-
-            if (!empty($filterTitle)) {
-                // If we've received a 'title' for the search, then only return
-                // datasets that match that title
-                $titleMatches = [];
-
-                // For each of the initially found datasets matching previous
-                // filters and refine further on textual based matches.
-                foreach ($matches as $m) {
-                    $version = DatasetVersion::where('dataset_id', $m)
-                    ->filterTitle($filterTitle)
-                    ->select('dataset_id')
-                    ->first();
-
-                    if ($version) {
-                        $titleMatches[] = $version->dataset_id;
-                    }
-                }
-
-                // Finally intersect our two arrays to find commonality between all
-                // filtering methods. This will return a much slimmer array of returned
-                // items
-                $matches = array_intersect($matches, $titleMatches);
-            }
-
+            $withMetadata = $request->boolean('with_metadata', true);
             $perPage = request('per_page', Config::get('constants.per_page'));
 
-            // perform query for the matching datasets with ordering and pagination.
+            $matches = Dataset::query()
+                ->when($filterStatus, fn ($query) => $query->where('status', '=', $filterStatus))
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($filterTitle)) {
+                $matches = DatasetVersion::whereIn('dataset_id', $matches)
+                    ->filterTitle($filterTitle)
+                    ->select('dataset_id', 'version')
+                    ->orderBy('version', 'desc')
+                    ->get()
+                    ->unique('dataset_id')
+                    ->pluck('dataset_id')
+                    ->toArray();
+            }
+
             $datasets = Dataset::whereIn('id', $matches)
-                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
                 ->applySorting()
                 ->paginate($perPage, ['*'], 'page');
+
+            if ($withMetadata) {
+                $datasets->through(fn ($dataset) => $dataset->load('latestMetadata'));
+            }
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -182,7 +164,6 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
 
     /**
      * @OA\Get(

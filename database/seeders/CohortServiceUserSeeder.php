@@ -5,41 +5,48 @@ namespace Database\Seeders;
 use App\Models\OauthClient;
 use App\Models\User;
 use Config;
-use Illuminate\Database\Seeder;
 use Database\Seeders\Traits\HelperFunctions;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Str;
-
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Support\Str;
 
 class CohortServiceUserSeeder extends Seeder
 {
     use HelperFunctions;
 
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        $email = Config::get('services.cohort_discovery_service.service_account');
+        $clientName = 'cohort-discovery-oauth-client';
+
+        $existingUser = User::where('email', $email)->first();
+        if ($existingUser) {
+            OauthClient::where('user_id', $existingUser->id)
+                ->where('name', $clientName)
+                ->delete();
+
+            $existingUser->delete();
+        }
+
         $this->createUser(
             'HDRUK',
             'Cohort-Service-User',
-            Config::get('services.cohort_discovery.service_account'),
+            $email,
             '$2y$10$qmXzkOCukyMCXwYrSuNgE.S7MMkswr7/vIoENJngxdn5kdeiwCcyu',
             true,
             [
                 'hdruk.superadmin', // needed?
             ]
         );
-        $user = User::where('email', Config::get('services.cohort_discovery.service_account'))->first();
 
+        $user = User::where('email', $email)->firstOrFail();
         OauthClient::create([
-            'id' => Str::uuid(),
+            'id' => (string) Str::uuid(),
             'user_id' => $user->id,
-            'name' => 'cohort-discovery-oauth-client',
+            'name' => $clientName,
             'secret' => Hash::make(Str::random(40)),
             'provider' => null,
-            'redirect' => Config::get('services.cohort_discovery.auth_url'),
+            'redirect' => Config::get('services.cohort_discovery_service.auth_url'),
             'personal_access_client' => false,
             'password_client' => false,
             'revoked' => false,

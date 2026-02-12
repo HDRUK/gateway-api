@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-
 use Illuminate\Console\Command;
 
 class CompareGAT7330 extends Command

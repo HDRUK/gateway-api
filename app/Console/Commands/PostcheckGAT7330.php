@@ -8,7 +8,6 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Collection;
 use App\Models\Publication;
-
 use Illuminate\Console\Command;
 
 class PostcheckGAT7330 extends Command

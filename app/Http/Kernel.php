@@ -24,7 +24,6 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\ProfileRequest::class,
         \App\Http\Middleware\HstsMiddleware::class,
-        \App\Http\Middleware\DefineFeatureFlags::class,
         //\App\Http\Middleware\ValidateRequestID::class,
         \App\Http\Middleware\LogRequestResponse::class,
     ];

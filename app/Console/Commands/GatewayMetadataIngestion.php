@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-
 use App\Jobs\ProcessFederation;
 use App\Services\GatewayMetadataIngestionService;
 

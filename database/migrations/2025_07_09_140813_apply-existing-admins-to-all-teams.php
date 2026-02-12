@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-
 use App\Models\User;
 use App\Models\Team;
 use App\Models\TeamHasUser;

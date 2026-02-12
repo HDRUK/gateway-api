@@ -146,22 +146,22 @@ class SearchController extends Controller
      */
     public function datasets(Search $request): JsonResponse|BinaryFileResponse
     {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $input = $request->all();
+
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+        $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : 'list';
+        $sort = $request->query('sort', 'score:desc');
+        $viewType = $request->query('view_type', 'full');
+
+        $tmp = explode(':', $sort);
+        $sortInput = $tmp[0];
+        $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-
-            $input = $request->all();
-
-            $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : 'list';
-            $sort = $request->query('sort', 'score:desc');
-            $viewType = $request->query('view_type', 'full');
-
-            $tmp = explode(':', $sort);
-            $sortInput = $tmp[0];
-            $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
             $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -252,7 +252,6 @@ class SearchController extends Controller
                 $datasetsArray[$i]['team']['dar_modal_content'] = $model['team']['dar_modal_content'];
                 $datasetsArray[$i]['team']['dar_modal_footer'] = $model['team']['dar_modal_footer'];
             }
-
 
             if ($download && strtolower($downloadType) === 'list') {
                 Auditor::log([
@@ -355,9 +354,9 @@ class SearchController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        try {
+        $id = (string)$request['id'];
 
-            $id = (string)$request['id'];
+        try {
             $urlString = config('gateway.search_service_url') . '/similar/datasets';
             $response = Http::withHeaders($loggingContext)->post($urlString, ['id' => $id]);
 
@@ -398,8 +397,6 @@ class SearchController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
-
 
     /**
      * @OA\Post(
@@ -487,20 +484,21 @@ class SearchController extends Controller
      */
     public function tools(Search $request): JsonResponse|BinaryFileResponse
     {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $input = $request->all();
+
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+
+        $sort = $request->query('sort', 'score:desc');
+
+        $tmp = explode(':', $sort);
+        $sortField = $tmp[0];
+
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-
-            $input = $request->all();
-
-            $download = array_key_exists('download', $input) ? $input['download'] : false;
-
-            $sort = $request->query('sort', 'score:desc');
-
-            $tmp = explode(':', $sort);
-            $sortField = $tmp[0];
-
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $aggs = Filter::where('type', 'tool')->get()->toArray();
             $input['aggs'] = $aggs;
@@ -735,15 +733,14 @@ class SearchController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
+        $input = $request->all();
+
+        $sort = $request->query('sort', 'score:desc');
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
         try {
-
-            $input = $request->all();
-
-            $sort = $request->query('sort', 'score:desc');
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
             $aggs = Filter::where('type', 'collection')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -1132,21 +1129,21 @@ class SearchController extends Controller
      */
     public function publications(PublicationSearch $request): JsonResponse|BinaryFileResponse
     {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $input = $request->all();
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+        $sort = $request->query('sort', 'score:desc');
+
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+        $source = !is_null($input['source']) ? $input['source'] : 'GAT';
+
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-
-            $input = $request->all();
-            $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', 'score:desc');
-
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
-            $source = !is_null($input['source']) ? $input['source'] : 'GAT';
-
             $matchedIds = null;
             if ($source === 'GAT') {
                 $aggs = Filter::where('type', 'paper')->get()->toArray();
@@ -1438,10 +1435,9 @@ class SearchController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
+        $input = $request->all();
+
         try {
-
-            $input = $request->all();
-
             $urlString = config('gateway.search_service_url') . '/search/federated_papers/doi';
             $response = Http::withHeaders($loggingContext)->post($urlString, $input);
 
@@ -1573,19 +1569,19 @@ class SearchController extends Controller
      */
     public function dataCustodianNetworks(Request $request): JsonResponse|BinaryFileResponse
     {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $input = $request->all();
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+        $sort = $request->query('sort', 'score:desc');
+
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-
-            $input = $request->all();
-            $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', 'score:desc');
-
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
             $aggs = Filter::where('type', 'dataProviderColl')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -1749,19 +1745,19 @@ class SearchController extends Controller
      */
     public function dataCustodians(Search $request): JsonResponse|BinaryFileResponse
     {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $input = $request->all();
+        $download = array_key_exists('download', $input) ? $input['download'] : false;
+        $sort = $request->query('sort', 'score:desc');
+
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
         try {
-            $loggingContext = $this->getLoggingContext($request);
-            $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-
-            $input = $request->all();
-            $download = array_key_exists('download', $input) ? $input['download'] : false;
-            $sort = $request->query('sort', 'score:desc');
-
-            $tmp = explode(":", $sort);
-            $sortField = $tmp[0];
-
-            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
             $aggs = Filter::where('type', 'dataProvider')->get()->toArray();
             $input['aggs'] = $aggs;
 
@@ -1903,14 +1899,20 @@ class SearchController extends Controller
             usort(
                 $resultArray,
                 function ($a, $b) use ($sortField) {
-                    if (is_string($b['_source'][$sortField])) {
-                        return strtoupper($b['_source'][$sortField]) <=> strtoupper($a['_source'][$sortField]);
+                    $aVal = $a['_source'][$sortField];
+                    $bVal = $b['_source'][$sortField];
+
+                    if (strtotime($aVal) !== false) {
+                        return strtotime($bVal) <=> strtotime($aVal);
+                    } elseif (is_string($aVal)) {
+                        return strtoupper($bVal) <=> strtoupper($aVal);
                     } else {
-                        return $b['_source'][$sortField] <=> $a['_source'][$sortField];
+                        return $bVal <=> $aVal;
                     }
                 }
             );
         }
+
         return $resultArray;
     }
 

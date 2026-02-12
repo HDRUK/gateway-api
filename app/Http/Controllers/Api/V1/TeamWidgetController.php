@@ -12,7 +12,6 @@ use App\Models\Collection;
 use App\Models\Tool;
 use App\Models\Dur;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\LoggingContext;
@@ -27,7 +26,7 @@ class TeamWidgetController extends Controller
      *    path="/api/v1/teams/{teamId}/widgets",
      *    operationId="fetch_all_widgets",
      *    tags={"Widgets"},
-     *    summary="WidgetController@get",
+     *    summary="WidgetController@index",
      *    description="Get All Widgets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
@@ -47,7 +46,7 @@ class TeamWidgetController extends Controller
      *    )
      * )
      */
-    public function get(Request $request, int $teamId): JsonResponse
+    public function index(Request $request, int $teamId): JsonResponse
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -64,7 +63,9 @@ class TeamWidgetController extends Controller
                     'size_height',
                     'updated_at',
                     'unit',
-                    'team_id'
+                    'team_id',
+                    'include_search_bar',
+                    'colours',
                 ])
                 ->map(function ($widget) {
                     return [
@@ -76,6 +77,8 @@ class TeamWidgetController extends Controller
                         'unit' => $widget->unit,
                         'team_id' => $widget->team_id,
                         'team_name' => $widget->team['name'],
+                        'include_search_bar' => $widget->include_search_bar,
+                        'colours' => $widget->colours,
                     ];
                 });
 
@@ -519,6 +522,7 @@ class TeamWidgetController extends Controller
                     'include_search_bar'  => $widget->include_search_bar,
                     'include_cohort_link'  => $widget->include_cohort_link,
                     'keep_proportions' => $widget->keep_proportions,
+                    'colours' => $widget->colours,
                 ]
             ]], Config::get('statuscodes.STATUS_OK.code'));
 
@@ -651,6 +655,7 @@ class TeamWidgetController extends Controller
                 'included_data_uses'   => 'nullable|array',
                 'included_scripts'     => 'nullable|array',
                 'included_collections' => 'nullable|array',
+                'colours'               => 'nullable|array',
             ]);
 
             $validated['team_id'] = $teamId;
@@ -793,21 +798,21 @@ class TeamWidgetController extends Controller
             }
 
             $validated = $request->validate([
-            'widget_name'          => 'sometimes|string|max:255',
-            'size_width'           => 'sometimes|integer',
-            'size_height'          => 'sometimes|integer',
-            'unit'                 => 'sometimes|string|in:px,%,rem',
-            'include_search_bar'   => 'sometimes|boolean',
-            'include_cohort_link'  => 'sometimes|boolean',
-            'keep_proportions'     => 'sometimes|boolean',
-            'permitted_domains'    => 'sometimes|array|nullable',
-            'included_datasets'    => 'sometimes|array|nullable',
-            'included_data_uses'   => 'sometimes|array|nullable',
-            'included_scripts'     => 'sometimes|array|nullable',
-            'included_collections' => 'sometimes|array|nullable',
-            'data_custodian_entities_ids' => 'sometimes|array|nullable',
-
-        ]);
+                'widget_name'          => 'sometimes|string|max:255',
+                'size_width'           => 'sometimes|integer',
+                'size_height'          => 'sometimes|integer',
+                'unit'                 => 'sometimes|string|in:px,%,rem',
+                'include_search_bar'   => 'sometimes|boolean',
+                'include_cohort_link'  => 'sometimes|boolean',
+                'keep_proportions'     => 'sometimes|boolean',
+                'permitted_domains'    => 'sometimes|array|nullable',
+                'included_datasets'    => 'sometimes|array|nullable',
+                'included_data_uses'   => 'sometimes|array|nullable',
+                'included_scripts'     => 'sometimes|array|nullable',
+                'included_collections' => 'sometimes|array|nullable',
+                'data_custodian_entities_ids' => 'sometimes|array|nullable',
+                'colours'               => 'sometimes|array|nullable',
+            ]);
             foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'data_custodian_entities_ids'] as $field) {
                 if (isset($validated[$field]) && is_array($validated[$field])) {
                     $validated[$field] = implode(',', $validated[$field]);

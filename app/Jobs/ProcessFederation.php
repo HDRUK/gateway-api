@@ -7,12 +7,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-
 use App\Models\Federation;
 use App\Http\Traits\MetadataVersioning;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
-
 use App\Traits\GatewayMetadataIngestionTrait;
 
 class ProcessFederation implements ShouldQueue
