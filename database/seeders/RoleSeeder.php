@@ -138,8 +138,8 @@ class RoleSeeder extends Seeder
                     'cohort.read',
                     'cohort.update',
                     'cohort.delete',
-                    'SYSTEM_ADMIN', //cohort
-                    'GENERAL_ACCESS', //cohort
+                    'SYSTEM_ADMIN', // cohort
+                    'GENERAL_ACCESS', // cohort
                 ],
             ],
             'custodian.team.admin' => [
@@ -362,6 +362,20 @@ class RoleSeeder extends Seeder
             ],
         ];
 
+        $roles = [
+            'hdruk.cohort.admin' => [
+                'full_name' => 'HDR UK - Cohort Discovery Manager',
+                'permissions' => [
+                    'cohort.create',
+                    'cohort.read',
+                    'cohort.update',
+                    'cohort.delete',
+                    'SYSTEM_ADMIN', // cohort
+                    'GENERAL_ACCESS', // cohort
+                ],
+            ],
+        ];
+
         $perms = [];
         foreach ($roles as $k => $v) {
             if ($k === 'hdruk.superadmin') {
@@ -370,6 +384,8 @@ class RoleSeeder extends Seeder
 
             $perms = array_unique(array_merge($perms, $v['permissions']));
         }
+
+        dd($perms);
 
         foreach ($perms as $perm) {
             Permission::updateOrCreate(
