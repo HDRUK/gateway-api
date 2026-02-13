@@ -427,7 +427,7 @@ class TeamDataAccessApplicationController extends Controller
                 null,
                 $teamId,
                 (int) $jwtUser['id'],
-            );
+            )->first();
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -440,6 +440,7 @@ class TeamDataAccessApplicationController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $result,
             ], Config::get('statuscodes.STATUS_OK.code'));
+
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],

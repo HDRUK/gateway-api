@@ -403,7 +403,7 @@ class UserDataAccessApplicationController extends Controller
                 null,
                 null,
                 (int) $jwtUser['id'],
-            );
+            )->first();
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
