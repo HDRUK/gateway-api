@@ -412,7 +412,10 @@ class UserDataAccessApplicationController extends Controller
                 'description' => 'DataAccessApplication get by id',
             ]);
 
-            return response()->json($result->items()[0] ?? null);
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $result,
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
