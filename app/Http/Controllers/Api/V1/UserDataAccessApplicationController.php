@@ -384,6 +384,47 @@ class UserDataAccessApplicationController extends Controller
         }
     }
 
+    public function showApplicationHeader(Request $request, int $userId, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
+            $application = DataAccessApplication::where('id', $id)->with(['questions'])->firstOrFail();
+
+            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+                throw new UnauthorizedException('User does not have permission to use this endpoint to view this application.');
+            }
+
+            $result = $this->dashboardIndex(
+                [$id],
+                null,
+                null,
+                null,
+                null,
+                null,
+                (int) $jwtUser['id'],
+            );
+
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication get by id',
+            ]);
+
+            return response()->json($result->items()[0] ?? null);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
     /**
      * @OA\Get(
      *      path="/api/v1/users/{userId}/dar/applications/{id}/answers",

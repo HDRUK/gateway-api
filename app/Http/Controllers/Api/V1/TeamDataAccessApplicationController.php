@@ -370,6 +370,87 @@ class TeamDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/showHeader",
+     *      summary="Get header information about a specific DAR",
+     *      description="Get header information about a specific DAR",
+     *      tags={"TeamDataAccessApplication"},
+     *      summary="TeamDataAccessApplication@showHeader",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Items(
+     *                      @OA\Property(property="id", type="integer", example="123"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="applicant_id", type="integer", example="1"),
+     *                      @OA\Property(property="project_title", type="string", example="A project"),
+     *                      @OA\Property(property="user", type="array", @OA\Items(
+     *                          @OA\Property(property="name", type="string", example="A User"),
+     *                          @OA\Property(property="organisation", type="string", example="An origanisation"),
+     *                      )),
+     *                      @OA\Property(property="datasets", type="array", @OA\Items(
+     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                          @OA\Property(property="dataset_id", type="integer", example="1"),
+     *                          @OA\Property(property="dataset_title", type="string", example="A dataset"),
+     *                          @OA\Property(property="custodian", type="array", @OA\Items(
+     *                              @OA\Property(property="name", type="string", example="A Custodian"),
+     *                          )),
+     *                      )),
+     *                      @OA\Property(property="teams", type="array", @OA\Items(
+     *                          @OA\Property(property="team_id", type="integer", example="1"),
+     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                          @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                          @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *                      )),
+     *                  )
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function showApplicationHeader(Request $request, int $teamId, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
+            $this->checkTeamAccess($teamId, $id, 'view');
+            $result = $this->dashboardIndex(
+                [$id],
+                null,
+                null,
+                null,
+                null,
+                $teamId,
+                (int) $jwtUser['id'],
+            );
+
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication get by id',
+            ]);
+
+            return response()->json($result->items()[0] ?? null);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
      *      path="/api/v1/teams/{teamId}/dar/applications/{id}/download",
      *      summary="Returns a DAR form as a CSV with attached files as a zip",
      *      description="Returns a DAR form as a CSV with attached files as a zip",
