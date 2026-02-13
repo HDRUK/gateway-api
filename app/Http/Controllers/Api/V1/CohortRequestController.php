@@ -617,6 +617,7 @@ class CohortRequestController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $user = User::where('id', $jwtUser['id'])->first();
 
         try {
             $requestStatus = strtoupper(trim($input['request_status']));
@@ -690,10 +691,10 @@ class CohortRequestController extends Controller
             }
 
             if (
-                Feature::active('CohortDiscoveryService')
+                Feature::active('CohortDiscoveryService') || Feature::for($user)->active('CohortDiscoveryService')
                 && isset($input['workgroup_ids'])
             ) {
-                //only can update workgroups once the request has been made
+                // only can update workgroups once the request has been made
                 // - user would create a request
                 // - the admin updates to add workgroups
                 $workgroupIds = $input['workgroup_ids'];
