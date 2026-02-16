@@ -127,9 +127,10 @@ class FormHydrationController extends Controller
      */
     public function onboardingFormHydration(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
+        $model = $request->input('name', $request->input('model', Config::get('form_hydration.schema.model')));
         $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
         $dataTypes = $request->input('dataTypes', '');
+        $dataTypes = ($dataTypes === 'undefined' || $dataTypes === 'null') ? '' : $dataTypes;
         $teamId = $request->input('team_id', null);
 
         $hydrationJson = MMC::getOnboardingFormHydrated($model, $version, $dataTypes);

@@ -3,6 +3,7 @@
 return [
     'provider' => [
         'service' => 'service',
+        'cruk' => 'cruk',
         'internal' => 'internal',
         'google' => 'google',
         'linkedin' => 'linkedin',
