@@ -29,7 +29,7 @@ class DurObserver
      */
     public function updating(Dur $dur)
     {
-        $dur->prevStatus = $dur->getOriginal('status'); // 'status' before updating
+        $dur->prevStatus = (string) $dur->getOriginal('status'); // 'status' before updating
     }
 
     /**
@@ -60,7 +60,7 @@ class DurObserver
      */
     public function deleting(Dur $dur)
     {
-        $dur->prevStatus = $dur->getOriginal('status'); // 'status' before deleting
+        $dur->prevStatus = (string) $dur->getOriginal('status'); // 'status' before deleting
     }
 
     /**
