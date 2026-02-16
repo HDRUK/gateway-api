@@ -51,6 +51,12 @@ class AuthController extends Controller
      *                example="password123!",
      *                description="Password"
      *             ),
+     *             @OA\Property(
+     *                property="provider",
+     *                type="string",
+     *                example="service",
+     *                description="Auth provider: service (default) or cruk. Used for CRUK register/login."
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -81,7 +87,16 @@ class AuthController extends Controller
         try {
             $input = $request->all();
 
-            $user = User::where('email', $input['email'])->where('provider', Config::get('constants.provider.service'))->first();
+            $provider = $input['provider'] ?? Config::get('constants.provider.service');
+            $allowedProviders = [
+                Config::get('constants.provider.service'),
+                Config::get('constants.provider.cruk'),
+            ];
+            if (!in_array($provider, $allowedProviders, true)) {
+                $provider = Config::get('constants.provider.service');
+            }
+
+            $user = User::where('email', $input['email'])->where('provider', $provider)->first();
             if (!$user) {
                 throw new Exception("User not found");
             }
@@ -209,6 +224,12 @@ class AuthController extends Controller
      *                example="Doe",
      *                description="Last name (optional)"
      *             ),
+     *             @OA\Property(
+     *                property="provider",
+     *                type="string",
+     *                example="cruk",
+     *                description="Auth provider: service (default) or cruk. Use cruk for CRUK register."
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -257,13 +278,15 @@ class AuthController extends Controller
             }
 
             // Create user
+            $provider = $input['provider'] ?? Config::get('constants.provider.service');
+
             $user = User::create([
                 'email' => $input['email'],
                 'password' => Hash::make($input['password']),
                 'name' => $name,
                 'firstname' => $input['firstname'] ?? null,
                 'lastname' => $input['lastname'] ?? null,
-                'provider' => Config::get('constants.provider.service'),
+                'provider' => $provider,
             ]);
 
             // Generate JWT token
@@ -316,6 +339,12 @@ class AuthController extends Controller
      *                example="SecurePassword123!",
      *                description="Password"
      *             ),
+     *             @OA\Property(
+     *                property="provider",
+     *                type="string",
+     *                example="cruk",
+     *                description="Auth provider: service (default) or cruk. Use cruk for CRUK login."
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -357,9 +386,11 @@ class AuthController extends Controller
         try {
             $input = $request->validated();
 
+            $provider = $input['provider'] ?? Config::get('constants.provider.service');
+
             // Find user by email and provider
             $user = User::where('email', $input['email'])
-                ->where('provider', Config::get('constants.provider.service'))
+                ->where('provider', $provider)
                 ->first();
 
             if (!$user) {

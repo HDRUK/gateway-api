@@ -15,14 +15,19 @@ class RegisterRequest extends BaseFormRequest
      */
     public function rules(): array
     {
+        $provider = $this->input('provider', Config::get('constants.provider.service'));
+        $allowedProviders = [
+            Config::get('constants.provider.service'),
+            Config::get('constants.provider.cruk'),
+        ];
+
         return [
             'email' => [
                 'required',
                 'string',
                 'email',
-                Rule::unique('users')->where(function ($query) {
-                    return $query->where('email', $this->email)
-                        ->where('provider', Config::get('constants.provider.service'));
+                Rule::unique('users')->where(function ($query) use ($provider) {
+                    return $query->where('email', $this->email)->where('provider', $provider);
                 }),
             ],
             'password' => [
@@ -39,6 +44,11 @@ class RegisterRequest extends BaseFormRequest
                 'nullable',
                 'string',
                 'max:255',
+            ],
+            'provider' => [
+                'nullable',
+                'string',
+                Rule::in($allowedProviders),
             ],
         ];
     }
