@@ -126,7 +126,7 @@ class DatasetController extends Controller
                 ->pluck('id')
                 ->toArray();
 
-            if (!is_null($filterTitle) || !empty($filterTitle)) {
+            if (!empty($filterTitle)) {
                 $matches = DatasetVersion::whereIn('dataset_id', $matches)
                     ->filterTitle($filterTitle)
                     ->select('dataset_id', 'version')
