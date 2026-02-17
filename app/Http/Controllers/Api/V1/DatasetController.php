@@ -2,37 +2,37 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Config;
-use Auditor;
-use Exception;
-use App\Models\Team;
-use App\Models\User;
-use App\Models\Dataset;
-use App\Jobs\TermExtraction;
-use Illuminate\Http\Request;
-use App\Models\DatasetVersion;
-use App\Jobs\LinkageExtraction;
-use App\Http\Traits\CheckAccess;
-use Illuminate\Http\JsonResponse;
-use App\Models\Traits\ModelHelpers;
-use App\Http\Controllers\Controller;
-use App\Http\Traits\MetadataOnboard;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Http\Traits\MetadataVersioning;
-use Illuminate\Support\Facades\Storage;
-use MetadataManagementController as MMC;
-use App\Http\Requests\Dataset\GetDataset;
-use App\Http\Requests\Dataset\EditDataset;
-use App\Http\Requests\Dataset\TestDataset;
-use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Requests\Dataset\CreateDataset;
-use App\Http\Requests\Dataset\ExportDataset;
-use App\Http\Requests\Dataset\UpdateDataset;
-use App\Models\DatasetVersionHasDatasetVersion;
 use App\Exports\DatasetStructuralMetadataExport;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Dataset\CreateDataset;
+use App\Http\Requests\Dataset\EditDataset;
+use App\Http\Requests\Dataset\ExportDataset;
+use App\Http\Requests\Dataset\GetDataset;
+use App\Http\Requests\Dataset\TestDataset;
+use App\Http\Requests\Dataset\UpdateDataset;
+use App\Http\Traits\CheckAccess;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\MetadataOnboard;
+use App\Http\Traits\MetadataVersioning;
+use App\Jobs\LinkageExtraction;
+use App\Jobs\TermExtraction;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasDatasetVersion;
+use App\Models\Team;
+use App\Models\Traits\ModelHelpers;
+use App\Models\User;
+use Auditor;
+use Config;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use MetadataManagementController as MMC;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DatasetController extends Controller
 {
@@ -1467,6 +1467,7 @@ class DatasetController extends Controller
         $dataset = Dataset::where('id', '=', $id)->first();
 
         $result = $dataset->latestVersion()['metadata']['metadata'];
+        $originalMetadata = $dataset->latestVersion()['metadata']['original_metadata'];
 
         $response = new StreamedResponse(
             function () use ($result, $download_type) {
@@ -1532,6 +1533,10 @@ class DatasetController extends Controller
                     // Note that the contents here need to be manually kept up to date with the contents of
                     // gateway-web-2/src/app/[locale]/(logged-out)/dataset/[datasetId]/config.tsx.
                     // The 'Summary Demographics' rows match the summary boxes at the top of the dataset landing page
+
+                    $ageRange =  $this->getValueFromPath($result, 'coverage/typicalAgeRange');
+                    [$minAgeRange, $maxAgeRange] = strpos($ageRange, '-') !== false ? explode('-', $ageRange, 2) + [null, null] : [null, null];
+
                     $rows = [
                         ['Dataset', 'Name', $this->getValueFromPath($result, 'summary/title')],
                         ['Dataset', 'Gateway URL', $this->getValueFromPath($result, 'required/revisions/0/url')],
@@ -1564,9 +1569,9 @@ class DatasetController extends Controller
                         ['Provenance', 'Image contrast', $this->getValueFromPath($result, 'provenance/origin/imageContrast')],
                         ['Provenance', 'Biological sample availability', $this->getValueFromPath($result, 'coverage/materialType')],
 
-                        ['Details', 'Publishing frequency', $this->getValueFromPath($result, 'provenance/temporal/publishingFrequency')],
-                        ['Details', 'Version', $this->getValueFromPath($result, 'version')],
-                        ['Details', 'Modified', $this->getValueFromPath($result, 'modified')],
+                        ['Details', 'Publishing frequency', $this->getValueFromPath($result, 'provenance/temporal/accrualPeriodicity')],
+                        ['Details', 'Version', $this->getValueFromPath($result, 'required/version')],
+                        ['Details', 'Modified', $this->getValueFromPath($result, 'required/modified')],
                         ['Details', 'Distribution release date', $this->getValueFromPath($result, 'provenance/termporal/distributionReleaseDate')],
                         ['Details', 'Citation Requirements', implode(',', $this->getValueFromPath($result, 'accessibility/usage/resourceCreator'))],
 
@@ -1574,18 +1579,19 @@ class DatasetController extends Controller
                         ['Coverage', 'End date', $this->getValueFromPath($result, 'provenance/temporal/endDate')],
                         ['Coverage', 'Time lag', $this->getValueFromPath($result, 'provenance/temporal/timeLag')],
                         ['Coverage', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')],
-                        ['Coverage', 'Minimum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMin')],
-                        ['Coverage', 'Maximum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMax')],
+
+                        ['Coverage', 'Minimum age range', $minAgeRange],
+                        ['Coverage', 'Maximum age range', $maxAgeRange],
                         ['Coverage', 'Follow-up', $this->getValueFromPath($result, 'coverage/followUp')],
                         ['Coverage', 'Dataset completeness', $this->getValueFromPath($result, 'coverage/datasetCompleteness')],
 
                         ['Omics', 'Assay', $this->getValueFromPath($result, 'omics/assay')],
                         ['Omics', 'Platform', $this->getValueFromPath($result, 'omics/platform')],
 
-                        ['Accessibility', 'Language', $this->getValueFromPath($result, 'accessibility/formatAndStandards/language')],
+                        ['Accessibility', 'Language', $this->getValueFromPath($result, 'accessibility/formatAndStandards/languages')],
                         ['Accessibility', 'Alignment with standardised data models', $this->getValueFromPath($result, 'accessibility/formatAndStandards/conformsTo')],
                         ['Accessibility', 'Controlled vocabulary', $this->getValueFromPath($result, 'accessibility/formatAndStandards/vocabularyEncodingScheme')],
-                        ['Accessibility', 'Format', $this->getValueFromPath($result, 'accessibility/formatAndStandards/format')],
+                        ['Accessibility', 'Format', $this->getValueFromPath($result, 'accessibility/formatAndStandards/formats')],
 
                         ['Data Access Request', 'Dataset pipeline status', $this->getValueFromPath($result, 'documentation/inPipeline')],
                         ['Data Access Request', 'Access rights', $this->getValueFromPath($result, 'accessibility/access/accessRights')],

@@ -201,20 +201,6 @@ class TeamDurController extends Controller
                     'publications',
                     'tools',
                     'keywords',
-                    // SC: I can't get these fields to work properly when applying a status=ACTIVE condition to the underlying entity.
-                    // I don't think the FE ever uses this information, so I'm disabling it until it ever is required again.
-                    // 'userDatasets' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
-                    // 'userPublications' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
-                    // 'applicationDatasets' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
-                    // 'applicationPublications' => function ($query) {
-                    //     $query->distinct('id');
-                    // },
                     'user',
                     'team',
                     'application',
@@ -236,35 +222,6 @@ class TeamDurController extends Controller
 
                 return $dur;
             });
-
-            // SC: disabling for now (see comment above)
-            // $durs->getCollection()->transform(function ($dur) {
-            //     $userDatasets = $dur->userDatasets;
-            //     $userPublications = $dur->userPublications;
-            //     $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
-            //     $applicationDatasets = $dur->applicationDatasets;
-            //     $applicationPublications = $dur->applicationPublications;
-            //     $users = $userDatasets->merge($userPublications)->unique('id');
-            //     $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
-            //     $dur->setRelation('users', $users);
-            //     $dur->setRelation('applications', $applications);
-
-
-            //     unset(
-            //         $users,
-            //         $userDatasets,
-            //         $userPublications,
-            //         $applications,
-            //         $applicationDatasets,
-            //         $applicationPublications,
-            //         $dur->userDatasets,
-            //         $dur->userPublications,
-            //         $dur->applicationDatasets,
-            //         $dur->applicationPublications
-            //     );
-
-            //     return $dur;
-            // });
 
             Auditor::log([
                 'action_type' => 'GET',

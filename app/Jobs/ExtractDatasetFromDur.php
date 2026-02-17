@@ -55,6 +55,7 @@ class ExtractDatasetFromDur implements ShouldQueue
         $dur = Dur::findOrFail($durId);
         $nonGatewayDatasets = array_filter(array_map('trim', $dur['non_gateway_datasets'] ?? [])) ?? [];
         $unmatched = array();
+
         foreach ($nonGatewayDatasets as $nonGatewayDataset) {
             $nonDataset = trim($nonGatewayDataset);
 
@@ -79,10 +80,9 @@ class ExtractDatasetFromDur implements ShouldQueue
                 }
             }
 
-            $datasetVersion = DatasetVersion::whereRaw(
-                'LOWER(short_title) LIKE ?',
-                ['%' . strtolower($nonDataset) . '%']
-            )->latest('version')->first();
+            $datasetVersion = DatasetVersion::whereRaw('LOWER(short_title) LIKE ?', ['%' . strtolower($nonDataset) . '%'])
+                                ->latest('version')
+                                ->first();
             if ($datasetVersion) {
                 DurHasDatasetVersion::create([
                     'dur_id' => $durId,
