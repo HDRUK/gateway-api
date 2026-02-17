@@ -27,7 +27,6 @@ jobs:
       ||                             'release'
       }}
 
-
     steps:
     - name: Checkout
       id: checkout

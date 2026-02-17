@@ -15,6 +15,11 @@ class DatasetObserver
      */
     public function created(Dataset $dataset): void
     {
+        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE && $dataset->active_date === null) {
+            $dataset->active_date = now();
+            $dataset->save();
+        }
+
         $datasetVersion = DatasetVersion::where([
             'dataset_id' => $dataset->id
         ])->select('id')->first();
@@ -31,7 +36,7 @@ class DatasetObserver
      */
     public function updating(Dataset $dataset)
     {
-        $dataset->prevStatus = $dataset->getOriginal('status'); // 'status' before updating
+        $dataset->prevStatus = (string) $dataset->getOriginal('status'); // 'status' before updating
     }
 
     /**
@@ -39,6 +44,11 @@ class DatasetObserver
      */
     public function updated(Dataset $dataset): void
     {
+        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE && $dataset->active_date === null) {
+            $dataset->active_date = now();
+            $dataset->save();
+        }
+
         $prevStatus = $dataset->prevStatus;
         $datasetVersion = DatasetVersion::where([
             'dataset_id' => $dataset->id
@@ -64,7 +74,7 @@ class DatasetObserver
      */
     public function deleting(Dataset $dataset)
     {
-        $dataset->prevStatus = $dataset->getOriginal('status'); // 'status' before updating
+        $dataset->prevStatus = (string) $dataset->getOriginal('status'); // 'status' before updating
     }
 
     /**
