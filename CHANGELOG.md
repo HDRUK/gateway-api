@@ -1,3 +1,18 @@
+## [2.34.0](https://github.com/HDRUK/gateway-api/compare/v2.33.0...v2.34.0) (2026-02-17)
+
+### ✨ Features
+
+* **GAT-7350:** Add first made active date column (#1531) ([1d92362](https://github.com/HDRUK/gateway-api/commit/1d923622fbe2dfe5a1beff6d3420f95944c0e27f)), closes [GAT-7350](GAT-7350)
+
+### 🐛 Bug Fixes
+
+* **GAT-8109:** Data Use Register entries not matching Gateway dataset titles at first creation (#1530) ([6748f8c](https://github.com/HDRUK/gateway-api/commit/6748f8c9ae66646e8e5d4b8869a4730538951f6b)), closes [GAT-8109](GAT-8109) [Gateway](Gateway)
+* **GAT-8120:** check team notifications (#1532) ([f3e794e](https://github.com/HDRUK/gateway-api/commit/f3e794ed1378d38c6f146b2addab606bcd38e637)), closes [GAT-8120](GAT-8120)
+* **GAT-8317:** Unable to load data uses within team management page (#1525) ([dd3134e](https://github.com/HDRUK/gateway-api/commit/dd3134eeb0bb3b636b43a335f2781498c39e312d)), closes [GAT-8317](GAT-8317)
+* **GAT-8494:** Role Seeding  (#1526) ([5fa75af](https://github.com/HDRUK/gateway-api/commit/5fa75af949ea1ed4de29ac46d1b850a5cccaf7a8)), closes [GAT-8494](GAT-8494)
+* **GAT-8534:** Metadata download (#1528) ([64056ec](https://github.com/HDRUK/gateway-api/commit/64056eca5563fc452ccc5b299bea49e614b1cb31)), closes [GAT-8534](GAT-8534)
+* **GAT-8536:** Feature flags when no user present (#1527) ([117bece](https://github.com/HDRUK/gateway-api/commit/117bece764e02aaa5371b7e2073902263bf7727d)), closes [GAT-8536](GAT-8536)
+
 ## [2.33.0](https://github.com/HDRUK/gateway-api/compare/v2.32.0...v2.33.0) (2026-02-12)
 
 ### ✨ Features
