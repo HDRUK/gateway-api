@@ -72,7 +72,7 @@ class Email extends Mailable
         try {
             $this->replaceBodyText();
 
-            $response = Http::post(config('services.mjml.render_url', ''), [
+            $response = Http::post(config('services.mjml.render_url'), [
                 'mjml' => $this->template['body'],
             ]);
 
