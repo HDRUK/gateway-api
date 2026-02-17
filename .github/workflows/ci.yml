@@ -27,22 +27,6 @@ jobs:
       ||                             'release'
       }}
 
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: gateway_test
-          MYSQL_USER: laravel
-          MYSQL_PASSWORD: laravel
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -p${MYSQL_ROOT_PASSWORD}"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
     - name: Checkout
       id: checkout
@@ -56,21 +40,6 @@ jobs:
     - name: Composer install
       id: composerinstall
       run: "composer install"
-
-    - name: Configure environment
-      run: |
-        cp .env.example .env
-
-        sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/' .env
-
-        echo "" >> .env
-        echo "DB_HOST=127.0.0.1" >> .env
-        echo "DB_PORT=3306" >> .env
-        echo "DB_DATABASE=gateway_test" >> .env
-        echo "DB_USERNAME=root" >> .env
-        echo "DB_PASSWORD=root" >> .env
-
-        cat .env
 
     - name: Run static analysis
       id: composerphpstan
