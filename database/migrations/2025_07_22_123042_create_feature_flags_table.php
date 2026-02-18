@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFeatureFlagsTable extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('feature_flags', function (Blueprint $table) {
@@ -20,4 +19,4 @@ class CreateFeatureFlagsTable extends Migration
     {
         Schema::dropIfExists('feature_flags');
     }
-}
+};
