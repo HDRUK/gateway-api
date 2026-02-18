@@ -82,6 +82,7 @@ class KeyMetricController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => $metrics,
                 ], Config::get('statuscodes.STATUS_OK.code'));
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
