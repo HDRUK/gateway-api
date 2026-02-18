@@ -353,7 +353,7 @@ class DatasetController extends Controller
     public function store(CreateDataset $request): JsonResponse
     {
         $input = $request->all();
-        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+        list($userId, $teamId, $createOrigin, $status) = $this->getAccessorUserAndTeam($request);
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
@@ -363,6 +363,10 @@ class DatasetController extends Controller
             $team = Team::where('id', $teamId)->first()->toArray();
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
+            $input['status'] = $status;
+            $input['user_id'] = $userId;
+            $input['team_id'] = $teamId;
+            $input['create_origin'] = $createOrigin;
 
             $inputSchema = $request->query('input_schema', null);
             $inputVersion = $request->query('input_version', null);

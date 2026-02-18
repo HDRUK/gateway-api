@@ -1,3 +1,10 @@
+## [2.34.1](https://github.com/HDRUK/gateway-api/compare/v2.34.0...v2.34.1) (2026-02-18)
+
+### 🐛 Bug Fixes
+
+* **GAT-9999:** fix v2 dataset endpoints failing to receive data via i… (#1535) ([a519afc](https://github.com/HDRUK/gateway-api/commit/a519afcade15286631d369c2aace9c905bd7c5df))
+* **GAT-9999:** fix v2 dataset endpoints failing to receive data via integration ([9d01996](https://github.com/HDRUK/gateway-api/commit/9d01996079d67c050106950b80bf2b621d65ed5c))
+
 ## [2.34.0](https://github.com/HDRUK/gateway-api/compare/v2.33.0...v2.34.0) (2026-02-17)
 
 ### ✨ Features
