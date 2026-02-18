@@ -1,3 +1,9 @@
+## [2.35.0](https://github.com/HDRUK/gateway-api/compare/v2.34.1...v2.35.0) (2026-02-18)
+
+### ✨ Features
+
+* **GAT-8534:** update donwload metadata (#1536) ([269d63a](https://github.com/HDRUK/gateway-api/commit/269d63abad1e71fbda39d89dc29da1b049b80aeb)), closes [GAT-8534](GAT-8534)
+
 ## [2.34.1](https://github.com/HDRUK/gateway-api/compare/v2.34.0...v2.34.1) (2026-02-18)
 
 ### 🐛 Bug Fixes
