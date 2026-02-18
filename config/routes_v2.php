@@ -1202,4 +1202,16 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // key metrics
+    [
+        'name' => 'key_metrics.get',
+        'method' => 'get',
+        'path' => '/metrics',
+        'methodController' => 'KeyMetricController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
 ];
