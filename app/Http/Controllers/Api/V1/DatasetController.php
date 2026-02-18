@@ -1554,7 +1554,7 @@ class DatasetController extends Controller
                         ['Summary', 'DOI for dataset', $this->getValueFromPath($result, 'summary/doiName')],
 
                         ['Documentation', 'Description', $this->getValueFromPath($result, 'documentation/description')],
-                        ['Documentation', 'Dataset type', $this->getValueFromPath($result, 'provenance/origin/datasetType')],
+                        ['Documentation', 'Dataset type', $this->getValueFromPath($result, 'summary/datasetType')],
                         ['Documentation', 'Dataset sub-type', $this->getValueFromPath($result, 'provenance/origin/datasetSubType')],
                         ['Documentation', 'Dataset population size', $this->getValueFromPath($result, 'summary/populationSize')],
                         ['Documentation', 'Associated media', $this->getValueFromPath($result, 'documentation/associatedMedia')],
@@ -1564,7 +1564,7 @@ class DatasetController extends Controller
 
                         ['Provenance', 'Purpose of dataset collection', $this->getValueFromPath($result, 'provenance/origin/purpose')],
                         ['Provenance', 'Source of dataset extraction', $this->getValueFromPath($result, 'provenance/origin/source')],
-                        ['Provenance', 'Collection source setting', $this->getValueFromPath($result, 'provenance/origin/collectionSource')],
+                        ['Provenance', 'Collection source setting', $this->getValueFromPath($result, 'provenance/origin/collectionSituation')],
                         ['Provenance', 'Patient pathway description', $this->getValueFromPath($result, 'coverage/pathway')],
                         ['Provenance', 'Image contrast', $this->getValueFromPath($result, 'provenance/origin/imageContrast')],
                         ['Provenance', 'Biological sample availability', $this->getValueFromPath($result, 'coverage/materialType')],
