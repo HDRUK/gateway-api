@@ -43,11 +43,6 @@ class UpdateFirstPublicationDate extends Command
                 continue;
             }
 
-            if ($response->failed()) {
-                $this->warn("Skipping publication {$publictionId}: request failed.");
-                continue;
-            }
-
             $responseBody = $response->json();
             $firstPublicationDate = extractValueFromPath($responseBody, 'resultList/result/0/firstPublicationDate');
 
