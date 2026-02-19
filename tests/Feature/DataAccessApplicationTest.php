@@ -3263,7 +3263,7 @@ class DataAccessApplicationTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $content = $response['data'];
-        $this->assertEquals($content['data']['project_title'], $projectTitle);
+        $this->assertEquals($content['project_title'], $projectTitle);
 
         // Test accessing it as the data custodian
         $response = $this->json(
@@ -3275,8 +3275,26 @@ class DataAccessApplicationTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $content = $response['data'];
-        $this->assertEquals($content['data']['project_title'], $projectTitle);
+        $this->assertEquals($content['project_title'], $projectTitle);
+        $randomId = rand(1, 500);
+        // Test accessing something we shouldn't
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $randomId . '/header',
+            [],
+            $this->header
+        );
 
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $randomId . '/header',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     private function createQuestion(string $title): int
