@@ -1469,6 +1469,7 @@ class SearchController extends Controller
                     $pubResult['publication_year'] = null;
                 }
                 $pubResult['fullTextUrl'] = isset($result['fullTextUrlList']['fullTextUrl']) ? $result['fullTextUrlList']['fullTextUrl'] : null;
+                $pubResult['firstPublicationDate'] = isset($result['firstPublicationDate']) ? $result['firstPublicationDate'] : null;
             } else {
                 return response()->noContent();
             }
