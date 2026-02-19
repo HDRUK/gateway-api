@@ -389,7 +389,14 @@ class TeamDataAccessApplicationController extends Controller
      *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="applicant_id", type="integer", example="1"),
      *                      @OA\Property(property="project_title", type="string", example="A project"),
-     *                      @OA\Property(property="user", type="array", @OA\Items(
+     *                      @OA\Property(property="application_type", type="string", example="A project"),
+     *                      @OA\Property(property="project_id", type="integer", example="43"),
+     *                      @OA\Property(property="is_joint", type="boolean", example="false"),
+     *                      @OA\Property(property="approval_status", type="string", example="FEEDBACK"),
+     *                      @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                      @OA\Property(property="status_review_id", type="integer", example="1"),
+     *                      @OA\Property(property="days_since_submission", type="integer", example="1"),
+     *                      @OA\Property(property="primary_applicant", type="array", @OA\Items(
      *                          @OA\Property(property="name", type="string", example="A User"),
      *                          @OA\Property(property="organisation", type="string", example="An origanisation"),
      *                      )),
