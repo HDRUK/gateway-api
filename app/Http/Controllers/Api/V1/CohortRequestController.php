@@ -1509,11 +1509,17 @@ class CohortRequestController extends Controller
             throw new Exception('Cannot find cohort service oauth client');
         }
 
-        return config('app.url').
-            '/oauth2/authorize?response_type=code'.
-            "&client_id={$cohortClient->id}".
-            '&scope=openid email profile rquestroles cohort_discovery_roles'.
-            "&redirect_uri={$cohortClient->redirect}";
+        $nonce = bin2hex(random_bytes(16));
+
+        $query = http_build_query([
+            'response_type' => 'code',
+            'client_id' => $cohortClient->id,
+            'scope' => 'openid email profile rquestroles cohort_discovery_roles',
+            'redirect_uri' => $cohortClient->redirect,
+            'nonce' => $nonce,
+        ], '', '&', PHP_QUERY_RFC3986);
+
+        return config('app.url').'/oauth2/authorize?'.$query;
     }
 
     private function sendEmail($cohortId, $admin = null)
