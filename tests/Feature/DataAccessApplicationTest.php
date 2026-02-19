@@ -3235,6 +3235,50 @@ class DataAccessApplicationTest extends TestCase
             ]);
     }
 
+    public function test_dar_header() {
+        $entityIds = $this->createDatasetForDar();
+        $datasetId = $entityIds['datasetId'];
+        $teamId = $entityIds['teamId'];
+        $projectTitle = 'A test DAR';
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => $this->currentUser['id'],
+                'project_title' => $projectTitle,
+                'dataset_ids' => [$datasetId]
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        // Test accessing it by the user
+        $response = $this->json(
+            'GET',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/header',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response['data'];
+        $this->assertEquals($content['data']['project_title'], $projectTitle);
+
+        // Test accessing it as the data custodian
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $teamId . '/dar/applications/' . $applicationId . '/header',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $content = $response['data'];
+        $this->assertEquals($content['data']['project_title'], $projectTitle);
+
+    }
+
     private function createQuestion(string $title): int
     {
         $response = $this->json(
