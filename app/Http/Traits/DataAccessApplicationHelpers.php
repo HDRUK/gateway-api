@@ -30,6 +30,31 @@ trait DataAccessApplicationHelpers
     use QuestionBankHelpers;
     use RequestTransformation;
 
+    public function getDARHeader(string $id, ?string $teamId, ?string $userId, array $jwtUser): DataAccessApplication
+    {
+        if (!is_null($teamId)) {
+            $this->checkTeamAccess($teamId, $id, 'view');
+        } else {
+            $application = DataAccessApplication::where('id', $id)->with(['questions'])->firstOrFail();
+
+            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
+                throw new UnauthorizedException('User does not have permission to use this endpoint to view this application.');
+            }
+        }
+
+        $result = $this->dashboardIndex(
+            [$id],
+            null,
+            null,
+            null,
+            null,
+            $teamId,
+            (int) $jwtUser['id'],
+        )->first();
+
+        return $result;
+    }
+
     public function getApplicationWithQuestions(DataAccessApplication $application): void
     {
         foreach ($application['questions'] as $i => $q) {

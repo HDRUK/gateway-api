@@ -425,16 +425,7 @@ class TeamDataAccessApplicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         try {
-            $this->checkTeamAccess($teamId, $id, 'view');
-            $result = $this->dashboardIndex(
-                [$id],
-                null,
-                null,
-                null,
-                null,
-                $teamId,
-                (int) $jwtUser['id'],
-            )->first();
+            $result = $this->getDARHeader($id, $teamId, null, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],

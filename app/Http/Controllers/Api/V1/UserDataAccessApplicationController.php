@@ -441,21 +441,7 @@ class UserDataAccessApplicationController extends Controller
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         try {
-            $application = DataAccessApplication::where('id', $id)->with(['questions'])->firstOrFail();
-
-            if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
-                throw new UnauthorizedException('User does not have permission to use this endpoint to view this application.');
-            }
-
-            $result = $this->dashboardIndex(
-                [$id],
-                null,
-                null,
-                null,
-                null,
-                null,
-                (int) $jwtUser['id'],
-            )->first();
+            $result = $this->getDARHeader($id, null, $userId, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
