@@ -1,3 +1,13 @@
+## [2.36.0](https://github.com/HDRUK/gateway-api/compare/v2.35.0...v2.36.0) (2026-02-20)
+
+### ✨ Features
+
+* **GAT-8534:** update export metadata (#1540) ([bce8996](https://github.com/HDRUK/gateway-api/commit/bce89961576c5733e213a8d0b7e61852c0e0bcd0)), closes [GAT-8534](GAT-8534)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** export metadata Distribution release date (#1544) ([9b9a2e9](https://github.com/HDRUK/gateway-api/commit/9b9a2e909da79294b9d20928f418e6db730cf5d3)), closes [GAT-0000](GAT-0000)
+
 ## [2.35.0](https://github.com/HDRUK/gateway-api/compare/v2.34.1...v2.35.0) (2026-02-18)
 
 ### ✨ Features
