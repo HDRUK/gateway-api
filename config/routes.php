@@ -718,7 +718,7 @@ return [
     [
         'name' => 'teams',
         'method' => 'get',
-        'path' => '/teams/{teamId}/info',
+        'path' => '/teams/{teamId}/team_info',
         'methodController' => 'TeamController@info',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
@@ -797,7 +797,7 @@ return [
     [
         'name' => 'teams',
         'method' => 'get',
-        'path' => '/teams/{teamId}/datasets_cohort_discovery',
+        'path' => '/teams/{teamId}/cohort_discovery_datasets',
         'methodController' => 'TeamController@datasetsCohortDiscovery',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
@@ -808,7 +808,7 @@ return [
     [
         'name' => 'teams',
         'method' => 'get',
-        'path' => '/teams/{teamId}/datasets_summary',
+        'path' => '/teams/{teamId}/team_datasets_summary',
         'methodController' => 'TeamController@datasetsSummary',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],

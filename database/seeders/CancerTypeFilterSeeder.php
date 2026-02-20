@@ -19,9 +19,9 @@ class CancerTypeFilterSeeder extends Seeder
     public function run(): void
     {
         // Clear existing data
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        $this->disableForeignKeyChecks();
         DB::table('cancer_type_filters')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        $this->enableForeignKeyChecks();
 
         // Load filters data
         $filtersData = $this->getFiltersData();
@@ -35,6 +35,20 @@ class CancerTypeFilterSeeder extends Seeder
         $this->seedFilters($filtersData, null, 0);
         
         $this->command->info('Cancer type filters seeded successfully!');
+    }
+
+    private function disableForeignKeyChecks(): void
+    {
+        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
+    }
+
+    private function enableForeignKeyChecks(): void
+    {
+        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
     }
 
     /**

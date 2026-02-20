@@ -17,8 +17,7 @@ class ConceptSeeder extends Seeder
 
     public function run()
     {
-        // Disable foreign key checks
-        DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+        $this->disableForeignKeyChecks();
 
         // Truncate the tables before seeding
         DB::table('concept')->truncate();
@@ -27,8 +26,7 @@ class ConceptSeeder extends Seeder
         DB::table('concept_relationship')->truncate();
         DB::table('concept_ancestor')->truncate();
 
-        // Enable foreign key checks
-        DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+        $this->enableForeignKeyChecks();
 
         $nChunk = config('gateway.omop_seeding_nchunks');
         $useInFileSQL = filter_var(config('gateway.omop_seeding_use_infile'), FILTER_VALIDATE_BOOLEAN);
@@ -89,6 +87,20 @@ class ConceptSeeder extends Seeder
             }
 
             $this->command->info("Data inserted successfully into {$tableName} from TSV files.");
+        }
+    }
+
+    private function disableForeignKeyChecks(): void
+    {
+        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+        }
+    }
+
+    private function enableForeignKeyChecks(): void
+    {
+        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
         }
     }
 }
