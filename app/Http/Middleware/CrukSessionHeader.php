@@ -24,8 +24,8 @@ class CrukSessionHeader
     {
         $value = $request->header(self::CRUK_SESSION_HEADER);
         if ($value !== null && $value !== '') {
-            $model = env('FORM_HYDRATION_SCHEMA_MODEL', 'HDRUK');
-            $version = env('FORM_HYDRATION_SCHEMA_LATEST_VERSION', '4.1.0');
+            $model = Config::get('form_hydration.schema.model', 'HDRUK');
+            $version = Config::get('form_hydration.schema.latest_version', '4.1.0');
             Config::set('form_hydration.schema.model', $model);
             Config::set('form_hydration.schema.latest_version', $version);
         }
