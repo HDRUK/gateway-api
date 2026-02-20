@@ -3235,7 +3235,8 @@ class DataAccessApplicationTest extends TestCase
             ]);
     }
 
-    public function test_dar_header() {
+    public function test_dar_header()
+    {
         $entityIds = $this->createDatasetForDar();
         $datasetId = $entityIds['datasetId'];
         $teamId = $entityIds['teamId'];
