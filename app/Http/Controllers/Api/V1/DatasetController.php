@@ -1572,7 +1572,7 @@ class DatasetController extends Controller
                         ['Details', 'Publishing frequency', extractValueFromPath($result, 'provenance/temporal/accrualPeriodicity')],
                         ['Details', 'Version', extractValueFromPath($result, 'required/version')],
                         ['Details', 'Modified', extractValueFromPath($result, 'required/modified')],
-                        ['Details', 'Distribution release date', extractValueFromPath($result, 'provenance/termporal/distributionReleaseDate')],
+                        ['Details', 'Distribution release date', extractValueFromPath($result, 'provenance/temporal/distributionReleaseDate')],
                         ['Details', 'Citation Requirements', implode(',', extractValueFromPath($result, 'accessibility/usage/resourceCreator'))],
 
                         ['Coverage', 'Start date', extractValueFromPath($result, 'provenance/temporal/startDate')],
