@@ -6,27 +6,24 @@ use App\Models\DataAccessTemplate;
 use App\Models\DataAccessTemplateHasQuestion;
 use App\Models\DataAccessTemplateHasFile;
 use App\Models\QuestionBank;
+use Database\Seeders\Concerns\DisablesForeignKeyChecks;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class DataAccessTemplateSeeder extends Seeder
 {
+    use DisablesForeignKeyChecks;
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $driver = strtolower(DB::connection()->getDriverName());
-        $isMysql = $driver === 'mysql' && strtolower((string) getenv('APP_ENV')) !== 'testing';
-        if ($isMysql) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        }
+        $this->disableForeignKeyChecks();
         DataAccessTemplateHasFile::truncate();
         DataAccessTemplateHasQuestion::truncate();
         DataAccessTemplate::truncate();
-        if ($isMysql) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
-        }
+        $this->enableForeignKeyChecks();
 
         DataAccessTemplate::factory(3)->create();
 

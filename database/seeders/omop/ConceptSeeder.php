@@ -2,12 +2,14 @@
 
 namespace Database\Seeders\Omop;
 
+use Database\Seeders\Concerns\DisablesForeignKeyChecks;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
 class ConceptSeeder extends Seeder
 {
+    use DisablesForeignKeyChecks;
     protected $folders = [
         'CONCEPT',
         'CONCEPT_ANCESTOR',
@@ -87,20 +89,6 @@ class ConceptSeeder extends Seeder
             }
 
             $this->command->info("Data inserted successfully into {$tableName} from TSV files.");
-        }
-    }
-
-    private function disableForeignKeyChecks(): void
-    {
-        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
-            DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
-        }
-    }
-
-    private function enableForeignKeyChecks(): void
-    {
-        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
-            DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
         }
     }
 }

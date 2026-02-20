@@ -2,12 +2,14 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\DisablesForeignKeyChecks;
 use Illuminate\Database\Seeder;
 use App\Models\CancerTypeFilter;
 use Illuminate\Support\Facades\DB;
 
 class CancerTypeFilterSeeder extends Seeder
 {
+    use DisablesForeignKeyChecks;
     /**
      * Run the database seeds.
      * 
@@ -35,20 +37,6 @@ class CancerTypeFilterSeeder extends Seeder
         $this->seedFilters($filtersData, null, 0);
         
         $this->command->info('Cancer type filters seeded successfully!');
-    }
-
-    private function disableForeignKeyChecks(): void
-    {
-        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        }
-    }
-
-    private function enableForeignKeyChecks(): void
-    {
-        if (!app()->environment('testing') && strtolower(DB::connection()->getDriverName()) === 'mysql') {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        }
     }
 
     /**

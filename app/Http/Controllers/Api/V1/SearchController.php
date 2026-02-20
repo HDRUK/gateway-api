@@ -175,11 +175,9 @@ class SearchController extends Controller
             }
             $response = $response->json();
 
-            // Handle various response formats more robustly
             $hits = $response['hits'] ?? [];
-            $hitsArray = is_array($hits) ? ($hits['hits'] ?? []) : [];
-            $datasetsArray = is_array($hitsArray) ? $hitsArray : [];
-            
+            $datasetsArray = $hits['hits'] ?? [];
+
             // Handle total in various formats (object with 'value' or direct number)
             $total = $hits['total'] ?? null;
             if (is_array($total) && isset($total['value'])) {
