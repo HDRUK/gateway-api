@@ -16,13 +16,15 @@ class DataAccessTemplateSeeder extends Seeder
      */
     public function run(): void
     {
-        if (DB::getDriverName() !== 'sqlite') {
+        $driver = strtolower(DB::connection()->getDriverName());
+        $isMysql = $driver === 'mysql' && strtolower((string) getenv('APP_ENV')) !== 'testing';
+        if ($isMysql) {
             DB::statement('SET FOREIGN_KEY_CHECKS=0');
         }
         DataAccessTemplateHasFile::truncate();
         DataAccessTemplateHasQuestion::truncate();
         DataAccessTemplate::truncate();
-        if (DB::getDriverName() !== 'sqlite') {
+        if ($isMysql) {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
 
