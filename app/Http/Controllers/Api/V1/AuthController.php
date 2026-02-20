@@ -55,7 +55,7 @@ class AuthController extends Controller
      *                property="provider",
      *                type="string",
      *                example="service",
-     *                description="Auth provider: service (default) or cruk. Used for CRUK register/login."
+     *                description="Optional. Set to 'cruk' for CRUK auth only; otherwise ignored (service)."
      *             ),
      *          ),
      *       ),
@@ -87,13 +87,9 @@ class AuthController extends Controller
         try {
             $input = $request->all();
 
-            $provider = $input['provider'] ?? Config::get('constants.provider.service');
-            $allowedProviders = [
-                Config::get('constants.provider.service'),
-                Config::get('constants.provider.cruk'),
-            ];
-            if (!in_array($provider, $allowedProviders, true)) {
-                $provider = Config::get('constants.provider.service');
+            $provider = Config::get('constants.provider.service');
+            if (!empty($input['provider']) && $input['provider'] === Config::get('constants.provider.cruk')) {
+                $provider = Config::get('constants.provider.cruk');
             }
 
             $user = User::where('email', $input['email'])->where('provider', $provider)->first();
@@ -228,7 +224,7 @@ class AuthController extends Controller
      *                property="provider",
      *                type="string",
      *                example="cruk",
-     *                description="Auth provider: service (default) or cruk. Use cruk for CRUK register."
+     *                description="Optional. Set to 'cruk' for CRUK registration only; otherwise ignored (service)."
      *             ),
      *          ),
      *       ),
@@ -277,8 +273,11 @@ class AuthController extends Controller
                 $name = $input['email']; // Fallback to email if no name provided
             }
 
-            // Create user
-            $provider = $input['provider'] ?? Config::get('constants.provider.service');
+            // Create user: only allow provider from input for CRUK; others use service
+            $provider = Config::get('constants.provider.service');
+            if (!empty($input['provider']) && $input['provider'] === Config::get('constants.provider.cruk')) {
+                $provider = Config::get('constants.provider.cruk');
+            }
 
             $user = User::create([
                 'email' => $input['email'],
@@ -343,7 +342,7 @@ class AuthController extends Controller
      *                property="provider",
      *                type="string",
      *                example="cruk",
-     *                description="Auth provider: service (default) or cruk. Use cruk for CRUK login."
+     *                description="Optional. Set to 'cruk' for CRUK login only; otherwise ignored (service)."
      *             ),
      *          ),
      *       ),
@@ -386,7 +385,10 @@ class AuthController extends Controller
         try {
             $input = $request->validated();
 
-            $provider = $input['provider'] ?? Config::get('constants.provider.service');
+            $provider = Config::get('constants.provider.service');
+            if (!empty($input['provider']) && $input['provider'] === Config::get('constants.provider.cruk')) {
+                $provider = Config::get('constants.provider.cruk');
+            }
 
             // Find user by email and provider
             $user = User::where('email', $input['email'])

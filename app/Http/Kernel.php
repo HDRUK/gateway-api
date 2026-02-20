@@ -73,5 +73,6 @@ class Kernel extends HttpKernel
         'check.access' => \App\Http\Middleware\CheckAccessMiddleware::class,
         'check.access.userId' => \App\Http\Middleware\CheckUserIdMatches::class,
         'sunset' => \App\Http\Middleware\SunsetHeader::class,
+        'form_hydration.schema' => \App\Http\Middleware\CrukSessionHeader::class,
     ];
 }

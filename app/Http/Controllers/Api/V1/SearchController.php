@@ -163,7 +163,7 @@ class SearchController extends Controller
 
         try {
             $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
-            // $input['aggs'] = $aggs; // Commented out to prevent empty hits from search service
+            $input['aggs'] = $aggs;
 
             $urlString = config('gateway.search_service_url') . '/search/datasets';
             $response = Http::withHeaders($loggingContext)->post($urlString, $input);
