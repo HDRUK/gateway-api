@@ -389,8 +389,8 @@ class UserDataAccessApplicationController extends Controller
      *      path="/api/v1/users/{userId}/dar/applications/{id}/showHeader",
      *      summary="Get header information about a specific DAR",
      *      description="Get header information about a specific DAR",
-     *      tags={"TeamDataAccessApplication"},
-     *      summary="TeamDataAccessApplication@showHeader",
+     *      tags={"UserDataAccessApplication"},
+     *      summary="UserDataAccessApplication@showHeader",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
