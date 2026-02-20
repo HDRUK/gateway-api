@@ -350,12 +350,12 @@ class ScanFileUpload implements ShouldQueue
             $content = Storage::disk($this->fileSystem . '_scanned')->get($loc);
             $metadata = json_decode($content, true);
 
-
-            if (!array_key_exists('identifier', $metadata['summary']['dataCustodian'])) {
+            $dataCustodian = $metadata['summary']['dataCustodian'] ?? [];
+            if (!array_key_exists('identifier', $dataCustodian)) {
                 throw new Exception('Invalid metadata: dataCustodian identifier missing.');
             }
 
-            $dataCustodianIdentifier = $metadata['summary']['dataCustodian']['identifier'];
+            $dataCustodianIdentifier = $dataCustodian['identifier'];
 
             if ($dataCustodianIdentifier !== $team['pid']) {
                 throw new Exception("Mismatch: dataCustodian identifier ($dataCustodianIdentifier) does not match team PID ({$team['pid']}).");
@@ -410,7 +410,7 @@ class ScanFileUpload implements ShouldQueue
                 );
             }
         } catch (Exception $e) {
-            // Record exception in uploads table
+            // Record exception in uploads table; do not rethrow so the upload request still returns 200
             $upload->update([
                 'status' => 'FAILED',
                 'file_location' => $loc,
@@ -422,8 +422,6 @@ class ScanFileUpload implements ShouldQueue
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-
-            throw new Exception($e->getMessage());
         }
     }
 

@@ -19,24 +19,13 @@ class FormHydrationController extends Controller
      *      operationId="getFormSchema",
      *      tags={"Form Hydration"},
      *      summary="Retrieve form schema data",
-     *      description="Retrieves form schema data based on the provided model and version.",
+     *      description="Retrieves form schema. Model and version are set at app level: send header X-CRUK-Session for CRUK schema, otherwise default schema is used.",
      *      @OA\Parameter(
-     *          name="model",
-     *          in="query",
+     *          name="X-CRUK-Session",
+     *          in="header",
      *          required=false,
-     *          description="The model for which form schema is requested.",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="version",
-     *          in="query",
-     *          required=false,
-     *          description="The version of the model for which form schema is requested.",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
+     *          description="When present, form hydration uses the CRUK schema (model/version).",
+     *          @OA\Schema(type="string")
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -57,8 +46,8 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $model = Config::get('form_hydration.schema.model');
+        $version = Config::get('form_hydration.schema.latest_version');
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
 
@@ -80,24 +69,13 @@ class FormHydrationController extends Controller
      *      operationId="onboardingFormHydration",
      *      tags={"Form Hydration"},
      *      summary="Retrieve form schema data",
-     *      description="Retrieves form schema data based on the provided model and version.",
+     *      description="Retrieves onboarding form schema. Model and version are set at app level: send header X-CRUK-Session for CRUK schema, otherwise default schema is used.",
      *      @OA\Parameter(
-     *          name="name",
-     *          in="query",
+     *          name="X-CRUK-Session",
+     *          in="header",
      *          required=false,
-     *          description="The model name for which form schema is requested.",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="version",
-     *          in="query",
-     *          required=false,
-     *          description="The version of the model for which form schema is requested.",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
+     *          description="When present, form hydration uses the CRUK schema (model/version).",
+     *          @OA\Schema(type="string")
      *      ),
      *       @OA\Parameter(
      *          name="dataTypes",
@@ -127,9 +105,10 @@ class FormHydrationController extends Controller
      */
     public function onboardingFormHydration(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $model = Config::get('form_hydration.schema.model');
+        $version = Config::get('form_hydration.schema.latest_version');
         $dataTypes = $request->input('dataTypes', '');
+        $dataTypes = ($dataTypes === 'undefined' || $dataTypes === 'null') ? '' : $dataTypes;
         $teamId = $request->input('team_id', null);
 
         $hydrationJson = MMC::getOnboardingFormHydrated($model, $version, $dataTypes);
