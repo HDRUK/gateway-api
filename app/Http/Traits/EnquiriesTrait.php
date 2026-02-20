@@ -153,7 +153,7 @@ trait EnquiriesTrait
                     continue;
                 }
                 $datasetVersion = DatasetVersion::where('dataset_id', $dataset['dataset_id'])
-                    ->latest('created_at')->first();
+                    ->latest('created_at')->select('id')->first();
                 EnquiryThreadHasDatasetVersion::create([
                     'enquiry_thread_id' => $enquiryThread->id,
                     'dataset_version_id' =>  $datasetVersion->id,

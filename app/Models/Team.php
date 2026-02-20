@@ -315,4 +315,9 @@ class Team extends Model
     {
         return $this->belongsToMany(Alias::class, 'team_has_aliases');
     }
+
+    public function datasets(): HasMany
+    {
+        return $this->hasMany(Dataset::class);
+    }
 }

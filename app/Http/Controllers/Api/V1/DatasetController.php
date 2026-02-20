@@ -2,37 +2,37 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Config;
-use Auditor;
-use Exception;
-use App\Models\Team;
-use App\Models\User;
-use App\Models\Dataset;
-use App\Jobs\TermExtraction;
-use Illuminate\Http\Request;
-use App\Models\DatasetVersion;
-use App\Jobs\LinkageExtraction;
-use App\Http\Traits\CheckAccess;
-use Illuminate\Http\JsonResponse;
-use App\Models\Traits\ModelHelpers;
-use App\Http\Controllers\Controller;
-use App\Http\Traits\MetadataOnboard;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Http\Traits\MetadataVersioning;
-use Illuminate\Support\Facades\Storage;
-use MetadataManagementController as MMC;
-use App\Http\Requests\Dataset\GetDataset;
-use App\Http\Requests\Dataset\EditDataset;
-use App\Http\Requests\Dataset\TestDataset;
-use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Requests\Dataset\CreateDataset;
-use App\Http\Requests\Dataset\ExportDataset;
-use App\Http\Requests\Dataset\UpdateDataset;
-use App\Models\DatasetVersionHasDatasetVersion;
 use App\Exports\DatasetStructuralMetadataExport;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Dataset\CreateDataset;
+use App\Http\Requests\Dataset\EditDataset;
+use App\Http\Requests\Dataset\ExportDataset;
+use App\Http\Requests\Dataset\GetDataset;
+use App\Http\Requests\Dataset\TestDataset;
+use App\Http\Requests\Dataset\UpdateDataset;
+use App\Http\Traits\CheckAccess;
+use App\Http\Traits\GetValueByPossibleKeys;
+use App\Http\Traits\MetadataOnboard;
+use App\Http\Traits\MetadataVersioning;
+use App\Jobs\LinkageExtraction;
+use App\Jobs\TermExtraction;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasDatasetVersion;
+use App\Models\Team;
+use App\Models\Traits\ModelHelpers;
+use App\Models\User;
+use Auditor;
+use Config;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use MetadataManagementController as MMC;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DatasetController extends Controller
 {
@@ -1467,6 +1467,7 @@ class DatasetController extends Controller
         $dataset = Dataset::where('id', '=', $id)->first();
 
         $result = $dataset->latestVersion()['metadata']['metadata'];
+        $originalMetadata = $dataset->latestVersion()['metadata']['original_metadata'];
 
         $response = new StreamedResponse(
             function () use ($result, $download_type) {
@@ -1532,76 +1533,81 @@ class DatasetController extends Controller
                     // Note that the contents here need to be manually kept up to date with the contents of
                     // gateway-web-2/src/app/[locale]/(logged-out)/dataset/[datasetId]/config.tsx.
                     // The 'Summary Demographics' rows match the summary boxes at the top of the dataset landing page
+
+                    $ageRange =  extractValueFromPath($result, 'coverage/typicalAgeRange');
+                    [$minAgeRange, $maxAgeRange] = strpos($ageRange, '-') !== false ? explode('-', $ageRange, 2) + [null, null] : [null, null];
+
                     $rows = [
-                        ['Dataset', 'Name', $this->getValueFromPath($result, 'summary/title')],
-                        ['Dataset', 'Gateway URL', $this->getValueFromPath($result, 'required/revisions/0/url')],
-                        ['Dataset', 'Dataset Type', $this->getValueFromPath($result, 'summary/datasetType')],
-                        ['Dataset', 'Dataset Sub-type', $this->getValueFromPath($result, 'summary/datasetSubType')],
-                        ['Dataset', 'Collection Sources', $this->getValueFromPath($result, 'provenance/origin/collectionSituation')],
+                        ['Dataset', 'Name', extractValueFromPath($result, 'summary/title')],
+                        ['Dataset', 'Gateway URL', extractValueFromPath($result, 'required/revisions/0/url')],
+                        ['Dataset', 'Dataset Type', extractValueFromPath($result, 'summary/datasetType')],
+                        ['Dataset', 'Dataset Sub-type', extractValueFromPath($result, 'summary/datasetSubType')],
+                        ['Dataset', 'Collection Sources', extractValueFromPath($result, 'provenance/origin/collectionSituation')],
 
-                        ['Summary Demographics', 'Population Size', $this->getValueFromPath($result, 'summary/populationSize') === "-1" ? "" : $this->getValueFromPath($result, 'summary/populationSize')],
-                        ['Summary Demographics', 'Years', $this->getValueFromPath($result, 'provenance/temporal/startDate')],
-                        ['Summary Demographics', 'Associate BioSamples', $this->getValueFromPath($result, 'coverage/materialType')],
-                        ['Summary Demographics', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')],
-                        ['Summary Demographics', 'Lead time', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
+                        ['Summary Demographics', 'Population Size', extractValueFromPath($result, 'summary/populationSize') === "-1" ? "" : extractValueFromPath($result, 'summary/populationSize')],
+                        ['Summary Demographics', 'Years', extractValueFromPath($result, 'provenance/temporal/startDate')],
+                        ['Summary Demographics', 'Associate BioSamples', arrayColumnToString(extractValueFromPath($result, 'tissuesSampleCollection'), 'materialType')],
+                        ['Summary Demographics', 'Geographic coverage', extractValueFromPath($result, 'coverage/spatial')],
+                        ['Summary Demographics', 'Lead time', extractValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
 
-                        ['Summary', 'Abstract', $this->getValueFromPath($result, 'summary/abstract')],
-                        ['Summary', 'DOI for dataset', $this->getValueFromPath($result, 'summary/doiName')],
+                        ['Summary', 'Abstract', extractValueFromPath($result, 'summary/abstract')],
+                        ['Summary', 'DOI for dataset', extractValueFromPath($result, 'summary/doiName')],
 
-                        ['Documentation', 'Description', $this->getValueFromPath($result, 'documentation/description')],
-                        ['Documentation', 'Dataset type', $this->getValueFromPath($result, 'provenance/origin/datasetType')],
-                        ['Documentation', 'Dataset sub-type', $this->getValueFromPath($result, 'provenance/origin/datasetSubType')],
-                        ['Documentation', 'Dataset population size', $this->getValueFromPath($result, 'summary/populationSize')],
-                        ['Documentation', 'Associated media', $this->getValueFromPath($result, 'documentation/associatedMedia')],
-                        ['Documentation', 'Synthetic data web link', $this->getValueFromPath($result, 'structuralMetadata/syntheticDataWebLink')],
+                        ['Documentation', 'Description', extractValueFromPath($result, 'summary/abstract')],
+                        ['Documentation', 'Dataset type', extractValueFromPath($result, 'summary/datasetType')],
+                        ['Documentation', 'Dataset sub-type', extractValueFromPath($result, 'provenance/origin/datasetSubType')],
+                        ['Documentation', 'Dataset population size', extractValueFromPath($result, 'summary/populationSize')],
+                        ['Documentation', 'Associated media', extractValueFromPath($result, 'linkage/associatedMedia')],
+                        ['Documentation', 'Synthetic data web link', extractValueFromPath($result, 'linkage/syntheticDataWebLink')],
 
-                        ['Keywords', 'Keywords', $this->getValueFromPath($result, 'summary/keywords')],
+                        ['Keywords', 'Keywords', extractValueFromPath($result, 'summary/keywords')],
 
-                        ['Provenance', 'Purpose of dataset collection', $this->getValueFromPath($result, 'provenance/origin/purpose')],
-                        ['Provenance', 'Source of dataset extraction', $this->getValueFromPath($result, 'provenance/origin/source')],
-                        ['Provenance', 'Collection source setting', $this->getValueFromPath($result, 'provenance/origin/collectionSource')],
-                        ['Provenance', 'Patient pathway description', $this->getValueFromPath($result, 'coverage/pathway')],
-                        ['Provenance', 'Image contrast', $this->getValueFromPath($result, 'provenance/origin/imageContrast')],
-                        ['Provenance', 'Biological sample availability', $this->getValueFromPath($result, 'coverage/materialType')],
+                        ['Provenance', 'Purpose of dataset collection', extractValueFromPath($result, 'provenance/origin/purpose')],
+                        ['Provenance', 'Source of dataset extraction', extractValueFromPath($result, 'provenance/origin/source')],
+                        ['Provenance', 'Collection source setting', extractValueFromPath($result, 'provenance/origin/collectionSituation')],
+                        ['Provenance', 'Patient pathway description', extractValueFromPath($result, 'coverage/pathway')],
+                        ['Provenance', 'Image contrast', extractValueFromPath($result, 'provenance/origin/imageContrast')],
+                        ['Provenance', 'Biological sample availability', arrayColumnToString(extractValueFromPath($result, 'tissuesSampleCollection'), 'materialType')],
 
-                        ['Details', 'Publishing frequency', $this->getValueFromPath($result, 'provenance/temporal/publishingFrequency')],
-                        ['Details', 'Version', $this->getValueFromPath($result, 'version')],
-                        ['Details', 'Modified', $this->getValueFromPath($result, 'modified')],
-                        ['Details', 'Distribution release date', $this->getValueFromPath($result, 'provenance/termporal/distributionReleaseDate')],
-                        ['Details', 'Citation Requirements', implode(',', $this->getValueFromPath($result, 'accessibility/usage/resourceCreator'))],
+                        ['Details', 'Publishing frequency', extractValueFromPath($result, 'provenance/temporal/accrualPeriodicity')],
+                        ['Details', 'Version', extractValueFromPath($result, 'required/version')],
+                        ['Details', 'Modified', extractValueFromPath($result, 'required/modified')],
+                        ['Details', 'Distribution release date', extractValueFromPath($result, 'provenance/temporal/distributionReleaseDate')],
+                        ['Details', 'Citation Requirements', implode(',', extractValueFromPath($result, 'accessibility/usage/resourceCreator'))],
 
-                        ['Coverage', 'Start date', $this->getValueFromPath($result, 'provenance/temporal/startDate')],
-                        ['Coverage', 'End date', $this->getValueFromPath($result, 'provenance/temporal/endDate')],
-                        ['Coverage', 'Time lag', $this->getValueFromPath($result, 'provenance/temporal/timeLag')],
-                        ['Coverage', 'Geographic coverage', $this->getValueFromPath($result, 'coverage/spatial')],
-                        ['Coverage', 'Minimum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMin')],
-                        ['Coverage', 'Maximum age range', $this->getValueFromPath($result, 'coverage/typicalAgeRangeMax')],
-                        ['Coverage', 'Follow-up', $this->getValueFromPath($result, 'coverage/followUp')],
-                        ['Coverage', 'Dataset completeness', $this->getValueFromPath($result, 'coverage/datasetCompleteness')],
+                        ['Coverage', 'Start date', extractValueFromPath($result, 'provenance/temporal/startDate')],
+                        ['Coverage', 'End date', extractValueFromPath($result, 'provenance/temporal/endDate')],
+                        ['Coverage', 'Time lag', extractValueFromPath($result, 'provenance/temporal/timeLag')],
+                        ['Coverage', 'Geographic coverage', extractValueFromPath($result, 'coverage/spatial')],
 
-                        ['Omics', 'Assay', $this->getValueFromPath($result, 'omics/assay')],
-                        ['Omics', 'Platform', $this->getValueFromPath($result, 'omics/platform')],
+                        ['Coverage', 'Minimum age range', $minAgeRange],
+                        ['Coverage', 'Maximum age range', $maxAgeRange],
+                        ['Coverage', 'Follow-up', extractValueFromPath($result, 'coverage/followUp')],
+                        ['Coverage', 'Dataset completeness', extractValueFromPath($result, 'coverage/datasetCompleteness')],
 
-                        ['Accessibility', 'Language', $this->getValueFromPath($result, 'accessibility/formatAndStandards/language')],
-                        ['Accessibility', 'Alignment with standardised data models', $this->getValueFromPath($result, 'accessibility/formatAndStandards/conformsTo')],
-                        ['Accessibility', 'Controlled vocabulary', $this->getValueFromPath($result, 'accessibility/formatAndStandards/vocabularyEncodingScheme')],
-                        ['Accessibility', 'Format', $this->getValueFromPath($result, 'accessibility/formatAndStandards/format')],
+                        ['Omics', 'Assay', extractValueFromPath($result, 'omics/assay')],
+                        ['Omics', 'Platform', extractValueFromPath($result, 'omics/platform')],
 
-                        ['Data Access Request', 'Dataset pipeline status', $this->getValueFromPath($result, 'documentation/inPipeline')],
-                        ['Data Access Request', 'Access rights', $this->getValueFromPath($result, 'accessibility/access/accessRights')],
-                        ['Data Access Request', 'Time to dataset access', $this->getValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
-                        ['Data Access Request', 'Access request cost', $this->getValueFromPath($result, 'accessibility/access/accessRequestCost')],
-                        ['Data Access Request', 'Access method category', $this->getValueFromPath($result, 'accessibility/access/accessServiceCategory')],
-                        ['Data Access Request', 'Access mode', $this->getValueFromPath($result, 'accessibility/access/accessMode')],
-                        ['Data Access Request', 'Access service description', $this->getValueFromPath($result, 'accessibility/access/accessService')],
-                        ['Data Access Request', 'Jurisdiction', $this->getValueFromPath($result, 'accessibility/access/jurisdiction')],
-                        ['Data Access Request', 'Data use limitation', $this->getValueFromPath($result, 'accessibility/usage/dataUseLimitation')],
-                        ['Data Access Request', 'Data use requirements', $this->getValueFromPath($result, 'accessibility/usage/dataUseRequirements')],
-                        ['Data Access Request', 'Data Controller', $this->getValueFromPath($result, 'accessibility/access/dataController')],
-                        ['Data Access Request', 'Data Processor', $this->getValueFromPath($result, 'accessibility/access/dataProcessor')],
-                        ['Data Access Request', 'Investigations', $this->getValueFromPath($result, 'enrichmentAndLinkage/investigations')],
+                        ['Accessibility', 'Language', extractValueFromPath($result, 'accessibility/formatAndStandards/languages')],
+                        ['Accessibility', 'Alignment with standardised data models', extractValueFromPath($result, 'accessibility/formatAndStandards/conformsTo')],
+                        ['Accessibility', 'Controlled vocabulary', extractValueFromPath($result, 'accessibility/formatAndStandards/vocabularyEncodingSchemes')],
+                        ['Accessibility', 'Format', extractValueFromPath($result, 'accessibility/formatAndStandards/formats')],
 
-                        ['Demographics', 'Demographic Frequency', $this->getValueFromPath($result, 'demographicFrequency')],
+                        ['Data Access Request', 'Dataset pipeline status', extractValueFromPath($result, 'summary/inPipeline')],
+                        ['Data Access Request', 'Access rights', extractValueFromPath($result, 'accessibility/access/accessRights')],
+                        ['Data Access Request', 'Time to dataset access', extractValueFromPath($result, 'accessibility/access/deliveryLeadTime')],
+                        ['Data Access Request', 'Access request cost', extractValueFromPath($result, 'accessibility/access/accessRequestCost')],
+                        ['Data Access Request', 'Access method category', extractValueFromPath($result, 'accessibility/access/accessServiceCategory')],
+                        ['Data Access Request', 'Access mode', extractValueFromPath($result, 'accessibility/usage/dataUseRequirement')],
+                        ['Data Access Request', 'Access service description', extractValueFromPath($result, 'accessibility/access/accessService')],
+                        ['Data Access Request', 'Jurisdiction', extractValueFromPath($result, 'accessibility/access/jurisdiction')],
+                        ['Data Access Request', 'Data use limitation', extractValueFromPath($result, 'accessibility/usage/dataUseLimitation')],
+                        ['Data Access Request', 'Data use requirements', extractValueFromPath($result, 'accessibility/usage/dataUseRequirement')],
+                        ['Data Access Request', 'Data Controller', extractValueFromPath($result, 'accessibility/access/dataController')],
+                        ['Data Access Request', 'Data Processor', extractValueFromPath($result, 'accessibility/access/dataProcessor')],
+                        ['Data Access Request', 'Investigations', json_encode(extractValueFromPath($result, 'enrichmentAndLinkage/investigations'))],
+
+                        ['Demographics', 'Demographic Frequency', json_encode(extractValueFromPath($result, 'demographicFrequency/age'))],
                     ];
 
                     foreach ($rows as $row) {
@@ -1738,21 +1744,5 @@ class DatasetController extends Controller
         }
 
         return $metadata;
-    }
-
-    public function getValueFromPath(array $item, string $path)
-    {
-        $keys = explode('/', $path);
-
-        $return = $item;
-        foreach ($keys as $key) {
-            if (isset($return[$key])) {
-                $return = $return[$key];
-            } else {
-                return null;
-            }
-        }
-
-        return $return;
     }
 }

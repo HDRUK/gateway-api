@@ -413,6 +413,7 @@ class TeamPublicationController extends Controller
                 'team_id' => $teamId,
                 'owner_id' => (int)$jwtUser['id'],
                 'status' => $request['status'],
+                'first_publication_date' => array_key_exists('first_publication_date', $input) ? $input['first_publication_date'] : null,
             ]);
             $publicationId = (int)$publication->id;
 
@@ -576,6 +577,7 @@ class TeamPublicationController extends Controller
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
                 'team_id' => $teamId,
+                'first_publication_date' => array_key_exists('first_publication_date', $input) ? $input['first_publication_date'] : null,
             ]);
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
@@ -736,7 +738,8 @@ class TeamPublicationController extends Controller
                 'abstract',
                 'url',
                 'mongo_id',
-                'status'
+                'status',
+                'first_publication_date',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $arrayKeys['team_id'] = $teamId;

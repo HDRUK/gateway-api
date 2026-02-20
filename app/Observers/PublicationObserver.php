@@ -24,7 +24,7 @@ class PublicationObserver
      */
     public function updating(Publication $publication)
     {
-        $publication->prevStatus = $publication->getOriginal('status'); // 'status' before updating
+        $publication->prevStatus = (string) $publication->getOriginal('status'); // 'status' before updating
     }
 
     /**
@@ -48,7 +48,7 @@ class PublicationObserver
      */
     public function deleting(Publication $publication)
     {
-        $publication->prevStatus = $publication->getOriginal('status'); // 'status' before deleting
+        $publication->prevStatus = (string) $publication->getOriginal('status'); // 'status' before deleting
     }
 
     /**
