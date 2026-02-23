@@ -72,7 +72,7 @@ class FormHydrationTest extends TestCase
 
     public function test_form_hydration_schema_with_parameters(): void
     {
-        // Model/version are set by middleware (X-CRUK-Session) or default config; query params are ignored
+        // Model/version are set at application level via config (FORM_HYDRATION_* env)
         $response = $this->get('api/v1/form_hydration/schema');
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
          ->assertJsonStructure([

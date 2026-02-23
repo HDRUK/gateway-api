@@ -2,14 +2,12 @@
 
 namespace Database\Seeders\Omop;
 
-use Database\Seeders\Concerns\DisablesForeignKeyChecks;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
 class ConceptSeeder extends Seeder
 {
-    use DisablesForeignKeyChecks;
     protected $folders = [
         'CONCEPT',
         'CONCEPT_ANCESTOR',
@@ -19,7 +17,8 @@ class ConceptSeeder extends Seeder
 
     public function run()
     {
-        $this->disableForeignKeyChecks();
+        // Disable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
 
         // Truncate the tables before seeding
         DB::table('concept')->truncate();
@@ -28,7 +27,8 @@ class ConceptSeeder extends Seeder
         DB::table('concept_relationship')->truncate();
         DB::table('concept_ancestor')->truncate();
 
-        $this->enableForeignKeyChecks();
+        // Enable foreign key checks
+        DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
 
         $nChunk = config('gateway.omop_seeding_nchunks');
         $useInFileSQL = filter_var(config('gateway.omop_seeding_use_infile'), FILTER_VALIDATE_BOOLEAN);

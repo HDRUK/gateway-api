@@ -3518,7 +3518,7 @@ return [
         'path' => '/form_hydration/schema',
         'methodController' => 'FormHydrationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['form_hydration.schema'],
+        'middleware' => [],
         'constraint' => [],
     ],
 
@@ -3869,7 +3869,6 @@ return [
         'methodController' => 'FormHydrationController@onboardingFormHydration',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'form_hydration.schema',
             'sanitize.input',
         ],
         'constraint' => [],

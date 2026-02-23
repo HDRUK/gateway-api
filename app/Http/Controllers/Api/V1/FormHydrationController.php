@@ -19,14 +19,7 @@ class FormHydrationController extends Controller
      *      operationId="getFormSchema",
      *      tags={"Form Hydration"},
      *      summary="Retrieve form schema data",
-     *      description="Retrieves form schema. Model and version are set at app level: send header X-CRUK-Session for CRUK schema, otherwise default schema is used.",
-     *      @OA\Parameter(
-     *          name="X-CRUK-Session",
-     *          in="header",
-     *          required=false,
-     *          description="When present, form hydration uses the CRUK schema (model/version).",
-     *          @OA\Schema(type="string")
-     *      ),
+     *      description="Retrieves form schema. Model and version are set at application level via config (FORM_HYDRATION_SCHEMA_MODEL, FORM_HYDRATION_SCHEMA_LATEST_VERSION).",
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -69,14 +62,7 @@ class FormHydrationController extends Controller
      *      operationId="onboardingFormHydration",
      *      tags={"Form Hydration"},
      *      summary="Retrieve form schema data",
-     *      description="Retrieves onboarding form schema. Model and version are set at app level: send header X-CRUK-Session for CRUK schema, otherwise default schema is used.",
-     *      @OA\Parameter(
-     *          name="X-CRUK-Session",
-     *          in="header",
-     *          required=false,
-     *          description="When present, form hydration uses the CRUK schema (model/version).",
-     *          @OA\Schema(type="string")
-     *      ),
+     *      description="Retrieves onboarding form schema. Model and version are set at application level via config (FORM_HYDRATION_SCHEMA_MODEL, FORM_HYDRATION_SCHEMA_LATEST_VERSION).",
      *       @OA\Parameter(
      *          name="dataTypes",
      *          in="query",
