@@ -53,15 +53,20 @@ class QuestionBankVersion extends Model
 
     /**
      * The child versions associated with this version.
+     *
+     * @return BelongsToMany<QuestionBankVersion, QuestionBankVersion>
      */
     public function childVersions(): BelongsToMany
     {
-        return $this->belongsToMany(
+        /** @var BelongsToMany<QuestionBankVersion, QuestionBankVersion> $relation */
+        $relation = $this->belongsToMany(
             QuestionBankVersion::class,
             'question_bank_version_has_child_version',
             'parent_qbv_id',
             'child_qbv_id'
         )->withPivot('condition');
+
+        return $relation;
     }
 
     /**
