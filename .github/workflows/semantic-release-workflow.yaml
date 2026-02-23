@@ -1,4 +1,4 @@
-name: Release workflow
+name: Semantic Release workflow
 run-name: ${{ github.actor }} Semantic Release workflow
 
 on:
