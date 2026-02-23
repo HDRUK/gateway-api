@@ -953,6 +953,7 @@ class UserDataAccessApplicationController extends Controller
                         'question_id' => $answer['question_id'],
                         'application_id' => $id,
                     ])->delete();
+
                     DataAccessApplicationAnswer::create([
                         'question_id' => $answer['question_id'],
                         'application_id' => $id,
