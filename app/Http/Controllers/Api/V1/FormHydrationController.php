@@ -19,7 +19,25 @@ class FormHydrationController extends Controller
      *      operationId="getFormSchema",
      *      tags={"Form Hydration"},
      *      summary="Retrieve form schema data",
-     *      description="Retrieves form schema. Model and version are set at application level via config (FORM_HYDRATION_SCHEMA_MODEL, FORM_HYDRATION_SCHEMA_LATEST_VERSION).",
+     *      description="Retrieves form schema data based on the provided model and version.",
+     *      @OA\Parameter(
+     *          name="model",
+     *          in="query",
+     *          required=false,
+     *          description="The model for which form schema is requested.",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="version",
+     *          in="query",
+     *          required=false,
+     *          description="The version of the model for which form schema is requested.",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -62,8 +80,26 @@ class FormHydrationController extends Controller
      *      operationId="onboardingFormHydration",
      *      tags={"Form Hydration"},
      *      summary="Retrieve form schema data",
-     *      description="Retrieves onboarding form schema. Model and version are set at application level via config (FORM_HYDRATION_SCHEMA_MODEL, FORM_HYDRATION_SCHEMA_LATEST_VERSION).",
-     *       @OA\Parameter(
+     *      description="Retrieves form schema data based on the provided model and version.",
+     *      @OA\Parameter(
+     *          name="name",
+     *          in="query",
+     *          required=false,
+     *          description="The model name for which form schema is requested.",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="version",
+     *          in="query",
+     *          required=false,
+     *          description="The version of the model for which form schema is requested.",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
      *          name="dataTypes",
      *          in="query",
      *          required=false,
