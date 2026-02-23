@@ -11,10 +11,12 @@ jobs:
       - name: Check PR Title Format
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_REPO: ${{ github.repository }}
         run: |
-          TITLE="${{ github.event.pull_request.title }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          REPO="${{ github.repository }}"
+          TITLE="$PR_TITLE"
+          REPO="$PR_REPO"
 
           echo "PR Title: $TITLE"
 
@@ -33,7 +35,7 @@ jobs:
           else
             echo "❌ Invalid PR title format!"
 
-            COMMENT="🚨 **Invalid PR title format!**\n\nYour PR title must follow one of these formats:\n- \`feat(GAT-1234): Your title\`\n- \`fix!(GAT-5678): Breaking change\`\n- \`RELEASE: vX.Y.Z\`\n\nPlease update your PR title accordingly. 😊"
+            COMMENT="🚨 **Invalid PR title format!**\n\nYour PR title must follow one of these formats:\n- \`feat(DP-1234): Your title\`\n- \`fix!(DP-5678): Breaking change\`\n- \`RELEASE: vX.Y.Z\`\n\nPlease update your PR title accordingly. 😊"
             
             curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
