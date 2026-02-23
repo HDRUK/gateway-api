@@ -130,6 +130,7 @@ trait DataAccessApplicationHelpers
                 'application_id' => $id,
                 'answer' => $answer['answer'],
                 'contributor_id' => $input['applicant_id'],
+                'answer_index' => isset($answer['answer_index']) ? $answer['answer_index'] : null,
             ]);
         }
     }
@@ -162,6 +163,7 @@ trait DataAccessApplicationHelpers
                 'application_id' => $id,
                 'answer' => $answer['answer'],
                 'contributor_id' => $application->applicant_id,
+                'answer_index' => isset($answer['answer_index']) ? $answer['answer_index'] : null,
             ]);
         }
     }

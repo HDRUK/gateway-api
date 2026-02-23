@@ -958,6 +958,7 @@ class UserDataAccessApplicationController extends Controller
                         'application_id' => $id,
                         'answer' => $answer['answer'],
                         'contributor_id' => $jwtUser['id'],
+                        'answer_index' => isset($answer['answer_index']) ? $answer['answer_index'] : null,
                     ]);
                 }
             } else {
