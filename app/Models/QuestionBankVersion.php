@@ -54,7 +54,7 @@ class QuestionBankVersion extends Model
     /**
      * The child versions associated with this version.
      *
-     * @return BelongsToMany<QuestionBankVersion, self>
+     * @return BelongsToMany<QuestionBankVersion, QuestionBankVersion>
      */
     public function childVersions(): BelongsToMany
     {
