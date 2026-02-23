@@ -22,7 +22,7 @@ jobs:
 
           # Define regex patterns
           RELEASE_PATTERN="^RELEASE: .+$"
-          STANDARD_PATTERN="^(feat|fix|chore|docs|style|refactor|test|perf)(!?)\(DP-[0-9]+\): .+$"
+          STANDARD_PATTERN='^(feat|fix|chore|docs|style|refactor|test|perf)(!?)\(GAT-[0-9]+\): .+$'
 
           if echo "$TITLE" | grep -E -q "$RELEASE_PATTERN"; then
             echo "✅ PR title is a valid RELEASE PR!"
