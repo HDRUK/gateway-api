@@ -94,9 +94,9 @@ class FormHydrationTest extends TestCase
 
     public function test_form_hydration_schema_will_fail(): void
     {
-        // Invalid model/version in query are ignored; default schema is used (may 200 or 400 from remote)
+        // Invalid model in query is used; schema provider returns 404, so endpoint returns 400
         $response = $this->get('api/v1/form_hydration/schema?model=blah');
-        $response->assertSuccessful();
+        $response->assertStatus(400);
     }
 
     public function test_get_form_hydration_with_success(): void
