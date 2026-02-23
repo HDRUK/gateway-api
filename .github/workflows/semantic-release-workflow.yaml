@@ -1,5 +1,5 @@
-name: Release workflow
-run-name: ${{ github.actor }} triggered Release workflow
+name: Semantic Release workflow
+run-name: ${{ github.actor }} Semantic Release workflow
 
 on:
   push:
