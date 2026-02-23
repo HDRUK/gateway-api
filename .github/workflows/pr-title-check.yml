@@ -11,45 +11,59 @@ jobs:
       - name: Check PR Title Format
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          TITLE="${{ github.event.pull_request.title }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          REPO="${{ github.repository }}"
+          set -Eeuo pipefail
 
-          echo "PR Title: $TITLE"
+          title="$TITLE"
+          pr_number="$PR_NUMBER"
+          repo="$REPO"
 
-          # Define regex patterns
-          RELEASE_PATTERN="^RELEASE: .+$"
-          STANDARD_PATTERN="^(feat|fix|chore|docs|style|refactor|test|perf)(!?)\(GAT-[0-9]+\): .+$"
+          echo "PR Title: $title"
 
-          if echo "$TITLE" | grep -E -q "$RELEASE_PATTERN"; then
+          release_pattern='^RELEASE: .+$'
+          standard_pattern='^(feat|fix|chore|docs|style|refactor|test|perf)(!?)\(GAT-[0-9]+\): .+$'
+
+          comment=''
+          if printf '%s' "$title" | grep -Eq "$release_pattern"; then
             echo "✅ PR title is a valid RELEASE PR!"
+            comment='🎉 **Great job!** Your PR title follows the correct format for a release. 🚀'
 
-            COMMENT="🎉 **Great job!** Your PR title follows the correct format for a release. 🚀"
-          elif echo "$TITLE" | grep -E -q "$STANDARD_PATTERN"; then
+          elif printf '%s' "$title" | grep -Eq "$standard_pattern"; then
             echo "✅ PR title is valid!"
+            comment='🎉 **Great job!** Your PR title follows the correct format. 🚀'
 
-            COMMENT="🎉 **Great job!** Your PR title follows the correct format. 🚀"
           else
             echo "❌ Invalid PR title format!"
 
-            COMMENT="🚨 **Invalid PR title format!**\n\nYour PR title must follow one of these formats:\n- \`feat(GAT-1234): Your title\`\n- \`fix!(GAT-5678): Breaking change\`\n- \`RELEASE: vX.Y.Z\`\n\nPlease update your PR title accordingly. 😊"
-            
-            curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments" \
-              -d "{\"body\": \"$COMMENT\"}"
+            comment=$'🚨 **Invalid PR title format!**\n\nYour PR title must follow one of these formats:\n- `feat(GAT-1234): Your title`\n- `fix!(GAT-5678): Breaking change`\n- `RELEASE: vX.Y.Z`\n\nPlease update your PR title accordingly. 😊'
+
+            # SAFE JSON
+            jq -n --arg body "$comment" '{body:$body}' \
+            | curl -s -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Content-Type: application/json" \
+                --data-binary @- \
+                "https://api.github.com/repos/$repo/issues/$pr_number/comments"
 
             exit 1
           fi
 
           # Check if an existing comment already exists
-          EXISTING_COMMENT=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments" | jq -r '.[] | select(.body | contains("Great job!")) | .id')
+          existing_comment=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$repo/issues/$pr_number/comments" \
+            | jq -r '.[] | select(.body | contains("Great job!")) | .id')
 
-          if [[ -z "$EXISTING_COMMENT" ]]; then
-            curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments" \
-              -d "{\"body\": \"$COMMENT\"}"
+          if [[ -z "$existing_comment" ]]; then
+            jq -n --arg body "$comment" '{body:$body}' \
+            | curl -s -X POST \
+                -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Content-Type: application/json" \
+                --data-binary @- \
+                "https://api.github.com/repos/$repo/issues/$pr_number/comments"
           fi
