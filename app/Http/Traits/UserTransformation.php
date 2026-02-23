@@ -45,6 +45,7 @@ trait UserTransformation
                 'terms' => $user['terms'],
                 'roles' => $user['roles'],
                 'hubspot_id' => $user['hubspot_id'],
+                'team_users' => $user['team_users'],
             ];
 
             $tmpTeam = [];
@@ -63,6 +64,7 @@ trait UserTransformation
                     'application_form_updated_by' => $team['application_form_updated_by'],
                     'application_form_updated_on' => $team['application_form_updated_on'],
                     'is_question_bank' => $team['is_question_bank'],
+                    'notifications' => $team['notifications'],
                 ];
 
                 $teamHasUserId = (int)$team['pivot']['id'];
@@ -89,6 +91,7 @@ trait UserTransformation
                 $tmpNotification[] = $notification;
             }
             $tmpUser['notifications'] = $tmpNotification;
+
 
             // Added in to stop a singular /users/:id call returning an array for
             // the users part of the payload

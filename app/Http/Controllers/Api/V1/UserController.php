@@ -199,7 +199,6 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
         try {
             $users = User::where([
                 'id' => $id,
@@ -209,9 +208,10 @@ class UserController extends Controller
                 $userTeam = User::where('id', $id)->with(
                     'roles',
                     'roles.permissions',
-                    'teams',
-                    'notifications'
-                )->get()->toArray();
+                    'teams.notifications',
+                    'notifications',
+                    'teamUsers.notifications'
+                )->first();
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
@@ -222,7 +222,7 @@ class UserController extends Controller
 
                 return response()->json([
                     'message' => 'success',
-                    'data' => $this->getUsers($userTeam),
+                    'data' => $userTeam,
                 ], 200);
             }
 
