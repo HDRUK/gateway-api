@@ -1999,7 +1999,10 @@ class SearchController extends Controller
     {
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->get();
+            $datasets = Dataset::where([
+                'team_id' => $team['id'],
+                'status' => 'ACTIVE',
+                ])->get();
             foreach ($datasets as $dataset) {
                 $spatialCoverage = $dataset->allSpatialCoverages;
                 foreach ($spatialCoverage as $loc) {

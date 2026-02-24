@@ -316,11 +316,34 @@ class Dataset extends Model
     // Accessor for all spatial coverages
     public function getAllSpatialCoveragesAttribute()
     {
-        return $this->getRelationsViaDatasetVersion(
-            DatasetVersionHasSpatialCoverage::class,
+        return $this->getSpatialCoverageViaVersions(
             SpatialCoverage::class,
+            'dataset_version_has_spatial_coverage',
             'spatial_coverage_id'
         );
+    }
+
+    private function getSpatialCoverageViaVersions(
+        string $targetClass,
+        string $linkageTable,
+        string $foreignKey,
+    ): array {
+        $targetTable = (new $targetClass())->getTable();
+
+        return $targetClass::query()
+            ->join($linkageTable, "{$targetTable}.id", '=', "{$linkageTable}.{$foreignKey}")
+            ->join('dataset_versions', 'dataset_versions.id', '=', "{$linkageTable}.dataset_version_id")
+            ->where('dataset_versions.dataset_id', $this->id)
+            ->selectRaw("{$targetTable}.*, {$linkageTable}.dataset_version_id")
+            ->get()
+            ->groupBy('id')
+            ->map(function ($rows) {
+                $entity = $rows->first();
+                $entity->setAttribute('dataset_version_ids', $rows->pluck('dataset_version_id')->toArray());
+                return $entity;
+            })
+            ->values()
+            ->toArray();
     }
 
     // Accessor for all tools
