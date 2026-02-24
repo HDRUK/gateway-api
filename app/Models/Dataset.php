@@ -330,16 +330,19 @@ class Dataset extends Model
     ): array {
         $targetTable = (new $targetClass())->getTable();
 
-        return $targetClass::query()
-            ->join($linkageTable, "{$targetTable}.id", '=', "{$linkageTable}.{$foreignKey}")
-            ->join('dataset_versions', 'dataset_versions.id', '=', "{$linkageTable}.dataset_version_id")
-            ->where('dataset_versions.dataset_id', $this->id)
-            ->selectRaw("{$targetTable}.*, {$linkageTable}.dataset_version_id")
-            ->get()
+        $results = DB::select("
+            SELECT {$targetTable}.*, {$linkageTable}.dataset_version_id
+            FROM {$targetTable}
+            INNER JOIN {$linkageTable} ON {$targetTable}.id = {$linkageTable}.{$foreignKey}
+            INNER JOIN dataset_versions ON dataset_versions.id = {$linkageTable}.dataset_version_id
+            WHERE dataset_versions.dataset_id = ?
+        ", [$this->id]);
+
+        return collect($results)
             ->groupBy('id')
             ->map(function ($rows) {
-                $entity = $rows->first();
-                $entity->setAttribute('dataset_version_ids', $rows->pluck('dataset_version_id')->toArray());
+                $entity = (array) $rows->first();
+                $entity['dataset_version_ids'] = $rows->pluck('dataset_version_id')->toArray();
                 return $entity;
             })
             ->values()
