@@ -323,16 +323,6 @@ class Dataset extends Model
         );
     }
 
-    // // Accessor for all spatial coverages
-    // public function getAllSpatialCoveragesAttribute()
-    // {
-    //     return $this->getRelationsViaDatasetVersionOld(
-    //         DatasetVersionHasSpatialCoverage::class,
-    //         SpatialCoverage::class,
-    //         'spatial_coverage_id'
-    //     );
-    // }
-
     // Accessor for all tools
     public function getAllToolsAttribute()
     {
