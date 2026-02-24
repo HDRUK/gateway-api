@@ -1607,7 +1607,8 @@ class SearchController extends Controller
                         $dataCustodianNetworksArray[$i]['name'] = $model['name'];
                         $dataCustodianNetworksArray[$i]['img_url'] =  (is_null($model['img_url']) || strlen(trim($model['img_url'])) === 0 || (preg_match('/^https?:\/\//', $model['img_url'])) ? null : Config::get('services.media.base_url') . $model['img_url']);
                         $dataCustodianNetworksArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
-                        $dataCustodianNetworksArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
+                        // temporarily disabled because it is not used and is expensive
+                        // $dataCustodianNetworksArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
                         $foundFlag = true;
                         break;
                     }
@@ -1999,7 +2000,10 @@ class SearchController extends Controller
     {
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->get();
+            $datasets = Dataset::where([
+                'team_id' => $team['id'],
+                'status' => 'ACTIVE',
+            ])->select(['id', 'status'])->get();
             foreach ($datasets as $dataset) {
                 $spatialCoverage = $dataset->allSpatialCoverages;
                 foreach ($spatialCoverage as $loc) {

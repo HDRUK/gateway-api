@@ -244,9 +244,9 @@ class Dataset extends Model
             ->orderBy('version', 'desc')
             ->first()
             ->id;
-        $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
+        $datasetVersion = DatasetVersion::findOrFail($version)->select(['id', 'title'])->first();
 
-        return $datasetVersion['metadata']['metadata']['summary']['title'];
+        return $datasetVersion->title;
     }
 
     /**
@@ -322,6 +322,16 @@ class Dataset extends Model
             'spatial_coverage_id'
         );
     }
+
+    // // Accessor for all spatial coverages
+    // public function getAllSpatialCoveragesAttribute()
+    // {
+    //     return $this->getRelationsViaDatasetVersionOld(
+    //         DatasetVersionHasSpatialCoverage::class,
+    //         SpatialCoverage::class,
+    //         'spatial_coverage_id'
+    //     );
+    // }
 
     // Accessor for all tools
     public function getAllToolsAttribute()
@@ -415,10 +425,19 @@ class Dataset extends Model
     /**
      * Helper function to get stuff linked by datasetVersionHasX
      */
-    public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId, $includeIntermediate = false, $filterActive = false)
-    {
+    private function getRelationsViaDatasetVersion(
+        string $linkageTable,
+        string $targetTable,
+        string $foreignTableId,
+        bool $includeIntermediate = false,
+        bool $filterActive = false
+    ): array {
         // Step 1: Get the dataset version IDs
         $versionIds = $this->versions()->pluck('id')->toArray();
+
+        if (empty($versionIds)) {
+            return [];
+        }
 
         // Step 2: Use the version IDs to find all related entityIDs through the linkage table
         $linkageRecords = $linkageTable::whereIn('dataset_version_id', $versionIds)
@@ -431,7 +450,6 @@ class Dataset extends Model
                     return $query->get([$foreignTableId, 'dataset_version_id']);
                 }
             );
-
 
         $entityIds = $linkageRecords->pluck($foreignTableId)->unique()->toArray();
 
