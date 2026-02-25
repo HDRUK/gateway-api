@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Config;
-use Auditor;
-use Exception;
+use App\Http\Controllers\Controller;
+use App\Http\Traits\EnquiriesTrait;
+use App\Models\Dataset;
+use App\Models\EnquiryThread;
 use App\Models\Team;
 use App\Models\User;
-use App\Models\Dataset;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use Laravel\Pennant\Feature;
-use App\Models\EnquiryThread;
-use Illuminate\Http\JsonResponse;
-use App\Http\Traits\EnquiriesTrait;
-use App\Http\Controllers\Controller;
 use App\Services\SDEConciergeService;
+use Auditor;
+use Config;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Laravel\Pennant\Feature;
 
 class EnquiryThreadController extends Controller
 {
@@ -220,6 +221,19 @@ class EnquiryThreadController extends Controller
         $enquiryThreadId = null;
 
         $input = $request->all();
+        try {
+            $validated = $request->validate([
+                'organisation'   => ['sometimes', 'string', 'max:255'],
+                'from'           => ['sometimes', 'email'],
+                'query'          => ['sometimes', 'string'],
+                'project_title'  => ['sometimes', 'string'],
+                'research_aim'   => ['sometimes', 'string'],
+                'funding'        => ['sometimes', 'string'],
+            ]);
+        } catch (ValidationException $e) {
+            throw new Exception(implode(', ', $e->validator->errors()->all()));
+        }
+
         $jwtUser = $input['jwt_user'] ?? [];
         $user = User::where('id', $jwtUser['id'])->first();
 
