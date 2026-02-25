@@ -222,14 +222,21 @@ class EnquiryThreadController extends Controller
 
         $input = $request->all();
         try {
-            $validated = $request->validate([
-                'organisation'   => ['sometimes', 'string', 'max:255'],
-                'from'           => ['sometimes', 'email'],
-                'query'          => ['sometimes', 'string'],
-                'project_title'  => ['sometimes', 'string'],
-                'research_aim'   => ['sometimes', 'string'],
-                'funding'        => ['sometimes', 'string'],
-            ]);
+            if ($input['is_general_enquiry']) {
+                $request->validate([
+                    'organisation'   => ['sometimes', 'string', 'max:255'],
+                    'from'           => ['sometimes', 'email'],
+                    'query'          => ['sometimes', 'string'],
+                ]);
+            } else {
+                $request->validate([
+                    'organisation'   => ['sometimes', 'string', 'max:255'],
+                    'from'           => ['sometimes', 'email'],
+                    'project_title'  => ['sometimes', 'string'],
+                    'research_aim'   => ['sometimes', 'string'],
+                    'funding'        => ['sometimes', 'string'],
+                ]);
+            }
         } catch (ValidationException $e) {
             throw new Exception(implode(', ', $e->validator->errors()->all()));
         }
