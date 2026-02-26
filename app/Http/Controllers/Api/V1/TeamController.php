@@ -202,11 +202,9 @@ class TeamController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
         try {
             $query = Team::where('enabled', 1)
                 ->select(['id', 'name']);
-
             if ($request->has('sort')) {
                 $sortDirection = strtolower($request->query('sort')) === 'desc' ? 'desc' : 'asc';
                 $query->orderBy('name', $sortDirection);

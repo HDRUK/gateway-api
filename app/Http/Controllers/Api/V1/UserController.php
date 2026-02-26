@@ -199,7 +199,6 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
         try {
             $userTeam = User::where('id', $id)->with(
                 'roles',
@@ -219,7 +218,7 @@ class UserController extends Controller
 
                 return response()->json([
                     'message' => 'success',
-                    'data' => $this->getUsers($userTeam),
+                    'data' => $userTeam,
                 ], 200);
             }
 

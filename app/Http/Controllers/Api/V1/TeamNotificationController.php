@@ -180,7 +180,6 @@ class TeamNotificationController extends Controller
 
             // team has notifications
             $teamNotifications = TeamHasNotification::where('team_id', $teamId)->pluck('notification_id')->all();
-
             if ($teamNotifications) {
                 $this->deleteTeamNotifications($teamId, $teamNotifications);
                 $this->createTeamNotifications($input, $teamId);
