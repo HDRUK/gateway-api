@@ -218,7 +218,7 @@ class UserController extends Controller
 
                 return response()->json([
                     'message' => 'success',
-                    'data' => $userTeam,
+                    'data' => $this->getUsers($userTeam),
                 ], 200);
             }
 
