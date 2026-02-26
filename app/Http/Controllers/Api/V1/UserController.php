@@ -201,17 +201,14 @@ class UserController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $users = User::where([
-                'id' => $id,
-            ])->get();
+            $userTeam = User::where('id', $id)->with(
+                'roles',
+                'roles.permissions',
+                'teams',
+                'notifications'
+            )->get()->toArray();
 
-            if ($users->count()) {
-                $userTeam = User::where('id', $id)->with(
-                    'roles',
-                    'roles.permissions',
-                    'teams',
-                    'notifications'
-                )->get()->toArray();
+            if (count($userTeam)) {
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],
