@@ -17,22 +17,6 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-        with:
-          token:  ${{ secrets.GH_TOKEN }}
-          ref: main
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install dependencies
-        run: npm install
-
       - name: Generate GitHub App token
         id: generate-deployment-token
         uses: actions/create-github-app-token@v2
@@ -42,6 +26,22 @@ jobs:
           owner: HDRUK
           repositories: |
             ${{ github.event.repository.name }}
+
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v6
+        with:
+          token:  ${{ steps.generate-deployment-token.outputs.token }}
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Run Semantic Release
         run: npx semantic-release
@@ -83,7 +83,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
 
