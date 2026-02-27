@@ -920,24 +920,28 @@ class DatasetController extends Controller
     // no Swagger
     public function updateIsCohortDiscovery(GetDataset $request, int $id)
     {
-        $input = $request->all();
-        $isCohortDiscovery = isset($input['is_cohort_discovery']) ? $input['is_cohort_discovery'] : null;
+        try {
+            $input = $request->all();
+            $isCohortDiscovery = isset($input['is_cohort_discovery']) ? $input['is_cohort_discovery'] : null;
 
-        if (is_null($isCohortDiscovery)) {
-            throw new Exception('Payload is missing is_cohort_discovery');
+            if (is_null($isCohortDiscovery)) {
+                throw new Exception('Payload is missing is_cohort_discovery');
+            }
+
+            $dataset = Dataset::where('id', $id)->first();
+
+            if ($dataset->status !== Dataset::STATUS_ACTIVE) {
+                throw new Exception('Dataset status is ' . strtoupper($dataset->status));
+            }
+
+            $dataset->is_cohort_discovery = $isCohortDiscovery;
+            $dataset->save();
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        $dataset = Dataset::where('id', $id)->first();
-
-        if ($dataset->status !== Dataset::STATUS_ACTIVE) {
-            throw new Exception('Dataset status is ' . strtoupper($dataset->status));
-        }
-
-        $dataset->is_cohort_discovery = $isCohortDiscovery;
-        $dataset->save();
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_OK.message'),
-        ], Config::get('statuscodes.STATUS_OK.code'));
     }
 }
