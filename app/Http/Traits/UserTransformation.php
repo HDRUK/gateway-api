@@ -17,6 +17,62 @@ trait UserTransformation
     public function getUsers(array $users): array
     {
         $response = [];
+        $teamRolesByPivotId = [];
+        $notificationsByUserId = [];
+
+        $teamHasUserIds = [];
+        foreach ($users as $user) {
+            if (!isset($user['teams']) || !is_array($user['teams'])) {
+                continue;
+            }
+
+            foreach ($user['teams'] as $team) {
+                if (isset($team['pivot']['id'])) {
+                    $teamHasUserIds[] = (int) $team['pivot']['id'];
+                }
+            }
+        }
+
+        $teamHasUserIds = array_values(array_unique($teamHasUserIds));
+        if ($teamHasUserIds) {
+            $teamUsers = TeamHasUser::whereIn('id', $teamHasUserIds)->with('roles')->get();
+            foreach ($teamUsers as $teamUser) {
+                $teamRolesByPivotId[(int) $teamUser->id] = $teamUser->roles->toArray();
+            }
+        }
+
+        $usersNeedNotificationLookup = false;
+        foreach ($users as $user) {
+            if (!array_key_exists('notifications', $user)) {
+                $usersNeedNotificationLookup = true;
+                break;
+            }
+        }
+
+        if ($usersNeedNotificationLookup) {
+            $userIds = array_values(array_unique(array_map(fn ($user) => (int) $user['id'], $users)));
+
+            if ($userIds) {
+                $userNotifications = UserHasNotification::whereIn('user_id', $userIds)->get(['user_id', 'notification_id']);
+                $notificationIds = array_values(array_unique($userNotifications->pluck('notification_id')->map(fn ($id) => (int) $id)->toArray()));
+
+                $notificationMap = [];
+                if ($notificationIds) {
+                    $notificationMap = Notification::whereIn('id', $notificationIds)->get()->keyBy('id');
+                }
+
+                foreach ($userNotifications as $userNotification) {
+                    $userId = (int) $userNotification->user_id;
+                    $notificationId = (int) $userNotification->notification_id;
+
+                    if (!isset($notificationMap[$notificationId])) {
+                        continue;
+                    }
+
+                    $notificationsByUserId[$userId][] = $notificationMap[$notificationId];
+                }
+            }
+        }
 
         foreach ($users as $user) {
             $tmpUser = [
@@ -45,6 +101,7 @@ trait UserTransformation
                 'terms' => $user['terms'],
                 'roles' => $user['roles'],
                 'hubspot_id' => $user['hubspot_id'],
+                'team_users' => $user['team_users'] ?? [],
             ];
 
             $tmpTeam = [];
@@ -63,14 +120,14 @@ trait UserTransformation
                     'application_form_updated_by' => $team['application_form_updated_by'],
                     'application_form_updated_on' => $team['application_form_updated_on'],
                     'is_question_bank' => $team['is_question_bank'],
+                    'notifications' => $team['notifications'] ?? [],
                 ];
 
                 $teamHasUserId = (int)$team['pivot']['id'];
-
-                $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles')->get()->toArray();
+                $roles = $teamRolesByPivotId[$teamHasUserId] ?? [];
 
                 $tmpPerm = [];
-                foreach ($roles[0]['roles'] as $role) {
+                foreach ($roles as $role) {
                     $tmpPerm[] = $role;
                 }
                 $tmp['roles'] = $tmpPerm;
@@ -82,13 +139,12 @@ trait UserTransformation
             }
             $tmpUser['teams'] = $tmpTeam;
 
-            $notifications = UserHasNotification::where('user_id', $tmpUser['id'])->get()->toArray();
-            $tmpNotification = [];
-            foreach ($notifications as $value) {
-                $notification = Notification::where('id', $value['notification_id'])->firstOrFail();
-                $tmpNotification[] = $notification;
+            if (array_key_exists('notifications', $user)) {
+                $tmpUser['notifications'] = $user['notifications'];
+            } else {
+                $tmpUser['notifications'] = $notificationsByUserId[(int) $tmpUser['id']] ?? [];
             }
-            $tmpUser['notifications'] = $tmpNotification;
+
 
             // Added in to stop a singular /users/:id call returning an array for
             // the users part of the payload
@@ -100,8 +156,6 @@ trait UserTransformation
 
             unset($tmpTeam);
             unset($tmpUser);
-            unset($notifications);
-            unset($tmpNotification);
         }
 
         return $response;
