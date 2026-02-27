@@ -26,6 +26,7 @@ class DataAccessApplicationAnswer extends Model
         'application_id',
         'answer',
         'contributor_id',
+        'answer_index',
     ];
 
     protected $casts = [

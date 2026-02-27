@@ -953,11 +953,13 @@ class UserDataAccessApplicationController extends Controller
                         'question_id' => $answer['question_id'],
                         'application_id' => $id,
                     ])->delete();
+
                     DataAccessApplicationAnswer::create([
                         'question_id' => $answer['question_id'],
                         'application_id' => $id,
                         'answer' => $answer['answer'],
                         'contributor_id' => $jwtUser['id'],
+                        'answer_index' => isset($answer['answer_index']) ? $answer['answer_index'] : null,
                     ]);
                 }
             } else {
