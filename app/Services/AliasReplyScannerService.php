@@ -37,7 +37,22 @@ class AliasReplyScannerService
     {
         $client = $this->getImapClient();
         $inbox = $client->getFolder(config('mail.mailers.ars.inbox'));
-        return $inbox->messages()->all()->get();
+
+        return $inbox->messages()->all()->get()->filter(fn ($message) => !$this->isOutOfOffice($message));
+    }
+
+    private function isOutOfOffice($message): bool
+    {
+        $autoSubmitted = $message->getHeader()->get('auto-submitted');
+        if ($autoSubmitted && strtolower($autoSubmitted->value) !== 'no') {
+            return true;
+        }
+
+        if ($message->getHeader()->get('x-auto-response-suppress')) {
+            return true;
+        }
+
+        return false;
     }
 
     public function getNewMessagesSafe()
