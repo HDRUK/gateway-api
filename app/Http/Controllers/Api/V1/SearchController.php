@@ -1972,8 +1972,8 @@ class SearchController extends Controller
             ->all();
 
         $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-            ->pluck('name')
-            ->all();
+            ->select(['id', 'name'])
+            ->get()->toArray();
 
         return $dataProviderColl;
     }
