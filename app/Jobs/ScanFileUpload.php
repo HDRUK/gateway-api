@@ -366,6 +366,7 @@ class ScanFileUpload implements ShouldQueue
                 'create_origin' => 'MANUAL',
                 'user_id' => $this->userId,
                 'team_id' => $this->teamId,
+                'pid' => $upload->uuid,
             ];
 
             $defineInputSchema = $this->inputSchema ? $this->inputSchema : Config::get('form_hydration.schema.model');
@@ -384,7 +385,7 @@ class ScanFileUpload implements ShouldQueue
                     'status' => 'PROCESSED',
                     'file_location' => $loc,
                     'entity_type' => 'dataset',
-                    'entity_id' => $metadataResult['dataset_id']
+                    'entity_id' => $metadataResult['dataset_id'],
                 ]);
 
                 \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
