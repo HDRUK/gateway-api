@@ -1408,6 +1408,20 @@ class CohortRequestController extends Controller
         ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
+    private function isScrambled(string $email) {
+        $indicatorsOfScrambled = [
+            "member@",
+            "staff@",
+            "student@",
+            "employee@",
+            "postgraduatetaught@",
+        ];
+
+        return array_any($indicatorsOfScrambled, function(string $item) use ($email) {
+            return str_contains(strtolower($email), $item);
+        });
+    }
+
     /**
      * Shared guard: validates JWT user, approved request, permissions, user+email,
      * clears oauth user, sets session, logs auditor.
@@ -1454,8 +1468,7 @@ class CohortRequestController extends Controller
             if (! $user) {
                 throw new Exception('Unauthorized for access :: The user not found');
             }
-
-            $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary')
+            $email = (($user->provider === 'open-athens' && $this->isScrambled($user->email)) || $user->preferred_email === 'secondary')
                 ? $user->secondary_email
                 : $user->email;
 
