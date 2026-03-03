@@ -1408,7 +1408,8 @@ class CohortRequestController extends Controller
         ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
-    private function isScrambled(string $email) {
+    private function isScrambled(string $email)
+    {
         $indicatorsOfScrambled = [
             "member@",
             "staff@",
@@ -1417,7 +1418,7 @@ class CohortRequestController extends Controller
             "postgraduatetaught@",
         ];
 
-        return array_any($indicatorsOfScrambled, function(string $item) use ($email) {
+        return array_any($indicatorsOfScrambled, function (string $item) use ($email) {
             return str_contains(strtolower($email), $item);
         });
     }

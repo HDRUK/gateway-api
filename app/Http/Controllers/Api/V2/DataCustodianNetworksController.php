@@ -357,6 +357,7 @@ class DataCustodianNetworksController extends Controller
             ]);
 
             $ownedDatasets = Dataset::where(['status' => Dataset::STATUS_ACTIVE])
+                ->with(['team:id,name'])
                 ->whereIn('team_id', $teamIds)
                 ->select([
                     'id', 'user_id', 'team_id'
@@ -370,6 +371,8 @@ class DataCustodianNetworksController extends Controller
                 $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
                 $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
                 $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+                $dataset['team'] = $dataset->team;
+
             }
 
             $result = [
@@ -465,6 +468,7 @@ class DataCustodianNetworksController extends Controller
 
             // Durs: get all active durs owned by the team and also active durs linked to (all versions of) datasets owned by the team
             $ownedDurs = Dur::where(['status' => Dur::STATUS_ACTIVE])
+                ->with(['team:id,name'])
                 ->whereIn('team_id', $teamIds)
                 ->select(['id', 'project_title', 'organisation_name', 'status', 'team_id'])
                 ->get()
@@ -480,8 +484,9 @@ class DataCustodianNetworksController extends Controller
                 [$id, $id, Dur::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
 
-            $linkedDurs = array_map(function ($dur) {
-                return (array)$dur;
+            $linkedDurs = array_map(function ($item) {
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return (array)$item;
             }, $linkedDursColl);
 
             $allDurs = [...$ownedDurs, ...$linkedDurs];
@@ -497,6 +502,11 @@ class DataCustodianNetworksController extends Controller
                 [Tool::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
 
+            $linkedToolsColl = array_map(function ($item) {
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return $item;
+            }, $linkedToolsColl);
+
             $linkedPublicationsColl = DB::select(
                 'SELECT DISTINCT p.id, p.paper_title, p.authors, p.publication_type, p.publication_type_mk1, p.status, p.created_at, p.updated_at, p.url, ds.team_id
                 FROM datasets ds
@@ -506,6 +516,10 @@ class DataCustodianNetworksController extends Controller
                 WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND p.status = ? AND ds.status = ?',
                 [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
+            $linkedPublicationsColl = array_map(function ($item) {
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return $item;
+            }, $linkedPublicationsColl);
 
             $linkedCollectionColl = DB::select(
                 'SELECT DISTINCT c.id, c.name, c.image_link, c.status, c.created_at, c.updated_at, ds.team_id
@@ -517,11 +531,12 @@ class DataCustodianNetworksController extends Controller
                 [Collection::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
 
-            $linkedCollectionColl = array_map(function ($collection) {
-                if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
-                    $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
+            $linkedCollectionColl = array_map(function ($item) {
+                if ($item->image_link && !preg_match('/^https?:\/\//', $item->image_link)) {
+                    $item->image_link = Config::get('services.media.base_url') . $item->image_link;
                 }
-                return $collection;
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return $item;
             }, $linkedCollectionColl);
 
             $result = [
