@@ -484,9 +484,9 @@ class DataCustodianNetworksController extends Controller
                 [$id, $id, Dur::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
 
-            $linkedDurs = array_map(function ($dur) {
-                $dur->team = Team::select('id', 'name')->where('id', $dur->team_id)->first();
-                return (array)$dur;
+            $linkedDurs = array_map(function ($item) {
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return (array)$item;
             }, $linkedDursColl);
 
             $allDurs = [...$ownedDurs, ...$linkedDurs];
@@ -502,9 +502,9 @@ class DataCustodianNetworksController extends Controller
                 [Tool::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
 
-            $linkedToolsColl = array_map(function ($element) {
-                $element->team = Team::select('id', 'name')->where('id', $element->team_id)->first();
-                return $element;
+            $linkedToolsColl = array_map(function ($item) {
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return $item;
             }, $linkedToolsColl);
 
             $linkedPublicationsColl = DB::select(
@@ -516,9 +516,9 @@ class DataCustodianNetworksController extends Controller
                 WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND p.status = ? AND ds.status = ?',
                 [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
-            $linkedPublicationsColl = array_map(function ($element) {
-                $element->team = Team::select('id', 'name')->where('id', $element->team_id)->first();
-                return $element;
+            $linkedPublicationsColl = array_map(function ($item) {
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return $item;
             }, $linkedPublicationsColl);
 
             $linkedCollectionColl = DB::select(
@@ -531,12 +531,12 @@ class DataCustodianNetworksController extends Controller
                 [Collection::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
             );
 
-            $linkedCollectionColl = array_map(function ($collection) {
-                if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
-                    $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
+            $linkedCollectionColl = array_map(function ($item) {
+                if ($item->image_link && !preg_match('/^https?:\/\//', $item->image_link)) {
+                    $item->image_link = Config::get('services.media.base_url') . $item->image_link;
                 }
-                $collection->team = Team::select('id', 'name')->where('id', $collection->team_id)->first();
-                return $collection;
+                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
+                return $item;
             }, $linkedCollectionColl);
 
             $result = [
