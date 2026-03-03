@@ -57,8 +57,9 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        // Support request params for frontend compatibility; fall back to config when not provided
+        $model = $request->query('model') ?? $request->query('name') ?? Config::get('form_hydration.schema.model');
+        $version = $request->query('version') ?? Config::get('form_hydration.schema.latest_version');
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
 
@@ -99,7 +100,7 @@ class FormHydrationController extends Controller
      *              type="string"
      *          )
      *      ),
-     *       @OA\Parameter(
+     *      @OA\Parameter(
      *          name="dataTypes",
      *          in="query",
      *          required=false,
@@ -127,9 +128,11 @@ class FormHydrationController extends Controller
      */
     public function onboardingFormHydration(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        // Support request params for frontend compatibility; fall back to config when not provided
+        $model = $request->input('name') ?? $request->input('model') ?? Config::get('form_hydration.schema.model');
+        $version = $request->input('version') ?? Config::get('form_hydration.schema.latest_version');
         $dataTypes = $request->input('dataTypes', '');
+        $dataTypes = ($dataTypes === 'undefined' || $dataTypes === 'null') ? '' : $dataTypes;
         $teamId = $request->input('team_id', null);
 
         $hydrationJson = MMC::getOnboardingFormHydrated($model, $version, $dataTypes);

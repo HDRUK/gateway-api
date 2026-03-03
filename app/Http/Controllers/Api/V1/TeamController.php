@@ -862,6 +862,64 @@ class TeamController extends Controller
     }
 
     /**
+     * Get basic team information
+     *
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function info(Request $request, int $id): JsonResponse
+    {
+        try {
+            $team = Team::select('id', 'name', 'member_of', 'is_provider', 'introduction', 'url', 'service', 'team_logo', 'enabled')
+                ->where([
+                    'id' => $id,
+                    'enabled' => 1,
+                ])->first();
+
+            if (!$team) {
+                return response()->json([
+                    'message' => 'Team not found or not enabled',
+                    'data' => null,
+                ], 404);
+            }
+
+            $service = array_values(array_filter(explode(",", $team->service ?? '')));
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team get ' . $id . ' info',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message', 'success'),
+                'data' => [
+                    'id' => $team->id,
+                    'name' => $team->name,
+                    'member_of' => $team->member_of,
+                    'is_provider' => $team->is_provider,
+                    'introduction' => $team->introduction,
+                    'url' => $team->url,
+                    'service' => empty($service) ? null : $service,
+                    'team_logo' => (is_null($team->team_logo) || strlen(trim($team->team_logo)) === 0) ? '' : (preg_match('/^https?:\/\//', $team->team_logo) ? $team->team_logo : Config::get('services.media.base_url') . $team->team_logo),
+                ],
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'An error occurred while retrieving team information',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * @OA\Post(
      *      path="/api/v1/teams",
      *      tags={"Teams"},
@@ -1555,6 +1613,208 @@ class TeamController extends Controller
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Get cohort discovery datasets for a team
+     *
+     * @param Request $request
+     * @param int $teamId
+     * @return JsonResponse
+     */
+    public function datasetsCohortDiscovery(Request $request, int $teamId): JsonResponse
+    {
+        try {
+            $filterStatus = $request->query('status', null);
+            $datasetId = $request->query('dataset_id', null);
+            $mongoPId = $request->query('mongo_pid', null);
+            $withMetadata = $request->boolean('with_metadata', true);
+
+            $sort = $request->query('sort', 'created:desc');
+
+            $tmp = explode(':', $sort);
+            $sortField = $tmp[0];
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+            $sortOnMetadata = str_starts_with($sortField, 'metadata.');
+            $allFields = collect(Dataset::first())->keys()->toArray();
+            if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
+                return response()->json([
+                    'message' => '\"' . $sortField . '\" is not a valid field to sort on',
+                ], 400);
+            }
+
+            $validDirections = ['desc', 'asc'];
+
+            if (!in_array($sortDirection, $validDirections)) {
+                return response()->json([
+                    'message' => 'Sort direction must be either: ' .
+                        implode(' OR ', $validDirections) .
+                        '. Not "' . $sortDirection . '"',
+                ], 400);
+            }
+
+            $filterTitle = $request->query('title', null);
+
+            $matches = [];
+
+            $datasets = Dataset::where('team_id', $teamId)
+                ->where('is_cohort_discovery', true) // Filter for cohort discovery datasets
+                ->when($datasetId, function ($query) use ($datasetId) {
+                    return $query->where('datasetid', '=', $datasetId);
+                })
+                ->when($mongoPId, function ($query) use ($mongoPId) {
+                    return $query->where('mongo_pid', '=', $mongoPId);
+                })
+                ->when(
+                    $request->has('withTrashed'),
+                    function ($query) {
+                        return $query->withTrashed();
+                    }
+                )
+                ->when($filterStatus, function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
+                })
+                ->select(['id'])->get();
+
+            foreach ($datasets as $d) {
+                $matches[] = $d->id;
+            }
+
+            if (!empty($filterTitle)) {
+                $titleMatches = [];
+
+                foreach ($matches as $m) {
+                    $version = DatasetVersion::where('dataset_id', $m)
+                        ->filterTitle($filterTitle)
+                        ->select('dataset_id')
+                        ->when(
+                            $request->has('withTrashed'),
+                            function ($query) {
+                                return $query->withTrashed();
+                            }
+                        )
+                        ->first();
+
+                    if ($version) {
+                        $titleMatches[] = $version->dataset_id;
+                    }
+                }
+
+                $matches = array_intersect($matches, $titleMatches);
+            }
+
+            $perPage = request('per_page', Config::get('constants.per_page'));
+
+            $datasets = Dataset::whereIn('id', $matches)
+                ->where('is_cohort_discovery', true) // Ensure cohort discovery filter is maintained
+                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
+                ->when(
+                    $request->has('withTrashed'),
+                    function ($query) {
+                        return $query->withTrashed();
+                    }
+                )
+                ->when($filterStatus, function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
+                })
+                ->when(
+                    $sortOnMetadata,
+                    fn ($query) => $query->orderByMetadata($sortField, $sortDirection),
+                    fn ($query) => $query->orderBy($sortField, $sortDirection)
+                )
+                ->paginate($perPage, ['*'], 'page');
+
+            foreach ($datasets as &$d) {
+                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
+                    'summary',
+                    'required',
+                ]);
+
+                // latestMetadata is a relation and cannot be assigned at this
+                // level, safely. So, unset all forms of metadata on the object
+                // and overwrite with out minimal version
+                unset($d['latest_metadata']);
+                unset($d['latestMetadata']);
+
+                $d['latest_metadata'] = $miniMetadata;
+            }
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team ' . $teamId . ' cohort discovery datasets',
+            ]);
+
+            return response()->json(
+                $datasets
+            );
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'An error occurred while retrieving cohort discovery datasets',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get datasets summary for a team
+     *
+     * @param Request $request
+     * @param int $teamId
+     * @return JsonResponse
+     */
+    public function datasetsSummary(Request $request, int $teamId): JsonResponse
+    {
+        try {
+            // Verify team exists and is enabled
+            $team = Team::where([
+                'id' => $teamId,
+                'enabled' => 1,
+            ])->first();
+
+            if (!$team) {
+                return response()->json([
+                    'message' => 'Team not found or not enabled',
+                    'data' => null,
+                ], 404);
+            }
+
+            // Reset datasets array
+            $this->datasets = [];
+
+            // This populates $this->datasets with dataset summaries
+            $this->getDatasets($teamId);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team ' . $teamId . ' datasets summary',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message', 'success'),
+                'data' => $this->datasets,
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'An error occurred while retrieving datasets summary',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 

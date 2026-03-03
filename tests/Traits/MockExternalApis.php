@@ -46,6 +46,14 @@ trait MockExternalApis
         return $json;
     }
 
+    public function getMetadataV2p1()
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/hdruk_41_dummy_data/dataset_01_gwdm21.json', 0, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
+    }
+
     public function getMetadata()
     {
         $version = Config::get('metadata.GWDM.version');
@@ -56,6 +64,9 @@ trait MockExternalApis
             case version_compare($version, "1.2", "<="):
                 #note: v1.1 and v1.2 were not that different so can use this example metadata
                 return $this->getMetadataV1p1();
+
+            case version_compare($version, "2.1", ">="):
+                return $this->getMetadataV2p1();
 
             case version_compare($version, "2.0", "<="):
                 return $this->getMetadataV2p0();
