@@ -239,10 +239,6 @@ class SearchController extends Controller
                     $datasetsArray[$i]['metadata'] = $model['metadata'];
                 }
 
-                if (empty($model['team'])) {
-                    continue;
-                }
-
                 $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                 $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
                 $datasetsArray[$i]['team']['id'] = $model['team']['id'];
@@ -300,14 +296,6 @@ class SearchController extends Controller
 
             return response()->json($final, 200);
         } catch (Exception $e) {
-            dd([
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'whole' => $e,
-            ]);
-
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
