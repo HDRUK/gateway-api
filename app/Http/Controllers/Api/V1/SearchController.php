@@ -239,6 +239,10 @@ class SearchController extends Controller
                     $datasetsArray[$i]['metadata'] = $model['metadata'];
                 }
 
+                if (empty($model['team'])) {
+                    continue;
+                }
+
                 $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                 $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
                 $datasetsArray[$i]['team']['id'] = $model['team']['id'];
@@ -276,6 +280,7 @@ class SearchController extends Controller
             $datasetsArray = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('per_page', Config::get('constants.per_page'));
+
             $paginatedData = $this->paginateArray($request, $datasetsArray, $perPage);
             unset($datasetsArray);
 
@@ -295,6 +300,14 @@ class SearchController extends Controller
 
             return response()->json($final, 200);
         } catch (Exception $e) {
+            dd([
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'whole' => $e,
+            ]);
+
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -1884,35 +1897,35 @@ class SearchController extends Controller
      */
     private function sortSearchResult(array $resultArray, string $sortField, string $sortDirection): array
     {
-        if ($sortField === 'score') {
-            $resultArraySorted = $sortDirection === 'desc' ? $resultArray : array_reverse($resultArray);
-            return $resultArraySorted;
-        }
+    //     if ($sortField === 'score') {
+    //         $resultArraySorted = $sortDirection === 'desc' ? $resultArray : array_reverse($resultArray);
+    //         return $resultArraySorted;
+    //     }
 
-        if ($sortDirection === 'asc') {
-            usort(
-                $resultArray,
-                function ($a, $b) use ($sortField) {
-                    return $a['_source'][$sortField] <=> $b['_source'][$sortField];
-                }
-            );
-        } else {
-            usort(
-                $resultArray,
-                function ($a, $b) use ($sortField) {
-                    $aVal = $a['_source'][$sortField];
-                    $bVal = $b['_source'][$sortField];
+    //     if ($sortDirection === 'asc') {
+    //         usort(
+    //             $resultArray,
+    //             function ($a, $b) use ($sortField) {
+    //                 return $a['_source'][$sortField] <=> $b['_source'][$sortField];
+    //             }
+    //         );
+    //     } else {
+    //         usort(
+    //             $resultArray,
+    //             function ($a, $b) use ($sortField) {
+    //                 $aVal = $a['_source'][$sortField];
+    //                 $bVal = $b['_source'][$sortField];
 
-                    if (strtotime($aVal) !== false) {
-                        return strtotime($bVal) <=> strtotime($aVal);
-                    } elseif (is_string($aVal)) {
-                        return strtoupper($bVal) <=> strtoupper($aVal);
-                    } else {
-                        return $bVal <=> $aVal;
-                    }
-                }
-            );
-        }
+    //                 if (strtotime($aVal) !== false) {
+    //                     return strtotime($bVal) <=> strtotime($aVal);
+    //                 } elseif (is_string($aVal)) {
+    //                     return strtoupper($bVal) <=> strtoupper($aVal);
+    //                 } else {
+    //                     return $bVal <=> $aVal;
+    //                 }
+    //             }
+    //         );
+    //     }
 
         return $resultArray;
     }
