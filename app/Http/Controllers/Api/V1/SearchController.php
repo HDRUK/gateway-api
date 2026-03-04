@@ -1885,35 +1885,35 @@ class SearchController extends Controller
      */
     private function sortSearchResult(array $resultArray, string $sortField, string $sortDirection): array
     {
-    //     if ($sortField === 'score') {
-    //         $resultArraySorted = $sortDirection === 'desc' ? $resultArray : array_reverse($resultArray);
-    //         return $resultArraySorted;
-    //     }
+        if ($sortField === 'score') {
+            $resultArraySorted = $sortDirection === 'desc' ? $resultArray : array_reverse($resultArray);
+            return $resultArraySorted;
+        }
 
-    //     if ($sortDirection === 'asc') {
-    //         usort(
-    //             $resultArray,
-    //             function ($a, $b) use ($sortField) {
-    //                 return $a['_source'][$sortField] <=> $b['_source'][$sortField];
-    //             }
-    //         );
-    //     } else {
-    //         usort(
-    //             $resultArray,
-    //             function ($a, $b) use ($sortField) {
-    //                 $aVal = $a['_source'][$sortField];
-    //                 $bVal = $b['_source'][$sortField];
+        if ($sortDirection === 'asc') {
+            usort(
+                $resultArray,
+                function ($a, $b) use ($sortField) {
+                    return $a['_source'][$sortField] <=> $b['_source'][$sortField];
+                }
+            );
+        } else {
+            usort(
+                $resultArray,
+                function ($a, $b) use ($sortField) {
+                    $aVal = $a['_source'][$sortField];
+                    $bVal = $b['_source'][$sortField];
 
-    //                 if (strtotime($aVal) !== false) {
-    //                     return strtotime($bVal) <=> strtotime($aVal);
-    //                 } elseif (is_string($aVal)) {
-    //                     return strtoupper($bVal) <=> strtoupper($aVal);
-    //                 } else {
-    //                     return $bVal <=> $aVal;
-    //                 }
-    //             }
-    //         );
-    //     }
+                    if (strtotime($aVal) !== false) {
+                        return strtotime($bVal) <=> strtotime($aVal);
+                    } elseif (is_string($aVal)) {
+                        return strtoupper($bVal) <=> strtoupper($aVal);
+                    } else {
+                        return $bVal <=> $aVal;
+                    }
+                }
+            );
+        }
 
         return $resultArray;
     }
