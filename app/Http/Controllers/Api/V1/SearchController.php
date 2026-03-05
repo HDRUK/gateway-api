@@ -174,6 +174,7 @@ class SearchController extends Controller
                 ], 404);
             }
             $response = $response->json();
+            // return response()->json($response, 200);
 
             if (
                 !isset($response['hits']) || !is_array($response['hits']) ||
