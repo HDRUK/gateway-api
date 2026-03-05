@@ -4,7 +4,6 @@ namespace App\Context;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\DatasetResource;
-use App\Http\Resources\DatasetIndexResource;
 use App\Models\Dataset;
 
 /**

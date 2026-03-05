@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\DatasetVersion;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -13,6 +14,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * Partners that need a different index shape should extend this class
  * and register it in config/partners.php.
+ *
+ * @property int $id
+ * @property string $pid
+ * @property string $status
+ * @property string $create_origin
+ * @property mixed $created
+ * @property mixed $updated
+ * @property DatasetVersion|null $latestMetadata
  */
 class DatasetIndexResource extends JsonResource
 {
@@ -25,10 +34,7 @@ class DatasetIndexResource extends JsonResource
             'create_origin' => $this->create_origin,
             'created'       => $this->created,
             'updated'       => $this->updated,
-            'latestMetadata' => $this->when(
-                $this->relationLoaded('latestMetadata'),
-                $this->latestMetadata
-            ),
+            'latestMetadata' => $this->whenLoaded('latestMetadata'),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Team;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -25,6 +26,25 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *           ]);
  *       }
  *   }
+ *
+ * @property int $id
+ * @property string $pid
+ * @property string $status
+ * @property string $create_origin
+ * @property mixed $created
+ * @property mixed $updated
+ * @property Team|null $team
+ * @property int|null $durs_count
+ * @property int|null $publications_count
+ * @property int|null $tools_count
+ * @property int|null $collections_count
+ * @property array $spatialCoverage
+ * @property array $durs
+ * @property array $publications
+ * @property array $named_entities
+ * @property array $collections
+ * @property array $versions
+ * @property array $linkages
  */
 class DatasetResource extends JsonResource
 {

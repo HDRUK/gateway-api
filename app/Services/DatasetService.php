@@ -12,7 +12,7 @@ use App\Models\SpatialCoverage;
 use App\Models\Team;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -114,7 +114,7 @@ class DatasetService
                 ->with(['reducedLinkedDatasetVersions'])
                 ->first();
             $withLinks->metadata = json_encode(['metadata' => $translated['metadata']]);
-            $dataset->versions = [$withLinks];
+            $dataset->setRelation('versions', [$withLinks]);
 
         } elseif ($outputSchemaModel) {
             throw new \InvalidArgumentException('schema_model provided without schema_version');
@@ -125,7 +125,7 @@ class DatasetService
                 ->with(['linkedDatasetVersions'])
                 ->first();
             if ($withLinks) {
-                $dataset->versions = [$withLinks];
+                $dataset->setRelation('versions', [$withLinks]);
             }
         }
 

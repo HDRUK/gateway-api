@@ -32,7 +32,8 @@ class DatasetController extends Controller
     public function __construct(
         private readonly DatasetService $datasetService,
         private readonly PartnerContext $partnerContext,
-    ) {}
+    ) {
+    }
 
     /**
      * @OA\Get(
