@@ -1488,15 +1488,17 @@ class DatasetController extends Controller
                     fputcsv($handle, $headerRow);
                     // add the given number of rows to the file.
                     foreach ($result['structuralMetadata'] as $rowDetails) {
-                        $row = [
-                            $rowDetails['name'] !== null ? $rowDetails['name'] : '',
-                            $rowDetails['description'] !== null ? $rowDetails['description'] : '',
-                            $rowDetails['columns'][0]['name'] !== null ? $rowDetails['columns'][0]['name'] : '',
-                            $rowDetails['columns'][0]['description'] !== null ? str_replace('\n', '', $rowDetails['columns'][0]['description']) : '',
-                            $rowDetails['columns'][0]['dataType'] !== null ? $rowDetails['columns'][0]['dataType'] : '',
-                            $rowDetails['columns'][0]['sensitive'] !== null ? ($rowDetails['columns'][0]['sensitive'] === true ? 'true' : 'false') : '',
-                        ];
-                        fputcsv($handle, $row);
+                        foreach ($rowDetails['columns'] as $columnDetails) {
+                            $row = [
+                               $rowDetails['name'] !== null ? $rowDetails['name'] : '',
+                               $rowDetails['description'] !== null ? $rowDetails['description'] : '',
+                               $columnDetails['name'] !== null ? $columnDetails['name'] : '',
+                               $columnDetails['description'] !== null ? str_replace('\n', '', $columnDetails['description']) : '',
+                               $columnDetails['dataType'] !== null ? $columnDetails['dataType'] : '',
+                               $columnDetails['sensitive'] !== null ? ($columnDetails['sensitive'] === true ? 'true' : 'false') : '',
+                            ];
+                            fputcsv($handle, $row);
+                        }
                     }
                 } elseif ($download_type === 'observations') {
                     $headerRow = [
