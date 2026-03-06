@@ -648,7 +648,7 @@ class CohortRequestController extends Controller
             $nhseSdeRequestBeingApproved = ($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) && ($nhseSdeRequestStatus === 'APPROVED');
             $nhseSdeRequestExpireAt = $nhseSdeRequestBeingApproved ? Carbon::now()->addDays(Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days')) : null;
 
-            $statusCohortRequest = null;
+            $statusNhsCohortRequest = null;
             if ($currRequestStatus !== $requestStatus || $currNhseSdeRequestStatus !== $nhseSdeRequestStatus) {
                 CohortRequest::where('id', $id)->update([
                     'request_status' => $requestStatus,
@@ -658,7 +658,7 @@ class CohortRequestController extends Controller
                 ]);
 
                 if ($requestBeingApproved === 'APPROVED') {
-                    $statusCohortRequest = 'APPROVED_NHS';
+                    $statusNhsCohortRequest = 'APPROVED';
                 }
             }
 
@@ -726,7 +726,7 @@ class CohortRequestController extends Controller
 
             // TODO: only send an email if there's a change.
             // - note: we might want to add what workgroups they're in to the email?
-            $this->sendEmail($id, null, $statusCohortRequest);
+            $this->sendEmail($id, null, $statusNhsCohortRequest);
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
             Auditor::log([
@@ -1585,7 +1585,7 @@ class CohortRequestController extends Controller
 
             if ($statusNhs) {
                 switch ($statusNhs) {
-                    case 'APPROVED': // submitted
+                    case 'APPROVED': // approved nhs
                         $template = EmailTemplate::where('identifier', '=', 'cohort.request.nhs.approved')->first();
                         break;
                 }
