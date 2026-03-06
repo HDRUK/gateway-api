@@ -1550,7 +1550,7 @@ class CohortRequestController extends Controller
 
             // template
             $template = null;
-            if (! $admin) {
+            if (!$admin || !$statusNhs) {
                 switch ($cohortRequestStatus) {
                     case 'PENDING': // submitted
                         $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
