@@ -657,9 +657,7 @@ class CohortRequestController extends Controller
                     ...(($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) ? ['nhse_sde_request_expire_at' => $nhseSdeRequestExpireAt] : []),
                 ]);
 
-                if ($requestBeingApproved === 'APPROVED') {
-                    $statusNhsCohortRequest = 'APPROVED';
-                }
+                $statusNhsCohortRequest = $nhseSdeRequestStatus === 'APPROVED' ? 'APPROVED' : null;
             }
 
             switch ($requestStatus) {
