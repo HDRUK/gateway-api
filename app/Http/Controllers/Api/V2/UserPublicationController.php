@@ -112,12 +112,13 @@ class UserPublicationController extends Controller
                 ->when($paperTitle, function ($query) use ($paperTitle) {
                     return $query->where('paper_title', 'like', '%'. $paperTitle .'%');
                 })
-                ->with(['tools'])
+                ->with(['tools', 'keywords:id,name'])
                 ->applySorting()
                 ->paginate($perPage, ['*'], 'page');
 
             $publications->getCollection()->transform(function ($publication) {
                 $publication->setAttribute('datasets', $publication->allDatasets);
+                $publication->setRelation('keywords', $publication->keywords->pluck('name'));
                 return $publication;
             });
 
@@ -286,9 +287,10 @@ class UserPublicationController extends Controller
                                 'owner_id' => $userId,
                                 'id' => $id,
                             ])
-                            ->with(['tools', 'durs', 'collections'])
+                            ->with(['tools', 'durs', 'collections', 'keywords:id,name'])
                             ->first();
             $publication->setAttribute('datasets', $publication->allDatasets);
+            $publication->setRelation('keywords', $publication->keywords->pluck('name'));
 
             Auditor::log([
                 'action_type' => 'GET',

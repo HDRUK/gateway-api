@@ -2,28 +2,29 @@
 
 namespace App\Http\Controllers\Api\V2;
 
-use Config;
-use Auditor;
-use Exception;
-use App\Models\Publication;
-use App\Http\Traits\CheckAccess;
-use App\Models\DurHasPublication;
-use Illuminate\Http\JsonResponse;
-use App\Models\PublicationHasTool;
-use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Models\CollectionHasPublication;
 use App\Exceptions\UnauthorizedException;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\V2\Publication\CreatePublicationByTeamId;
+use App\Http\Requests\V2\Publication\DeletePublicationByTeamIdById;
+use App\Http\Requests\V2\Publication\EditPublicationByTeamIdById;
+use App\Http\Requests\V2\Publication\GetPublicationByTeamAndId;
+use App\Http\Requests\V2\Publication\GetPublicationByTeamAndStatus;
+use App\Http\Requests\V2\Publication\GetPublicationCountByTeamAndStatus;
+use App\Http\Requests\V2\Publication\UpdatePublicationByTeamIdById;
+use App\Http\Traits\CheckAccess;
 use App\Http\Traits\PublicationsV2Helper;
 use App\Http\Traits\RequestTransformation;
+use App\Models\CollectionHasPublication;
+use App\Models\DurHasPublication;
+use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
-use App\Http\Requests\V2\Publication\CreatePublicationByTeamId;
-use App\Http\Requests\V2\Publication\GetPublicationByTeamAndId;
-use App\Http\Requests\V2\Publication\EditPublicationByTeamIdById;
-use App\Http\Requests\V2\Publication\DeletePublicationByTeamIdById;
-use App\Http\Requests\V2\Publication\GetPublicationByTeamAndStatus;
-use App\Http\Requests\V2\Publication\UpdatePublicationByTeamIdById;
-use App\Http\Requests\V2\Publication\GetPublicationCountByTeamAndStatus;
+use App\Models\PublicationHasKeyword;
+use App\Models\PublicationHasTool;
+use Auditor;
+use Config;
+use Exception;
+use Illuminate\Http\JsonResponse;
 
 class TeamPublicationController extends Controller
 {
@@ -112,12 +113,16 @@ class TeamPublicationController extends Controller
                 ->when($paperTitle, function ($query) use ($paperTitle) {
                     return $query->where('paper_title', 'like', '%'. $paperTitle .'%');
                 })
-                ->with(['tools'])
+                ->with([
+                    'tools',
+                    'keywords:id,name'
+                    ])
                 ->applySorting()
                 ->paginate($perPage, ['*'], 'page');
 
             $publications->getCollection()->transform(function ($publication) {
                 $publication->setAttribute('datasets', $publication->allDatasets);
+                $publication->setRelation('keywords', $publication->keywords->pluck('name'));
                 return $publication;
             });
 
@@ -286,12 +291,18 @@ class TeamPublicationController extends Controller
                                 'team_id' => $teamId,
                                 'id' => $id,
                             ])
-                            ->with(['tools', 'durs', 'collections'])
+                            ->with([
+                                'tools',
+                                'durs',
+                                'collections',
+                                'keywords:id,name'
+                            ])
                             ->first();
             if (!$publication) {
                 throw new NotFoundException();
             }
             $publication->setAttribute('datasets', $publication->allDatasets);
+            $publication->setRelation('keywords', $publication->keywords->pluck('name'));
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -425,6 +436,9 @@ class TeamPublicationController extends Controller
 
             $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
             $this->checkDurs($publicationId, $durs, (int)$jwtUser['id']);
+
+            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $this->keywords($publicationId, $keywords);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -563,6 +577,7 @@ class TeamPublicationController extends Controller
         if ($initPublication->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
+
         try {
             Publication::where('id', $id)->first()->update([
                 'paper_title' => $input['paper_title'],
@@ -588,6 +603,9 @@ class TeamPublicationController extends Controller
 
             $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
             $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+
+            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $this->keywords($id, $keywords);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -761,6 +779,11 @@ class TeamPublicationController extends Controller
                 $this->checkDurs($id, $durs, (int)$jwtUser['id']);
             }
 
+            if (array_key_exists('keywords', $input)) {
+                $keywords = $input['keywords'];
+                $this->keywords($id, $keywords);
+            }
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -868,6 +891,7 @@ class TeamPublicationController extends Controller
             PublicationHasTool::where(['publication_id' => $id])->delete();
             DurHasPublication::where(['publication_id' => $id])->delete();
             CollectionHasPublication::where(['publication_id' => $id])->delete();
+            PublicationHasKeyword::where(['publication_id' => $id])->delete();
 
             Publication::where(['id' => $id])->first()->delete();
 

@@ -131,4 +131,12 @@ class Publication extends Model
         ->whereNull('collection_has_publications.deleted_at')
         ->where('collections.status', 'ACTIVE');
     }
+
+    public function keywords(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Keyword::class,
+            'publication_has_keywords'
+        );
+    }
 }
