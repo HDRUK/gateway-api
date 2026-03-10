@@ -64,6 +64,7 @@ class PublicationV2Test extends TestCase
                     'status',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -107,6 +108,7 @@ class PublicationV2Test extends TestCase
                 'datasets',
                 'tools',
                 'collections',
+                'keywords',
             ]
         ]);
         $response->assertStatus(200);
@@ -155,6 +157,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -196,6 +199,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -240,6 +244,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -281,6 +286,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -325,6 +331,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -366,6 +373,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -410,6 +418,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -451,6 +460,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
                 ],
             ],
             'first_page_url',
@@ -495,6 +505,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
             ],
         ]);
         $response->assertStatus(200);
@@ -527,6 +538,7 @@ class PublicationV2Test extends TestCase
                     'team_id',
                     'datasets',
                     'tools',
+                    'keywords',
             ],
         ]);
         $response->assertStatus(200);
@@ -557,6 +569,10 @@ class PublicationV2Test extends TestCase
                 ],
                 'tools' => $this->generateTools(),
                 'status' => 'ACTIVE',
+                'keywords' => [
+                    'keyword1',
+                    'keyword2',
+                ],
             ],
             $this->header,
         );
@@ -599,6 +615,10 @@ class PublicationV2Test extends TestCase
                 ],
                 'tools' => $this->generateTools(),
                 'status' => 'ACTIVE',
+                'keywords' => [
+                    'keyword1',
+                    'keyword2',
+                ],
             ],
             $this->header,
         );
@@ -639,7 +659,11 @@ class PublicationV2Test extends TestCase
                     ],
                 ],
                 'tools' => $this->generateTools(),
-                'status' => 'ACTIVE'
+                'status' => 'ACTIVE',
+                'keywords' => [
+                    'keyword1',
+                    'keyword2',
+                ],
             ],
             $this->header,
         );
@@ -674,7 +698,11 @@ class PublicationV2Test extends TestCase
                          'link_type' => 'USING',
                      ],
                  ],
-                 'status' => 'ACTIVE'
+                 'status' => 'ACTIVE',
+                 'keywords' => [
+                    'keyword1',
+                    'keyword2',
+                ],
              ],
             $this->header,
         );
@@ -712,7 +740,11 @@ class PublicationV2Test extends TestCase
                     ],
                 ],
                 'tools' => $this->generateTools(),
-                'status' => 'ACTIVE'
+                'status' => 'ACTIVE',
+                'keywords' => [
+                    'keyword1',
+                    'keyword2',
+                ],
             ],
             $this->header,
         );
@@ -733,21 +765,25 @@ class PublicationV2Test extends TestCase
             'PUT',
             '/api/v2/users/' . $userId . '/publications/' . $publicationId,
             [
-                 'paper_title' => 'Not A Test Paper Title',
-                 'authors' => 'Einstein, Albert, Yankovich, Al',
-                 'year_of_publication' => '2022',
-                 'paper_doi' => '10.1000/182',
-                 'publication_type' => 'Paper and such',
-                 'journal_name' => 'Something Journal-y here',
-                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
-                 'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
-                 'datasets' => [
-                     0 => [
-                         'id' => 1,
-                         'link_type' => 'USING',
-                     ],
-                 ],
-                 'status' => 'ACTIVE'
+                'paper_title' => 'Not A Test Paper Title',
+                'authors' => 'Einstein, Albert, Yankovich, Al',
+                'year_of_publication' => '2022',
+                'paper_doi' => '10.1000/182',
+                'publication_type' => 'Paper and such',
+                'journal_name' => 'Something Journal-y here',
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'USING',
+                    ],
+                ],
+                'status' => 'ACTIVE',
+                'keywords' => [
+                'keyword1',
+                'keyword2',
+            ],
              ],
             $this->header,
         );

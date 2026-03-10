@@ -14,7 +14,7 @@ return new class () extends Migration {
             $table->bigInteger('publication_id')->unsigned();
             $table->bigInteger('keyword_id')->unsigned();
 
-            $table->foreign('publication_id')->references('id')->on('collections');
+            $table->foreign('publication_id')->references('id')->on('publications');
             $table->foreign('keyword_id')->references('id')->on('keywords');
         });
     }
