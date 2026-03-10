@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @property string|null $short_title
+ * @property int $target_dataset_id
+ */
 class DatasetVersionHasDatasetVersion extends Model
 {
     use HasFactory;

@@ -276,6 +276,7 @@ class SearchController extends Controller
             $datasetsArray = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('per_page', Config::get('constants.per_page'));
+
             $paginatedData = $this->paginateArray($request, $datasetsArray, $perPage);
             unset($datasetsArray);
 
