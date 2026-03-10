@@ -580,11 +580,7 @@ class DataCustodianNetworksController extends Controller
                 'created_at' => $group->first()->created_at,
                 'updated_at' => $group->first()->updated_at,
                 'url' => $group->first()->url,
-                'datasets' => $group->filter(
-                    fn ($row) => Dataset::where('id', $row->ds_id)
-                        ->whereIn('team_id', $teamIds)
-                        ->exists()
-                )->map(fn ($row) => [
+                'datasets' => $group->map(fn ($row) => [
                         'id' => $row->ds_id,
                         'title' => DatasetVersion::query()
                             ->select('id', 'title', 'version')

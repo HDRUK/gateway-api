@@ -720,11 +720,7 @@ class TeamController extends Controller
                 'paper_title' => $group->first()->paper_title,
                 'authors' => $group->first()->authors,
                 'url' => $group->first()->url,
-                'datasets' => $group->filter(
-                    fn ($row) => Dataset::where('id', $row->ds_id)
-                        ->where('team_id', $teamId)
-                        ->exists()
-                )->map(fn ($row) => [
+                'datasets' => $group->map(fn ($row) => [
                         'id' => $row->ds_id,
                         'title' => DatasetVersion::query()
                             ->select('id', 'title', 'version')
