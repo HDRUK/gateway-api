@@ -713,20 +713,25 @@ class TeamController extends Controller
             [$teamId, Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
         );
 
+        $datasetIds = collect($linkPublications)->pluck('ds_id')->unique()->values();
+        $datasetTitles = DatasetVersion::query()
+            ->select('dataset_id', 'title')
+            ->whereIn('dataset_id', $datasetIds)
+            ->orderBy('version', 'desc')
+            ->get()
+            ->unique('dataset_id')
+            ->pluck('title', 'dataset_id');
+
         return collect($linkPublications)
             ->groupBy('id')
             ->map(fn ($group) => [
-                'id' => $group->first()->id,
+                'id'          => $group->first()->id,
                 'paper_title' => $group->first()->paper_title,
-                'authors' => $group->first()->authors,
-                'url' => $group->first()->url,
-                'datasets' => $group->map(fn ($row) => [
-                        'id' => $row->ds_id,
-                        'title' => DatasetVersion::query()
-                            ->select('id', 'title', 'version')
-                            ->where('dataset_id', $row->ds_id)
-                            ->orderBy('version', 'desc')
-                            ->value('title'),
+                'authors'     => $group->first()->authors,
+                'url'         => $group->first()->url,
+                'datasets'    => $group->map(fn ($row) => [
+                        'id'        => $row->ds_id,
+                        'title'     => $datasetTitles->get($row->ds_id),
                         'link_type' => $row->phdv_link_type,
                     ])
                     ->values()
