@@ -577,56 +577,57 @@ class TeamPublicationController extends Controller
         if ($initPublication->team_id !== $teamId) {
             throw new UnauthorizedException();
         }
-        // try {
-        Publication::where('id', $id)->first()->update([
-            'paper_title' => $input['paper_title'],
-            'authors' => $input['authors'],
-            'year_of_publication' => $input['year_of_publication'],
-            'paper_doi' => $input['paper_doi'],
-            'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
-            'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
-            'journal_name' => $input['journal_name'],
-            'abstract' => $input['abstract'],
-            'url' => array_key_exists('url', $input) ? $input['url'] : null,
-            'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
-            'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
-            'team_id' => $teamId,
-            'first_publication_date' => array_key_exists('first_publication_date', $input) ? $input['first_publication_date'] : null,
-        ]);
 
-        $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-        $this->checkDatasets($id, $datasets);
+        try {
+            Publication::where('id', $id)->first()->update([
+                'paper_title' => $input['paper_title'],
+                'authors' => $input['authors'],
+                'year_of_publication' => $input['year_of_publication'],
+                'paper_doi' => $input['paper_doi'],
+                'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
+                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
+                'journal_name' => $input['journal_name'],
+                'abstract' => $input['abstract'],
+                'url' => array_key_exists('url', $input) ? $input['url'] : null,
+                'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
+                'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
+                'team_id' => $teamId,
+                'first_publication_date' => array_key_exists('first_publication_date', $input) ? $input['first_publication_date'] : null,
+            ]);
 
-        $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
-        $this->checkTools($id, $tools, (int)$jwtUser['id']);
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($id, $datasets);
 
-        $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
-        $this->checkDurs($id, $durs, (int)$jwtUser['id']);
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($id, $tools, (int)$jwtUser['id']);
 
-        $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
-        $this->keywords($id, $keywords);
+            $durs = array_key_exists('durs', $input) ? $input['durs'] : [];
+            $this->checkDurs($id, $durs, (int)$jwtUser['id']);
 
-        Auditor::log([
-            'user_id' => (int)$jwtUser['id'],
-            'action_type' => 'UPDATE',
-            'action_name' => class_basename($this) . '@' . __FUNCTION__,
-            'description' => 'Team Publication ' . $id . ' updated',
-        ]);
+            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $this->keywords($id, $keywords);
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_OK.message'),
-            'data' => $this->getPublicationById($id),
-        ]);
-        // } catch (Exception $e) {
-        //     Auditor::log([
-        //         'user_id' => (int)$jwtUser['id'],
-        //         'action_type' => 'EXCEPTION',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team Publication ' . $id . ' updated',
+            ]);
 
-        //     throw new Exception($e->getMessage());
-        // }
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $this->getPublicationById($id),
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
