@@ -34,7 +34,7 @@ class DatasetIndexResource extends JsonResource
             'create_origin' => $this->create_origin,
             'created'       => $this->created,
             'updated'       => $this->updated,
-            'latestMetadata' => $this->whenLoaded('latestMetadata'),
+            'latest_metadata' => $this->whenLoaded('latestMetadata'),
         ];
     }
 }

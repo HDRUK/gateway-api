@@ -62,7 +62,7 @@ class DatasetService
 
     public function findActive(int $id): ?Dataset
     {
-        return Dataset::where('status', Dataset::STATUS_ACTIVE)->find($id);
+        return Dataset::with('team')->where('status', Dataset::STATUS_ACTIVE)->find($id);
     }
 
     /**
