@@ -85,7 +85,7 @@ class PublicationController extends Controller
             )->when($paperTitle, function ($query) use ($paperTitle) {
                 return $query->where('paper_title', 'LIKE', '%' . $paperTitle . '%');
             })
-            ->when($withRelated, fn ($query) => $query->with(['tools']))
+            ->when($withRelated, fn ($query) => $query->with(['tools', 'keywords:id,name']))
             ->applySorting()
             ->paginate($perPage, ['*'], 'page');
 
@@ -93,6 +93,7 @@ class PublicationController extends Controller
             if ($withRelated) {
                 $publications->getCollection()->transform(function ($publication) {
                     $publication->setAttribute('datasets', $publication->allDatasets);
+                    $publication->setRelation('keywords', $publication->keywords->pluck('name'));
                     return $publication;
                 });
             }
