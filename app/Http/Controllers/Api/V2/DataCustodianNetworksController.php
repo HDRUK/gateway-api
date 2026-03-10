@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Api\V2;
 
-use DB;
-use Config;
-use Auditor;
-use Exception;
-use App\Models\Team;
-use App\Models\Dataset;
-use Illuminate\Http\Request;
-use App\Models\DataProviderColl;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Models\Collection;
-use App\Models\DataProviderCollHasTeam;
-use App\Models\Dur;
-use App\Models\Publication;
-use App\Models\Tool;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
+use App\Models\Collection;
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Dur;
+use App\Models\Publication;
+use App\Models\Team;
+use App\Models\Tool;
+use Auditor;
+use Config;
+use DB;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DataCustodianNetworksController extends Controller
 {
@@ -507,19 +508,7 @@ class DataCustodianNetworksController extends Controller
                 return $item;
             }, $linkedToolsColl);
 
-            $linkedPublicationsColl = DB::select(
-                'SELECT DISTINCT p.id, p.paper_title, p.authors, p.publication_type, p.publication_type_mk1, p.status, p.created_at, p.updated_at, p.url, ds.team_id
-                FROM datasets ds
-                JOIN dataset_versions dv ON dv.dataset_id = ds.id
-                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
-                JOIN publications p ON phdv.publication_id = p.id
-                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND p.status = ? AND ds.status = ?',
-                [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
-            );
-            $linkedPublicationsColl = array_map(function ($item) {
-                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
-                return $item;
-            }, $linkedPublicationsColl);
+            $linkedPublicationsColl = $this->linkPublicationsByTeamIds($teamIds);
 
             $linkedCollectionColl = DB::select(
                 'SELECT DISTINCT c.id, c.name, c.image_link, c.status, c.created_at, c.updated_at, ds.team_id
@@ -564,6 +553,51 @@ class DataCustodianNetworksController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function linkPublicationsByTeamIds(array $teamIds)
+    {
+        $linkedPublications = DB::select(
+            'SELECT DISTINCT p.id, p.paper_title, p.authors, p.publication_type, p.publication_type_mk1, p.status, p.created_at, p.updated_at, p.url, ds.id as ds_id, phdv.link_type as phdv_link_type
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
+                JOIN publications p ON phdv.publication_id = p.id
+                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND p.status = ? AND ds.status = ?
+                ORDER BY p.id ASC',
+            [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+        );
+
+        return collect($linkedPublications)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id' => $group->first()->id,
+                'paper_title' => $group->first()->paper_title,
+                'authors' => $group->first()->authors,
+                'publication_type' => $group->first()->publication_type,
+                'publication_type_mk1' => $group->first()->publication_type_mk1,
+                'status' => $group->first()->status,
+                'created_at' => $group->first()->created_at,
+                'updated_at' => $group->first()->updated_at,
+                'url' => $group->first()->url,
+                'datasets' => $group->filter(
+                    fn ($row) => Dataset::where('id', $row->ds_id)
+                        ->whereIn('team_id', $teamIds)
+                        ->exists()
+                )->map(fn ($row) => [
+                        'id' => $row->ds_id,
+                        'title' => DatasetVersion::query()
+                            ->select('id', 'title', 'version')
+                            ->where('dataset_id', $row->ds_id)
+                            ->orderBy('version', 'desc')
+                            ->value('title'),
+                        'link_type' => $row->phdv_link_type,
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

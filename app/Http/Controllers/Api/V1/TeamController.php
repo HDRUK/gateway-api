@@ -660,15 +660,7 @@ class TeamController extends Controller
             }
 
             // Publications: get all active publications linked to (all versions of) datasets owned by the team
-            $linkedPublicationsColl = DB::select(
-                'SELECT DISTINCT p.id, p.paper_title, p.authors, p.url
-                FROM datasets ds
-                JOIN dataset_versions dv ON dv.dataset_id = ds.id
-                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
-                JOIN publications p ON phdv.publication_id = p.id
-                WHERE ds.team_id = ? AND p.status = ? AND ds.status = ?',
-                [$id, Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
-            );
+            $linkedPublicationsColl = $this->linkPublicationsByTeamId($id);
 
             // Collections: get all active and public collections owned by the team
             $ownedCollectionsColl = DB::select(
@@ -698,7 +690,6 @@ class TeamController extends Controller
                     'introduction' => $team->introduction,
                     'durs' => $allDurs,
                     'tools' => $linkedToolsColl,
-                    // TODO: need to add in `link_type` from publication_has_dataset table.
                     'publications' => $linkedPublicationsColl,
                     'collections' => $ownedCollectionsColl,
                     'aliases' => $team->aliases,
@@ -707,6 +698,46 @@ class TeamController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function linkPublicationsByTeamId(int $teamId)
+    {
+        $linkPublications = DB::select(
+            'SELECT p.id, p.paper_title, p.authors, p.url, ds.id as ds_id, phdv.link_type as phdv_link_type
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
+                JOIN publications p ON phdv.publication_id = p.id 
+                WHERE ds.team_id = ? AND p.status = ? AND ds.status = ?
+                ORDER BY p.id ASC',
+            [$teamId, Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+        );
+
+        return collect($linkPublications)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id' => $group->first()->id,
+                'paper_title' => $group->first()->paper_title,
+                'authors' => $group->first()->authors,
+                'url' => $group->first()->url,
+                'datasets' => $group->filter(
+                    fn ($row) => Dataset::where('id', $row->ds_id)
+                        ->where('team_id', $teamId)
+                        ->exists()
+                )->map(fn ($row) => [
+                        'id' => $row->ds_id,
+                        'title' => DatasetVersion::query()
+                            ->select('id', 'title', 'version')
+                            ->where('dataset_id', $row->ds_id)
+                            ->orderBy('version', 'desc')
+                            ->value('title'),
+                        'link_type' => $row->phdv_link_type,
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
