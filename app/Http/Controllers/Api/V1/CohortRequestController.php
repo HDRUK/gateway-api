@@ -1408,6 +1408,21 @@ class CohortRequestController extends Controller
         ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
+    private function isScrambled(string $email)
+    {
+        $indicatorsOfScrambled = [
+            "member@",
+            "staff@",
+            "student@",
+            "employee@",
+            "postgraduatetaught@",
+        ];
+
+        return array_any($indicatorsOfScrambled, function (string $item) use ($email) {
+            return str_contains(strtolower($email), $item);
+        });
+    }
+
     /**
      * Shared guard: validates JWT user, approved request, permissions, user+email,
      * clears oauth user, sets session, logs auditor.
@@ -1454,8 +1469,7 @@ class CohortRequestController extends Controller
             if (! $user) {
                 throw new Exception('Unauthorized for access :: The user not found');
             }
-
-            $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary')
+            $email = (($user->provider === 'open-athens' && $this->isScrambled($user->email)) || $user->preferred_email === 'secondary')
                 ? $user->secondary_email
                 : $user->email;
 
@@ -1509,11 +1523,17 @@ class CohortRequestController extends Controller
             throw new Exception('Cannot find cohort service oauth client');
         }
 
-        return config('app.url').
-            '/oauth2/authorize?response_type=code'.
-            "&client_id={$cohortClient->id}".
-            '&scope=openid email profile rquestroles cohort_discovery_roles'.
-            "&redirect_uri={$cohortClient->redirect}";
+        $nonce = bin2hex(random_bytes(16));
+
+        $query = http_build_query([
+            'response_type' => 'code',
+            'client_id' => $cohortClient->id,
+            'scope' => 'openid email profile rquestroles cohort_discovery_roles',
+            'redirect_uri' => $cohortClient->redirect,
+            'nonce' => $nonce,
+        ], '', '&', PHP_QUERY_RFC3986);
+
+        return config('app.url').'/oauth2/authorize?'.$query;
     }
 
     private function sendEmail($cohortId, $admin = null)
