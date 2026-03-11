@@ -70,3 +70,66 @@ if (!function_exists('convertArrayToHtmlUlList')) {
         return $return;
     }
 }
+
+if (!function_exists('extractValueFromPath')) {
+    /**
+     * Extract a value from a nested array using a slash-delimited path.
+     *
+     * @param  array   $item  The array to extract the value from.
+     * @param  string  $path  The slash-delimited path to the value (e.g. 'foo/bar/baz').
+     * @return mixed          The value at the given path, or null if not found.
+     *
+     * @example
+     * extractValueFromPath(['foo' => ['bar' => 'baz']], 'foo/bar'); // 'baz'
+     */
+    function extractValueFromPath(array $item, string $path)
+    {
+        $keys = explode('/', $path);
+
+        $return = $item;
+        foreach ($keys as $key) {
+            if (isset($return[$key])) {
+                $return = $return[$key];
+            } else {
+                return null;
+            }
+        }
+
+        return $return;
+    }
+}
+
+if (!function_exists('arrayColumnToString')) {
+    /**
+     * Extract a column from a multi-dimensional array and join the values as a comma-separated string.
+     *
+     * Null and empty values are filtered out before joining.
+     *
+     * @param  array|null   $array  The input array to extract values from. Returns null if array is null.
+     * @param  string|null  $key    The key to extract from each element. Returns null if key is null.
+     * @return string|null          A comma-separated string of values, or null if the array/key is null or array is empty.
+     *
+     * @example
+     * arrayColumnToString([['id' => 1], ['id' => 2], ['id' => 3]], 'id');          // '1,2,3'
+     * arrayColumnToString(['{"id":1}', '{"id":2}', '{"id":3}'], 'id');             // '1,2,3'
+     * arrayColumnToString(null, 'id');                                              // null
+     * arrayColumnToString([['id' => 1], ['id' => 2]], null);
+     */
+    function arrayColumnToString(?array $array, ?string $key): ?string
+    {
+        if (is_null($array) || is_null($key)) {
+            return null;
+        }
+
+        if (count($array)) {
+            $decoded = array_map(function ($item) {
+                return is_string($item) ? json_decode($item, true) : $item;
+            }, $array);
+
+            $return = array_column($decoded, $key);
+            return implode(',', array_filter($return));
+        }
+
+        return null;
+    }
+}

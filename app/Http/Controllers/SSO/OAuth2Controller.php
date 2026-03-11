@@ -33,16 +33,22 @@ class OAuth2Controller extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
-        $userId = session('cr_uid') ?? config('passport.cr_uid_debug');
+        $userId = $request->session()->get('cr_uid') ?? null;
 
         if (!$userId) {
             abort(401, 'User not authenticated');
         }
 
-        OAuthUser::updateOrCreate([
-            'user_id' => $userId,
-            'nonce' => '123456789',
-        ]);
+        $nonce = $request->query('nonce');
+
+        if (!is_string($nonce) || trim($nonce) === '') {
+            abort(400, 'Missing nonce');
+        }
+
+        OauthUser::updateOrCreate(
+            ['user_id' => $userId],
+            ['nonce' => $nonce]
+        );
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);

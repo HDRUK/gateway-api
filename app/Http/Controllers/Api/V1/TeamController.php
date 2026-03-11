@@ -202,11 +202,9 @@ class TeamController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
         try {
             $query = Team::where('enabled', 1)
                 ->select(['id', 'name']);
-
             if ($request->has('sort')) {
                 $sortDirection = strtolower($request->query('sort')) === 'desc' ? 'desc' : 'asc';
                 $query->orderBy('name', $sortDirection);
@@ -662,15 +660,7 @@ class TeamController extends Controller
             }
 
             // Publications: get all active publications linked to (all versions of) datasets owned by the team
-            $linkedPublicationsColl = DB::select(
-                'SELECT DISTINCT p.id, p.paper_title, p.authors, p.url
-                FROM datasets ds
-                JOIN dataset_versions dv ON dv.dataset_id = ds.id
-                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
-                JOIN publications p ON phdv.publication_id = p.id
-                WHERE ds.team_id = ? AND p.status = ? AND ds.status = ?',
-                [$id, Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
-            );
+            $linkedPublicationsColl = $this->linkPublicationsByTeamId($id);
 
             // Collections: get all active and public collections owned by the team
             $ownedCollectionsColl = DB::select(
@@ -700,7 +690,6 @@ class TeamController extends Controller
                     'introduction' => $team->introduction,
                     'durs' => $allDurs,
                     'tools' => $linkedToolsColl,
-                    // TODO: need to add in `link_type` from publication_has_dataset table.
                     'publications' => $linkedPublicationsColl,
                     'collections' => $ownedCollectionsColl,
                     'aliases' => $team->aliases,
@@ -709,6 +698,47 @@ class TeamController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function linkPublicationsByTeamId(int $teamId)
+    {
+        $linkPublications = DB::select(
+            'SELECT p.id, p.paper_title, p.authors, p.url, ds.id as ds_id, phdv.link_type as phdv_link_type
+                FROM datasets ds
+                JOIN dataset_versions dv ON dv.dataset_id = ds.id
+                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
+                JOIN publications p ON phdv.publication_id = p.id 
+                WHERE ds.team_id = ? AND p.status = ? AND ds.status = ?
+                ORDER BY p.id ASC',
+            [$teamId, Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+        );
+
+        $datasetIds = collect($linkPublications)->pluck('ds_id')->unique()->values();
+        $datasetTitles = DatasetVersion::query()
+            ->select('dataset_id', 'title')
+            ->whereIn('dataset_id', $datasetIds)
+            ->orderBy('version', 'desc')
+            ->get()
+            ->unique('dataset_id')
+            ->pluck('title', 'dataset_id');
+
+        return collect($linkPublications)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id'          => $group->first()->id,
+                'paper_title' => $group->first()->paper_title,
+                'authors'     => $group->first()->authors,
+                'url'         => $group->first()->url,
+                'datasets'    => $group->map(fn ($row) => [
+                        'id'        => $row->ds_id,
+                        'title'     => $datasetTitles->get($row->ds_id),
+                        'link_type' => $row->phdv_link_type,
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

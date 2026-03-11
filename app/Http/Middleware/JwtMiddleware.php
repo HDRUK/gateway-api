@@ -59,13 +59,7 @@ class JwtMiddleware
 
             $request->merge(
                 [
-                    'jwt_user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'is_admin' => $user->is_admin,
-                        'role_perms' => $this->getUserRolePerms($user->id),
-                    ],
+                    'jwt_user' => $this->buildJwtUserPayload($request, $user),
                 ],
             );
 
@@ -131,13 +125,7 @@ class JwtMiddleware
 
                 $request->merge(
                     [
-                        'jwt_user' => [
-                            'id' => $user->id,
-                            'name' => $user->name,
-                            'email' => $user->email,
-                            'is_admin' => $user->is_admin,
-                            'role_perms' => $this->getUserRolePerms($user->id),
-                        ],
+                        'jwt_user' => $this->buildJwtUserPayload($request, $user),
                     ],
                 );
                 return $next($request);
@@ -151,5 +139,42 @@ class JwtMiddleware
     private function validateUserId(int $userId)
     {
         return User::find($userId);
+    }
+
+    private function buildJwtUserPayload(Request $request, User $user): array
+    {
+        $jwtUser = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_admin' => $user->is_admin,
+        ];
+
+        if ($this->routeRequiresRolePerms($request)) {
+            $jwtUser['role_perms'] = $this->getUserRolePerms($user->id);
+        }
+
+        return $jwtUser;
+    }
+
+    private function routeRequiresRolePerms(Request $request): bool
+    {
+        $route = $request->route();
+        if (!$route) {
+            return true;
+        }
+
+        $controllerAction = (string) ($route->getAction()['controller'] ?? '');
+        if ($controllerAction === 'App\\Http\\Controllers\\Api\\V1\\UserController@show') {
+            return false;
+        }
+
+        foreach ($route->gatherMiddleware() as $middleware) {
+            if ($middleware === 'check.access' || str_starts_with($middleware, 'check.access:')) {
+                return true;
+            }
+        }
+
+        return true;
     }
 }

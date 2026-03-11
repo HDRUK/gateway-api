@@ -22,7 +22,6 @@ class QuestionBankVersion extends Model
      *
      * @var string
      */
-
     protected $table = 'question_bank_versions';
 
     public $timestamps = true;
@@ -47,25 +46,33 @@ class QuestionBankVersion extends Model
     /**
      * The question this version is associated with.
      */
-    public function question(): belongsTo
+    public function question(): BelongsTo
     {
         return $this->belongsTo(QuestionBank::class, 'question_id');
     }
 
     /**
-     * @return belongsToMany<QuestionBankVersion, $this>
+     * The child versions associated with this version.
+     *
+     * @return BelongsToMany<QuestionBankVersion, QuestionBankVersion>
      */
-    public function childVersions(): belongsToMany
+    public function childVersions(): BelongsToMany
     {
-        return $this->belongsToMany(
+        /** @var BelongsToMany<QuestionBankVersion, QuestionBankVersion> $relation */
+        $relation = $this->belongsToMany(
             QuestionBankVersion::class,
             'question_bank_version_has_child_version',
             'parent_qbv_id',
             'child_qbv_id'
         )->withPivot('condition');
+
+        return $relation;
     }
 
-    public function parentVersion(): belongsTo
+    /**
+     * The parent version associated with this version.
+     */
+    public function parentVersion(): BelongsTo
     {
         return $this->belongsTo(
             QuestionBankVersion::class,

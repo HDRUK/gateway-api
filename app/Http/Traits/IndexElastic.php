@@ -102,6 +102,7 @@ trait IndexElastic
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
                 'formatAndStandards' => $this->formatAndStandard($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'isCohortDiscovery' => $datasetMatch->is_cohort_discovery,
+                'datasetAliases' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetAliases'], ''),
             ];
 
             $params = [

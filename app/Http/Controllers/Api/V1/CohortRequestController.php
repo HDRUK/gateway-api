@@ -500,7 +500,7 @@ class CohortRequestController extends Controller
             ]);
 
             // send email notification
-            $this->sendEmail($cohortRequest->id);
+            $this->sendEmail($cohortRequest->id, null);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -648,6 +648,7 @@ class CohortRequestController extends Controller
             $nhseSdeRequestBeingApproved = ($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) && ($nhseSdeRequestStatus === 'APPROVED');
             $nhseSdeRequestExpireAt = $nhseSdeRequestBeingApproved ? Carbon::now()->addDays(Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days')) : null;
 
+            $statusNhsCohortRequest = null;
             if ($currRequestStatus !== $requestStatus || $currNhseSdeRequestStatus !== $nhseSdeRequestStatus) {
                 CohortRequest::where('id', $id)->update([
                     'request_status' => $requestStatus,
@@ -655,6 +656,8 @@ class CohortRequestController extends Controller
                     ...(($currRequestStatus !== $requestStatus) ? ['request_expire_at' => $requestExpireAt] : []),
                     ...(($currNhseSdeRequestStatus !== $nhseSdeRequestStatus) ? ['nhse_sde_request_expire_at' => $nhseSdeRequestExpireAt] : []),
                 ]);
+
+                $statusNhsCohortRequest = $nhseSdeRequestStatus === 'APPROVED' ? 'APPROVED' : null;
             }
 
             switch ($requestStatus) {
@@ -721,7 +724,7 @@ class CohortRequestController extends Controller
 
             // TODO: only send an email if there's a change.
             // - note: we might want to add what workgroups they're in to the email?
-            $this->sendEmail($id);
+            $this->sendEmail($id, null, $statusNhsCohortRequest);
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
             Auditor::log([
@@ -1408,6 +1411,21 @@ class CohortRequestController extends Controller
         ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
+    private function isScrambled(string $email)
+    {
+        $indicatorsOfScrambled = [
+            "member@",
+            "staff@",
+            "student@",
+            "employee@",
+            "postgraduatetaught@",
+        ];
+
+        return array_any($indicatorsOfScrambled, function (string $item) use ($email) {
+            return str_contains(strtolower($email), $item);
+        });
+    }
+
     /**
      * Shared guard: validates JWT user, approved request, permissions, user+email,
      * clears oauth user, sets session, logs auditor.
@@ -1454,8 +1472,7 @@ class CohortRequestController extends Controller
             if (! $user) {
                 throw new Exception('Unauthorized for access :: The user not found');
             }
-
-            $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary')
+            $email = (($user->provider === 'open-athens' && $this->isScrambled($user->email)) || $user->preferred_email === 'secondary')
                 ? $user->secondary_email
                 : $user->email;
 
@@ -1509,14 +1526,20 @@ class CohortRequestController extends Controller
             throw new Exception('Cannot find cohort service oauth client');
         }
 
-        return config('app.url').
-            '/oauth2/authorize?response_type=code'.
-            "&client_id={$cohortClient->id}".
-            '&scope=openid email profile rquestroles cohort_discovery_roles'.
-            "&redirect_uri={$cohortClient->redirect}";
+        $nonce = bin2hex(random_bytes(16));
+
+        $query = http_build_query([
+            'response_type' => 'code',
+            'client_id' => $cohortClient->id,
+            'scope' => 'openid email profile rquestroles cohort_discovery_roles',
+            'redirect_uri' => $cohortClient->redirect,
+            'nonce' => $nonce,
+        ], '', '&', PHP_QUERY_RFC3986);
+
+        return config('app.url').'/oauth2/authorize?'.$query;
     }
 
-    private function sendEmail($cohortId, $admin = null)
+    private function sendEmail($cohortId, $admin = null, $statusNhs = null)
     {
         try {
             $cohort = CohortRequest::where('id', $cohortId)->first();
@@ -1527,7 +1550,7 @@ class CohortRequestController extends Controller
 
             // template
             $template = null;
-            if (! $admin) {
+            if (!$admin || !$statusNhs) {
                 switch ($cohortRequestStatus) {
                     case 'PENDING': // submitted
                         $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
@@ -1558,6 +1581,14 @@ class CohortRequestController extends Controller
                 }
             }
 
+            if ($statusNhs) {
+                switch ($statusNhs) {
+                    case 'APPROVED': // approved nhs
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.nhs.approved')->first();
+                        break;
+                }
+            }
+
             $to = [
                 'to' => [
                     'email' => $userEmail,
@@ -1568,8 +1599,13 @@ class CohortRequestController extends Controller
             $replacements = [
                 '[[USER_FIRSTNAME]]' => $user['firstname'],
                 '[[EXPIRE_DATE]]' => $cohort['request_expire_at'],
+                '[[NHS_EXPIRY_DATE]]' => $cohort['nhse_sde_request_expire_at'],
                 '[[CURRENT_YEAR]]' => date('Y'),
                 '[[USER_EMAIL]]' => $userEmail,
+                '[[USER_NAME]]' => $user['name'],
+                '[[COHORT_DISCOVERY_ACCESS_URL]]' => Config::get('cohort.cohort_discovery_access_url'),
+                '[[COHORT_DISCOVERY_USING_URL]]' => Config::get('cohort.cohort_discovery_using_url'),
+                '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
             ];
 
             if ($template) {

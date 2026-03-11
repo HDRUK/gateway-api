@@ -279,6 +279,7 @@ class SearchController extends Controller
             $datasetsArray = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('per_page', Config::get('constants.per_page'));
+
             $paginatedData = $this->paginateArray($request, $datasetsArray, $perPage);
             unset($datasetsArray);
 
@@ -1472,6 +1473,7 @@ class SearchController extends Controller
                     $pubResult['publication_year'] = null;
                 }
                 $pubResult['fullTextUrl'] = isset($result['fullTextUrlList']['fullTextUrl']) ? $result['fullTextUrlList']['fullTextUrl'] : null;
+                $pubResult['firstPublicationDate'] = isset($result['firstPublicationDate']) ? $result['firstPublicationDate'] : null;
             } else {
                 return response()->noContent();
             }
@@ -1974,8 +1976,8 @@ class SearchController extends Controller
             ->all();
 
         $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-            ->pluck('name')
-            ->all();
+            ->select(['id', 'name'])
+            ->get()->toArray();
 
         return $dataProviderColl;
     }
@@ -2001,7 +2003,10 @@ class SearchController extends Controller
     {
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->get();
+            $datasets = Dataset::where([
+                'team_id' => $team['id'],
+                'status' => 'ACTIVE',
+                ])->get();
             foreach ($datasets as $dataset) {
                 $spatialCoverage = $dataset->allSpatialCoverages;
                 foreach ($spatialCoverage as $loc) {

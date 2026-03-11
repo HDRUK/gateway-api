@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
+/**
+ * @property bool $has_published_dar_template
+ */
 #[ObservedBy(TeamObserver::class)]
 class Team extends Model
 {
