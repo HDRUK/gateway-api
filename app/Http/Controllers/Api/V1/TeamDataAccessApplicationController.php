@@ -43,7 +43,7 @@ class TeamDataAccessApplicationController extends Controller
      *      summary="List of dar applications belonging to a team",
      *      description="List of dar applications belonging to a team",
      *      tags={"TeamDataAccessApplication"},
-     *      summary="TeamDataAccessApplication@index",
+     *      summary="TeamDataAccessApplicationController@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -145,7 +145,7 @@ class TeamDataAccessApplicationController extends Controller
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/dar/applications/count/{field}",
      *    operationId="count_unique_fields_dar_applications",
-     *    tags={"TeamDataAccessApplications"},
+     *    tags={"TeamDataAccessApplication"},
      *    summary="TeamDataAccessApplicationController@count",
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
@@ -216,7 +216,7 @@ class TeamDataAccessApplicationController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/dar/applications/count",
-     *    tags={"TeamDataAccessApplications"},
+     *    tags={"TeamDataAccessApplication"},
      *    summary="TeamDataAccessApplicationController@allCounts",
      *    description="Get Counts for all status fields in the model",
      *    security={{"bearerAuth":{}}},
@@ -268,8 +268,8 @@ class TeamDataAccessApplicationController extends Controller
      *      path="/api/v1/teams/{teamId}/dar/applications/{id}",
      *      summary="Return a single DAR application",
      *      description="Return a single DAR application",
-     *      tags={"DataAccessApplication"},
-     *      summary="TeamDataAccessApplication@show",
+     *      tags={"TeamDataAccessApplication"},
+     *      summary="TeamDataAccessApplicationController@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -374,7 +374,7 @@ class TeamDataAccessApplicationController extends Controller
      *      summary="Get header information about a specific DAR",
      *      description="Get header information about a specific DAR",
      *      tags={"TeamDataAccessApplication"},
-     *      summary="TeamDataAccessApplication@showHeader",
+     *      summary="TeamDataAccessApplicationController@showHeader",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
