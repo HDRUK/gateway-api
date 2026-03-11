@@ -570,8 +570,9 @@ trait IndexElastic
     public function indexElasticPublication(string $id, bool $returnParams = false): null|array
     {
         try {
-            $pubMatch = Publication::where(['id' => $id])->first();
+            $pubMatch = Publication::where(['id' => $id])->with(['keywords:id,name'])->first();
             $datasets = $pubMatch->allDatasets;
+            $keywords = array_unique($pubMatch?->keywords->pluck('name')->toArray() ?? []);
 
             $datasetTitles = [];
             $datasetLinkTypes = [];
@@ -622,6 +623,7 @@ trait IndexElastic
                 'datasetTitles' => $datasetTitles,
                 'publicationType' => $publicationTypes,
                 'datasetLinkTypes' => $datasetLinkTypes,
+                'keywords' => $keywords,
             ];
             $params = [
                 'index' => ECC::ELASTIC_NAME_PUBLICATION,
