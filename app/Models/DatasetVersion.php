@@ -30,6 +30,7 @@ class DatasetVersion extends Model
 
     protected $casts = [
         'metadata' => 'array',
+        'patch'    => 'array',
     ];
 
     /**
@@ -42,7 +43,13 @@ class DatasetVersion extends Model
     protected $fillable = [
         'dataset_id',
         'metadata',
+        'patch',
         'version',
+        // title and short_title are no longer GENERATED columns (see migration
+        // 2026_03_11_133601); they must be populated explicitly by the service layer
+        // from the reconstructed GWDM metadata at write time.
+        'title',
+        'short_title',
     ];
 
     /**
