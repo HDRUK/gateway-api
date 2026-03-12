@@ -144,7 +144,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow, WithValidation
             'project_start_date' => $row[15] ? $this->calculateExcelDate('Project Start Date', $row[15]) : null,
             'project_end_date' =>  $row[16] ? $this->calculateExcelDate('Project End Date', $row[16]) : null,
             'latest_approval_date' => $row[17] ? $this->calculateExcelDate('Latest Approval Date', $row[17]) : null,
-            'non_gateway_datasets' => array_filter(array_map('trim', explode(',', $row[18]))), // ??? Gateway datasets or not ???
+            'non_gateway_datasets' => array_values(array_filter(array_map('trim', explode(',', $row[18])))),
             'data_sensitivity_level' => $row[19],
             'legal_basis_for_data_article6' => $row[20],
             'legal_basis_for_data_article9' => $row[21],
