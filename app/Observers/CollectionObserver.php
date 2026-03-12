@@ -27,7 +27,7 @@ class CollectionObserver
      */
     public function updating(Collection $collection)
     {
-        $collection->prevStatus = $collection->getOriginal('status'); // 'status' before updating
+        $collection->prevStatus = (string) $collection->getOriginal('status'); // 'status' before updating
     }
 
     /**
