@@ -2,13 +2,14 @@
 
 namespace Tests\Feature;
 
-use Config;
-use Tests\TestCase;
-use App\Models\Federation;
 use App\Http\Enums\TeamMemberOf;
-use App\Models\TeamHasFederation;
-use Tests\Traits\MockExternalApis;
+use App\Models\Federation;
 use App\Models\FederationHasNotification;
+use App\Models\TeamHasFederation;
+use Config;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
+use Tests\Traits\MockExternalApis;
 
 class FederationTest extends TestCase
 {
@@ -1171,5 +1172,149 @@ class FederationTest extends TestCase
         ]);
 
         $responseDeleteTeam->assertStatus(200);
+    }
+
+    public function test_run_now_feaderation_with_success(): void
+    {
+        Queue::fake();
+
+        // create a new team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+                'email' => null,
+                'user_id' => 3,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $content = $response->decodeResponseJson();
+        $teamId = $content['data'];
+
+        // create federation for team
+        $responseFederation = $this->json(
+            'POST',
+            self::TEST_URL_TEAM . '/' . $teamId . '/federations',
+            [
+                'federation_type' => 'federation type',
+                'auth_type' => 'BEARER',
+                'auth_secret_key' => 'secret/key/path',
+                'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
+                'endpoint_datasets' => '/api/v1/noauth/datasets',
+                'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
+                'run_time_hour' => 11,
+                'run_time_minute' => '02',
+                'enabled' => true,
+                'notifications' => [
+                    '1',
+                    '2',
+                    '3',
+                ]
+            ],
+            $this->header,
+        );
+
+        $responseFederation->assertStatus(201)
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+        $contentFederation = $responseFederation->decodeResponseJson();
+        $federationId = $contentFederation['data'];
+
+        // get federation by id and by team id
+        $responseGetFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId, $this->header);
+
+        $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data' => [
+                'id',
+                'federation_type',
+                'auth_type',
+                'auth_secret_key_location',
+                'endpoint_baseurl',
+                'endpoint_datasets',
+                'endpoint_dataset',
+                'run_time_hour',
+                'run_time_minute',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'tested',
+                'notifications',
+            ],
+        ]);
+
+        $teamFederation = TeamHasFederation::where([
+            'team_id' => $teamId,
+            'federation_id' => $federationId,
+        ])->first();
+
+        $this->assertTrue((bool) $teamFederation, 'Response was successfully');
+
+        $federationNotification = FederationHasNotification::where([
+            'federation_id' => $federationId,
+        ])->first();
+
+        $this->assertTrue((bool) $federationNotification, 'Response was successfully');
+
+        $federationNotification = FederationHasNotification::where([
+            'federation_id' => $federationId,
+        ])->get()->toArray();
+
+        $this->assertCount(3, $federationNotification, 'Response was successfully');
+
+        Federation::where('id', $federationId)
+            ->update([
+                'enabled' => 1,
+                'tested' => 1,
+            ]);
+
+        // run federation now
+        $responseRunFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId . '/run', $this->header);
+        $responseRunFederation->assertStatus(200);
     }
 }
