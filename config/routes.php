@@ -2730,6 +2730,21 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'team.federation.run.now',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/federations/{federationId}/run',
+        'methodController' => 'FederationController@runNow',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
 
     // cohort_requests
     [

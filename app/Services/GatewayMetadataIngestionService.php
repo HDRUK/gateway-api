@@ -15,6 +15,7 @@ class GatewayMetadataIngestionService
 
     private int $teamId = -1;
     private string $timezone = 'Europe/London';
+    private int $federationId;
 
     public function setTeam(int $teamId): void
     {
@@ -24,6 +25,12 @@ class GatewayMetadataIngestionService
     public function getTeam(): int
     {
         return $this->teamId;
+    }
+
+    public function setFederation(int $federationId)
+    {
+        $this->federationId = $federationId;
+        return $this;
     }
 
     public function storeMetadata($input): mixed
@@ -52,5 +59,14 @@ class GatewayMetadataIngestionService
             'run_time_hour' => Carbon::now($this->timezone)->hour,
             'run_time_minute' => Carbon::now($this->timezone)->minute,
         ])->get();
+    }
+
+    public function getActiveFederationsById(): ?Federation
+    {
+        return Federation::with('team')->where([
+            'enabled' => 1,
+            'tested' => 1,
+            'id' => $this->federationId,
+        ])->first();
     }
 }
