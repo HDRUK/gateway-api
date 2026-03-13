@@ -963,12 +963,12 @@ class FederationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $checkFedearation = Federation::where([
+            $checkFederation = Federation::where([
                 'id' => $federationId,
                 'enabled' => 1,
                 'tested' => 1,
             ])->first();
-            if (is_null($checkFedearation)) {
+            if (is_null($checkFederation)) {
                 throw new Exception('Federation not found!');
             }
 
