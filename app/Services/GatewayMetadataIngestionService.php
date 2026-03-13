@@ -58,6 +58,7 @@ class GatewayMetadataIngestionService
             'tested' => 1,
             'run_time_hour' => Carbon::now($this->timezone)->hour,
             'run_time_minute' => Carbon::now($this->timezone)->minute,
+            'is_running' => 0,
         ])->get();
     }
 
@@ -67,6 +68,7 @@ class GatewayMetadataIngestionService
             'enabled' => 1,
             'tested' => 1,
             'id' => $this->federationId,
+            'is_running' => 0,
         ])->first();
     }
 }

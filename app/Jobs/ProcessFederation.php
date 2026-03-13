@@ -2,16 +2,19 @@
 
 namespace App\Jobs;
 
+use App\Events\FederationProcessed;
+use App\Events\FederationProcessingFailed;
+use App\Http\Traits\MetadataVersioning;
+use App\Models\Federation;
+use App\Services\GatewayMetadataIngestionService;
+use App\Services\GoogleSecretManagerService;
+use App\Traits\GatewayMetadataIngestionTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Federation;
-use App\Http\Traits\MetadataVersioning;
-use App\Services\GatewayMetadataIngestionService;
-use App\Services\GoogleSecretManagerService;
-use App\Traits\GatewayMetadataIngestionTrait;
+use Throwable;
 
 class ProcessFederation implements ShouldQueue
 {
@@ -30,6 +33,9 @@ class ProcessFederation implements ShouldQueue
     private int $deleted = 0;
     private int $updated = 0;
     private int $created = 0;
+
+    public int $tries = 3;
+    public int $backoff = 60;
 
     /**
      * Create a new job instance.
@@ -89,6 +95,21 @@ class ProcessFederation implements ShouldQueue
 
         $this->log('info', "metadata ingestion completed for team {$this->gmi->getTeam()} - created: {$created}, updated: {$updated}, archived: {$archived}");
 
+        FederationProcessed::dispatch($this->federation);
+
         return;
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        \Log::error('ProcessFederationJob failed', [
+            'federation_id' => $this->federation->id,
+            'attempt'       => $this->attempts(),
+            'error'         => $exception->getMessage(),
+        ]);
+
+        if ($this->attempts() >= $this->tries) {
+            FederationProcessingFailed::dispatch($this->federation, $exception);
+        }
     }
 }
