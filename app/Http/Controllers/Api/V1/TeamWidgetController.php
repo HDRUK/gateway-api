@@ -382,12 +382,11 @@ class TeamWidgetController extends Controller
                     ->map(fn ($d) => rtrim(preg_replace('#^https?://#', '', strtolower($d)), '/'))
                     ->contains(fn ($d) => $normalizedOrigin === $d);
 
-                // TODO - PUT THIS BACK IN
-                // if (!$allowed) {
-                //     return response()->json([
-                //         'message' => 'forbidden — domain not permitted for this widget',
-                //     ], Config::get('statuscodes.STATUS_FORBIDDEN.code'));
-                // }
+                if (!$allowed) {
+                    return response()->json([
+                        'message' => 'forbidden — domain not permitted for this widget',
+                    ], Config::get('statuscodes.STATUS_FORBIDDEN.code'));
+                }
             }
 
 
