@@ -14,15 +14,22 @@ use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MetadataManagementController as MMC;
+use Swaggest\JsonDiff\JsonDiff;
+use Swaggest\JsonDiff\JsonPatch;
 
 class DatasetService
 {
-    // -------------------------------------------------------------------------
-    // Querying
-    // -------------------------------------------------------------------------
+    /**
+     * How many delta patches we store before a full snapshot is
+     * written instead. Caps the worst case reconstruction cost.
+     * 
+     * Intentionally not configurable within .env.
+     */
+    private const SNAPSHOT_INTERVAL = 10;
 
     public function list(
         ?string $filterStatus,
@@ -98,8 +105,11 @@ class DatasetService
 
         if ($outputSchemaModel && $outputSchemaVersion) {
             $latestVersion = $dataset->latestVersion();
+            // Reconstruct the full GWDM metadata for the latest version before
+            // passing to TRASER; the version row may be a delta.
+            $fullMetadata = $this->getReconstructedMetadataEnvelope($dataset->id, $latestVersion->version);
             $translated = MMC::translateDataModelType(
-                json_encode($latestVersion->metadata),
+                json_encode($fullMetadata),
                 $outputSchemaModel,
                 $outputSchemaVersion,
                 Config::get('metadata.GWDM.name'),
@@ -124,7 +134,18 @@ class DatasetService
             $withLinks = DatasetVersion::where('id', $latestVersionId)
                 ->with(['linkedDatasetVersions'])
                 ->first();
+
             if ($withLinks) {
+                // If the latest version is a delta, inject the reconstructed full
+                // metadata so the Resource sees a consistent envelope regardless of
+                // whether the row is a snapshot or a delta.
+                if ($withLinks->patch !== null) {
+                    $withLinks->metadata = $this->getReconstructedMetadataEnvelope(
+                        $dataset->id,
+                        $withLinks->version
+                    );
+                }
+
                 $dataset->setRelation('versions', [$withLinks]);
             }
         }
@@ -138,9 +159,37 @@ class DatasetService
         return $dataset;
     }
 
-    // -------------------------------------------------------------------------
-    // Mutations
-    // -------------------------------------------------------------------------
+    /**
+     * Return the full reconstructed metadata envelope for a specific version of
+     * a dataset. The envelope matches the snapshot shape:
+     *   { gwdmVersion, metadata: {...GWDM...}, original_metadata: {...} }
+     *
+     * Returns null when the requested version does not exist.
+     */
+    public function getVersion(Dataset $dataset, int $version): ?array
+    {
+        $exists = DatasetVersion::where('dataset_id', $dataset->id)
+            ->where('version', $version)
+            ->exists();
+
+        if (!$exists) {
+            return null;
+        }
+
+        return $this->getReconstructedMetadataEnvelope($dataset->id, $version);
+    }
+
+    /**
+     * Return a lightweight version index for a dataset: id, version number,
+     * title, short_title, created_at — no metadata payloads.
+     */
+    public function listVersions(Dataset $dataset): Collection
+    {
+        return DatasetVersion::where('dataset_id', $dataset->id)
+            ->select(['id', 'version', 'title', 'short_title', 'created_at'])
+            ->orderBy('version')
+            ->get();
+    }
 
     /**
      * Create a new dataset, translating metadata via MMC/TRASER.
@@ -218,10 +267,17 @@ class DatasetService
         $input['metadata']['metadata']['required'] = $required;
         $input['metadata']['gwdmVersion']          = Config::get('metadata.GWDM.version');
 
+        [$title, $shortTitle] = $this->extractTitleFields($input['metadata']['metadata']);
+
         $version = MMC::createDatasetVersion([
-            'dataset_id' => $dataset->id,
-            'metadata'   => json_encode($input['metadata']),
-            'version'    => 1,
+            'dataset_id'  => $dataset->id,
+            'metadata'    => json_encode($input['metadata']),
+            'version'     => 1,
+            // Base snapshot — no patch; title/short_title populated explicitly now
+            // that the columns are no longer GENERATED (see migration 2026_03_11_133601).
+            'patch'       => null,
+            'title'       => $title,
+            'short_title' => $shortTitle,
         ]);
 
         $this->mapCoverage($input['metadata'], $version);
@@ -237,11 +293,97 @@ class DatasetService
     /**
      * Update an existing dataset with a new metadata version via TRASER.
      *
+     * Each call — regardless of dataset status — creates a new DatasetVersion
+     * record, preserving a complete history of changes. Callers can therefore
+     * revert to any prior version via GET /datasets/{id}/version/{version}.
+     *
      * Returns the previous version number (used in the audit description).
      *
      * @throws \RuntimeException when MMC translation fails
      */
     public function update(
+        Dataset $dataset,
+        array $input,
+        int $userId,
+        int $teamId,
+        string $createOrigin,
+        bool $elasticIndexing,
+        Team $team,
+    ): int {
+        $payload = $this->extractMetadata($input['metadata']);
+        $payload['extra'] = [
+            'id'            => $dataset->id,
+            'pid'           => $dataset->pid,
+            'datasetType'   => 'Health and disease',
+            'publisherId'   => $team->pid,
+            'publisherName' => $team->name,
+        ];
+
+        $inputSchema       = $input['metadata']['schemaModel'] ?? null;
+        $inputVersion      = $input['metadata']['schemaVersion'] ?? null;
+        $submittedMetadata = $input['metadata'];
+        $isDraft           = $input['status'] === Dataset::STATUS_DRAFT;
+
+        $traserResponse = MMC::translateDataModelType(
+            json_encode($payload),
+            Config::get('metadata.GWDM.name'),
+            Config::get('metadata.GWDM.version'),
+            $inputSchema,
+            $inputVersion,
+            !$isDraft,
+            !$isDraft,
+        );
+
+        if (!$traserResponse['wasTranslated']) {
+            throw new \RuntimeException('metadata is in an unknown format and cannot be processed');
+        }
+
+        $versionNumber = $dataset->lastMetadataVersionNumber()->version;
+
+        // Rebuild required.revisions to include all existing versions plus the
+        // new one that is about to be written. This fixes a pre-existing gap
+        // where the revisions array was only ever set on creation (version 1).
+        $newVersionNumber = $versionNumber + 1;
+        $traserResponse['metadata']['required'] = array_merge(
+            $traserResponse['metadata']['required'] ?? [],
+            $this->buildRequiredBlock($dataset, $newVersionNumber)
+        );
+
+        $dataset->update([
+            'user_id'             => $userId,
+            'team_id'             => $teamId,
+            'updated'             => now(),
+            'pid'                 => $dataset->pid,
+            'create_origin'       => $createOrigin,
+            'status'              => $input['status'],
+            'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
+        ]);
+
+        $datasetVersionId = $this->persistMetadataVersion(
+            $dataset,
+            $traserResponse['metadata'],
+            $submittedMetadata,
+            $versionNumber,
+        );
+
+        // TODO - Needs investigation as elastic indexing is handled within Observers
+        // and potentially duplicated here. Ideally, the observers would spawn
+        // jobs for indexing to reduce synchronous network blocking.
+        // $this->dispatchJobs($dataset, $datasetVersionId, $submittedMetadata, $elasticIndexing, $input['status']);
+
+        return $newVersionNumber;
+    }
+
+    /**
+     * V2 (legacy) update — overwrites the existing version row in place.
+     *
+     * Preserved for backwards compatibility with third-party integrations that
+     * rely on the v2 API. New integrations should use the v3 endpoint which
+     * stores RFC 6902 delta patches and creates an immutable version history.
+     *
+     * @throws \RuntimeException when MMC translation fails
+     */
+    public function updateV2(
         Dataset $dataset,
         array $input,
         int $userId,
@@ -280,6 +422,11 @@ class DatasetService
 
         $versionNumber = $dataset->lastMetadataVersionNumber()->version;
 
+        $traserResponse['metadata']['required'] = array_merge(
+            $traserResponse['metadata']['required'] ?? [],
+            $this->buildRequiredBlock($dataset, $versionNumber)
+        );
+
         $dataset->update([
             'user_id'             => $userId,
             'team_id'             => $teamId,
@@ -290,7 +437,7 @@ class DatasetService
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
         ]);
 
-        $datasetVersionId = $this->persistMetadataVersion(
+        $datasetVersionId = $this->persistMetadataVersionLegacy(
             $dataset,
             $traserResponse['metadata'],
             $submittedMetadata,
@@ -303,7 +450,7 @@ class DatasetService
     }
 
     /**
-     * Patch a dataset's status only. Dispatches LinkageExtraction if activating.
+     * Patch a dataset's status only. Dispatches LinkageExtraction if active.
      */
     public function patch(Dataset $dataset, string $status): void
     {
@@ -335,10 +482,6 @@ class DatasetService
     {
         MMC::deleteDataset($id);
     }
-
-    // -------------------------------------------------------------------------
-    // Linkages
-    // -------------------------------------------------------------------------
 
     /**
      * Resolve dataset linkages by merging gateway-tracked relations with
@@ -396,9 +539,243 @@ class DatasetService
         return $datasetLinkages;
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
+    /**
+     * V2 (legacy) version persistence — overwrites the existing version row.
+     * Mirrors MetadataVersioning@updateMetadataVersion for the service layer.
+     */
+    private function persistMetadataVersionLegacy(
+        Dataset $dataset,
+        array $newMetadata,
+        array $previousMetadata,
+        int $versionNumber,
+    ): int {
+        $metadataSaveObject = [
+            'gwdmVersion'       => Config::get('metadata.GWDM.version'),
+            'metadata'          => $newMetadata,
+            'original_metadata' => $previousMetadata,
+        ];
+
+        [$title, $shortTitle] = $this->extractTitleFields($newMetadata);
+
+        $dv = DatasetVersion::where([
+            'dataset_id' => $dataset->id,
+            'version'    => $versionNumber,
+        ])->first();
+
+        $dv->metadata    = json_encode($metadataSaveObject);
+        $dv->title       = $title;
+        $dv->short_title = $shortTitle;
+        $dv->save();
+
+        return $dv->id;
+    }
+
+    /**
+     * Reconstruct the full GWDM metadata object for any version of a dataset.
+     *
+     * Algorithm:
+     *  1. Find the nearest full snapshot at or below $targetVersion
+     *     (identified by patch IS NULL — both the base v1 and every SNAPSHOT_INTERVAL
+     *     version are snapshots).
+     *  2. Apply each subsequent delta patch in ascending version order up to
+     *     and including $targetVersion.
+     *
+     * The worst-case forward walk is (SNAPSHOT_INTERVAL - 1) delta applications.
+     *
+     * @return array  The GWDM metadata object (i.e. the value of metadata.metadata
+     *                in a full snapshot row).
+     *
+     * @throws \RuntimeException when no base snapshot can be found.
+     */
+    private function reconstructGwdmMetadata(int $datasetId, int $targetVersion): array
+    {
+        // Step 1 — nearest snapshot at or below targetVersion.
+        $snapshot = DatasetVersion::where('dataset_id', $datasetId)
+            ->where('version', '<=', $targetVersion)
+            ->whereNull('patch')
+            ->orderBy('version', 'desc')
+            ->first();
+
+        if (!$snapshot) {
+            throw new \RuntimeException(
+                "No base snapshot found for dataset {$datasetId} at or before version {$targetVersion}."
+            );
+        }
+
+        $gwdm = $snapshot->metadata['metadata'];
+
+        if ($snapshot->version === $targetVersion) {
+            return $gwdm;
+        }
+
+        // Step 2 — apply deltas from (snapshot.version + 1) to targetVersion.
+        $deltas = DatasetVersion::where('dataset_id', $datasetId)
+            ->where('version', '>', $snapshot->version)
+            ->where('version', '<=', $targetVersion)
+            ->whereNotNull('patch')
+            ->orderBy('version')
+            ->get(['version', 'patch']);
+
+        // swaggest/json-diff works with stdClass graphs, not PHP arrays.
+        // JsonPatch::apply() modifies the document in place (no return value).
+        $current = json_decode(json_encode($gwdm));
+
+        foreach ($deltas as $delta) {
+            $patch = JsonPatch::import(json_decode(json_encode($delta->patch)));
+            $patch->apply($current);
+        }
+
+        return json_decode(json_encode($current), true);
+    }
+
+    /**
+     * Build the full metadata envelope ({gwdmVersion, metadata, original_metadata})
+     * for a given version, suitable for returning in API responses or passing to TRASER.
+     */
+    private function getReconstructedMetadataEnvelope(int $datasetId, int $targetVersion): array
+    {
+        // We always need the row itself for gwdmVersion and original_metadata.
+        $row = DatasetVersion::where('dataset_id', $datasetId)
+            ->where('version', $targetVersion)
+            ->first(['metadata', 'patch']);
+
+        $gwdm = $this->reconstructGwdmMetadata($datasetId, $targetVersion);
+
+        return [
+            'gwdmVersion'       => $row->metadata['gwdmVersion'] ?? Config::get('metadata.GWDM.version'),
+            'metadata'          => $gwdm,
+            'original_metadata' => $row->metadata['original_metadata'] ?? [],
+        ];
+    }
+
+    /**
+     * Compute an RFC 6902 JSON Patch between two GWDM metadata arrays.
+     *
+     * REARRANGE_ARRAYS prevents the diff engine from emitting a full array
+     * replacement when items are merely reordered — keeping patches surgical.
+     *
+     * @return array  A JSON-serialisable RFC 6902 patch array.
+     */
+    private function computePatch(array $from, array $to): array
+    {
+        $fromObj = json_decode(json_encode($from));
+        $toObj   = json_decode(json_encode($to));
+
+        $diff = new JsonDiff($fromObj, $toObj, JsonDiff::REARRANGE_ARRAYS);
+
+        // JsonPatch implements JsonSerializable; encode then decode to get a
+        // plain PHP array suitable for json_encode() storage in the patch column.
+        return json_decode(json_encode($diff->getPatch()), true) ?? [];
+    }
+
+    /**
+     * Write a new DatasetVersion row for an update, choosing between a delta
+     * and a materialised snapshot based on SNAPSHOT_INTERVAL.
+     *
+     * Delta row    : stores only a reduced metadata envelope + the RFC 6902 patch describing
+     *                 the change from the previous version.
+     * Snapshot row : stores the COMPLETE reconstructed GWDM state at that version (patch = null).
+     *                 This is NOT a rollup of accumulated patches — it is the fully-materialised
+     *                 metadata object, identical in shape to v1. Storing the final state (rather
+     *                 than a diff) means reconstruction can start here with zero patch applications,
+     *                 capping the forward-walk cost at ≤ (SNAPSHOT_INTERVAL - 1) deltas for any
+     *                 version in the next window.
+     *
+     * @return int  The ID of the newly created DatasetVersion row.
+     */
+    private function persistMetadataVersion(
+        Dataset $dataset,
+        array $newGwdmMetadata,
+        array $previousMetadata,
+        int $versionNumber,
+    ): int {
+        $newVersionNumber = $versionNumber + 1;
+
+        [$title, $shortTitle] = $this->extractTitleFields($newGwdmMetadata);
+
+        $isSnapshot = ($newVersionNumber % self::SNAPSHOT_INTERVAL === 0);
+
+        if ($isSnapshot) {
+            // For every SNAPSHOT_INTERVAL version we write a full snapshot so that
+            // reconstruction never has to walk more than (SNAPSHOT_INTERVAL - 1)
+            // deltas. The shape is identical to the base (v1) row.
+            $envelope = [
+                'gwdmVersion'       => Config::get('metadata.GWDM.version'),
+                'metadata'          => $newGwdmMetadata,
+                'original_metadata' => $previousMetadata,
+            ];
+
+            $dv = DatasetVersion::create([
+                'dataset_id'  => $dataset->id,
+                'metadata'    => json_encode($envelope),
+                // Snapshot version, thus full rebuild of metadata and no patch.
+                'patch'       => null,
+                'version'     => $newVersionNumber,
+                'title'       => $title,
+                'short_title' => $shortTitle,
+            ]);
+        } else {
+            // Delta row: reconstruct the current full GWDM object, diff against
+            // the new metadata to produce a minimal RFC 6902 patch.
+            $currentGwdm = $this->reconstructGwdmMetadata($dataset->id, $versionNumber);
+            $patch       = $this->computePatch($currentGwdm, $newGwdmMetadata);
+
+            $dv = DatasetVersion::create([
+                'dataset_id'  => $dataset->id,
+                // Patch delta, therefore no metadata stored.
+                'metadata'    => [],
+                'patch'       => $patch,   // array — the cast handles JSON encoding
+                'version'     => $newVersionNumber,
+                'title'       => $title,
+                'short_title' => $shortTitle,
+            ]);
+        }
+
+        // -----------------------------------------------------------------------
+        // Relation pivot table updates — DISCUSSION POINT FOR REVIEW
+        // -----------------------------------------------------------------------
+        // When a new version is persisted (delta or snapshot) the spatial coverage
+        // pivot table (dataset_version_has_spatial_coverage) should be updated
+        // to reflect the new version's coverage values.
+        //
+        // Currently mapCoverage() is only called during create(), which means
+        // existing version rows correctly reflect coverage at v1 but subsequent
+        // version rows have no pivot entries. This gap was pre-existing before
+        // delta versioning was introduced, but becomes more visible now that
+        // updates genuinely create new rows.
+        //
+        // The call below addresses spatial coverage. Questions for review:
+        //
+        //  1. Should the call use the FULL new metadata or only the GWDM portion?
+        //     mapCoverage() expects the shape { metadata: {...GWDM...} }, so we
+        //     reconstruct a compatible envelope here.
+        //
+        //  2. Should the old version's coverage rows be soft-deleted (or at least
+        //     flagged) when a new version supersedes them? At present coverage rows
+        //     accumulate across versions, which is used intentionally by
+        //     Dataset::getAllSpatialCoveragesAttribute() to union coverage across
+        //     all version rows. Whether that union is still desirable now that each
+        //     version has its own row is worth discussing.
+        //
+        //  3. Named entities (dataset_version_has_named_entities) are populated
+        //     asynchronously by the TermExtraction job and do NOT need to be
+        //     handled here — the job already receives the new version ID via
+        //     dispatchJobs() above.
+        //
+        //  4. Tool linkages (dataset_version_has_tool) are managed externally
+        //     (not set during a metadata update) and are therefore intentionally
+        //     omitted here.
+        //
+        // TODO: revisit points 2 and 3 in a follow-up ticket once the overall
+        //       per-version vs. cross-version model is confirmed.
+        // -----------------------------------------------------------------------
+        $envelopeForCoverage = [
+            'metadata' => $newGwdmMetadata,
+        ];
+        $this->mapCoverage($envelopeForCoverage, $dv);
+
+        return $dv->id;
+    }
 
     /**
      * Centralises TermExtraction + LinkageExtraction dispatch.
@@ -435,35 +812,8 @@ class DatasetService
     }
 
     /**
-     * Persist an updated metadata snapshot against the current version record.
-     * Mirrors MetadataVersioning@updateMetadataVersion (kept intact for V1).
-     */
-    private function persistMetadataVersion(
-        Dataset $dataset,
-        array $newMetadata,
-        array $previousMetadata,
-        int $versionNumber,
-    ): int {
-        $metadataSaveObject = [
-            'gwdmVersion'       => Config::get('metadata.GWDM.version'),
-            'metadata'          => $newMetadata,
-            'original_metadata' => $previousMetadata,
-        ];
-
-        $dv = DatasetVersion::where([
-            'dataset_id' => $dataset->id,
-            'version'    => $versionNumber,
-        ])->first();
-
-        $dv->metadata = json_encode($metadataSaveObject);
-        $dv->save();
-
-        return $dv->id;
-    }
-
-    /**
      * Normalise incoming metadata into a consistent nested shape before
-     * passing to TRASER. Handles string JSON, double-nesting, and FMA-style inputs.
+     * passing to TRASER.
      *
      * Mirrors DatasetsV2Helpers@extractMetadata (kept for TeamDatasetController).
      */
@@ -491,23 +841,62 @@ class DatasetService
         return $metadata;
     }
 
-    private function buildRequiredBlock(Dataset $dataset, int $versionNumber): array
+    /**
+     * Build the GWDM required block for a given version, including the full
+     * revisions history up to and including $newVersionNumber.
+     *
+     * On create() this produces a single-entry revisions array (v1 only).
+     * On update() this is called after incrementing so $newVersionNumber already
+     * reflects the version about to be written; all prior versions are fetched
+     * from the DB and prepended.
+     */
+    private function buildRequiredBlock(Dataset $dataset, int $newVersionNumber): array
     {
+        // Fetch all version numbers already persisted for this dataset (excluding
+        // the new version which has not yet been written).
+        $existingVersions = DatasetVersion::where('dataset_id', $dataset->id)
+            ->orderBy('version')
+            ->pluck('version')
+            ->toArray();
+
+        // Build a revision entry for every version including the new one.
+        $allVersionNumbers = array_merge($existingVersions, [$newVersionNumber]);
+        $allVersionNumbers = array_unique($allVersionNumbers);
+        sort($allVersionNumbers);
+
+        $revisions = array_map(fn ($v) => [
+            'url'     => config('gateway.gateway_url') . '/dataset/' . $dataset->id . '?version=' . $this->formatVersion($v),
+            'version' => $this->formatVersion($v),
+        ], $allVersionNumbers);
+
         return [
             'gatewayId'  => strval($dataset->id),
             'gatewayPid' => $dataset->pid,
             'issued'     => $dataset->created,
             'modified'   => $dataset->updated,
-            'revisions'  => [[
-                'url'     => config('gateway.gateway_url') . '/dataset/' . $dataset->id . '?version=1.0.0',
-                'version' => $this->formatVersion($versionNumber),
-            ]],
+            'revisions'  => $revisions,
         ];
     }
 
     private function formatVersion(int $version): string
     {
         return "{$version}.0.0";
+    }
+
+    /**
+     * Extract title and shortTitle from a GWDM metadata array.
+     *
+     * Returns [$title, $shortTitle] — either may be null if not present.
+     * Used to populate the now-regular (non-generated) title/short_title columns.
+     *
+     * @return array{0: string|null, 1: string|null}
+     */
+    private function extractTitleFields(array $gwdmMetadata): array
+    {
+        $title      = $gwdmMetadata['summary']['title'] ?? null;
+        $shortTitle = $gwdmMetadata['summary']['shortTitle'] ?? $title;
+
+        return [$title, $shortTitle];
     }
 
     /**
