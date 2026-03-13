@@ -34,11 +34,12 @@ class Widget extends Model
         'keep_proportions',
         'widget_name',
         'permitted_domains',
-        'colours',
+        'branding_primary',
+        'branding_secondary',
+        'branding_neutral',
     ];
 
     protected $casts = [
-        'colours' => 'array', // or 'json'
         'include_search_bar' => 'boolean',
     ];
 

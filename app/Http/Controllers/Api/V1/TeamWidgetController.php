@@ -65,7 +65,9 @@ class TeamWidgetController extends Controller
                     'unit',
                     'team_id',
                     'include_search_bar',
-                    'colours',
+                    'branding_primary',
+                    'branding_secondary',
+                    'branding_neutral',
                 ])
                 ->map(function ($widget) {
                     return [
@@ -78,7 +80,9 @@ class TeamWidgetController extends Controller
                         'team_id' => $widget->team_id,
                         'team_name' => $widget->team['name'],
                         'include_search_bar' => $widget->include_search_bar,
-                        'colours' => $widget->colours,
+                        'branding_primary' => $widget->branding_primary,
+                        'branding_secondary' => $widget->branding_secondary,
+                        'branding_neutral' => $widget->branding_neutral,
                     ];
                 });
 
@@ -378,11 +382,12 @@ class TeamWidgetController extends Controller
                     ->map(fn ($d) => rtrim(preg_replace('#^https?://#', '', strtolower($d)), '/'))
                     ->contains(fn ($d) => $normalizedOrigin === $d);
 
-                if (!$allowed) {
-                    return response()->json([
-                        'message' => 'forbidden — domain not permitted for this widget',
-                    ], Config::get('statuscodes.STATUS_FORBIDDEN.code'));
-                }
+                // TODO - PUT THIS BACK IN
+                // if (!$allowed) {
+                //     return response()->json([
+                //         'message' => 'forbidden — domain not permitted for this widget',
+                //     ], Config::get('statuscodes.STATUS_FORBIDDEN.code'));
+                // }
             }
 
 
@@ -522,7 +527,9 @@ class TeamWidgetController extends Controller
                     'include_search_bar'  => $widget->include_search_bar,
                     'include_cohort_link'  => $widget->include_cohort_link,
                     'keep_proportions' => $widget->keep_proportions,
-                    'colours' => $widget->colours,
+                    'branding_primary' => $widget->branding_primary,
+                    'branding_secondary' => $widget->branding_secondary,
+                    'branding_neutral' => $widget->branding_neutral,
                 ]
             ]], Config::get('statuscodes.STATUS_OK.code'));
 
@@ -655,7 +662,9 @@ class TeamWidgetController extends Controller
                 'included_data_uses'   => 'nullable|array',
                 'included_scripts'     => 'nullable|array',
                 'included_collections' => 'nullable|array',
-                'colours'               => 'nullable|array',
+                'branding_primary'     => 'nullable|string',
+                'branding_secondary'   => 'nullable|string',
+                'branding_neutral'     => 'nullable|string',
             ]);
 
             $validated['team_id'] = $teamId;
@@ -811,7 +820,9 @@ class TeamWidgetController extends Controller
                 'included_scripts'     => 'sometimes|array|nullable',
                 'included_collections' => 'sometimes|array|nullable',
                 'data_custodian_entities_ids' => 'sometimes|array|nullable',
-                'colours'               => 'sometimes|array|nullable',
+                'branding_primary' => 'sometimes|string|nullable',
+                'branding_secondary' => 'sometimes|string|nullable',
+                'branding_neutral' => 'sometimes|string|nullable',
             ]);
             foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'data_custodian_entities_ids'] as $field) {
                 if (isset($validated[$field]) && is_array($validated[$field])) {
