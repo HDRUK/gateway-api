@@ -2,31 +2,34 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Config;
-use Auditor;
-use Exception;
-use App\Models\Role;
-use App\Models\User;
-use App\Jobs\SendEmailJob;
-use App\Models\Federation;
-use App\Models\TeamHasUser;
-use App\Jobs\TestFederation;
-use App\Models\Notification;
-use Illuminate\Http\Request;
-use App\Models\EmailTemplate;
-use App\Models\TeamUserHasRole;
-use App\Models\TeamHasFederation;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Http;
-use App\Models\FederationHasNotification;
-use App\Http\Traits\LoggingContext;
-use App\Http\Traits\RequestTransformation;
-use App\Http\Requests\Federation\GetFederation;
-use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
+use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\GetAllFederation;
+use App\Http\Requests\Federation\GetFederation;
+use App\Http\Requests\Federation\RunNowFederation;
 use App\Http\Requests\Federation\UpdateFederation;
+use App\Http\Traits\LoggingContext;
+use App\Http\Traits\RequestTransformation;
+use App\Jobs\ProcessFederation;
+use App\Jobs\SendEmailJob;
+use App\Jobs\TestFederation;
+use App\Models\EmailTemplate;
+use App\Models\Federation;
+use App\Models\FederationHasNotification;
+use App\Models\Notification;
+use App\Models\Role;
+use App\Models\TeamHasFederation;
+use App\Models\TeamHasUser;
+use App\Models\TeamUserHasRole;
+use App\Models\User;
+use App\Services\GatewayMetadataIngestionService;
+use Auditor;
+use Config;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class FederationController extends Controller
 {
@@ -899,6 +902,97 @@ class FederationController extends Controller
             return $testVerdict->handle();
         } catch (Exception $e) {
             Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            \Log::info($e->getMessage(), $loggingContext);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\GET(
+     *    path="/api/v1/teams/{teamId}/federations/{federationId}/run",
+     *    operationId="run_federation",
+     *    tags={"Team-Federations"},
+     *    summary="FederationController@runNow",
+     *    description="Run federation immediately",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="federationId",
+     *       in="path",
+     *       description="federation id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="federation id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="boolean", example="false"),
+     *          @OA\Property(property="errors", type="string", example="request received HTTP 401 (Unauthorized)"),
+     *          @OA\Property(property="status", type="integer", example="401"),
+     *          @OA\Property(property="title", type="string", example="Test Unsuccessful"),
+     *       )
+     *    )
+     * )
+     */
+    public function runNow(RunNowFederation $request, int $teamId, int $federationId)
+    {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $checkFedearation = Federation::where([
+                'id' => $federationId,
+                'enabled' => 1,
+                'tested' => 1,
+            ])->first();
+            if (is_null($checkFedearation)) {
+                throw new Exception('Federation not found!');
+            }
+
+            $service = new GatewayMetadataIngestionService();
+            $service->setFederation($federationId);
+            $gmi = $service->getActiveFederationsById();
+
+            ProcessFederation::dispatch($gmi);
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'RUN_NOW',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Federation ' . $federationId . ' run now',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => $e->getMessage(),
