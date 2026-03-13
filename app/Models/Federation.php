@@ -68,6 +68,7 @@ class Federation extends Model
         'enabled',
         'tested',
         'pid',
+        'is_running',
     ];
 
     /**
@@ -76,6 +77,7 @@ class Federation extends Model
     protected $casts = [
         'enabled' => 'boolean',
         'tested' => 'boolean',
+        'is_running' => 'boolean',
     ];
 
     /** @return BelongsToMany<Team, $this> */

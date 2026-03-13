@@ -81,6 +81,7 @@ class FederationController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="tested", type="boolean", example="0"),
+     *                   @OA\Property(property="is_running", type="boolean", example="0"),
      *                   @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *                ),
      *             ),
@@ -191,6 +192,7 @@ class FederationController extends Controller
      *              @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *              @OA\Property(property="tested", type="boolean", example="0"),
      *              @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
+     *              @OA\Property(property="is_running", type="boolean", example="0"),
      *           ),
      *        ),
      *    ),
@@ -967,6 +969,7 @@ class FederationController extends Controller
                 'id' => $federationId,
                 'enabled' => 1,
                 'tested' => 1,
+                'is_running' => 0,
             ])->first();
             if (is_null($checkFederation)) {
                 throw new Exception('Federation not found!');
