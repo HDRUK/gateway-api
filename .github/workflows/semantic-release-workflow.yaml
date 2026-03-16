@@ -65,11 +65,10 @@ jobs:
         run: |
           git fetch origin dev
           git checkout dev
-          git merge --no-ff main || true
+          git merge --squash origin/main
           git checkout --theirs .
           git add .
-          git commit -m "Auto-resolve merge conflicts by keeping main's changes [skip ci]" || echo "No changes to commit"
-          
+          git commit --allow-empty -m "sync latest main changes into dev (squash sync) [skip ci]"
           git push origin dev
           
   build:
