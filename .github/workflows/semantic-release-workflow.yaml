@@ -65,8 +65,8 @@ jobs:
         run: |
           git fetch origin dev
           git checkout dev
-          git merge --squash origin/main
-          git checkout --theirs .
+          git merge --squash origin/main || true
+          git checkout --theirs . || true
           git add .
           git commit --allow-empty -m "sync latest main changes into dev (squash sync) [skip ci]"
           git push origin dev
