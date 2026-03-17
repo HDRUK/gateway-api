@@ -64,23 +64,30 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.generate-deployment-token.outputs.token }}
         run: |
-          # Fetch last merged PR with "RELEASE:" in title
+          # Fetch last merged RELEASE PR
           PR_TITLE=$(gh pr list \
             --state merged \
             --base main \
             --json title \
             --limit 5 \
-            -q '.[] | select(.title | test("RELEASE:")) | .title' | head -n 1)
+            -q '.[] | select(.title | startswith("RELEASE:")) | .title' \
+            | head -n 1)
 
-          echo "Found PR title: $PR_TITLE"
+          echo "Found PR title: '$PR_TITLE'"
 
           if [ -z "$PR_TITLE" ]; then
-            echo "No RELEASE PR found."
+            echo "ERROR: No RELEASE PR found."
             exit 1
           fi
 
-          # Extract version number
-          VERSION=$(echo "$PR_TITLE" | sed -E 's/.*RELEASE: *([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          # Extract version X.Y.Z
+          VERSION=$(echo "$PR_TITLE" | sed -E 's/^RELEASE: *([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
+
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: Failed to extract version from RELEASE PR title."
+            exit 1
+          fi
+
           echo "Extracted version: $VERSION"
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
