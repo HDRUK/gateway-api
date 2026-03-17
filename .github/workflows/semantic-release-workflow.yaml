@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Generate GitHub App token
         id: generate-deployment-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DEPLOY_APP_ID }}
           private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -58,44 +58,17 @@ jobs:
         run: |
           git fetch origin main
           git reset --hard origin/main
-  
-      - name: Extract release version from RELEASE PR
-        id: extract_version
-        env:
-          GH_TOKEN: ${{ steps.generate-deployment-token.outputs.token }}
+
+      - name: Read VERSION file
+        id: getversion
         run: |
-          # Fetch last merged RELEASE PR
-          PR_TITLE=$(gh pr list \
-            --state merged \
-            --base main \
-            --json title \
-            --limit 5 \
-            -q '.[] | select(.title | startswith("RELEASE:")) | .title' \
-            | head -n 1)
-
-          echo "Found PR title: '$PR_TITLE'"
-
-          if [ -z "$PR_TITLE" ]; then
-            echo "ERROR: No RELEASE PR found."
-            exit 1
-          fi
-
-          # Extract version X.Y.Z
-          VERSION=$(echo "$PR_TITLE" | sed -E 's/^RELEASE: *([0-9]+\.[0-9]+\.[0-9]+).*$/\1/')
-
-          if [ -z "$VERSION" ]; then
-            echo "ERROR: Failed to extract version from RELEASE PR title."
-            exit 1
-          fi
-
-          echo "Extracted version: $VERSION"
-
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
+          sed -n 's/^appVersion:\(.*\)/\1/p' < "chart/gateway-api/Chart.yaml" > "version"
+          echo "version=$(sed 's/.*\"\(.*\)\".*/\1/g' "version")" >> "$GITHUB_OUTPUT"          
+  
       - name: Merge changes from main to dev
         env:
           GITHUB_TOKEN: ${{ steps.generate-deployment-token.outputs.token }}
-          RELEASE_VERSION: ${{ steps.extract_version.outputs.version }}
+          RELEASE_VERSION: ${{ steps.getversion.outputs.version }}
         run: |
           git fetch origin dev
           git checkout dev
