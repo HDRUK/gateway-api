@@ -658,8 +658,9 @@ class TeamController extends Controller
     private function linkCollectionsWithPublicationsByTeamId(int $teamId)
     {
         $linkCollections = DB::select(
-            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, p.id as p_id
+            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, p.id as p_id, tt.id as tt_id, tt.name as tt_name
             FROM collections c
+            LEFT JOIN teams tt ON tt.id = c.team_id
             LEFT JOIN collection_has_publications chp ON chp.collection_id = c.id
             LEFT JOIN publications p ON p.id = chp.publication_id
             WHERE c.status = ?
@@ -684,6 +685,10 @@ class TeamController extends Controller
                 'updated_at'  => $group->first()->updated_at,
                 'public'      => $group->first()->public,
                 'relation'    => $group->first()->team_id === $teamId ? 'owned' : 'associated',
+                'team'        => $group->first()->tt_id ? [
+                    'id'   => $group->first()->tt_id,
+                    'name' => $group->first()->tt_name,
+                ] : null,
             ]);
 
         return [
@@ -701,8 +706,9 @@ class TeamController extends Controller
         }
 
         $linkPublications = DB::select(
-            'SELECT p.id, p.paper_title, p.authors, p.url, p.team_id
+            'SELECT p.id, p.paper_title, p.authors, p.url, p.team_id, tt.id as tt_id, tt.name as tt_name
             FROM publications p
+            LEFT JOIN teams tt ON tt.id = p.team_id
             WHERE p.status = ? AND p.team_id != ? AND p.id IN (' . implode(',', $publicationIds) . ')',
             [Publication::STATUS_ACTIVE, $teamId]
         );
@@ -714,6 +720,10 @@ class TeamController extends Controller
                 'authors'     => $item->authors,
                 'url'         => $item->url,
                 'relation'    => 'associated',
+                'team'        => $item->tt_id ? [
+                    'id'   => $item->tt_id,
+                    'name' => $item->tt_name,
+                ] : null,
             ])
             ->values()
             ->all();
@@ -726,8 +736,9 @@ class TeamController extends Controller
     private function linkCollectionsWithToolsByTeamId(int $teamId)
     {
         $linkCollections = DB::select(
-            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, t.id as t_id
+            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, t.id as t_id, tt.id tt_id, tt.name tt_name
             FROM collections c
+            LEFT JOIN teams tt ON tt.id = c.team_id
             LEFT JOIN collection_has_tools cht ON cht.collection_id = c.id
             LEFT JOIN tools t ON t.id = cht.tool_id
             WHERE c.status = ?
@@ -752,6 +763,10 @@ class TeamController extends Controller
                 'updated_at'  => $group->first()->updated_at,
                 'public'      => $group->first()->public,
                 'relation'    => $group->first()->team_id === $teamId ? 'owned' : 'associated',
+                'team'       => $group->first()->tt_id ? [
+                    'id'   => $group->first()->tt_id,
+                    'name' => $group->first()->tt_name,
+                ] : null,
             ]);
 
         return [
@@ -769,8 +784,9 @@ class TeamController extends Controller
         }
 
         $linkTools = DB::select(
-            'SELECT t.id, t.name, t.user_id, t.created_at, t.team_id
+            'SELECT t.id, t.name, t.user_id, t.created_at, t.team_id, tt.id tt_id, tt.name tt_name
             FROM tools t
+            LEFT JOIN teams tt ON tt.id = t.team_id
             WHERE t.status = ? AND t.team_id != ? AND t.id IN (' . implode(',', $toolIds) . ')',
             [Tool::STATUS_ACTIVE, $teamId]
         );
@@ -804,6 +820,10 @@ class TeamController extends Controller
                 'created_at' => $item->created_at,
                 'user'       => $item->user,
                 'relation'   => 'associated',
+                'team'       => $item->tt_id ? [
+                    'id'   => $item->tt_id,
+                    'name' => $item->tt_name,
+                ] : null,
             ])
             ->values()
             ->all();
@@ -816,8 +836,9 @@ class TeamController extends Controller
     private function linkCollectionsWithDatasetsByTeamId(int $teamId)
     {
         $linkCollections = DB::select(
-            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, ds.id as ds_id, ds.team_id as ds_team_id
+            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, ds.id as ds_id, ds.team_id as ds_team_id, t.id as t_id, t.name as t_name
             FROM collections c
+            LEFT JOIN teams t ON t.id = c.team_id
             LEFT JOIN collection_has_dataset_version chdv ON chdv.collection_id = c.id
             LEFT JOIN dataset_versions dv ON dv.id = chdv.dataset_version_id
             LEFT JOIN datasets ds ON ds.id = dv.dataset_id
@@ -848,6 +869,10 @@ class TeamController extends Controller
                 'updated_at' => $group->first()->updated_at,
                 'public'     => $group->first()->public,
                 'relation'   => $group->first()->team_id === $teamId ? 'owned' : 'associated',
+                'team'       => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
             ]);
 
         return [
@@ -859,8 +884,9 @@ class TeamController extends Controller
     private function linkCollectionsWithDursByTeamId(int $teamId)
     {
         $linkCollections = DB::select(
-            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, d.id as d_id
+            'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, d.id as d_id, t.id as t_id, t.name as t_name
             FROM collections c
+            LEFT JOIN teams t ON t.id = c.team_id
             LEFT JOIN collection_has_durs chd ON chd.collection_id = c.id
             LEFT JOIN dur d ON d.id = chd.dur_id
             WHERE c.status = ?
@@ -885,6 +911,10 @@ class TeamController extends Controller
                 'updated_at'  => $group->first()->updated_at,
                 'public'      => $group->first()->public,
                 'relation'    => $group->first()->team_id === $teamId ? 'owned' : 'associated',
+                'team'        => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
             ]);
 
         return [
@@ -902,8 +932,9 @@ class TeamController extends Controller
         }
 
         $linkDurs = DB::select(
-            'SELECT dur.id, dur.project_title, dur.organisation_name, dur.status, dur.team_id
-            FROM dur dur
+            'SELECT dur.id, dur.project_title, dur.organisation_name, dur.status, dur.team_id, t.id as t_id, t.name as t_name
+            FROM dur
+            LEFT JOIN teams t ON t.id = dur.team_id
             WHERE dur.status = ? AND dur.team_id != ? AND dur.id IN (' . implode(',', $durIds) . ')',
             [Dur::STATUS_ACTIVE, $teamId]
         );
@@ -914,6 +945,10 @@ class TeamController extends Controller
                 'project_title'     => $item->project_title,
                 'organisation_name' => $item->organisation_name,
                 'relation'          => 'associated',
+                'team'              => $item->t_id ? [
+                    'id'   => $item->t_id,
+                    'name' => $item->t_name,
+                ] : null,
             ])
             ->values()
             ->all();
@@ -926,8 +961,9 @@ class TeamController extends Controller
     private function linkToolsByTeamId(int $teamId)
     {
         $linkTools = DB::select(
-            'SELECT t.id, t.name, t.user_id, t.created_at, t.team_id, ds.id as ds_id, ds.team_id as ds_team_id
+            'SELECT t.id, t.name, t.user_id, t.created_at, t.team_id, ds.id as ds_id, ds.team_id as ds_team_id, tt.id as tt_id, tt.name as tt_name
             FROM tools t
+            LEFT JOIN teams tt ON tt.id = t.team_id
             LEFT JOIN dataset_version_has_tool dvht ON dvht.tool_id = t.id
             LEFT JOIN dataset_versions dv ON dv.id = dvht.dataset_version_id
             LEFT JOIN datasets ds ON ds.id = dv.dataset_id
@@ -976,6 +1012,10 @@ class TeamController extends Controller
                 'created_at' => $group->first()->created_at,
                 'user'       => $group->first()->user,
                 'relation'   => $group->first()->team_id === $teamId ? 'owned' : 'associated',
+                'team'       => $group->first()->tt_id ? [
+                    'id'   => $group->first()->tt_id,
+                    'name' => $group->first()->tt_name,
+                ] : null,
             ]);
 
         return [
@@ -988,8 +1028,10 @@ class TeamController extends Controller
     {
         $linkDurs = DB::select(
             'SELECT dur.id, dur.project_title, dur.organisation_name, dur.status, dur.team_id,
+                    t.id as t_id, t.name as t_name,
                     ds.id as ds_id, ds.team_id as ds_team_id
-            FROM dur dur
+            FROM dur
+            LEFT JOIN teams t ON t.id = dur.team_id
             LEFT JOIN dur_has_dataset_version dhdv ON dhdv.dur_id = dur.id
             LEFT JOIN dataset_versions dv ON dv.id = dhdv.dataset_version_id
             LEFT JOIN datasets ds ON ds.id = dv.dataset_id
@@ -1015,6 +1057,10 @@ class TeamController extends Controller
                 'project_title'     => $group->first()->project_title,
                 'organisation_name' => $group->first()->organisation_name,
                 'relation'          => $group->first()->team_id === $teamId ? 'owned' : 'associated',
+                'team'              => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
             ]);
 
         return [
@@ -1026,8 +1072,9 @@ class TeamController extends Controller
     private function linkPublicationsByTeamId(int $teamId)
     {
         $linkPublications = DB::select(
-            'SELECT p.id, p.paper_title, p.authors, p.url, p.team_id as p_team_id, ds.id as ds_id, ds.team_id as ds_team_id, phdv.link_type as phdv_link_type
+            'SELECT p.id, p.paper_title, p.authors, p.url, p.team_id as p_team_id, ds.id as ds_id, ds.team_id as ds_team_id, phdv.link_type as phdv_link_type, t.id as t_id, t.name as t_name
             FROM publications p
+            LEFT JOIN teams t ON t.id = p.team_id
             LEFT JOIN publication_has_dataset_version phdv ON phdv.publication_id = p.id
             LEFT JOIN dataset_versions dv ON dv.id = phdv.dataset_version_id
             LEFT JOIN datasets ds ON ds.id = dv.dataset_id
@@ -1055,6 +1102,10 @@ class TeamController extends Controller
                 'authors'     => $group->first()->authors,
                 'url'         => $group->first()->url,
                 'relation'    => $group->first()->p_team_id === $teamId ? 'owned' : 'associated',
+                'team'        => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
             ]);
 
         return [
@@ -1067,6 +1118,7 @@ class TeamController extends Controller
     {
         $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)
                 ->whereIn('id', $aDatasetIds)
+                ->with('team:id,name')
                 ->select([
                     'id','is_cohort_discovery', 'user_id', 'team_id', 'datasetid'
                 ])->get();
@@ -1077,6 +1129,10 @@ class TeamController extends Controller
             $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
             $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
             $dataset['relation'] = 'associated';
+            $dataset['team'] = [
+                'id'   => $dataset->team->id,
+                'name' => $dataset->team->name,
+            ];
         }
 
         return $datasets;
