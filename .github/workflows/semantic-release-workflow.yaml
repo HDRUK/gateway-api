@@ -59,18 +59,45 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
   
+      - name: Extract release version from RELEASE PR
+        id: extract_version
+        env:
+          GH_TOKEN: ${{ steps.generate-deployment-token.outputs.token }}
+        run: |
+          # Fetch last merged PR with "RELEASE:" in title
+          PR_TITLE=$(gh pr list \
+            --state merged \
+            --base main \
+            --json title \
+            --limit 5 \
+            -q '.[] | select(.title | test("RELEASE:")) | .title' | head -n 1)
+
+          echo "Found PR title: $PR_TITLE"
+
+          if [ -z "$PR_TITLE" ]; then
+            echo "No RELEASE PR found."
+            exit 1
+          fi
+
+          # Extract version number
+          VERSION=$(echo "$PR_TITLE" | sed -E 's/.*RELEASE: *([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          echo "Extracted version: $VERSION"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Merge changes from main to dev
         env:
           GITHUB_TOKEN: ${{ steps.generate-deployment-token.outputs.token }}
+          RELEASE_VERSION: ${{ steps.extract_version.outputs.version }}
         run: |
           git fetch origin dev
           git checkout dev
           git merge --squash origin/main || true
           git checkout --theirs . || true
           git add .
-          git commit --allow-empty -m "sync latest main changes into dev (squash sync) [skip ci]"
+          git commit --allow-empty -m "sync: update dev with latest main changes from release ${RELEASE_VERSION} (squash sync) [skip ci]"
           git push origin dev
-          
+
   build:
     needs: semantic
     permissions:
