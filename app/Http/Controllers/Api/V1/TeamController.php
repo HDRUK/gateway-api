@@ -657,25 +657,17 @@ class TeamController extends Controller
 
     private function linkCollectionsWithPublicationsByTeamId(int $teamId)
     {
-        // $linkCollections = DB::select(
-        //     'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, p.id as p_id
-        //     FROM collections c
-        //     LEFT JOIN collection_has_publications chp ON chp.collection_id = c.id
-        //     LEFT JOIN publications p ON p.id = chp.publication_id
-        //     WHERE c.status = ?
-        //     AND (
-        //         c.team_id = ?
-        //         OR (p.team_id = ? AND p.status = ?)
-        //     )',
-        //     [Collection::STATUS_ACTIVE, $teamId, $teamId, Publication::STATUS_ACTIVE]
-        // );
         $linkCollections = DB::select(
             'SELECT c.id, c.name, c.image_link, c.created_at, c.updated_at, c.public, c.team_id, p.id as p_id
             FROM collections c
             LEFT JOIN collection_has_publications chp ON chp.collection_id = c.id
             LEFT JOIN publications p ON p.id = chp.publication_id
-            WHERE c.status = ? AND c.team_id = ? AND p.status = ?',
-            [Collection::STATUS_ACTIVE, $teamId, Publication::STATUS_ACTIVE]
+            WHERE c.status = ?
+            AND (
+                c.team_id = ?
+                OR (p.team_id = ? AND p.status = ?)
+            )',
+            [Collection::STATUS_ACTIVE, $teamId, $teamId, Publication::STATUS_ACTIVE]
         );
 
         $publicationIds = collect($linkCollections)->pluck('p_id')->filter()->unique()->values()->toArray();
@@ -738,8 +730,12 @@ class TeamController extends Controller
             FROM collections c
             LEFT JOIN collection_has_tools cht ON cht.collection_id = c.id
             LEFT JOIN tools t ON t.id = cht.tool_id
-            WHERE c.status = ? AND c.team_id = ? AND t.status = ?',
-            [Collection::STATUS_ACTIVE, $teamId, Tool::STATUS_ACTIVE]
+            WHERE c.status = ?
+            AND (
+                c.team_id = ?
+                OR (t.team_id = ? AND t.status = ?)
+            )',
+            [Collection::STATUS_ACTIVE, $teamId, $teamId, Tool::STATUS_ACTIVE]
         );
 
         $toolIds = collect($linkCollections)->pluck('t_id')->filter()->unique()->values()->toArray();
