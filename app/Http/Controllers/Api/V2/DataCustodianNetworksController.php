@@ -629,12 +629,12 @@ class DataCustodianNetworksController extends Controller
 
         if (empty($linkCollections)) {
             return [
-                'owned' => [],
                 'associated' => [],
+                'dur_ids' => [],
             ];
         }
 
-        $durIds = collect($linkCollections)->pluck('d_id')->filter()->unique()->values()->toArray();
+        $durIds = collect($linkCollections)->pluck('dur_id')->filter()->unique()->values()->toArray();
 
         $mapped = collect($linkCollections)
             ->groupBy('id')
@@ -712,8 +712,8 @@ class DataCustodianNetworksController extends Controller
 
         if (empty($linkCollections)) {
             return [
-                'owned' => [],
                 'associated' => [],
+                'tool_ids' => [],
             ];
         }
 
@@ -816,8 +816,8 @@ class DataCustodianNetworksController extends Controller
 
         if (empty($linkCollections)) {
             return [
-                'owned' => [],
                 'associated' => [],
+                'publication_ids' => [],
             ];
         }
 
@@ -1028,6 +1028,13 @@ class DataCustodianNetworksController extends Controller
             ORDER BY p.id ASC',
             [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
         );
+
+        if (empty($linkPublications)) {
+            return [
+                'owned' => [],
+                'associated' => [],
+            ];
+        }
 
         $this->associatedDatasetIds = collect($linkPublications)
             ->filter(fn ($row) => !in_array((int) $row->ds_team_id, $teamIds))
