@@ -54,6 +54,9 @@ class DatasetObserver
             'dataset_id' => $dataset->id
         ])->select('id')->first();
 
+        // TODO - Stop this from being synchronous calls. These are blocking
+        // and should be handed off to job queues.
+        //
         if ($prevStatus === Dataset::STATUS_ACTIVE && $dataset->status !== Dataset::STATUS_ACTIVE) {
             $this->deleteDatasetFromElastic($dataset->id);
             if ($dataset->team_id) {

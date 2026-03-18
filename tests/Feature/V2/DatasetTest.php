@@ -1260,7 +1260,7 @@ class DatasetTest extends TestCase
     }
 
 
-    public function test_update_dataset_doesnt_create_new_version(): void
+    public function test_update_dataset_overwrites_existing_version(): void
     {
         // create team
         // First create a notification to be used by the new team
@@ -1273,7 +1273,6 @@ class DatasetTest extends TestCase
         $userId = $this->createUser();
 
         // create dataset
-        $labelDataset = 'label dataset test title';
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET_V2,
@@ -1306,20 +1305,21 @@ class DatasetTest extends TestCase
             $this->header,
         );
 
-        $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
         $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $dsv = DatasetVersion::where('dataset_id', $datasetId)->get();
-        $this->assertTrue(count($dsv) === 1);
+        // v2 endpoint overwrites the existing version row in place (legacy behaviour
+        // preserved for third-party integrations). Exactly one version row must exist.
+        $dsv = DatasetVersion::where('dataset_id', $datasetId)->orderBy('version')->get();
+        $this->assertCount(1, $dsv);
 
-        // only looping here because this is a collection, and calling 'first'
-        // would defeat the point of this test
-        foreach ($dsv as $d) {
-            $this->assertTrue($d->metadata['metadata']['summary']['title'] === 'updated test title');
-        }
+        // The overwritten row's title must reflect the updated value.
+        $this->assertEquals('updated test title', $dsv[0]->title);
+
+        // v2 overwrite: patch column must remain null (no delta stored).
+        $this->assertNull($dsv[0]->patch);
     }
 
-    public function test_update_team_dataset_doesnt_create_new_version(): void
+    public function test_update_team_dataset_overwrites_existing_version(): void
     {
         // create team
         // First create a notification to be used by the new team
@@ -1332,7 +1332,6 @@ class DatasetTest extends TestCase
         $userId = $this->createUser();
 
         // create dataset
-        $labelDataset = 'label dataset test title';
         $responseCreateDataset = $this->json(
             'POST',
             $this->team_datasets_url($teamId),
@@ -1350,7 +1349,7 @@ class DatasetTest extends TestCase
 
         $this->metadataAlt['metadata']['summary']['title'] = 'updated test title';
 
-        // update dataset
+        // update dataset via team endpoint
         $responseUpdateDataset = $this->json(
             'PUT',
             $this->team_datasets_url($teamId) . '/' . $datasetId,
@@ -1363,17 +1362,17 @@ class DatasetTest extends TestCase
             $this->header,
         );
 
-        $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
         $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $dsv = DatasetVersion::where('dataset_id', $datasetId)->get();
-        $this->assertTrue(count($dsv) === 1);
+        // v2 endpoint overwrites the existing version row in place (legacy behaviour).
+        $dsv = DatasetVersion::where('dataset_id', $datasetId)->orderBy('version')->get();
+        $this->assertCount(1, $dsv);
 
-        // only looping here because this is a collection, and calling 'first'
-        // would defeat the point of this test
-        foreach ($dsv as $d) {
-            $this->assertTrue($d->metadata['metadata']['summary']['title'] === 'updated test title');
-        }
+        // The overwritten row's title must reflect the update.
+        $this->assertEquals('updated test title', $dsv[0]->title);
+
+        // patch column must remain null (no delta stored in v2 path).
+        $this->assertNull($dsv[0]->patch);
     }
 
     private function team_datasets_url(int $teamId)

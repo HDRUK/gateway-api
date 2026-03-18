@@ -363,7 +363,7 @@ class DatasetController extends Controller
 
         try {
             $team          = Team::where('id', $teamId)->first();
-            $versionNumber = $this->datasetService->update(
+            $versionNumber = $this->datasetService->updateV2(
                 dataset: $dataset,
                 input: $input,
                 userId: $userId,
