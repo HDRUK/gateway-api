@@ -26,7 +26,7 @@ class DatasetService
     /**
      * How many delta patches we store before a full snapshot is
      * written instead. Caps the worst case reconstruction cost.
-     * 
+     *
      * Intentionally not configurable within .env.
      */
     private const SNAPSHOT_INTERVAL = 10;
