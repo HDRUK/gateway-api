@@ -5,15 +5,16 @@ namespace App\Http\Controllers\Api\V2;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
+use App\Http\Traits\RequestTransformation;
 use App\Models\Collection;
 use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Dur;
 use App\Models\Publication;
 use App\Models\Team;
 use App\Models\Tool;
+use App\Models\User;
 use Auditor;
 use Config;
 use DB;
@@ -25,12 +26,14 @@ class DataCustodianNetworksController extends Controller
 {
     use IndexElastic;
     use GetValueByPossibleKeys;
+    use RequestTransformation;
 
     private $networkDatasets = [];
     private $networkDurIds = [];
     private $networkToolIds = [];
     private $networkPublicationIds = [];
     private $networkCollectionIds = [];
+    private $associatedDatasetIds = [];
 
     /**
      * @OA\Get(
@@ -467,77 +470,74 @@ class DataCustodianNetworksController extends Controller
                 'description' => 'DataCustodianNetwork get ' . $id,
             ]);
 
-            // Durs: get all active durs owned by the team and also active durs linked to (all versions of) datasets owned by the team
-            $ownedDurs = Dur::where(['status' => Dur::STATUS_ACTIVE])
-                ->with(['team:id,name'])
-                ->whereIn('team_id', $teamIds)
-                ->select(['id', 'project_title', 'organisation_name', 'status', 'team_id'])
-                ->get()
-                ->toArray();
+            // Collections: get all active collections owned/associated linked with datasets/durs/tools/publications
+            $collectionHasDatasets = $this->linkCollectionsWithDatasetsByTeamIds($teamIds);
+            $collectionHasDurs = $this->linkCollectionsWithDursByTeamIds($teamIds);
+            $associatedDurs = $this->associatedDurs($teamIds, $collectionHasDurs['dur_ids']);
+            $collectionHasTools = $this->linkCollectionsWithToolsByTeamIds($teamIds);
+            $associatedTools = $this->associatedTools($teamIds, $collectionHasTools['tool_ids']);
+            $collectionHasPublications = $this->linkCollectionsWithPublicationsByTeamIds($teamIds);
+            $associatedPublications = $this->associatedPublications($teamIds, $collectionHasPublications['publication_ids']);
 
-            $linkedDursColl = DB::select(
-                'SELECT DISTINCT d.id, d.project_title, d.organisation_name, d.status, ds.team_id
-                FROM datasets ds
-                JOIN dataset_versions dv ON dv.dataset_id = ds.id
-                JOIN dur_has_dataset_version dhdv ON dv.id = dhdv.dataset_version_id
-                JOIN dur d ON dhdv.dur_id = d.id
-                WHERE ds.team_id = ? AND d.team_id != ? AND d.status = ? AND ds.status = ?',
-                [$id, $id, Dur::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
-            );
+            // Durs: get all active durs owned/associated linked with datasets
+            $durs = $this->linkDursByTeamIds($teamIds);
 
-            $linkedDurs = array_map(function ($item) {
-                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
-                return (array)$item;
-            }, $linkedDursColl);
+            // Tools: get all active tools owned/associated linked with datasets
+            $tools = $this->linkToolsByTeamIds($teamIds);
 
-            $allDurs = [...$ownedDurs, ...$linkedDurs];
+            // Publications: get all active publications owned/associated linked with datasets
+            $publications = $this->linkPublicationsByTeamIds($teamIds);
 
-            // for each other entity type, get all that are linked to datasets owned by the teams in this DPC
-            $linkedToolsColl = DB::select(
-                'SELECT DISTINCT t.id, t.name, t.enabled, t.status, t.created_at, t.updated_at, ds.team_id
-                FROM datasets ds
-                JOIN dataset_versions dv ON dv.dataset_id = ds.id
-                JOIN dataset_version_has_tool dvht ON dv.id = dvht.dataset_version_id
-                JOIN tools t ON dvht.tool_id = t.id
-                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND t.status = ? AND ds.status = ?',
-                [Tool::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
-            );
+            // associated Datasets
+            $this->associatedDatasetIds = array_values(array_unique($this->associatedDatasetIds));
 
-            $linkedToolsColl = array_map(function ($item) {
-                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
-                return $item;
-            }, $linkedToolsColl);
+            $ownedCollections = $collectionHasDatasets['owned'];
+            $totalOwnedCollections = count($ownedCollections);
+            $associatedCollections = collect(array_merge($collectionHasDatasets['associated'], $collectionHasDurs['associated'], $collectionHasTools['associated'], $collectionHasPublications['associated']))->unique('id')->values()->all();
+            $totalAssociatedCollections = count($associatedCollections);
 
-            $linkedPublicationsColl = $this->linkPublicationsByTeamIds($teamIds);
+            $ownedDurs = $durs['owned'];
+            $totalOwnedDurs = count($ownedDurs);
+            $associatedDurs = collect($associatedDurs, $durs['associated'])->unique('id')->values()->all();
+            $totalAssociatedDurs = count($associatedDurs);
 
-            $linkedCollectionColl = DB::select(
-                'SELECT DISTINCT c.id, c.name, c.image_link, c.status, c.created_at, c.updated_at, ds.team_id
-                FROM datasets ds
-                JOIN dataset_versions dv ON dv.dataset_id = ds.id
-                JOIN collection_has_dataset_version chdv ON dv.id = chdv.dataset_version_id
-                JOIN collections c ON chdv.collection_id = c.id
-                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND c.status = ? AND ds.status = ?',
-                [Collection::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
-            );
+            $ownedTools = $tools['owned'];
+            $totalOwnedTools = count($ownedTools);
+            $associatedTools = collect($associatedTools, $tools['associated'])->unique('id')->values()->all();
+            $totalAssociatedTools = count($associatedTools ?? []);
 
-            $linkedCollectionColl = array_map(function ($item) {
-                if ($item->image_link && !preg_match('/^https?:\/\//', $item->image_link)) {
-                    $item->image_link = Config::get('services.media.base_url') . $item->image_link;
-                }
-                $item->team = Team::select('id', 'name')->where('id', $item->team_id)->first();
-                return $item;
-            }, $linkedCollectionColl);
+            $ownedPublications = $publications['owned'];
+            $totalOwnedPublications = count($ownedPublications);
+            $associatedPublications = collect($associatedPublications, $publications['associated'])->unique('id')->values()->all();
+            $totalAssociatedPublications = count($associatedPublications ?? []);
+
+            $associatedDatasets = $this->associatedDatasets($this->associatedDatasetIds ?? []);
+            $totalAssociatedDatasets = count($associatedDatasets);
+
 
             $result = [
                 'id' => $dpc->id,
-                'durs_total' => count($allDurs),
-                'durs' => $allDurs,
-                'tools_total' => count($linkedToolsColl),
-                'tools' => $linkedToolsColl,
-                'publications_total' => count($linkedPublicationsColl),
-                'publications' => $linkedPublicationsColl,
-                'collections_total' => count($linkedCollectionColl),
-                'collections' => $linkedCollectionColl
+                // 'teamIds' => implode(',', $teamIds),
+
+                'collections_total' => $totalOwnedCollections,
+                'associated_collections_total' => $totalAssociatedCollections,
+                'durs_total' => $totalOwnedDurs,
+                'associated_durs_total' => $totalAssociatedDurs,
+                'tools_total' => $totalOwnedTools,
+                'associated_tools_total' => $totalAssociatedTools,
+                'publications_total' => $totalOwnedPublications,
+                'associated_publications_total' => $totalAssociatedPublications,
+                'associated_datasets_total' => $totalAssociatedDatasets,
+
+                'collections' => $ownedCollections,
+                'associated_collections' => $associatedCollections,
+                'durs' => $ownedDurs,
+                'associated_durs' => $associatedDurs,
+                'tools' => $ownedTools,
+                'associated_tools' => $associatedTools,
+                'publications' => $ownedPublications,
+                'associated_publications' => $associatedPublications,
+                'associated_datasets' => $associatedDatasets,
             ];
 
             return response()->json([
@@ -555,51 +555,529 @@ class DataCustodianNetworksController extends Controller
         }
     }
 
-    private function linkPublicationsByTeamIds(array $teamIds)
+    private function linkCollectionsWithDatasetsByTeamIds(array $teamIds)
     {
-        $linkedPublications = DB::select(
-            'SELECT DISTINCT p.id, p.paper_title, p.authors, p.publication_type, p.publication_type_mk1, p.status, p.created_at, p.updated_at, p.url, ds.id as ds_id, phdv.link_type as phdv_link_type
-                FROM datasets ds
-                JOIN dataset_versions dv ON dv.dataset_id = ds.id
-                JOIN publication_has_dataset_version phdv ON dv.id = phdv.dataset_version_id
-                JOIN publications p ON phdv.publication_id = p.id
-                WHERE ds.team_id IN (' . implode(',', $teamIds) . ') AND p.status = ? AND ds.status = ?
-                ORDER BY p.id ASC',
-            [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkCollections = DB::select(
+            'SELECT c.id, c.name, c.image_link, c.team_id, ds.id ds_id, ds.team_id ds_team_id, t.id t_id, t.name t_name
+            FROM collections c
+            LEFT JOIN teams t ON t.id = c.team_id
+            LEFT JOIN collection_has_dataset_version chdv ON chdv.collection_id = c.id
+            LEFT JOIN dataset_versions dv ON dv.id = chdv.dataset_version_id
+            LEFT JOIN datasets ds ON ds.id = dv.dataset_id
+            WHERE c.status = ? 
+            AND (
+                c.team_id IN (' . $strTeamIds . ')
+                OR (ds.team_id IN (' . $strTeamIds . ') AND ds.status = ?)
+            )',
+            [Collection::STATUS_ACTIVE,Dataset::STATUS_ACTIVE]
         );
 
-        $datasetIds = collect($linkedPublications)->pluck('ds_id')->unique()->values();
+        if (empty($linkCollections)) {
+            return [
+                'owned' => [],
+                'associated' => [],
+            ];
+        }
 
-        $datasetTitles = DatasetVersion::query()
-            ->select('dataset_id', 'title')
-            ->whereIn('dataset_id', $datasetIds)
-            ->orderBy('version', 'desc')
-            ->get()
-            ->unique('dataset_id')
-            ->pluck('title', 'dataset_id');
+        $this->associatedDatasetIds = collect($linkCollections)
+            ->filter(fn ($row) => !in_array((int) $row->ds_team_id, $teamIds))
+            ->pluck('ds_id')
+            ->unique()
+            ->values()
+            ->all();
 
-        return collect($linkedPublications)
+        $mapped = collect($linkCollections)
             ->groupBy('id')
             ->map(fn ($group) => [
-                'id'                   => $group->first()->id,
-                'paper_title'          => $group->first()->paper_title,
-                'authors'              => $group->first()->authors,
-                'publication_type'     => $group->first()->publication_type,
-                'publication_type_mk1' => $group->first()->publication_type_mk1,
-                'status'               => $group->first()->status,
-                'created_at'           => $group->first()->created_at,
-                'updated_at'           => $group->first()->updated_at,
-                'url'                  => $group->first()->url,
-                'datasets'             => $group->map(fn ($row) => [
-                        'id'        => $row->ds_id,
-                        'title'     => $datasetTitles->get($row->ds_id),
-                        'link_type' => $row->phdv_link_type,
-                    ])
-                    ->values()
-                    ->all(),
+                'id'         => $group->first()->id,
+                'name'       => $group->first()->name,
+                'image_link' => ($group->first()->image_link && !preg_match('/^https?:\/\//', $group->first()->image_link))
+                    ? Config::get('services.media.base_url') . $group->first()->image_link
+                    : $group->first()->image_link,
+                'relation'   => in_array($group->first()->team_id, $teamIds) ? 'owned' : 'associated',
+                'team'       => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
+            ]);
+
+        return [
+            'owned'      => $mapped->where('relation', 'owned')->values()->all(),
+            'associated' => $mapped->where('relation', 'associated')->values()->all(),
+        ];
+    }
+
+    private function linkCollectionsWithDursByTeamIds(array $teamIds)
+    {
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkCollections = DB::select(
+            'SELECT c.id, c.name, c.image_link, c.team_id, dur.id dur_id, t.id t_id, t.name t_name
+            FROM collections c
+            LEFT JOIN teams t ON t.id = c.team_id
+            LEFT JOIN collection_has_durs chd ON chd.collection_id = c.id
+            LEFT JOIN dur ON dur.id = chd.dur_id
+            WHERE c.status = ?
+            AND (
+                c.team_id IN (' . $strTeamIds . ')
+                OR (dur.team_id IN (' . $strTeamIds . ') AND dur.status = ?)
+            )',
+            [Collection::STATUS_ACTIVE, Dur::STATUS_ACTIVE]
+        );
+
+        if (empty($linkCollections)) {
+            return [
+                'owned' => [],
+                'associated' => [],
+            ];
+        }
+
+        $durIds = collect($linkCollections)->pluck('d_id')->filter()->unique()->values()->toArray();
+
+        $mapped = collect($linkCollections)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id'          => $group->first()->id,
+                'name'        => $group->first()->name,
+                'image_link'  => ($group->first()->image_link && !preg_match('/^https?:\/\//', $group->first()->image_link))
+                    ? Config::get('services.media.base_url') . $group->first()->image_link
+                    : $group->first()->image_link,
+                'relation'    => in_array($group->first()->team_id, $teamIds) ? 'owned' : 'associated',
+                'team'        => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
+            ]);
+
+        return [
+            'associated' => $mapped->where('relation', 'associated')->values()->all(),
+            'dur_ids'    => $durIds,
+        ];
+    }
+
+    private function associatedDurs(array $teamIds, array $durIds)
+    {
+        if (!$durIds || count($durIds) === 0) {
+            return [];
+        }
+
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkDurs = DB::select(
+            'SELECT dur.id, dur.project_title, dur.organisation_name, dur.status, dur.team_id, t.id as t_id, t.name as t_name
+            FROM dur
+            LEFT JOIN teams t ON t.id = dur.team_id
+            WHERE dur.status = ? AND dur.team_id NOT IN (' . $strTeamIds . ') AND dur.id IN (' . implode(',', $durIds) . ')',
+            [Dur::STATUS_ACTIVE]
+        );
+
+        if (empty($linkDurs)) {
+            return [];
+        }
+
+        return collect($linkDurs)
+            ->map(fn ($item) => [
+                'id'                => $item->id,
+                'project_title'     => $item->project_title,
+                'organisation_name' => $item->organisation_name,
+                'relation'          => 'associated',
+                'team'              => $item->t_id ? [
+                    'id'   => $item->t_id,
+                    'name' => $item->t_name,
+                ] : null,
             ])
             ->values()
             ->all();
+    }
+
+    private function linkCollectionsWithToolsByTeamIds(array $teamIds)
+    {
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkCollections = DB::select(
+            'SELECT c.id, c.name, c.image_link, c.public, c.team_id, t.id as t_id, tt.id tt_id, tt.name tt_name
+            FROM collections c
+            LEFT JOIN teams tt ON tt.id = c.team_id
+            LEFT JOIN collection_has_tools cht ON cht.collection_id = c.id
+            LEFT JOIN tools t ON t.id = cht.tool_id
+            WHERE c.status = ?
+            AND (
+                c.team_id IN (' . $strTeamIds . ')
+                OR (t.team_id IN (' . $strTeamIds . ') AND t.status = ?)
+            )',
+            [Collection::STATUS_ACTIVE, Tool::STATUS_ACTIVE]
+        );
+
+        if (empty($linkCollections)) {
+            return [
+                'owned' => [],
+                'associated' => [],
+            ];
+        }
+
+        $toolIds = collect($linkCollections)->pluck('t_id')->filter()->unique()->values()->toArray();
+
+        $mapped = collect($linkCollections)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id'          => $group->first()->id,
+                'name'        => $group->first()->name,
+                'image_link'  => ($group->first()->image_link && !preg_match('/^https?:\/\//', $group->first()->image_link))
+                    ? Config::get('services.media.base_url') . $group->first()->image_link
+                    : $group->first()->image_link,
+                'relation'    => in_array($group->first()->team_id, $teamIds) ? 'owned' : 'associated',
+                'team'        => $group->first()->tt_id ? [
+                    'id'   => $group->first()->tt_id,
+                    'name' => $group->first()->tt_name,
+                ] : null,
+            ]);
+
+        return [
+            'associated' => $mapped->where('relation', 'associated')->values()->all(),
+            'tool_ids'   => $toolIds,
+        ];
+    }
+
+    public function associatedTools(array $teamIds, array $toolIds)
+    {
+        if (!$toolIds || count($toolIds) === 0) {
+            return [];
+        }
+
+        $strTeamIds = implode(',', $teamIds);
+        $strToolIds = implode(',', $toolIds);
+
+        $linkTools = DB::select(
+            'SELECT t.id, t.name, t.user_id, t.team_id, tt.id tt_id, tt.name tt_name
+            FROM tools t
+            LEFT JOIN teams tt ON tt.id = t.team_id
+            WHERE t.status = ?
+                AND t.team_id NOT IN (' . $strTeamIds . ')
+                AND t.id IN (' . $strToolIds . ')',
+            [Tool::STATUS_ACTIVE]
+        );
+
+        if (empty($linkTools)) {
+            return [];
+        }
+
+        $userIds = array_unique(array_column($linkTools, 'user_id'));
+
+        $users = User::whereIn('id', $userIds)
+            ->select(
+                'id',
+                DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE firstname END as firstname"),
+                DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE lastname END as lastname"),
+                'is_admin'
+            )
+            ->get()
+            ->keyBy('id');
+
+        return collect($linkTools)
+            ->map(function ($tool) use ($users) {
+                $user = isset($users[$tool->user_id])
+                    ? array_intersect_key($users[$tool->user_id]->toArray(), array_flip(['firstname', 'lastname']))
+                    : array_fill_keys(['firstname', 'lastname'], null);
+
+                return [
+                    'id'       => $tool->id,
+                    'name'     => $tool->name,
+                    'user'     => $user,
+                    'relation' => 'associated',
+                    'team'     => $tool->tt_id ? [
+                        'id'   => $tool->tt_id,
+                        'name' => $tool->tt_name,
+                    ] : null,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function linkCollectionsWithPublicationsByTeamIds(array $teamIds)
+    {
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkCollections = DB::select(
+            'SELECT c.id, c.name, c.image_link, c.team_id, p.id as p_id, tt.id as tt_id, tt.name as tt_name
+            FROM collections c
+            LEFT JOIN teams tt ON tt.id = c.team_id
+            LEFT JOIN collection_has_publications chp ON chp.collection_id = c.id
+            LEFT JOIN publications p ON p.id = chp.publication_id
+            WHERE c.status = ?
+            AND (
+                c.team_id IN (' . $strTeamIds . ')
+                OR (p.team_id IN (' . $strTeamIds . ') AND p.status = ?)
+            )',
+            [Collection::STATUS_ACTIVE, Publication::STATUS_ACTIVE]
+        );
+
+        if (empty($linkCollections)) {
+            return [
+                'owned' => [],
+                'associated' => [],
+            ];
+        }
+
+        $publicationIds = collect($linkCollections)->pluck('p_id')->filter()->unique()->values()->toArray();
+
+        $mapped = collect($linkCollections)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id'          => $group->first()->id,
+                'name'        => $group->first()->name,
+                'image_link'  => ($group->first()->image_link && !preg_match('/^https?:\/\//', $group->first()->image_link))
+                    ? Config::get('services.media.base_url') . $group->first()->image_link
+                    : $group->first()->image_link,
+                'relation'    => in_array($group->first()->team_id, $teamIds) ? 'owned' : 'associated',
+                'team'        => $group->first()->tt_id ? [
+                    'id'   => $group->first()->tt_id,
+                    'name' => $group->first()->tt_name,
+                ] : null,
+            ]);
+
+        return [
+            'associated'      => $mapped->where('relation', 'associated')->values()->all(),
+            'publication_ids' => $publicationIds,
+        ];
+    }
+
+    private function associatedPublications(array $teamIds, array $publicationIds)
+    {
+        if (!$publicationIds || count($publicationIds) === 0) {
+            return [];
+        }
+
+        $strTeamIds = implode(',', $teamIds);
+        $strPublicationIds = implode(',', $publicationIds);
+
+        $linkPublications = DB::select(
+            'SELECT p.id, p.paper_title, p.authors, p.url, p.team_id, tt.id as tt_id, tt.name as tt_name
+            FROM publications p
+            LEFT JOIN teams tt ON tt.id = p.team_id
+            WHERE p.status = ? 
+              AND p.team_id NOT IN (' . $strTeamIds . ') 
+              AND p.id IN (' . $strPublicationIds . ')',
+            [Publication::STATUS_ACTIVE]
+        );
+
+        if (empty($linkPublications)) {
+            return [];
+        }
+
+        return collect($linkPublications)
+            ->map(fn ($item) => [
+                'id'          => $item->id,
+                'paper_title' => $item->paper_title,
+                'authors'     => $item->authors,
+                'url'         => $item->url,
+                'relation'    => 'associated',
+                'team'        => $item->tt_id ? [
+                    'id'   => $item->tt_id,
+                    'name' => $item->tt_name,
+                ] : null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function linkDursByTeamIds(array $teamIds)
+    {
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkDurs = DB::select(
+            'SELECT dur.id, dur.project_title, dur.organisation_name, dur.status, dur.team_id,
+                    t.id as t_id, t.name as t_name,
+                    ds.id as ds_id, ds.team_id as ds_team_id
+            FROM dur
+            LEFT JOIN teams t ON t.id = dur.team_id
+            LEFT JOIN dur_has_dataset_version dhdv ON dhdv.dur_id = dur.id
+            LEFT JOIN dataset_versions dv ON dv.id = dhdv.dataset_version_id
+            LEFT JOIN datasets ds ON ds.id = dv.dataset_id
+            WHERE dur.status = ?
+            AND (
+                dur.team_id IN (' . $strTeamIds . ')
+                OR (ds.team_id IN (' . $strTeamIds . ') AND ds.status = ?)
+            )',
+            [Dur::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+        );
+
+        if (empty($linkDurs)) {
+            return [
+                'owned' => [],
+                'associated' => [],
+            ];
+        }
+
+        $this->associatedDatasetIds = collect($linkDurs)
+            ->filter(fn ($row) => !in_array((int) $row->ds_team_id, $teamIds))
+            ->pluck('ds_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $mapped = collect($linkDurs)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id'                => $group->first()->id,
+                'project_title'     => $group->first()->project_title,
+                'organisation_name' => $group->first()->organisation_name,
+                'relation'          => in_array($group->first()->team_id, $teamIds) ? 'owned' : 'associated',
+                'team'              => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
+            ]);
+
+        return [
+            'owned'      => $mapped->where('relation', 'owned')->values()->all(),
+            'associated' => $mapped->where('relation', 'associated')->values()->all(),
+        ];
+    }
+
+    private function linkToolsByTeamIds(array $teamIds)
+    {
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkTools = DB::select(
+            'SELECT t.id, t.name, t.user_id, t.team_id, ds.id as ds_id, ds.team_id as ds_team_id, tt.id as tt_id, tt.name as tt_name
+            FROM tools t
+            LEFT JOIN teams tt ON tt.id = t.team_id
+            LEFT JOIN dataset_version_has_tool dvht ON dvht.tool_id = t.id
+            LEFT JOIN dataset_versions dv ON dv.id = dvht.dataset_version_id
+            LEFT JOIN datasets ds ON ds.id = dv.dataset_id
+            WHERE t.status = ?
+            AND (
+                t.team_id IN (' . $strTeamIds . ')
+                OR (ds.team_id IN (' . $strTeamIds . ') AND ds.status = ?)
+            )',
+            [Tool::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+        );
+
+        if (empty($linkTools)) {
+            return [
+                'owned' => [],
+                'associated' => [],
+            ];
+        }
+
+        $this->associatedDatasetIds = collect($linkTools)
+            ->filter(fn ($row) => !in_array((int) $row->ds_team_id, $teamIds))
+            ->pluck('ds_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $userIds = array_unique(array_column($linkTools, 'user_id'));
+
+        $users = User::whereIn('id', $userIds)
+            ->select(
+                'id',
+                DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE firstname END as firstname"),
+                DB::raw("CASE WHEN is_admin = 1 THEN '' ELSE lastname END as lastname"),
+                'is_admin'
+            )
+            ->get()
+            ->keyBy('id');
+
+        $mapped = collect($linkTools)
+            ->groupBy('id')
+            ->map(function ($group) use ($users, $teamIds) {
+                $tool = $group->first();
+
+                $user = isset($users[$tool->user_id])
+                    ? array_intersect_key($users[$tool->user_id]->toArray(), array_flip(['firstname', 'lastname']))
+                    : array_fill_keys(['firstname', 'lastname'], null);
+
+                return [
+                    'id'       => $tool->id,
+                    'name'     => $tool->name,
+                    'user'     => $user,
+                    'relation' => in_array($tool->team_id, $teamIds) ? 'owned' : 'associated',
+                    'team'     => $tool->tt_id ? [
+                        'id'   => $tool->tt_id,
+                        'name' => $tool->tt_name,
+                    ] : null,
+                ];
+            });
+
+        return [
+            'owned'      => $mapped->where('relation', 'owned')->values()->all(),
+            'associated' => $mapped->where('relation', 'associated')->values()->all(),
+        ];
+    }
+
+    private function linkPublicationsByTeamIds(array $teamIds)
+    {
+        $strTeamIds = implode(',', $teamIds);
+
+        $linkPublications = DB::select(
+            'SELECT p.id, p.paper_title, p.authors, p.url, p.team_id as p_team_id, ds.id as ds_id, ds.team_id as ds_team_id, phdv.link_type as phdv_link_type, t.id as t_id, t.name as t_name
+            FROM publications p
+            LEFT JOIN teams t ON t.id = p.team_id
+            LEFT JOIN publication_has_dataset_version phdv ON phdv.publication_id = p.id
+            LEFT JOIN dataset_versions dv ON dv.id = phdv.dataset_version_id
+            LEFT JOIN datasets ds ON ds.id = dv.dataset_id
+            WHERE p.status = ?
+            AND (
+                p.team_id IN (' . $strTeamIds . ')
+                OR (ds.team_id IN (' . $strTeamIds . ') AND ds.status = ?)
+            )
+            ORDER BY p.id ASC',
+            [Publication::STATUS_ACTIVE, Dataset::STATUS_ACTIVE]
+        );
+
+        $this->associatedDatasetIds = collect($linkPublications)
+            ->filter(fn ($row) => !in_array((int) $row->ds_team_id, $teamIds))
+            ->pluck('ds_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $mapped = collect($linkPublications)
+            ->groupBy('id')
+            ->map(fn ($group) => [
+                'id'          => $group->first()->id,
+                'paper_title' => $group->first()->paper_title,
+                'authors'     => $group->first()->authors,
+                'url'         => $group->first()->url,
+                'relation'    => in_array($group->first()->p_team_id, $teamIds) ? 'owned' : 'associated',
+                'team'        => $group->first()->t_id ? [
+                    'id'   => $group->first()->t_id,
+                    'name' => $group->first()->t_name,
+                ] : null,
+            ]);
+
+        return [
+            'owned'      => $mapped->where('relation', 'owned')->values()->all(),
+            'associated' => $mapped->where('relation', 'associated')->values()->all(),
+        ];
+    }
+
+    private function associatedDatasets(array $aDatasetIds)
+    {
+        $datasets = Dataset::where('status', Dataset::STATUS_ACTIVE)
+                ->whereIn('id', $aDatasetIds)
+                ->with('team:id,name')
+                ->select([
+                    'id','is_cohort_discovery', 'user_id', 'team_id', 'datasetid'
+                ])->get();
+
+        foreach ($datasets as $dataset) {
+            $metadataSummary = $dataset->latestVersion()['metadata']['metadata']['summary'] ?? [];
+            $dataset['title'] = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+            $dataset['populationSize'] = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], '');
+            $dataset['datasetType'] = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+            $dataset['relation'] = 'associated';
+            $dataset['team'] = [
+                'id'   => $dataset->team->id,
+                'name' => $dataset->team->name,
+            ];
+        }
+
+        return $datasets;
     }
 
     /**

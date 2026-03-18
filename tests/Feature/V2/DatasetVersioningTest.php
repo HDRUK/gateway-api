@@ -9,7 +9,6 @@ use App\Models\DatasetVersion;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Support\Facades\Queue;
 
 /**
  * Tests for delta-based metadata versioning (GAT-7181).
