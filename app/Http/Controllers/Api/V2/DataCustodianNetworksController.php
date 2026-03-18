@@ -504,14 +504,14 @@ class DataCustodianNetworksController extends Controller
             $ownedTools = $tools['owned'];
             $totalOwnedTools = count($ownedTools);
             $associatedTools = collect(array_merge($associatedTools, $tools['associated']))->unique('id')->values()->all();
-            $totalAssociatedTools = count($associatedTools ?? []);
+            $totalAssociatedTools = count($associatedTools);
 
             $ownedPublications = $publications['owned'];
             $totalOwnedPublications = count($ownedPublications);
             $associatedPublications = collect(array_merge($associatedPublications, $publications['associated']))->unique('id')->values()->all();
-            $totalAssociatedPublications = count($associatedPublications ?? []);
+            $totalAssociatedPublications = count($associatedPublications);
 
-            $associatedDatasets = $this->associatedDatasets($this->associatedDatasetIds ?? []);
+            $associatedDatasets = $this->associatedDatasets($this->associatedDatasetIds);
             $totalAssociatedDatasets = count($associatedDatasets);
 
 
