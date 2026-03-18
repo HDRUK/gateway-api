@@ -517,7 +517,6 @@ class DataCustodianNetworksController extends Controller
 
             $result = [
                 'id' => $dpc->id,
-                // 'teamIds' => implode(',', $teamIds),
 
                 'collections_total' => $totalOwnedCollections,
                 'associated_collections_total' => $totalAssociatedCollections,
