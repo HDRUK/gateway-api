@@ -2,24 +2,27 @@
 
 namespace App\Http\Traits;
 
+use App\Models\Dataset;
+use App\Models\DurHasPublication;
+use App\Models\Keyword;
+use App\Models\Publication;
+use App\Models\PublicationHasDatasetVersion;
+use App\Models\PublicationHasKeyword;
+use App\Models\PublicationHasTool;
 use Auditor;
 use Exception;
-use App\Models\Dataset;
-use App\Models\Publication;
-use App\Models\DurHasPublication;
-use App\Models\PublicationHasTool;
-use App\Models\PublicationHasDatasetVersion;
 
 trait PublicationsV2Helper
 {
     public function getPublicationById(int $publicationId)
     {
 
-        $publication = Publication::with(['tools', 'durs', 'collections'])
+        $publication = Publication::with(['tools', 'durs', 'collections', 'keywords:id,name'])
             ->where(['id' => $publicationId])
             ->first();
 
         $publication->setAttribute('datasets', $publication->allDatasets);
+        $publication->setRelation('keywords', $publication->keywords->pluck('name'));
 
         return $publication;
     }
@@ -281,5 +284,22 @@ trait PublicationsV2Helper
         }
 
         return $response;
+    }
+
+    public function keywords(int $publicationId, array $keywords)
+    {
+        PublicationHasKeyword::where('publication_id', $publicationId)->delete();
+
+        foreach (array_unique($keywords) as $keyword) {
+            $kword = Keyword::firstOrCreate(
+                ['name' => $keyword],
+                ['enabled' => true]
+            );
+
+            PublicationHasKeyword::create([
+                'publication_id' => $publicationId,
+                'keyword_id' => $kword->id,
+            ]);
+        }
     }
 }

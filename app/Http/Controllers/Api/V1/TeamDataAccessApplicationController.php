@@ -43,7 +43,7 @@ class TeamDataAccessApplicationController extends Controller
      *      summary="List of dar applications belonging to a team",
      *      description="List of dar applications belonging to a team",
      *      tags={"TeamDataAccessApplication"},
-     *      summary="TeamDataAccessApplication@index",
+     *      summary="TeamDataAccessApplicationController@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -145,7 +145,7 @@ class TeamDataAccessApplicationController extends Controller
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/dar/applications/count/{field}",
      *    operationId="count_unique_fields_dar_applications",
-     *    tags={"TeamDataAccessApplications"},
+     *    tags={"TeamDataAccessApplication"},
      *    summary="TeamDataAccessApplicationController@count",
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
@@ -216,7 +216,7 @@ class TeamDataAccessApplicationController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/dar/applications/count",
-     *    tags={"TeamDataAccessApplications"},
+     *    tags={"TeamDataAccessApplication"},
      *    summary="TeamDataAccessApplicationController@allCounts",
      *    description="Get Counts for all status fields in the model",
      *    security={{"bearerAuth":{}}},
@@ -268,8 +268,8 @@ class TeamDataAccessApplicationController extends Controller
      *      path="/api/v1/teams/{teamId}/dar/applications/{id}",
      *      summary="Return a single DAR application",
      *      description="Return a single DAR application",
-     *      tags={"DataAccessApplication"},
-     *      summary="TeamDataAccessApplication@show",
+     *      tags={"TeamDataAccessApplication"},
+     *      summary="TeamDataAccessApplicationController@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -359,6 +359,87 @@ class TeamDataAccessApplicationController extends Controller
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/showHeader",
+     *      summary="Get header information about a specific DAR",
+     *      description="Get header information about a specific DAR",
+     *      tags={"TeamDataAccessApplication"},
+     *      summary="TeamDataAccessApplicationController@showHeader",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example="123"),
+     *                 @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                 @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                 @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                 @OA\Property(property="applicant_id", type="integer", example="1"),
+     *                 @OA\Property(property="project_title", type="string", example="A project"),
+     *                 @OA\Property(property="application_type", type="string", example="A project"),
+     *                 @OA\Property(property="project_id", type="integer", example="43"),
+     *                 @OA\Property(property="is_joint", type="boolean", example="false"),
+     *                 @OA\Property(property="approval_status", type="string", example="FEEDBACK"),
+     *                 @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                 @OA\Property(property="status_review_id", type="integer", example="1"),
+     *                 @OA\Property(property="days_since_submission", type="integer", example="1"),
+     *                 @OA\Property(property="primary_applicant", type="array", @OA\Items(
+     *                     @OA\Property(property="name", type="string", example="A User"),
+     *                     @OA\Property(property="organisation", type="string", example="An origanisation"),
+     *                 )),
+     *                 @OA\Property(property="datasets", type="array", @OA\Items(
+     *                     @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                     @OA\Property(property="dataset_id", type="integer", example="1"),
+     *                     @OA\Property(property="dataset_title", type="string", example="A dataset"),
+     *                     @OA\Property(property="custodian", type="array", @OA\Items(
+     *                         @OA\Property(property="name", type="string", example="A Custodian"),
+     *                     )),
+     *                 )),
+     *                 @OA\Property(property="teams", type="array", @OA\Items(
+     *                     @OA\Property(property="team_id", type="integer", example="1"),
+     *                     @OA\Property(property="dar_application_id", type="integer", example="1"),
+     *                     @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
+     *                     @OA\Property(property="approval_status", type="string", example="APPROVED"),
+     *                 )),
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function showApplicationHeader(Request $request, int $teamId, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
+            $result = $this->getDARHeader($id, $teamId, null, $jwtUser);
+
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataAccessApplication get by id',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $result,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),

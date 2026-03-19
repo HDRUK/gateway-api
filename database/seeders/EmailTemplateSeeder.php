@@ -91,6 +91,81 @@ class EmailTemplateSeeder extends Seeder
             .'</mj-body></mjml>';
     }
 
+    public function newHeader(): string
+    {
+        return '
+                <!-- header start -->
+                <mj-head>
+                    <mj-font name="Source Sans 3" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" />
+                    
+                    <mj-html-attributes>
+                        <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="text-color" text-color="#000000"></mj-html-attribute>
+                        <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-family" font-family="\'Source Sans 3\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', \'Roboto\', \'Oxygen\', \'Ubuntu\', \'Cantarell\', \'Fira Sans\', \'Droid Sans\', \'Helvetica Neue\', sans-serif"></mj-html-attribute>
+                        <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-size" font-size="14px"></mj-html-attribute>
+                        <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="line-height" line-height="1.7"></mj-html-attribute>
+                        <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="font-weight" font-weight="400"></mj-html-attribute>
+                        <mj-html-attribute class="easy-email" multiple-attributes="false" attribute-name="responsive" responsive="true"></mj-html-attribute>
+                    </mj-html-attributes>
+                    
+                    <mj-breakpoint width="480px" />
+                    <mj-attributes>
+                        <mj-all font-family="\'Source Sans 3\', -apple-system, BlinkMacSystemFont, \'Segoe UI\', \'Roboto\', \'Oxygen\', \'Ubuntu\', \'Cantarell\', \'Fira Sans\', \'Droid Sans\', \'Helvetica Neue\', sans-serif" />
+                        <mj-text font-size="14px" />
+                        <mj-text line-height="1.7" />
+                        <mj-text font-weight="400" />
+                        <mj-text color="#000000" />
+                        <mj-section padding="0" />
+                    </mj-attributes>
+                </mj-head>
+                <!-- header end -->
+            ';
+    }
+
+    public function newBodyTop($title): string
+    {
+        return '
+            <!-- top start -->
+            <mj-wrapper border="none" direction="ltr" text-align="center" padding="10px 0">
+                <mj-section direction="ltr" text-align="left" padding="0px" border="0px" background-color="#475DA7">
+                    <mj-column border="none" vertical-align="middle" padding="0px">
+                    <mj-image align="left" width="110px" height="50px" src="'.config('filesystems.disks.gcs_media.storage_api_uri').'/'.config('filesystems.disks.gcs_media.bucket').'/email/heath_data_research_gateway_logo_white.svg" alt=""></mj-image>
+                    </mj-column>
+                    <mj-column border="none" vertical-align="middle" padding="0px">
+                    <mj-text color="#FFFFFF" align="right" line-height="100%" font-size="20px" font-weight="400">' . $title . '</mj-text>
+                    </mj-column>
+                </mj-section>
+            </mj-wrapper>
+            <!-- top end -->
+        ';
+    }
+
+    public function newBodyBottom(): string
+    {
+        return '
+            <!-- separator section start -->
+            <mj-wrapper border="none" direction="ltr" padding="5px 0px"><br></mj-wrapper>
+            <!-- separator end -->
+
+            <!-- bottom section start -->
+            <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px">
+                <mj-section border="none" direction="ltr" text-align="left" padding="0px">
+                    <mj-column border="none" vertical-align="top" padding="0px">
+                    
+                    <mj-text align="left" line-height="1" font-size="13px" font-weight="400" padding="0px">
+                        <b>Make sure you get these emails in future</b>
+                    </mj-text>
+                    
+                    <mj-text align="left" line-height="1.2" font-size="13px" font-weight="400" padding="10px 0px 0px 0px">
+                        To ensure you continue to receive enquiries, responses and all other Gateway notifications, please mark the @healthdatagateway.org domain as \'safe\' within your email client. You may also need to speak to your institution to remove any blockers or filters for this address. In the meantime, we suggest checking your junk or spam folders regularly. 
+                    </mj-text>
+                    
+                    </mj-column>
+                </mj-section>
+            </mj-wrapper>
+            <!-- bottom section end -->
+        ';
+    }
+
     /**
      * Run the database seeds.
      */
@@ -681,35 +756,49 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.discovery.access.expired',
                 'subject' => 'Your Cohort Discovery access has expired',
-                'body' => $this->standardFullHeader('Your Cohort Discovery access has expired.')
-                    .'
-                        <mj-section>
-                            <mj-column width="100%">
-                                <mj-text  line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="30px">
-                                    Your Cohort Discovery account has expired. Use the button below to renew your access. 
-                                </mj-text>
-                                <mj-text>
-                                    <mj-text>
-                                        Regards,<br/>
-                                        Gateway Cohort Discovery Admin.
-                                    </mj-text>
-                                </mj-text>
-                                <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
-                            </mj-column>
-                        </mj-section>'
-                    .$this->standardFullFooter(),
-                'buttons' => '
-                {
-                    "replacements": [
-                        {
-                            "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
-                        }
-                    ]
-                }',
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            Your Cohort Discovery account has expired and you will no longer be able to access the service. To renew your access use the button below.
+                                            
+                                            <div><br><br></div>
+                                            <ul>
+                                                <li>Your Account: [[USER_EMAIL]]</li>
+                                                <li>Date of expiry: [[EXPIRE_DATE]]</li>
+                                            </ul>
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
+                                            Open your dashboard
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -717,34 +806,49 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.discovery.access.will.expire',
                 'subject' => 'Your Cohort Discovery access will soon expire',
-                'body' => $this->standardFullHeader('Your Cohort Discovery access will soon expire.')
-                    .'
-                        <mj-section>
-                            <mj-column width="100%">
-                                <mj-text  line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="30px">
-                                    Your Cohort Discovery account will expire [[EXPIRE_DATE]]. After it expires, please login to the Gateway and visit the <a style="text-decoration:none" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Cohort Discovery information page</a> to review the current terms and conditions, and request renewal.
-                                </mj-text>
-                                <mj-text>
-                                    <mj-text>
-                                        Regards,<br/>
-                                        Gateway Cohort Discovery Admin.
-                                    </mj-text>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>'
-                    .$this->standardFullFooter(),
-                'buttons' => '
-                {
-                    "replacements": [
-                        {
-                            "placeholder": "[[COHORT_DISCOVERY_RENEW_URL]]",
-                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
-                        }
-                    ]
-                }',
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            Your Cohort Discovery account will expire soon. To prevent you from loosing access, you can renew your account by using the button below.
+                                            
+                                            <div><br><br></div>
+                                            <ul>
+                                                <li>Your Account: [[USER_EMAIL]]</li>
+                                                <li>Date of expiry: [[EXPIRE_DATE]]</li>
+                                            </ul>
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
+                                            Open your dashboard
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -752,35 +856,63 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.discovery.access.approved',
                 'subject' => 'Congratulations! Your Cohort Discovery registration has been approved.',
-                'body' => $this->standardFullHeader('Congratulations! Your Cohort Discovery registration has been approved.')
-                    .'
-                <mj-section>
-                    <mj-column width="100%">
-                        <mj-text  line-height="20px">
-                            Dear [[USER_FIRSTNAME]],
-                        </mj-text>
-                        <mj-text line-height="30px">
-                            You have been granted access for Cohort Discovery under [[USER_EMAIL]]. Please use the button below to access Cohort Discovery, you can also watch our helpful video on how to use the tool.<br/>Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br/>If you require further support, you can raise a support ticket via the Health Data Research Gateway.
-                        </mj-text>
-                        <mj-text>
-                            <mj-text>
-                                Regards,<br/>
-                                Gateway Cohort Discovery Admin.
-                            </mj-text>
-                        </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Access Cohort Discovery</mj-button>
-                    </mj-column>
-                </mj-section>'
-                    .$this->standardFullFooter(),
-                'buttons' => '
-                {
-                    "replacements": [
-                        {
-                            "placeholder": "[[COHORT_DISCOVERY_ACCESS_URL]]",
-                            "actual": "config(gateway.gateway_url)/en/about/cohort-discovery"
-                        }
-                    ]
-                }',
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            You have been granted access for Cohort Discovery. Please use the buttons below to access Cohort Discovery and watch a video on how to use the tool.<br>
+                                            Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br>
+                                            If you require further support raise a support ticket on the Health Data Research Gateway.
+                                            
+                                            <div><br><br></div>
+                                            <ul>
+                                                <li>Your Account: [[USER_EMAIL]]</li>
+                                                <li>Date of expiry: [[EXPIRE_DATE]]</li>
+                                            </ul>
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
+                                            Open your dashboard
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" padding="10px 15px 20px 0px">
+                                            <b>Access to NHS Research SDE Network datasets</b>
+                                            Additional NHS Research SDE datasets are available in Cohort Discovery. To access these, a separate approval process through the NHS SDE network is required. Please click the button below for more information and to request access.
+                                        </mj-text>
+                                        <mj-button align="left" background-color="#FFFFFF" color="#000000" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="2px solid #475DA7" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
+                                            View more information and request access
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -788,31 +920,43 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.discovery.access.rejected',
                 'subject' => 'Your Cohort Discovery Registration has been Rejected.',
-                'body' => $this->standardFullHeader('Your Cohort Discovery Registration has been Rejected.')
-                    .'
-                    <mj-section>
-                            <mj-column width="100%">
-                                <mj-text line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="30px">
-                                    Thank you for your patience whilst we reviewed your request to use Cohort Discovery.<br/>Unfortunately, your registration for access has been unsuccessful at this time.<br/>Your request does not meet our access criteria, which includes the following:
-                                    <ul>
-                                        <li>Registering a user profile on the Gateway.</li>
-                                        <li>Your Gateway profile must include an organisational or institutional email address (either as primary or secondary emails).</li>
-                                        <li>Please also fill in as much information in your Gateway profile as you can to help establish yourself as a bona fide researcher, NHS analyst or equivalent, such as your organisation or institutional name, a short bio, your domain of work and any links to social media (LinkedIn, ResearchGate etc.) or ORCID.</li>
-                                    </ul>                    
-                                    This information is required to help establish your status as a &lsquo;Safe Person&rsquo; under the Five Safes principles.<br/>If you have any questions on the above decision, please raise a support ticket on the Health Data Research Gateway.
-                                </mj-text>
-                                <mj-text>
-                                <mj-text>
-                                    Regards,<br/>
-                                    Gateway Cohort Discovery Administrator
-                                </mj-text>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>'
-                    .$this->standardFullFooter(),
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            Thank you for your patience whilst we reviewed your request to the Cohort Discovery Tool. Unfortunately, your registration for access has been rejected at this time. Your request does not meet our access criteria, which includes the following:
+
+                                            <ul>
+                                                <li>Registering a user profile on the Gateway</li>
+                                                <li>Providing information outlining your role and institution information</li>
+                                                <li>Providing justification for using the tool for public benefit</li>
+                                            </ul>
+
+                                            If you have any questions on the above decision, raise a support ticket  on the Health Data Research Gateway.
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -820,25 +964,37 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.discovery.access.submitted',
                 'subject' => 'Your Cohort Discovery registration form has been submitted.',
-                'body' => $this->standardFullHeader('Your Cohort Discovery registration form has been submitted.')
-                    .'
-                        <mj-section>
-                            <mj-column width="100%">
-                                <mj-text line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="30px">
-                                    Your Cohort Discovery registration has been received by Gateway Cohort Discovery admin. This will be reviewed and you will receive a notification via your Gateway email address when a decision is made.<br/>We aim to get back within 5 business days of your original request.
-                                </mj-text>
-                                <mj-text>
-                                <mj-text>
-                                    Regards,<br/>
-                                    Gateway Cohort Discovery Admin.
-                                </mj-text>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>'
-                    .$this->standardFullFooter(),
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            Your Cohort Discovery registration has been received by Gateway Cohort Discovery admin. This will be reviewed and you will receive a notification via your Gateway email address when a decision is made.
+                                            <div><br></div>
+                                            We aim to get back within 5 business days of your original request.
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -846,25 +1002,37 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.discovery.access.banned',
                 'subject' => 'Your Cohort Discovery access has been banned.',
-                'body' => $this->standardFullHeader('Your Cohort Discovery access has been banned.')
-                    .'
-                        <mj-section>
-                            <mj-column width="100%">
-                                <mj-text line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="30px">
-                                    This is an automated message to let you know that your access to the Cohort Discovery tool has been permanently removed. If you have any question or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
-                                </mj-text>
-                                <mj-text>
-                                <mj-text>
-                                    Regards,<br/>
-                                    Gateway Cohort Discovery Admin.
-                                </mj-text>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>'
-                    .$this->standardFullFooter(),
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            This is an automated message to let you know that your access to the Cohort Discovery tool has been permanently removed.
+                                            <div><br></div>
+                                            If you have any question or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -872,25 +1040,37 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.discovery.access.suspended',
                 'subject' => 'Your Cohort Discovery access has been suspended.',
-                'body' => $this->standardFullHeader('Your Cohort Discovery access has been suspended.')
-                    .'
-                <mj-section>
-                    <mj-column width="100%">
-                        <mj-text line-height="20px">
-                            Dear [[USER_FIRSTNAME]],
-                        </mj-text>
-                        <mj-text line-height="30px">
-                            This is an automated message to let you know that your access to the Cohort Discovery tool has been suspended. If you have any questions or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
-                        </mj-text>
-                        <mj-text>
-                        <mj-text>
-                            Regards,<br/>
-                            Gateway Cohort Discovery Admin.
-                        </mj-text>
-                        </mj-text>
-                    </mj-column>
-                </mj-section>'
-                    .$this->standardFullFooter(),
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            This is an automated message to let you know that your access to the Cohort Discovery tool has been suspended.
+                                            <div><br></div>
+                                            If you have any question or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -1328,33 +1508,56 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.request.admin.approve',
                 'subject' => 'You have been assigned the role of Cohort Discovery admin on the Gateway',
-                'body' => $this->standardFullHeader('You have been assigned the role of Cohort Discovery admin on the Gateway')
-                    .'
-                        <mj-section>
-                            <mj-column width="100%">
-                                <mj-text  line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="20px">
-                                    [[ASSIGNER_NAME]] has granted you Cohort Discovery admin permission on the Gateway.
-                                </mj-text>
-                                <mj-text>
-                                    You can now:
-                                    <ul>
-                                        <li style="line-height:20px;height:auto;">
-                                            Review Cohort Discovery registration request.
-                                        </li>
-                                        <li style="line-height:20px;height:auto;">
-                                            Manage users Cohort Discovery status.
-                                        </li>
-                                        <li style="line-height:20px;height:auto;">
-                                            Remove users Cohort Discovery access.
-                                        </li>
-                                    </ul>
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>'
-                    .$this->standardFullFooter(),
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            [[USER_NAME]] has granted you Cohort Discovery admin permission on the Gateway.
+                        
+                                            <div><br></div>
+
+                                            You will now be able to:
+                                            <ul>
+                                                <li>Review Cohort Discovery registration request.</li>
+                                                <li>Manage Cohort Discovery users access status.</li>
+                                                <li>Remove users Cohort Discovery access.</li>
+                                            </ul>
+                                        
+                                            <div><br></div>
+
+                                            For more information, please raise a support ticket on the Health Data Research Gateway.
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
+                                            Open your dashboard
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 
@@ -1362,35 +1565,115 @@ class EmailTemplateSeeder extends Seeder
             [
                 'identifier' => 'cohort.request.admin.remove',
                 'subject' => 'Your Cohort Discovery admin permissions has been removed',
-                'body' => $this->standardFullHeader('Your Cohort Discovery admin permissions has been removed')
-                    .'
-                        <mj-section>
-                            <mj-column width="100%">
-                                <mj-text  line-height="20px">
-                                    Dear [[USER_FIRSTNAME]],
-                                </mj-text>
-                                <mj-text line-height="20px">
-                                    You have been removed as a Cohort Discovery admin on the Gateway
-                                </mj-text>
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
 
-                                <mj-text>
-                                    You can no longer:
-                                    <ul>
-                                        <li style="line-height:20px;height:auto;">
-                                            Review Cohort Discovery user registration request.
-                                        </li>
-                                        <li style="line-height:20px;height:auto;">
-                                            Manage Cohort Discovery users access status.
-                                        </li>
-                                    </ul>
-                                </mj-text>
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]].
+                                        
+                                            <div><br><br></div>
 
-                                <mj-text line-height="20px">
-                                    For more information, please raise a support ticket on the HDR UK Innovation Gateway.
-                                </mj-text>
-                            </mj-column>
-                        </mj-section>'
-                    .$this->standardFullFooter(),
+                                            You have been removed as a Cohort Discovery admin on the Gateway.
+                                        
+                                            <div><br></div>
+
+                                            You will no longer be able to:
+                                            <ul>
+                                                <li>Review Cohort Discovery registration request.</li>
+                                                <li>Manage Cohort Discovery users access status.</li>
+                                            </ul>
+                                        
+                                            <div><br></div>
+
+                                            For more information, please raise a support ticket on the Health Data Research Gateway.
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
+                                            Open your dashboard
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
+            ]
+        );
+
+        EmailTemplate::create(
+            [
+                'identifier' => 'cohort.request.nhs.approved',
+                'subject' => 'Your NHS Research SDE access request has been granted',
+                'body' => '<mjml>
+                        
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('Cohort Discovery') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                            Hi [[USER_FIRSTNAME]],
+                                        
+                                            <div><br><br></div>
+
+                                            You have been granted access for the NHS Research SDE on Cohort Discovery. Please use the buttons below to  access Cohort Discovery and watch a video on how to use the tool.
+
+                                            <div><br></div>
+
+                                            Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.
+
+                                            <div><br></div>
+
+                                            If you require further support raise a support ticket on the Health Data Research Gateway.
+
+                                            <div><br></div>
+
+                                            <ul>
+                                                <li>Your account: [[USER_EMAIL]]</li>
+                                                <li>Date of expiry: [[EXPIRY_DATE]]</li>
+                                                <li>Date of expiry for NHS Research SDE: [[NHS_EXPIRY_DATE]]</li>
+                                            </ul>
+
+                                        </mj-text>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
+                                            Open your dashboard
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+                                </mj-wrapper>
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
 

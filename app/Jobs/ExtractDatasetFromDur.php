@@ -11,7 +11,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Support\Facades\Validator;
 use App\Http\Traits\LoggingContext;
 
 class ExtractDatasetFromDur implements ShouldQueue
@@ -54,19 +53,13 @@ class ExtractDatasetFromDur implements ShouldQueue
 
         $dur = Dur::findOrFail($durId);
         $nonGatewayDatasets = array_filter(array_map('trim', $dur['non_gateway_datasets'] ?? [])) ?? [];
-        $unmatched = array();
+        $unmatched = [];
 
         foreach ($nonGatewayDatasets as $nonGatewayDataset) {
             $nonDataset = trim($nonGatewayDataset);
 
             // Try to match on url
-            $isUrl = Validator::make([
-                'url' => $nonDataset
-            ], [
-                'url' => 'required|url|starts_with:' . config('gateway.gateway_url'),
-            ]);
-
-            if (!$isUrl->fails()) {
+            if ($this->isGatewayUrl($nonDataset)) {
                 $exploded = explode('/', $nonDataset);
                 $datasetId = (int) end($exploded);
                 $dataset = Dataset::where('id', $datasetId)->first();
@@ -80,9 +73,7 @@ class ExtractDatasetFromDur implements ShouldQueue
                 }
             }
 
-            $datasetVersion = DatasetVersion::whereRaw('LOWER(short_title) LIKE ?', ['%' . strtolower($nonDataset) . '%'])
-                                ->latest('version')
-                                ->first();
+            $datasetVersion = DatasetVersion::whereRaw('LOWER(short_title) LIKE ?', ['%' . strtolower($nonDataset) . '%'])->latest('version')->first();
             if ($datasetVersion) {
                 DurHasDatasetVersion::create([
                     'dur_id' => $durId,
@@ -100,5 +91,11 @@ class ExtractDatasetFromDur implements ShouldQueue
         ]);
 
         \Log::info('Extract dataset from dur job completed', $this->loggingContext);
+    }
+
+    private function isGatewayUrl(string $value): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_URL)
+            && str_starts_with($value, config('gateway.gateway_url'));
     }
 }

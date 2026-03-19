@@ -431,6 +431,20 @@ return [
             'id', '[0-9]+'
         ],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'put',
+        'path' => '/datasets/{id}/cohort-discovery',
+        'methodController' => 'DatasetController@updateIsCohortDiscovery',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
 
     // v2 teams/datasets
     [
@@ -1202,4 +1216,16 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // key metrics
+    [
+        'name' => 'key_metrics.get',
+        'method' => 'get',
+        'path' => '/metrics',
+        'methodController' => 'KeyMetricController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
 ];

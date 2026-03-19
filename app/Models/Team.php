@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
+/**
+ * @property bool $has_published_dar_template
+ */
 #[ObservedBy(TeamObserver::class)]
 class Team extends Model
 {
@@ -314,5 +317,10 @@ class Team extends Model
     public function aliases(): BelongsToMany
     {
         return $this->belongsToMany(Alias::class, 'team_has_aliases');
+    }
+
+    public function datasets(): HasMany
+    {
+        return $this->hasMany(Dataset::class);
     }
 }
