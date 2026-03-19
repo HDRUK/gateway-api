@@ -17,6 +17,7 @@
         "php": "^8.3",
         "darkaonline/l5-swagger": "^8.4",
         "elasticsearch/elasticsearch": "^8.10",
+        "google/cloud-bigquery": "^1.35",
         "google/cloud-logging": "^1.30",
         "google/cloud-pubsub": "^2.1",
         "google/cloud-secret-manager": "^2.1",
