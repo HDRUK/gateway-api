@@ -1,3 +1,50 @@
+## [2.37.0](https://github.com/HDRUK/gateway-api/compare/v2.36.0...v2.37.0) (2026-03-19)
+
+### ✨ Features
+
+* **GAT-0000:** Optimising auth login from ~3s to < 1s (#1558) ([be36fa8](https://github.com/HDRUK/gateway-api/commit/be36fa89c7909854701b042eb3303412b4e0e8e8)), closes [GAT-0000](GAT-0000)
+* **GAT-0000:** Refactoring to enable partner context for API operation for CRUK and others, and optimisations when noticed (#1569) ([6d6120b](https://github.com/HDRUK/gateway-api/commit/6d6120b97748248a88cb07d3eae6e6b809819ff5)), closes [GAT-0000](GAT-0000)
+* **GAT-5218:** publications has keywords (#1575) ([951c7aa](https://github.com/HDRUK/gateway-api/commit/951c7aa4e60f03e476cba1d0370940b3d4e09dc1)), closes [GAT-5218](GAT-5218)
+* **GAT-5397:** Include linkage type for publication card (#1574) ([f9be66a](https://github.com/HDRUK/gateway-api/commit/f9be66a357248098ff964d476826b661ca07e29c)), closes [GAT-5397](GAT-5397)
+* **GAT-6015:** publication date (#1543) ([f4f7e69](https://github.com/HDRUK/gateway-api/commit/f4f7e6900a5e3ac37ca1b40664c04bde1ba244cd)), closes [GAT-6015](GAT-6015)
+* **GAT-7340:** Add data custodian network information to Datasets (#1566) ([aba7bdb](https://github.com/HDRUK/gateway-api/commit/aba7bdbf15c41709a8127a4ebfffd7d87b75b6bd)), closes [GAT-7340](GAT-7340)
+* **GAT-7376:** Create ability to run now for Predefined Integration (#1582) ([c1175e8](https://github.com/HDRUK/gateway-api/commit/c1175e83a7e615912614a082e6e8556dba404b8c)), closes [GAT-7376](GAT-7376)
+* **GAT-7580:** Update endpoints to enable addition of Data Custodian name (#1568) ([3ccd2c0](https://github.com/HDRUK/gateway-api/commit/3ccd2c08b693c8a097d073618cb2c6b17f39e739)), closes [GAT-7580](GAT-7580)
+* **GAT-7768:** filter OOO emails (#1560) ([3c610e6](https://github.com/HDRUK/gateway-api/commit/3c610e67f2a31581dcf4ea8a71b4e2f1d6a770e2)), closes [GAT-7768](GAT-7768)
+* **GAT-7957:** added Github app authentication (#1561) ([eac54b5](https://github.com/HDRUK/gateway-api/commit/eac54b56560fd1078d9d8f42ffc4b80cfd0f3bc9)), closes [GAT-7957](GAT-7957)
+* **GAT-8092:** Update endpoint for Dataset & BioSample landing pages to include summary.datasetAliases (#1570) ([3d1e64d](https://github.com/HDRUK/gateway-api/commit/3d1e64d2182582d28f934c3c755e3a3ee610b85f)), closes [GAT-8092](GAT-8092) [BioSample](oSample)
+* **GAT-8123:** homepage statistics (#1538) ([0742bdc](https://github.com/HDRUK/gateway-api/commit/0742bdc089e9c8eb9c97d0c09c1e2f4e433f707f)), closes [GAT-8123](GAT-8123)
+* **GAT-8233:** DAR answer add new field (#1553) ([f2061a5](https://github.com/HDRUK/gateway-api/commit/f2061a5d3177aaa6efa601011b5b3c1ea9033dee)), closes [GAT-8233](GAT-8233)
+* **GAT-8242:** Add action bar to DAR (#1539) ([3b2166e](https://github.com/HDRUK/gateway-api/commit/3b2166e0a0c16cd8c5c2f96ac98301a7dfb99b56)), closes [GAT-8242](GAT-8242)
+* **GAT-8242:** Fix OA comments (#1546) ([6ce346a](https://github.com/HDRUK/gateway-api/commit/6ce346a2c17a960ee511fb3e0b6d07ae1df9b9c8))
+* **GAT-8246:** Data Custodian Networks now return team_ids to help with filters (#1565) ([d38535b](https://github.com/HDRUK/gateway-api/commit/d38535b8f853fd759df46327d5e0d4d8e0a63802)), closes [GAT-8246](GAT-8246)
+* **GAT-8329:** Extend Gateway Metadata Integration (#1583) ([2b9fad8](https://github.com/HDRUK/gateway-api/commit/2b9fad889d216083472e65cf93ca3fec436b432d)), closes [GAT-8329](GAT-8329) [Gateway](Gateway)
+* **GAT-8384:** added release pipeline (#1547) ([20e328b](https://github.com/HDRUK/gateway-api/commit/20e328bc9b31283e60a4ba8db5cc1630125d85c9)), closes [GAT-8384](GAT-8384)
+* **GAT-8384:** fixed lint errors (#1549) ([d857f61](https://github.com/HDRUK/gateway-api/commit/d857f61b50d4c9f04d5a72959bb08663727f70f0))
+* **GAT-8384:** fixed the PR title file (#1552) ([cc03927](https://github.com/HDRUK/gateway-api/commit/cc039271087d250d9ed933c970af1c5b7ec49890))
+* **GAT-8450:** Update existing and add any new emails required (#1571) ([1781b42](https://github.com/HDRUK/gateway-api/commit/1781b42631e16b3479648822239821d0b087dc33)), closes [GAT-8450](GAT-8450)
+* **GAT-8465:** rework of widget colours (#1584) ([db490d8](https://github.com/HDRUK/gateway-api/commit/db490d824c5435fd266b6c96ca1594fa026db293)), closes [GAT-8465](GAT-8465)
+* **GAT-8534:** update export metadata (#1540) ([32bae25](https://github.com/HDRUK/gateway-api/commit/32bae25990d5a29e219967a3e6e95c144275de2c)), closes [GAT-8534](GAT-8534)
+* **GAT-8586:** admin update cohort discovery state in datasets (#1562) ([abee8da](https://github.com/HDRUK/gateway-api/commit/abee8daddeec9a2b07948b2d936bf6be088535b9)), closes [GAT-8586](GAT-8586)
+* **GAT-8610:** Fix access checks for scrambled open-athens emails (#1567) ([1c58b9a](https://github.com/HDRUK/gateway-api/commit/1c58b9a8cb4560773d932f0199846b782a4fd052))
+* **GAT-8635:** Update search service to include keywords for Publications (#1576) ([a82d2a7](https://github.com/HDRUK/gateway-api/commit/a82d2a7d6a7adc3866b95841beceb0c7643dde18)), closes [GAT-8635](GAT-8635)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** export metadata Distribution release date (#1544) ([76410ed](https://github.com/HDRUK/gateway-api/commit/76410ed07ae157d0009efd7432fe3e55367dcea4)), closes [GAT-0000](GAT-0000)
+* **GAT-0000:** fix for the collection observer (#1579) ([a3e6bbe](https://github.com/HDRUK/gateway-api/commit/a3e6bbeb19d7f1919e9dbd7a800c4bf4d192c953))
+* **GAT-0000:** fix send email cohort request) (#1573) ([5853068](https://github.com/HDRUK/gateway-api/commit/5853068bcde770485c4708fa6489f9b728ae5be8))
+* **GAT-0000:** Fix user on auth being returned as array instead of ob… (#1559) ([72df3d4](https://github.com/HDRUK/gateway-api/commit/72df3d479f73b734c64ae191967d2ae8b6a822c3))
+* **GAT-7418:** TVS SDE datasets all have the same PID in the database (#1563) ([a07783a](https://github.com/HDRUK/gateway-api/commit/a07783a1f7e6881a3e5a35ad447d7fa05c0f0ec6)), closes [GAT-7418](GAT-7418)
+* **GAT-7951:** Applicant organisation details are not being pulled through to enquiry template (#1557) ([87c0e74](https://github.com/HDRUK/gateway-api/commit/87c0e744fb6f569b3483b618c2d620a7902b1711)), closes [GAT-7951](GAT-7951)
+* **GAT-8106:** Reduce page load time search collections networks (#1555) ([84c5cab](https://github.com/HDRUK/gateway-api/commit/84c5cab50f09eda8417b5f2d6a66c87517a45d71)), closes [GAT-8106](GAT-8106)
+* **GAT-8119:** update notifications (#1548) ([ec1456e](https://github.com/HDRUK/gateway-api/commit/ec1456e029504a5870832c8be8445c2cacac05ea)), closes [GAT-8119](GAT-8119)
+* **GAT-8530:** Structural Metadata download (#1572) ([86c0450](https://github.com/HDRUK/gateway-api/commit/86c0450d917ba512761736a9fa13c9266b9f3fee)), closes [GAT-8530](GAT-8530)
+* **GAT-8579:** NHS SDE approval is wrong (#1556) ([ca5e345](https://github.com/HDRUK/gateway-api/commit/ca5e345f7eded500f45910a7e5fb67cb8f5fb43e)), closes [GAT-8579](GAT-8579)
+* **GAT-8640:** swagger update tags (#1577) ([0361eda](https://github.com/HDRUK/gateway-api/commit/0361edadf20e986b0613c0d76d5b00a3119064b9)), closes [GAT-8640](GAT-8640)
+* **GAT-8664:** loading Data uses (#1581) ([ff14f83](https://github.com/HDRUK/gateway-api/commit/ff14f837aaa80366e7615ddd8d99626982f140ab)), closes [GAT-8664](GAT-8664)
+* **GAT-9999:** Fixes (DP-492) issues surrounding auth sometimes failing (#1542) ([8cc7cbc](https://github.com/HDRUK/gateway-api/commit/8cc7cbc8454c32b6080c0632addac39c745ebe2d))
+
 ## [2.36.0](https://github.com/HDRUK/gateway-api/compare/v2.35.0...v2.36.0) (2026-02-20)
 
 ### ✨ Features
