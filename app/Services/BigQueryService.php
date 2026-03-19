@@ -16,7 +16,7 @@ class BigQueryService
     public function __construct()
     {
         $this->client = new BigQueryClient([
-            'projectId'   => env('GOOGLE_CLOUD_BIGQUERY_PROJECT_ID'),
+            'projectId'   => config('services.googlebigquery.project_id'),
         ]);
     }
 
