@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -131,6 +132,35 @@ class Dur extends Model
             new DurHasDatasetVersion(),
             'dur_id'
         );
+    }
+
+    /**
+     * Accessor for all project grants associated with this DUR.
+     *
+     * Project grants are extracted from dataset version metadata and linked
+     * through `project_grant_has_dataset_version`.
+     */
+    public function getAllProjectGrantsAttribute()
+    {
+        $datasetVersionIds = DurHasDatasetVersion::where('dur_id', $this->id)
+            ->pluck('dataset_version_id')
+            ->toArray();
+
+        if (empty($datasetVersionIds)) {
+            return collect();
+        }
+
+        $projectGrantIds = DB::table('project_grant_has_dataset_version')
+            ->whereIn('dataset_version_id', $datasetVersionIds)
+            ->pluck('project_grant_id')
+            ->unique()
+            ->toArray();
+
+        if (empty($projectGrantIds)) {
+            return collect();
+        }
+
+        return ProjectGrant::whereIn('id', $projectGrantIds)->get();
     }
 
     public function keywords(): BelongsToMany
