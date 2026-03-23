@@ -52,6 +52,10 @@ return [
             Dataset::class => DatasetResource::class,
         ],
 
+        'CRUK' => [
+            Dataset::class => DatasetResource::class,
+        ],
+
         // 'PARTNER_X' => [
         //     Dataset::class => \App\Http\Resources\PartnerXDatasetResource::class,
         // ],
@@ -68,6 +72,10 @@ return [
     'index_resources' => [
 
         'HDRUK' => [
+            Dataset::class => DatasetIndexResource::class,
+        ],
+
+        'CRUK' => [
             Dataset::class => DatasetIndexResource::class,
         ],
 
