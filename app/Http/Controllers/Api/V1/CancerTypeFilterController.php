@@ -5,17 +5,19 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
+use App\Models\CancerTypeFilter;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Context\PartnerContext;
 use App\Services\CancerTypeFilterService;
-use App\Http\Resources\CancerTypeFilterResource;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 
 class CancerTypeFilterController extends Controller
 {
     public function __construct(
-        private readonly CancerTypeFilterService $cancerTypeFilterService
+        private readonly CancerTypeFilterService $cancerTypeFilterService,
+        private readonly PartnerContext $partnerContext
     ) {
     }
 
@@ -73,8 +75,9 @@ class CancerTypeFilterController extends Controller
             $parentId = $request->has('parent_id') ? (int) $request->parent_id : null;
             $level = $request->has('level') ? (int) $request->level : null;
             $result = $this->cancerTypeFilterService->list($parentId, $level);
+            $resourceClass = $this->partnerContext->indexResourceFor(CancerTypeFilter::class);
             $result = array_map(
-                fn ($item) => CancerTypeFilterResource::make($item)->resolve($request),
+                fn ($item) => $resourceClass::make($item)->resolve($request),
                 $result
             );
 
@@ -166,8 +169,9 @@ class CancerTypeFilterController extends Controller
                 'description' => 'Cancer type filter ' . $filter_id . ' retrieved',
             ]);
 
+            $resourceClass = $this->partnerContext->resourceFor(CancerTypeFilter::class);
             return response()->json([
-                'data' => CancerTypeFilterResource::make($filter)->resolve($request),
+                'data' => $resourceClass::make($filter)->resolve($request),
             ], 200);
         } catch (NotFoundException $e) {
             return response()->json([

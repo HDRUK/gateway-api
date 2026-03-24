@@ -9,8 +9,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use App\Context\PartnerContext;
 use App\Services\CrukAuthService;
-use App\Http\Resources\CrukAuthResource;
 use App\Http\Controllers\JwtController;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -20,14 +20,20 @@ class AuthController extends Controller
 {
     private JwtController $jwt;
     private CrukAuthService $crukAuthService;
+    private PartnerContext $partnerContext;
 
     /**
      * constructor
      */
-    public function __construct(JwtController $jwt, CrukAuthService $crukAuthService)
+    public function __construct(
+        JwtController $jwt,
+        CrukAuthService $crukAuthService,
+        PartnerContext $partnerContext
+    )
     {
         $this->jwt = $jwt;
         $this->crukAuthService = $crukAuthService;
+        $this->partnerContext = $partnerContext;
     }
 
     /**
@@ -281,7 +287,8 @@ class AuthController extends Controller
                 'description' => "User registered: {$user->email}",
             ]);
 
-            return CrukAuthResource::make($auth)
+            $resourceClass = $this->partnerContext->resourceFor(CrukAuthService::class);
+            return $resourceClass::make($auth)
                 ->response()
                 ->setStatusCode(200);
         } catch (Exception $e) {
@@ -371,7 +378,8 @@ class AuthController extends Controller
                 'description' => "User logged in: {$user->email}",
             ]);
 
-            return CrukAuthResource::make($auth)
+            $resourceClass = $this->partnerContext->resourceFor(CrukAuthService::class);
+            return $resourceClass::make($auth)
                 ->response()
                 ->setStatusCode(200);
         } catch (UnauthorizedException $e) {

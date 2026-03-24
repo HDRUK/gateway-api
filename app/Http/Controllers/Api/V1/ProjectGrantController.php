@@ -6,7 +6,9 @@ use Config;
 use Auditor;
 use Exception;
 use Illuminate\Http\Request;
+use App\Models\ProjectGrant;
 use Illuminate\Http\JsonResponse;
+use App\Context\PartnerContext;
 use App\Services\ProjectGrantService;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
@@ -14,7 +16,8 @@ use App\Exceptions\NotFoundException;
 class ProjectGrantController extends Controller
 {
     public function __construct(
-        private readonly ProjectGrantService $projectGrantService
+        private readonly ProjectGrantService $projectGrantService,
+        private readonly PartnerContext $partnerContext
     ) {
     }
 
@@ -109,6 +112,11 @@ class ProjectGrantController extends Controller
                 'description' => 'ProjectGrant get all',
             ]);
 
+            $resourceClass = $this->partnerContext->indexResourceFor(ProjectGrant::class);
+            $projectGrants->through(
+                fn ($projectGrant) => $resourceClass::make($projectGrant)->resolve($request)
+            );
+
             return response()->json($projectGrants);
         } catch (Exception $e) {
             Auditor::log([
@@ -162,9 +170,10 @@ class ProjectGrantController extends Controller
                 'description' => 'ProjectGrant get ' . $id,
             ]);
 
+            $resourceClass = $this->partnerContext->resourceFor(ProjectGrant::class);
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $projectGrant,
+                'data' => $resourceClass::make($projectGrant)->resolve($request),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([

@@ -1,8 +1,15 @@
 <?php
 
 use App\Models\Dataset;
+use App\Models\ProjectGrant;
+use App\Models\CancerTypeFilter;
+use App\Services\CrukAuthService;
 use App\Http\Resources\DatasetResource;
 use App\Http\Resources\DatasetIndexResource;
+use App\Http\Resources\ProjectGrantResource;
+use App\Http\Resources\ProjectGrantIndexResource;
+use App\Http\Resources\CancerTypeFilterResource;
+use App\Http\Resources\CrukAuthResource;
 
 /**
  * Partner context configuration.
@@ -50,10 +57,16 @@ return [
 
         'HDRUK' => [
             Dataset::class => DatasetResource::class,
+            ProjectGrant::class => ProjectGrantResource::class,
+            CancerTypeFilter::class => CancerTypeFilterResource::class,
+            CrukAuthService::class => CrukAuthResource::class,
         ],
 
         'CRUK' => [
             Dataset::class => DatasetResource::class,
+            ProjectGrant::class => ProjectGrantResource::class,
+            CancerTypeFilter::class => CancerTypeFilterResource::class,
+            CrukAuthService::class => CrukAuthResource::class,
         ],
 
         // 'PARTNER_X' => [
@@ -73,10 +86,14 @@ return [
 
         'HDRUK' => [
             Dataset::class => DatasetIndexResource::class,
+            ProjectGrant::class => ProjectGrantIndexResource::class,
+            CancerTypeFilter::class => CancerTypeFilterResource::class,
         ],
 
         'CRUK' => [
             Dataset::class => DatasetIndexResource::class,
+            ProjectGrant::class => ProjectGrantIndexResource::class,
+            CancerTypeFilter::class => CancerTypeFilterResource::class,
         ],
 
         // 'PARTNER_X' => [
