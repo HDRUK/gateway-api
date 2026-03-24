@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Services\CrukAuthService;
+use App\Http\Resources\CrukAuthResource;
 use App\Http\Controllers\JwtController;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -280,15 +281,9 @@ class AuthController extends Controller
                 'description' => "User registered: {$user->email}",
             ]);
 
-            return response()->json([
-                'access_token' => $auth['access_token'],
-                'token_type' => $auth['token_type'],
-                'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                    'name' => $user->name,
-                ],
-            ])->setStatusCode(200);
+            return CrukAuthResource::make($auth)
+                ->response()
+                ->setStatusCode(200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -376,15 +371,9 @@ class AuthController extends Controller
                 'description' => "User logged in: {$user->email}",
             ]);
 
-            return response()->json([
-                'access_token' => $auth['access_token'],
-                'token_type' => $auth['token_type'],
-                'user' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                    'name' => $user->name,
-                ],
-            ])->setStatusCode(200);
+            return CrukAuthResource::make($auth)
+                ->response()
+                ->setStatusCode(200);
         } catch (UnauthorizedException $e) {
             throw $e;
         } catch (Exception $e) {

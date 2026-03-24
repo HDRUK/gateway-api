@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Services\CancerTypeFilterService;
+use App\Http\Resources\CancerTypeFilterResource;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 
@@ -72,6 +73,10 @@ class CancerTypeFilterController extends Controller
             $parentId = $request->has('parent_id') ? (int) $request->parent_id : null;
             $level = $request->has('level') ? (int) $request->level : null;
             $result = $this->cancerTypeFilterService->list($parentId, $level);
+            $result = array_map(
+                fn ($item) => CancerTypeFilterResource::make($item)->resolve($request),
+                $result
+            );
 
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),
@@ -162,7 +167,7 @@ class CancerTypeFilterController extends Controller
             ]);
 
             return response()->json([
-                'data' => $filter,
+                'data' => CancerTypeFilterResource::make($filter)->resolve($request),
             ], 200);
         } catch (NotFoundException $e) {
             return response()->json([

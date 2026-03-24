@@ -3,21 +3,18 @@
 namespace App\Services;
 
 use App\Models\CancerTypeFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class CancerTypeFilterService
 {
+    // -------------------------------------------------------------------------
+    // Querying
+    // -------------------------------------------------------------------------
+
     public function list(?int $parentId, ?int $level): array
     {
-        if (!is_null($parentId)) {
-            $query = CancerTypeFilter::where('parent_id', $parentId);
-        } else {
-            $query = CancerTypeFilter::whereNull('parent_id');
-        }
-
-        if (!is_null($level)) {
-            $query->where('level', $level);
-        }
-
+        $query = $this->baseQuery($parentId, $level);
         $filters = $query->orderBy('sort_order')->get();
         $filters->load('children');
 
@@ -34,10 +31,31 @@ class CancerTypeFilterService
         return $this->formatFilter($filter);
     }
 
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    private function baseQuery(?int $parentId, ?int $level): Builder
+    {
+        $query = CancerTypeFilter::query();
+
+        if (!is_null($parentId)) {
+            $query->where('parent_id', $parentId);
+        } else {
+            $query->whereNull('parent_id');
+        }
+
+        if (!is_null($level)) {
+            $query->where('level', $level);
+        }
+
+        return $query;
+    }
+
     /**
      * Build hierarchical structure from flat collection.
      */
-    private function buildHierarchy($filters): array
+    private function buildHierarchy(Collection $filters): array
     {
         $result = [];
         foreach ($filters as $filter) {
@@ -50,7 +68,7 @@ class CancerTypeFilterService
     /**
      * Format filter with children recursively.
      */
-    private function formatFilter($filter): array
+    private function formatFilter(CancerTypeFilter $filter): array
     {
         $formatted = [
             'id' => $filter->id,
