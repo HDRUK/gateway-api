@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use App\Models\CancerTypeFilter;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Services\CancerTypeFilterService;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 
 class CancerTypeFilterController extends Controller
 {
+    public function __construct(
+        private readonly CancerTypeFilterService $cancerTypeFilterService
+    ) {
+    }
+
     /**
      * @OA\Get(
      *    path="/api/v1/cancer-type-filters",
@@ -64,23 +69,9 @@ class CancerTypeFilterController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            if ($request->has('parent_id')) {
-                $query = CancerTypeFilter::where('parent_id', $request->parent_id);
-            } else {
-                $query = CancerTypeFilter::whereNull('parent_id');
-            }
-
-            if ($request->has('level')) {
-                $query->where('level', $request->level);
-            }
-
-            $filters = $query->orderBy('sort_order')->get();
-
-            // Load children recursively
-            $filters->load('children');
-
-            // Build hierarchical structure
-            $result = $this->buildHierarchy($filters);
+            $parentId = $request->has('parent_id') ? (int) $request->parent_id : null;
+            $level = $request->has('level') ? (int) $request->level : null;
+            $result = $this->cancerTypeFilterService->list($parentId, $level);
 
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),
@@ -158,8 +149,7 @@ class CancerTypeFilterController extends Controller
             $input = request()->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $filter = CancerTypeFilter::with('children')->where('filter_id', $filter_id)->first();
-
+            $filter = $this->cancerTypeFilterService->findByFilterId($filter_id);
             if (!$filter) {
                 throw new NotFoundException('Cancer type filter not found');
             }
@@ -172,7 +162,7 @@ class CancerTypeFilterController extends Controller
             ]);
 
             return response()->json([
-                'data' => $this->formatFilter($filter),
+                'data' => $filter,
             ], 200);
         } catch (NotFoundException $e) {
             return response()->json([
@@ -194,49 +184,4 @@ class CancerTypeFilterController extends Controller
         }
     }
 
-    /**
-     * Build hierarchical structure from flat collection
-     */
-    private function buildHierarchy($filters)
-    {
-        $result = [];
-        foreach ($filters as $filter) {
-            $result[] = $this->formatFilter($filter);
-        }
-        return $result;
-    }
-
-    /**
-     * Format filter with children
-     */
-    private function formatFilter($filter)
-    {
-        $formatted = [
-            'id' => $filter->id,
-            'filter_id' => $filter->filter_id,
-            'label' => $filter->label,
-            'category' => $filter->category,
-            'primary_group' => $filter->primary_group,
-            'count' => $filter->count,
-            'parent_id' => $filter->parent_id,
-            'level' => $filter->level,
-            'sort_order' => $filter->sort_order,
-        ];
-
-        // Load children if not already loaded
-        if (!$filter->relationLoaded('children')) {
-            $filter->load('children');
-        }
-
-        if ($filter->children->isNotEmpty()) {
-            $formatted['children'] = [];
-            foreach ($filter->children->sortBy('sort_order') as $child) {
-                $formatted['children'][] = $this->formatFilter($child);
-            }
-        } else {
-            $formatted['children'] = [];
-        }
-
-        return $formatted;
-    }
 }

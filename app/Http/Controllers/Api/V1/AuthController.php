@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use App\Services\CrukAuthService;
 use App\Http\Controllers\JwtController;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -17,13 +18,15 @@ use App\Http\Requests\Auth\LoginRequest;
 class AuthController extends Controller
 {
     private JwtController $jwt;
+    private CrukAuthService $crukAuthService;
 
     /**
      * constructor
      */
-    public function __construct(JwtController $jwt)
+    public function __construct(JwtController $jwt, CrukAuthService $crukAuthService)
     {
         $this->jwt = $jwt;
+        $this->crukAuthService = $crukAuthService;
     }
 
     /**
@@ -266,30 +269,8 @@ class AuthController extends Controller
     {
         try {
             $input = $request->validated();
-
-            // Build name from firstname and lastname if provided
-            $name = trim(($input['firstname'] ?? '') . ' ' . ($input['lastname'] ?? ''));
-            if (empty($name)) {
-                $name = $input['email']; // Fallback to email if no name provided
-            }
-
-            // Create user: only allow provider from input for CRUK; others use service
-            $provider = Config::get('constants.provider.service');
-            if (!empty($input['provider']) && $input['provider'] === Config::get('constants.provider.cruk')) {
-                $provider = Config::get('constants.provider.cruk');
-            }
-
-            $user = User::create([
-                'email' => $input['email'],
-                'password' => Hash::make($input['password']),
-                'name' => $name,
-                'firstname' => $input['firstname'] ?? null,
-                'lastname' => $input['lastname'] ?? null,
-                'provider' => $provider,
-            ]);
-
-            // Generate JWT token
-            $jwt = $this->createJwt($user);
+            $auth = $this->crukAuthService->register($input);
+            $user = $auth['user'];
 
             // Log the registration
             Auditor::log([
@@ -300,8 +281,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'access_token' => $jwt,
-                'token_type' => 'bearer',
+                'access_token' => $auth['access_token'],
+                'token_type' => $auth['token_type'],
                 'user' => [
                     'id' => $user->id,
                     'email' => $user->email,
@@ -384,28 +365,8 @@ class AuthController extends Controller
     {
         try {
             $input = $request->validated();
-
-            $provider = Config::get('constants.provider.service');
-            if (!empty($input['provider']) && $input['provider'] === Config::get('constants.provider.cruk')) {
-                $provider = Config::get('constants.provider.cruk');
-            }
-
-            // Find user by email and provider
-            $user = User::where('email', $input['email'])
-                ->where('provider', $provider)
-                ->first();
-
-            if (!$user) {
-                throw new UnauthorizedException('Invalid credentials');
-            }
-
-            // Verify password
-            if (!Hash::check($input['password'], $user->password)) {
-                throw new UnauthorizedException('Invalid credentials');
-            }
-
-            // Generate JWT token
-            $jwt = $this->createJwt($user);
+            $auth = $this->crukAuthService->login($input);
+            $user = $auth['user'];
 
             // Log the login
             Auditor::log([
@@ -416,8 +377,8 @@ class AuthController extends Controller
             ]);
 
             return response()->json([
-                'access_token' => $jwt,
-                'token_type' => 'bearer',
+                'access_token' => $auth['access_token'],
+                'token_type' => $auth['token_type'],
                 'user' => [
                     'id' => $user->id,
                     'email' => $user->email,
