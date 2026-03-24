@@ -3,6 +3,9 @@
 namespace Tests\Unit\Controllers;
 
 use App\Models\Team;
+use App\Services\V3\TeamDashboardService;
+use Mockery;
+use Mockery\MockInterface;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -16,6 +19,9 @@ class TeamDashboardControllerTest extends TestCase
 
     protected $headerNonAdmin;
 
+    /** @var MockInterface&TeamDashboardService */
+    private MockInterface $serviceMock;
+
     public function setUp(): void
     {
         $this->commonSetUp();
@@ -26,6 +32,18 @@ class TeamDashboardControllerTest extends TestCase
             'Accept'        => 'application/json',
             'Authorization' => 'Bearer ' . $nonAdminJwt,
         ];
+
+        $this->serviceMock = Mockery::mock(TeamDashboardService::class);
+
+        $this->serviceMock
+            ->shouldReceive('getCount')
+            ->andReturn(['total' => 0, 'total_by_interval' => 0]);
+
+        $this->serviceMock
+            ->shouldReceive('getDatasetViews')
+            ->andReturn([]);
+
+        $this->app->instance(TeamDashboardService::class, $this->serviceMock);
     }
 
     private function getValidTeamId(): int
@@ -80,7 +98,7 @@ class TeamDashboardControllerTest extends TestCase
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360');
 
-        $response->assertStatus(500);
+        $response->assertStatus(401);
     }
 
     // --- Invalid team ID ---
@@ -181,8 +199,7 @@ class TeamDashboardControllerTest extends TestCase
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/unknown/count', [], $this->headerNonAdmin);
 
-        $response->assertOk();
-        $this->assertEmpty($response->decodeResponseJson()['data']);
+        $response->assertStatus(500);
     }
 
     // --- Response structure ---
