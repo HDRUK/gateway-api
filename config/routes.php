@@ -250,49 +250,6 @@ return [
         ],
     ],
 
-    // team widget settings
-    [
-        'name' => 'widget_settings',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/widget_settings',
-        'methodController' => 'TeamWidgetSettingController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'widget_settings',
-        'method' => 'post',
-        'path' => '/teams/{teamId}/widget_settings',
-        'methodController' => 'TeamWidgetSettingController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'widget_settings',
-        'method' => 'delete',
-        'path' => '/teams/{teamId}/widget_settings/{id}',
-        'methodController' => 'TeamWidgetSettingController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
-        ],
-    ],
-
     // features
     [
         'name' => 'features.index',
@@ -2730,6 +2687,21 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'team.federation.run.now',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/federations/{federationId}/run',
+        'methodController' => 'FederationController@runNow',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
 
     // cohort_requests
     [
@@ -4245,20 +4217,6 @@ return [
     [
         'name' => 'dar/applications',
         'method' => 'get',
-        'path' => 'teams/{teamId}/dar/applications',
-        'methodController' => 'TeamDataAccessApplicationController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,data-access-applications.provider.read',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'dar/applications',
-        'method' => 'get',
         'path' => 'users/{userId}/dar/applications',
         'methodController' => 'UserDataAccessApplicationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -4351,6 +4309,34 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/dar/applications/{id}/header',
+        'methodController' => 'TeamDataAccessApplicationController@showApplicationHeader',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dar/applications',
+        'method' => 'get',
+        'path' => '/users/{userId}/dar/applications/{id}/header',
+        'methodController' => 'UserDataAccessApplicationController@showApplicationHeader',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'userId' => '[0-9]+',
         ],
     ],
     [

@@ -25,7 +25,7 @@ class TeamDataAccessTemplateController extends Controller
      *      summary="List of dar templates belonging to a team",
      *      description="List of dar templates belonging to a team",
      *      tags={"TeamDataAccessTemplate"},
-     *      summary="TeamDataAccessTemplate@index",
+     *      summary="TeamDataAccessTemplateController@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *        name="published",
@@ -117,7 +117,7 @@ class TeamDataAccessTemplateController extends Controller
      * @OA\Get(
      *    path="/api/v1/teams/{teamId}/dar/templates/count/{field}",
      *    operationId="team_dar_template_count_unique_fields",
-     *    tags={"TeamDataAccessTemplates"},
+     *    tags={"TeamDataAccessTemplate"},
      *    summary="TeamDataAccessTemplateController@count",
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
@@ -200,7 +200,7 @@ class TeamDataAccessTemplateController extends Controller
      *      summary="Delete a file associated with a DAR template",
      *      description="Delete a file associated with a DAR template",
      *      tags={"TeamDataAccessTemplate"},
-     *      summary="TeamDataAccessTemplate@destroyFile",
+     *      summary="TeamDataAccessTemplateController@destroyFile",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

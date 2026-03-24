@@ -52,12 +52,14 @@ class Publication extends Model
         'owner_id',
         'team_id',
         'status',
+        'first_publication_date',
     ];
 
     protected static array $sortableColumns = [
         'updated_at',
         'paper_title',
         'year_of_publication',
+        'first_publication_date',
     ];
 
     protected static array $countableColumns = [
@@ -128,5 +130,13 @@ class Publication extends Model
         )
         ->whereNull('collection_has_publications.deleted_at')
         ->where('collections.status', 'ACTIVE');
+    }
+
+    public function keywords(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Keyword::class,
+            'publication_has_keywords'
+        );
     }
 }
