@@ -20,6 +20,13 @@ class CollectionObserver
                 $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
             }
         }
+
+        if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
+            $collection->active_date = now();
+            $collection->withoutEvents(function () use ($collection) {
+                $collection->save();
+            });
+        }
     }
 
     /**
@@ -50,7 +57,13 @@ class CollectionObserver
             if ($collection->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
             }
+        }
 
+        if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
+            $collection->active_date = now();
+            $collection->withoutEvents(function () use ($collection) {
+                $collection->save();
+            });
         }
     }
 

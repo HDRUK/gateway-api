@@ -55,6 +55,7 @@ class ToolTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+        Tool::flushEventListeners();
     }
 
     /**
