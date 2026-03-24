@@ -25,19 +25,9 @@ return new class extends Migration {
 
     public function down(): void
     {
-        if (!Schema::hasTable('project_grants')) {
-            return;
-        }
-
-        Schema::table('project_grants', function (Blueprint $table) {
-            if (Schema::hasColumn('project_grants', 'team_id')) {
-                $table->dropForeign(['team_id']);
-                $table->dropColumn('team_id');
-            }
-            if (Schema::hasColumn('project_grants', 'user_id')) {
-                $table->dropForeign(['user_id']);
-                $table->dropColumn('user_id');
-            }
-        });
+        // Intentionally no-op.
+        // The baseline create_project_grants migration now contains user_id/team_id,
+        // so rolling this migration back must not remove those baseline columns.
+        return;
     }
 };
