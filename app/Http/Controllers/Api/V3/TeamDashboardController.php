@@ -23,6 +23,42 @@ class TeamDashboardController extends Controller
     }
 
     // GET /api/v3/teams/[id]/dashboard/[entity]/count
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dashboard/{entity}/count",
+     *     operationId="fetch_entities_count_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="TeamDashboardController@entityCount",
+     *     description="Get count of a specific entity for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="entity",
+     *         in="path",
+     *         required=true,
+     *         description="Entity type to count",
+     *         @OA\Schema(type="string", enum={"datasets", "datauses", "tools", "collections"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="total", type="integer", example=1),
+     *                 @OA\Property(property="total_by_interval", type="integer", example=0)
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function entityCount(GetTeamDashboard $request, $id, $entity)
     {
         $startDate = $request->query('startDate') ?? null;
