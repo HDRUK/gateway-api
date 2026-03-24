@@ -15,19 +15,19 @@ class DurObserver
      */
     public function created(Dur $dur): void
     {
-        if (!is_null($dur) && $dur->status === Dur::STATUS_ACTIVE && $dur->active_date === null) {
-            $dur->active_date = now();
-            $dur->withoutEvents(function () use ($dur) {
-                $dur->save();
-            });
-        }
-
         ExtractDatasetFromDur::dispatch($dur->id);
         if ($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
             if ($dur->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
             }
+        }
+
+        if (!is_null($dur) && $dur->status === Dur::STATUS_ACTIVE && $dur->active_date === null) {
+            $dur->active_date = now();
+            $dur->withoutEvents(function () use ($dur) {
+                $dur->save();
+            });
         }
     }
 

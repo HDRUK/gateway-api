@@ -14,15 +14,15 @@ class PublicationObserver
      */
     public function created(Publication $publication): void
     {
+        if ($publication->status === Publication::STATUS_ACTIVE) {
+            $this->indexElasticPublication((int) $publication->id);
+        }
+
         if (!is_null($publication) && $publication->status === Publication::STATUS_ACTIVE && $publication->active_date === null) {
             $publication->active_date = now();
             $publication->withoutEvents(function () use ($publication) {
                 $publication->save();
             });
-        }
-
-        if ($publication->status === Publication::STATUS_ACTIVE) {
-            $this->indexElasticPublication((int) $publication->id);
         }
     }
 
