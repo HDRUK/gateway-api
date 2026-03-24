@@ -59,7 +59,26 @@ return [
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [
+            'teamId' => '[0-9]+',
             'id' => '[0-9]+',
         ],
     ],
+
+    // dasboard endpoints for data custodian/team
+
+    [
+        'name'                => 'datasets.count',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/{entity}/count',
+        'methodController'    => 'TeamDashboardController@entityCount',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'entity' => 'datasets|datauses|tools|collections|publications',
+        ],
+    ],
+
 ];

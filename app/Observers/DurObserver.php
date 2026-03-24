@@ -15,6 +15,11 @@ class DurObserver
      */
     public function created(Dur $dur): void
     {
+        if (!is_null($dur) && $dur->status === Dur::STATUS_ACTIVE && $dur->active_date === null) {
+            $dur->active_date = now();
+            $dur->save();
+        }
+
         ExtractDatasetFromDur::dispatch($dur->id);
         if ($dur->status === Dur::STATUS_ACTIVE) {
             $this->indexElasticDur($dur->id);
@@ -37,6 +42,11 @@ class DurObserver
      */
     public function updated(Dur $dur): void
     {
+        if (!is_null($dur) && $dur->status === Dur::STATUS_ACTIVE && $dur->active_date === null) {
+            $dur->active_date = now();
+            $dur->save();
+        }
+
         ExtractDatasetFromDur::dispatch($dur->id);
         $prevStatus = $dur->prevStatus;
 

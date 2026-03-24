@@ -14,6 +14,11 @@ class CollectionObserver
      */
     public function created(Collection $collection): void
     {
+        if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
+            $collection->active_date = now();
+            $collection->save();
+        }
+
         if ($collection->status === Collection::STATUS_ACTIVE) {
             $this->indexElasticCollections((int) $collection->id);
             if ($collection->team_id) {
@@ -50,7 +55,11 @@ class CollectionObserver
             if ($collection->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
             }
+        }
 
+        if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
+            $collection->active_date = now();
+            $collection->save();
         }
     }
 
