@@ -22,7 +22,6 @@ class TeamDashboardController extends Controller
     ) {
     }
 
-    // GET /api/v3/teams/[id]/dashboard/[entity]/count
     /**
      * @OA\Get(
      *     path="/api/v3/teams/{id}/dashboard/{entity}/count",
