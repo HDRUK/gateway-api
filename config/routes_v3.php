@@ -80,5 +80,19 @@ return [
             'entity' => 'datasets|datauses|tools|collections|publications',
         ],
     ],
+    [
+        'name'                => 'datasets.360.views',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/datasets/views/360',
+        'methodController'    => 'TeamDashboardController@datasetViews360',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'entity' => 'datasets|datauses|tools|collections|publications',
+        ],
+    ],
 
 ];
