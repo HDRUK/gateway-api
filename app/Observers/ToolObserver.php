@@ -13,7 +13,9 @@ class ToolObserver
     {
         if (!is_null($tool) && $tool->status === Tool::STATUS_ACTIVE && $tool->active_date === null) {
             $tool->active_date = now();
-            $tool->save();
+            $tool->withoutEvents(function () use ($tool) {
+                $tool->save();
+            });
         }
     }
 
@@ -24,7 +26,9 @@ class ToolObserver
     {
         if (!is_null($tool) && $tool->status === Tool::STATUS_ACTIVE && $tool->active_date === null) {
             $tool->active_date = now();
-            $tool->save();
+            $tool->withoutEvents(function () use ($tool) {
+                $tool->save();
+            });
         }
     }
 }

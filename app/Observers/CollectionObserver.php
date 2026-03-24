@@ -16,7 +16,9 @@ class CollectionObserver
     {
         if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
             $collection->active_date = now();
-            $collection->save();
+            $collection->withoutEvents(function () use ($collection) {
+                $collection->save();
+            });
         }
 
         if ($collection->status === Collection::STATUS_ACTIVE) {
@@ -59,7 +61,9 @@ class CollectionObserver
 
         if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
             $collection->active_date = now();
-            $collection->save();
+            $collection->withoutEvents(function () use ($collection) {
+                $collection->save();
+            });
         }
     }
 

@@ -16,7 +16,9 @@ class PublicationObserver
     {
         if (!is_null($publication) && $publication->status === Publication::STATUS_ACTIVE && $publication->active_date === null) {
             $publication->active_date = now();
-            $publication->save();
+            $publication->withoutEvents(function () use ($publication) {
+                $publication->save();
+            });
         }
 
         if ($publication->status === Publication::STATUS_ACTIVE) {
@@ -49,7 +51,9 @@ class PublicationObserver
 
         if (!is_null($publication) && $publication->status === Publication::STATUS_ACTIVE && $publication->active_date === null) {
             $publication->active_date = now();
-            $publication->save();
+            $publication->withoutEvents(function () use ($publication) {
+                $publication->save();
+            });
         }
     }
 
