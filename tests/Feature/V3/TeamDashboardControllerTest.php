@@ -172,7 +172,6 @@ class TeamDashboardControllerTest extends TestCase
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
 
         $response->assertStatus(500);
-        dd($response->decodeResponseJson());
         $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
     }
 
