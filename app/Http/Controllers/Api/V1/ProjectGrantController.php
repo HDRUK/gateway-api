@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use App\Models\ProjectGrant;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Services\ProjectGrantService;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 
 class ProjectGrantController extends Controller
 {
+    public function __construct(
+        private readonly ProjectGrantService $projectGrantService
+    ) {
+    }
+
     /**
      * @OA\Get(
      *    path="/api/v1/project_grants",
@@ -78,40 +83,25 @@ class ProjectGrantController extends Controller
     {
         try {
             $pid = $request->query('pid', null);
-            $version = $request->query('version', null);
+            $version = $request->query('version') !== null ? (int) $request->query('version') : null;
             $projectGrantName = $request->query('projectGrantName', null);
-            $userId = $request->query('user_id', null);
-            $teamId = $request->query('team_id', null);
+            $userId = $request->query('user_id') !== null ? (int) $request->query('user_id') : null;
+            $teamId = $request->query('team_id') !== null ? (int) $request->query('team_id') : null;
 
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
 
             $sort = $request->query('sort', 'created_at:desc');
-            $tmp = explode(':', $sort);
-            $sortField = $tmp[0];
-            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'asc';
-
-            $query = ProjectGrant::query();
-            if ($pid) {
-                $query->where('pid', '=', $pid);
-            }
-            if ($version) {
-                $query->where('version', '=', $version);
-            }
-            if ($projectGrantName) {
-                $query->where('projectGrantName', 'LIKE', '%' . $projectGrantName . '%');
-            }
-            if ($userId) {
-                $query->where('user_id', '=', $userId);
-            }
-            if ($teamId) {
-                $query->where('team_id', '=', $teamId);
-            }
-
-            $query->when($withRelated, fn ($q) => $q->with(['datasetVersions', 'publications', 'tools']))
-                ->when($sort, fn ($q) => $q->orderBy($sortField, $sortDirection));
-
-            $projectGrants = $query->paginate($perPage, ['*'], 'page');
+            $projectGrants = $this->projectGrantService->list(
+                pid: $pid,
+                version: $version,
+                projectGrantName: $projectGrantName,
+                userId: $userId,
+                teamId: $teamId,
+                withRelated: $withRelated,
+                perPage: $perPage,
+                sort: $sort
+            );
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -187,14 +177,9 @@ class ProjectGrantController extends Controller
         }
     }
 
-    private function getProjectGrantById(int $projectGrantId, bool $withRelated): ProjectGrant
+    private function getProjectGrantById(int $projectGrantId, bool $withRelated)
     {
-        $query = ProjectGrant::withTrashed()->where(['id' => $projectGrantId]);
-        if ($withRelated) {
-            $query = $query->with(['datasetVersions', 'publications', 'tools']);
-        }
-
-        $projectGrant = $query->first();
+        $projectGrant = $this->projectGrantService->findById($projectGrantId, $withRelated);
 
         if (!$projectGrant) {
             throw new NotFoundException();
