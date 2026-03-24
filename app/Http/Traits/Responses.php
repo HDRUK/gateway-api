@@ -7,7 +7,7 @@ use Illuminate\Http\Response;
 
 trait Responses
 {
-    public function OKResponse(mixed $data): JsonResponse
+    public function okResponse(mixed $data): JsonResponse
     {
         return response()->json([
             'message' => 'success',
@@ -15,7 +15,7 @@ trait Responses
         ], Response::HTTP_OK);
     }
 
-    public function OKResponseExtended(mixed $data, string $extendedName, mixed $extendedData): JsonResponse
+    public function okResponseExtended(mixed $data, string $extendedName, mixed $extendedData): JsonResponse
     {
         return response()->json([
             'message' => 'success',
@@ -24,7 +24,7 @@ trait Responses
         ], Response::HTTP_OK);
     }
 
-    public function CreatedResponse(mixed $data): JsonResponse
+    public function createdResponse(mixed $data): JsonResponse
     {
         return response()->json([
             'message' => 'success',
@@ -33,7 +33,7 @@ trait Responses
         ], Response::HTTP_CREATED);
     }
 
-    public function BadRequestResponse(mixed $data = null): JsonResponse
+    public function badRequestResponse(mixed $data = null): JsonResponse
     {
         return response()->json([
             'message' => 'bad request',
@@ -41,7 +41,7 @@ trait Responses
         ], Response::HTTP_BAD_REQUEST);
     }
 
-    public function UnauthorisedResponse(): JsonResponse
+    public function unauthorisedResponse(): JsonResponse
     {
         return response()->json([
             'message' => 'unauthorised',
@@ -49,7 +49,7 @@ trait Responses
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-    public function ForbiddenResponse(mixed $data = null): JsonResponse
+    public function forbiddenResponse(mixed $data = null): JsonResponse
     {
         return response()->json([
             'message' => 'forbidden',
@@ -57,7 +57,7 @@ trait Responses
         ], Response::HTTP_FORBIDDEN);
     }
 
-    public function NotFoundResponse(): JsonResponse
+    public function notFoundResponse(): JsonResponse
     {
         return response()->json([
             'message' => 'not found',
@@ -65,7 +65,7 @@ trait Responses
         ], Response::HTTP_NOT_FOUND);
     }
 
-    public function ErrorResponse(mixed $error = null): JsonResponse
+    public function errorResponse(mixed $error = null): JsonResponse
     {
         return response()->json([
             'message' => 'unexpected error',
@@ -73,7 +73,7 @@ trait Responses
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    public function NotImplementedResponse(): JsonResponse
+    public function notImplementedResponse(): JsonResponse
     {
         return response()->json([
             'message' => 'not implemented',
@@ -81,7 +81,7 @@ trait Responses
         ], Response::HTTP_NOT_IMPLEMENTED);
     }
 
-    public function ConflictResponse(mixed $data = null): JsonResponse
+    public function conflictResponse(mixed $data = null): JsonResponse
     {
         return response()->json([
             'message' => 'conflict',
@@ -89,7 +89,7 @@ trait Responses
         ], Response::HTTP_CONFLICT);
     }
 
-    public function NoContent(): JsonResponse
+    public function noContent(): JsonResponse
     {
         return response()->json([
             'message' => 'no content',
@@ -98,7 +98,7 @@ trait Responses
     }
 
 
-    public function UnprocessableContent(string $message): JsonResponse
+    public function unprocessableContent(string $message): JsonResponse
     {
         return response()->json([
             'message' => $message,

@@ -29,7 +29,7 @@ class TeamDashboardController extends Controller
         $endDate = $request->query('endDate') ?? null;
 
         if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->ErrorResponse('startDate must be less than or equal to endDate');
+            return $this->errorResponse('startDate must be less than or equal to endDate');
         }
 
         $response = [];
@@ -52,7 +52,7 @@ class TeamDashboardController extends Controller
                 break;
         }
 
-        return $this->OKResponse($response);
+        return $this->okResponse($response);
     }
 
     // GET /api/v3/teams/[id]/dashboard/360/datasets/views
