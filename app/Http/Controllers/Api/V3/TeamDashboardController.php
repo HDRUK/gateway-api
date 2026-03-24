@@ -29,8 +29,10 @@ class TeamDashboardController extends Controller
         $endDate = $request->query('endDate') ?? null;
 
         if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->ErrorResponse('startDate must be less than or equal to endDate', 422);
+            return $this->ErrorResponse('startDate must be less than or equal to endDate');
         }
+
+        $response = [];
 
         switch ($entity) {
             case 'datasets':
