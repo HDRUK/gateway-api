@@ -90,9 +90,54 @@ class TeamDashboardController extends Controller
         return $this->okResponse($response);
     }
 
-    // GET /api/v3/teams/[id]/dashboard/360/datasets/views
-    public function datasetViews(Request $request, $id)
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dashboard/360/datasets/views",
+     *     operationId="fetch_dataset_260_views_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="TeamDashboardController@datasetViews360",
+     *     description="Get count of a datasets views entity for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="date", type="string", example="2025-04-01"),
+     *                 @OA\Property(property="counter", type="integer", example=0)
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function datasetViews360(GetTeamDashboard $request, $id)
     {
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = [];
+
+        $response = $this->teamDashboardService->getDatasetViews($id, $startDate, $endDate);
+
+        return $this->okResponse($response);
     }
 
     // GET /api/v3/teams/[id]/dashboard/top/datasets/views
