@@ -4,11 +4,15 @@ namespace Tests\Feature;
 
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
+use App\Models\OauthClient;
+use App\Models\Permission;
+use App\Models\User;
 //use App\Models\UserHasWorkgroup;
 //use App\Models\Workgroup;
 use Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
@@ -617,5 +621,114 @@ class CohortRequestTest extends TestCase
                 }
             },
         ]);
+    }
+
+    private function createCohortServiceAccount(): void
+    {
+        $email = Config::get('services.cohort_discovery_service.service_account');
+
+        $serviceUser = User::firstOrCreate(
+            ['email' => $email, 'provider' => 'service'],
+            [
+                'name' => 'Cohort Service',
+                'password' => bcrypt(Str::random(32)),
+                'is_admin' => false,
+            ]
+        );
+
+        if (! OauthClient::where('user_id', $serviceUser->id)->exists()) {
+            $client = (new OauthClient())->forceFill([
+                'id' => (string) Str::uuid(),
+                'user_id' => $serviceUser->id,
+                'name' => 'cohort-discovery-oauth-client',
+                'secret' => bcrypt(Str::random(40)),
+                'provider' => null,
+                'redirect' => Config::get('services.cohort_discovery_service.auth_url') ?? 'https://cohort.local/callback',
+                'personal_access_client' => false,
+                'password_client' => false,
+                'revoked' => false,
+            ]);
+            $client->save();
+        }
+    }
+
+    private function approveTestUserForCohort(int $userId): void
+    {
+        $cohortRequest = CohortRequest::updateOrCreate(
+            ['user_id' => $userId],
+            ['request_status' => 'APPROVED', 'accept_declaration' => true]
+        );
+
+        $permission = Permission::where([
+            'application' => 'cohort',
+            'name' => 'GENERAL_ACCESS',
+        ])->first();
+
+        if ($permission) {
+            CohortRequestHasPermission::firstOrCreate([
+                'cohort_request_id' => $cohortRequest->id,
+                'permission_id' => $permission->id,
+            ]);
+        }
+    }
+
+    /**
+     * checkAccessCohortDiscoveryService returns a redirect_url with an encrypted state
+     * param that decrypts to the authenticated user's id — no session is written.
+     */
+    public function test_check_access_cohort_discovery_returns_state_encrypted_user_id(): void
+    {
+        Feature::flushCache();
+        Feature::activate('CohortDiscoveryService', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->createCohortServiceAccount();
+        $this->approveTestUserForCohort($userId);
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/cohort-discovery',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonStructure(['data' => ['redirect_url']]);
+
+        $redirectUrl = $response->json('data.redirect_url');
+        parse_str(parse_url($redirectUrl, PHP_URL_QUERY), $queryParams);
+
+        $this->assertArrayHasKey('state', $queryParams, 'redirect_url must contain a state query param');
+
+        $decryptedUserId = decrypt($queryParams['state']);
+        $this->assertEquals($userId, $decryptedUserId, 'state param must decrypt to the authenticated user id');
+    }
+
+    /**
+     * checkAccessCohortDiscoveryService must not write cr_uid to the session,
+     * since the API route is stateless.
+     */
+    public function test_check_access_cohort_discovery_does_not_set_session(): void
+    {
+        Feature::flushCache();
+        Feature::activate('CohortDiscoveryService', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->createCohortServiceAccount();
+        $this->approveTestUserForCohort($userId);
+
+        $response = $this->withSession([])->json(
+            'GET',
+            self::TEST_URL.'/access/cohort-discovery',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertSessionMissing('cr_uid');
     }
 }
