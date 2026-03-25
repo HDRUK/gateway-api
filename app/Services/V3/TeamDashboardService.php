@@ -2,6 +2,7 @@
 
 namespace App\Services\V3;
 
+use App\Models\Dataset;
 use App\Services\BigQueryService;
 use Carbon\Carbon;
 
@@ -71,5 +72,50 @@ class TeamDashboardService
         ];
 
         return $this->bigQueryService->query($sql, $params);
+    }
+
+    public function getDatatasetViewsTop(int $teamId, $startDate, $endDate)
+    {
+        $from = config('services.googlebigquery.project_id') . '.' . config('services.googlebigquery.dashboard_dataset') . '.' . config('services.googlebigquery.dashboard_table');
+
+        $sql = "
+            SELECT entity_id, count(*) AS counter
+            FROM {$from}
+            WHERE entity_type = 'dataset'
+               AND team_id = @teamId
+               AND date BETWEEN @startDate AND @endDate
+            GROUP BY entity_id
+            ORDER BY counter DESC
+        ";
+
+        $params = [
+            'teamId' => $teamId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+        ];
+
+        $responseBq = $this->bigQueryService->query($sql, $params);
+
+        $response = [];
+
+        foreach ($responseBq as $row) {
+            $dataset = Dataset::where('id', $row['entity_id'])->first();
+
+            if (!$dataset) {
+                continue;
+            }
+
+            $shortTitle = $dataset->latestVersion(['short_title'])->short_title ?? null;
+
+            if ($shortTitle) {
+                $response[] = [
+                    'id' => $row['entity_id'],
+                    'title' => $shortTitle,
+                    'counter' => $row['counter'],
+                ];
+            }
+        }
+
+        return $response;
     }
 }
