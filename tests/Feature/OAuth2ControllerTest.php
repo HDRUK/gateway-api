@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\EncryptCookies;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
@@ -16,6 +17,9 @@ class OAuth2ControllerTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+        // EncryptCookies requires APP_KEY; disable it so these tests run
+        // in any environment without depending on encryption config.
+        $this->withoutMiddleware(EncryptCookies::class);
     }
 
     /**
