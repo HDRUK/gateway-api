@@ -76,7 +76,8 @@ class ProjectGrantController extends Controller
      *        @OA\JsonContent(
      *          @OA\Property(
      *             property="data",
-     *             type="array"
+     *             type="array",
+     *             @OA\Items(type="object")
      *          )
      *        )
      *    )
