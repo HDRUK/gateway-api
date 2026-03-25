@@ -106,5 +106,31 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name'                => 'collections.views',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/collections/views',
+        'methodController'    => 'TeamDashboardController@collectionViews',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name'                => 'datacustodians.views',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/datacustodians/views',
+        'methodController'    => 'TeamDashboardController@datacustodianViews',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 
 ];
