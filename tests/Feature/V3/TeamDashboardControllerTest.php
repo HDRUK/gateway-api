@@ -61,7 +61,9 @@ class TeamDashboardControllerTest extends TestCase
         return $latest ? $latest->id + 1 : 1;
     }
 
+    // -------------------------------------------------------------------------
     // Unauthenticated access
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_without_auth_returns_unauthorised(): void
     {
@@ -112,7 +114,9 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    // -------------------------------------------------------------------------
     // Invalid team ID
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_with_invalid_team_id_returns_without_success(): void
     {
@@ -162,7 +166,9 @@ class TeamDashboardControllerTest extends TestCase
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
     }
 
+    // -------------------------------------------------------------------------
     // Invalid date interval
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_with_invalid_interval_returns_without_success(): void
     {
@@ -220,7 +226,9 @@ class TeamDashboardControllerTest extends TestCase
         $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
     }
 
+    // -------------------------------------------------------------------------
     // Unknown entity returns error
+    // -------------------------------------------------------------------------
 
     public function test_entity_count_returns_ok_for_unknown_entity(): void
     {
@@ -229,7 +237,9 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertStatus(500);
     }
 
+    // -------------------------------------------------------------------------
     // Response structure
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_returns_expected_json_structure(): void
     {
@@ -287,7 +297,9 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertJsonStructure(['message', 'data']);
     }
 
+    // -------------------------------------------------------------------------
     // dataset_views_360: data is an array
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_360_returns_array_data(): void
     {
@@ -320,7 +332,9 @@ class TeamDashboardControllerTest extends TestCase
         }
     }
 
+    // -------------------------------------------------------------------------
     // dataset_views_top: data is an array
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_top_returns_array_data(): void
     {
@@ -367,7 +381,9 @@ class TeamDashboardControllerTest extends TestCase
         }
     }
 
+    // -------------------------------------------------------------------------
     // Valid date interval passes through
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_with_equal_start_and_end_date_returns_success(): void
     {
@@ -404,7 +420,9 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertOk();
     }
 
+    // -------------------------------------------------------------------------
     // No date params defaults to last 12 months
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_360_without_dates_returns_success(): void
     {

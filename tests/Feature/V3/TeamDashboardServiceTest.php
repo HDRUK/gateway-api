@@ -44,7 +44,9 @@ class TeamDashboardServiceTest extends TestCase
         parent::tearDown();
     }
 
+    // -------------------------------------------------------------------------
     // getCount – response structure
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_returns_total_and_interval_keys(): void
     {
@@ -86,7 +88,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertArrayHasKey('total_by_interval', $result);
     }
 
+    // -------------------------------------------------------------------------
     // getCount – return types are integers
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_returns_integer_values(): void
     {
@@ -128,7 +132,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertIsInt($result['total_by_interval']);
     }
 
+    // -------------------------------------------------------------------------
     // getCount – values are non-negative
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_values_are_non_negative(): void
     {
@@ -170,7 +176,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
     }
 
+    // -------------------------------------------------------------------------
     // getCount – interval never exceeds total
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_interval_does_not_exceed_total(): void
     {
@@ -207,7 +215,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
     }
 
+    // -------------------------------------------------------------------------
     // getCount – with explicit date range
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_with_date_range_returns_correct_keys(): void
     {
@@ -249,7 +259,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertArrayHasKey('total_by_interval', $result);
     }
 
+    // -------------------------------------------------------------------------
     // getCount – far-future range yields zero interval
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_with_future_date_range_returns_zero_interval(): void
     {
@@ -286,7 +298,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertEquals(0, $result['total_by_interval']);
     }
 
+    // -------------------------------------------------------------------------
     // getCount – total is unaffected by date range
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_total_is_same_regardless_of_date_range(): void
     {
@@ -320,7 +334,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertEquals($withoutRange['total'], $withRange['total']);
     }
 
+    // -------------------------------------------------------------------------
     // getDatasetViews – delegates to BigQueryService
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_returns_array(): void
     {
@@ -345,6 +361,7 @@ class TeamDashboardServiceTest extends TestCase
             ->andReturn([]);
 
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-12-31');
+
         $this->addToAssertionCount(1);
     }
 
@@ -382,7 +399,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertEquals($rows, $result);
     }
 
+    // -------------------------------------------------------------------------
     // getDatasetViews – SQL granularity switches
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_uses_monthly_granularity_for_range_over_180_days(): void
     {
@@ -433,7 +452,9 @@ class TeamDashboardServiceTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    // -------------------------------------------------------------------------
     // getDatatasetViewsTop – delegates to BigQueryService
+    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_top_returns_array(): void
     {
@@ -492,10 +513,12 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_views_top_each_row_has_expected_keys(): void
     {
-        $dataset = Dataset::whereHas('versions')->where('team_id', $this->teamId)->first();
+        $dataset = Dataset::whereHas('versions', function ($q) {
+            $q->whereNotNull('short_title');
+        })->where('team_id', $this->teamId)->first();
 
         if (!$dataset) {
-            $this->markTestSkipped('No dataset with a version available for team.');
+            $this->markTestSkipped('No dataset with a versioned short_title available for team.');
         }
 
         $this->bigQueryMock
@@ -528,5 +551,106 @@ class TeamDashboardServiceTest extends TestCase
         $result = $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
 
         $this->assertCount(0, $result);
+    }
+
+    // -------------------------------------------------------------------------
+    // getEntityViews – delegates to BigQueryService
+    // -------------------------------------------------------------------------
+
+    public function test_get_entity_views_returns_array(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->andReturn([['counter' => 5]]);
+
+        $result = $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertIsArray($result);
+    }
+
+    public function test_get_entity_views_passes_team_id_to_bigquery(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->withArgs(function (string $sql, array $params) {
+                return $params['teamId'] === $this->teamId;
+            })
+            ->andReturn([['counter' => 0]]);
+
+        $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_get_entity_views_passes_date_range_to_bigquery(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->withArgs(function (string $sql, array $params) {
+                return $params['startDate'] === '2024-01-01'
+                    && $params['endDate'] === '2024-12-31';
+            })
+            ->andReturn([['counter' => 0]]);
+
+        $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_get_entity_views_passes_collection_entity_type_to_bigquery(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->withArgs(function (string $sql) {
+                return str_contains($sql, "'collection'");
+            })
+            ->andReturn([['counter' => 0]]);
+
+        $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_get_entity_views_passes_data_custodian_entity_type_to_bigquery(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->withArgs(function (string $sql) {
+                return str_contains($sql, "'data-custodian'");
+            })
+            ->andReturn([['counter' => 0]]);
+
+        $this->service->getEntityViews('data-custodian', $this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function test_get_entity_views_returns_counter_from_bigquery(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->andReturn([['counter' => 42]]);
+
+        $result = $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertEquals(42, $result[0]['counter']);
+    }
+
+    public function test_get_entity_views_returns_zero_counter_when_no_results(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->andReturn([['counter' => 0]]);
+
+        $result = $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertEquals(0, $result[0]['counter']);
     }
 }

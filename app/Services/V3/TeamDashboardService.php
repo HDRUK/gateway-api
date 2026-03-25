@@ -118,4 +118,25 @@ class TeamDashboardService
 
         return $response;
     }
+
+    public function getEntityViews(string $entity, int $teamId, $startDate, $endDate)
+    {
+        $from = config('services.googlebigquery.project_id') . '.' . config('services.googlebigquery.dashboard_dataset') . '.' . config('services.googlebigquery.dashboard_table');
+
+        $sql = "
+            SELECT count(*) AS counter
+            FROM {$from}
+            WHERE entity_type = '{$entity}'
+               AND team_id = @teamId
+               AND date BETWEEN @startDate AND @endDate
+        ";
+
+        $params = [
+            'teamId' => $teamId,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+        ];
+
+        return $this->bigQueryService->query($sql, $params);
+    }
 }

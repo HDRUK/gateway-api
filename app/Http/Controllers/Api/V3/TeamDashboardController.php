@@ -160,7 +160,8 @@ class TeamDashboardController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
-     *                 @OA\Property(property="date", type="string", example="2025-04-01"),
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="title", type="string", example="dataset title"),
      *                 @OA\Property(property="counter", type="integer", example=0)
      *             )
      *         )
@@ -186,14 +187,90 @@ class TeamDashboardController extends Controller
         return $this->okResponse($response);
     }
 
-    // GET /api/v3/teams/[id]/dashboard/collections/views
-    public function collectionViews(Request $request, $id)
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dashboard/collections/views",
+     *     operationId="fetch_collections_views_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="TeamDashboardController@collectionViews",
+     *     description="Get count of a collection views for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="integer", example=0),
+     *         )
+     *     )
+     * )
+     */
+    public function collectionViews(GetTeamDashboard $request, $id)
     {
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = $this->teamDashboardService->getEntityViews('collection', $id, $startDate, $endDate);
+
+        return $this->okResponse($response);
     }
 
-    // GET /api/v3/teams/[id]/dashboard/datacustodians/views
-    public function datacustodianViews(Request $request, $id)
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dashboard/datacustodians/views",
+     *     operationId="fetch_data_custodians_views_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="TeamDashboardController@datacustodianViews",
+     *     description="Get count of a data custodian views for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="integer", example=0),
+     *         )
+     *     )
+     * )
+     */
+    public function datacustodianViews(GetTeamDashboard $request, $id)
     {
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = $this->teamDashboardService->getEntityViews('data-custodian', $id, $startDate, $endDate);
+
+        return $this->okResponse($response);
     }
 
     // GET /api/v3/teams/[id]/dashboard/generalenquires/count
