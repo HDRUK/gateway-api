@@ -345,6 +345,7 @@ class TeamDashboardServiceTest extends TestCase
             ->andReturn([]);
 
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-12-31');
+        $this->addToAssertionCount(1);
     }
 
     public function test_get_dataset_views_passes_date_range_to_bigquery(): void
@@ -359,6 +360,8 @@ class TeamDashboardServiceTest extends TestCase
             ->andReturn([]);
 
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
     }
 
     public function test_get_dataset_views_returns_rows_from_bigquery(): void
@@ -393,6 +396,8 @@ class TeamDashboardServiceTest extends TestCase
 
         // 365-day range → monthly
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
     }
 
     public function test_get_dataset_views_uses_weekly_granularity_for_range_between_30_and_180_days(): void
@@ -407,6 +412,8 @@ class TeamDashboardServiceTest extends TestCase
 
         // 90-day range → weekly
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-03-31');
+
+        $this->addToAssertionCount(1);
     }
 
     public function test_get_dataset_views_uses_daily_granularity_for_range_under_30_days(): void
@@ -422,6 +429,8 @@ class TeamDashboardServiceTest extends TestCase
 
         // 14-day range → daily
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-01-14');
+
+        $this->addToAssertionCount(1);
     }
 
     // getDatatasetViewsTop – delegates to BigQueryService
@@ -449,6 +458,8 @@ class TeamDashboardServiceTest extends TestCase
             ->andReturn([]);
 
         $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
     }
 
     public function test_get_dataset_views_top_passes_date_range_to_bigquery(): void
@@ -463,6 +474,8 @@ class TeamDashboardServiceTest extends TestCase
             ->andReturn([]);
 
         $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->addToAssertionCount(1);
     }
 
     public function test_get_dataset_views_top_returns_empty_array_when_bigquery_returns_no_rows(): void
@@ -493,6 +506,8 @@ class TeamDashboardServiceTest extends TestCase
             ]);
 
         $result = $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertNotEmpty($result, 'Expected at least one row — dataset may be missing a short_title.');
 
         foreach ($result as $row) {
             $this->assertArrayHasKey('id', $row);

@@ -99,10 +99,13 @@ class TeamDashboardService
         $response = [];
 
         foreach ($responseBq as $row) {
-            $shortTitle = Dataset::where('id', $row['entity_id'])
-                ->first()
-                ->latestVersion(['short_title'])
-                ->short_title;
+            $dataset = Dataset::where('id', $row['entity_id'])->first();
+
+            if (!$dataset) {
+                continue;
+            }
+
+            $shortTitle = $dataset->latestVersion(['short_title'])->short_title ?? null;
 
             if ($shortTitle) {
                 $response[] = [
