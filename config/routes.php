@@ -4124,7 +4124,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,question-bank.create',
+            'check.access:permissions,file-based-data-access-application.create',
         ],
         'constraint' => [],
     ],
@@ -4137,7 +4137,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,question-bank.update',
+            'check.access:permissions,file-based-data-access-application.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4152,7 +4152,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,question-bank.update',
+            'check.access:permissions,file-based-data-access-application.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
