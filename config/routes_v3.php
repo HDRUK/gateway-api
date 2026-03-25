@@ -81,7 +81,7 @@ return [
         ],
     ],
     [
-        'name'                => 'datasets.360.views',
+        'name'                => 'datasets.views.360',
         'method'              => 'get',
         'path'                => '/teams/{id}/dashboard/datasets/views/360',
         'methodController'    => 'TeamDashboardController@datasetViews360',
@@ -91,7 +91,19 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'entity' => 'datasets|datauses|tools|collections|publications',
+        ],
+    ],
+    [
+        'name'                => 'datasets.views.top',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/datasets/views/top',
+        'methodController'    => 'TeamDashboardController@datasetViewsTop',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
         ],
     ],
 

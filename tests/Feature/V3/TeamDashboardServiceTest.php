@@ -44,9 +44,7 @@ class TeamDashboardServiceTest extends TestCase
         parent::tearDown();
     }
 
-    // -------------------------------------------------------------------------
     // getCount – response structure
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_returns_total_and_interval_keys(): void
     {
@@ -88,9 +86,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertArrayHasKey('total_by_interval', $result);
     }
 
-    // -------------------------------------------------------------------------
     // getCount – return types are integers
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_returns_integer_values(): void
     {
@@ -132,9 +128,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertIsInt($result['total_by_interval']);
     }
 
-    // -------------------------------------------------------------------------
     // getCount – values are non-negative
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_values_are_non_negative(): void
     {
@@ -176,9 +170,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
     }
 
-    // -------------------------------------------------------------------------
     // getCount – interval never exceeds total
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_interval_does_not_exceed_total(): void
     {
@@ -215,9 +207,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
     }
 
-    // -------------------------------------------------------------------------
     // getCount – with explicit date range
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_with_date_range_returns_correct_keys(): void
     {
@@ -259,9 +249,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertArrayHasKey('total_by_interval', $result);
     }
 
-    // -------------------------------------------------------------------------
     // getCount – far-future range yields zero interval
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_with_future_date_range_returns_zero_interval(): void
     {
@@ -298,9 +286,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertEquals(0, $result['total_by_interval']);
     }
 
-    // -------------------------------------------------------------------------
     // getCount – total is unaffected by date range
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_count_total_is_same_regardless_of_date_range(): void
     {
@@ -334,9 +320,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertEquals($withoutRange['total'], $withRange['total']);
     }
 
-    // -------------------------------------------------------------------------
     // getDatasetViews – delegates to BigQueryService
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_returns_array(): void
     {
@@ -395,9 +379,7 @@ class TeamDashboardServiceTest extends TestCase
         $this->assertEquals($rows, $result);
     }
 
-    // -------------------------------------------------------------------------
     // getDatasetViews – SQL granularity switches
-    // -------------------------------------------------------------------------
 
     public function test_get_dataset_views_uses_monthly_granularity_for_range_over_180_days(): void
     {
@@ -440,5 +422,96 @@ class TeamDashboardServiceTest extends TestCase
 
         // 14-day range → daily
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-01-14');
+    }
+
+    // getDatatasetViewsTop – delegates to BigQueryService
+
+    public function test_get_dataset_views_top_returns_array(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->andReturn([]);
+
+        $result = $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertIsArray($result);
+    }
+
+    public function test_get_dataset_views_top_passes_team_id_to_bigquery(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->withArgs(function (string $sql, array $params) {
+                return $params['teamId'] === $this->teamId;
+            })
+            ->andReturn([]);
+
+        $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+    }
+
+    public function test_get_dataset_views_top_passes_date_range_to_bigquery(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->withArgs(function (string $sql, array $params) {
+                return $params['startDate'] === '2024-01-01'
+                    && $params['endDate'] === '2024-12-31';
+            })
+            ->andReturn([]);
+
+        $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+    }
+
+    public function test_get_dataset_views_top_returns_empty_array_when_bigquery_returns_no_rows(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->andReturn([]);
+
+        $result = $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertCount(0, $result);
+    }
+
+    public function test_get_dataset_views_top_each_row_has_expected_keys(): void
+    {
+        $dataset = Dataset::whereHas('versions')->where('team_id', $this->teamId)->first();
+
+        if (!$dataset) {
+            $this->markTestSkipped('No dataset with a version available for team.');
+        }
+
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->andReturn([
+                ['entity_id' => $dataset->id, 'counter' => 10],
+            ]);
+
+        $result = $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+
+        foreach ($result as $row) {
+            $this->assertArrayHasKey('id', $row);
+            $this->assertArrayHasKey('title', $row);
+            $this->assertArrayHasKey('counter', $row);
+        }
+    }
+
+    public function test_get_dataset_views_top_excludes_rows_with_no_matching_dataset(): void
+    {
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->once()
+            ->andReturn([
+                ['entity_id' => 999999, 'counter' => 5],
+            ]);
+
+        $result = $this->service->getDatatasetViewsTop($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertCount(0, $result);
     }
 }
