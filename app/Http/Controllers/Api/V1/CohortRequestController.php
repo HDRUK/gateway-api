@@ -1341,7 +1341,7 @@ class CohortRequestController extends Controller
             ], Config::get('statuscodes.STATUS_NOT_IMPLEMENTED.code'));
         }
 
-        $cohortDiscoveryUrl = $this->buildCohortDiscoveryRedirectUrl();
+        $cohortDiscoveryUrl = $this->buildCohortDiscoveryRedirectUrl($guard['userId']);
 
         return response()->json([
             'data' => [
@@ -1485,7 +1485,6 @@ class CohortRequestController extends Controller
 
             // oidc/session setup (shared)
             OauthUser::where('user_id', $userId)->delete();
-            session(['cr_uid' => $userId]);
 
             Auditor::log([
                 'user_id' => $userId,
@@ -1507,7 +1506,7 @@ class CohortRequestController extends Controller
         }
     }
 
-    private function buildCohortDiscoveryRedirectUrl(): string
+    private function buildCohortDiscoveryRedirectUrl(int $userId): string
     {
         $cohortServiceAccount = User::where([
             'email' => Config::get('services.cohort_discovery_service.service_account'),
@@ -1534,6 +1533,7 @@ class CohortRequestController extends Controller
             'scope' => 'openid email profile rquestroles cohort_discovery_roles',
             'redirect_uri' => $cohortClient->redirect,
             'nonce' => $nonce,
+            'state' => encrypt($userId),
         ], '', '&', PHP_QUERY_RFC3986);
 
         return config('app.url').'/oauth2/authorize?'.$query;
