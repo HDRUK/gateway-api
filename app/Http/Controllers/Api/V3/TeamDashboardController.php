@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Api\V3;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V3\TeamDashboard\GetTeamDashboard;
 use App\Http\Traits\Responses;
+use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\Dur;
-use App\Models\Tool;
-use App\Models\Collection;
+use App\Models\EnquiryThread;
 use App\Models\Publication;
+use App\Models\TeamHasDataAccessApplication;
+use App\Models\Tool;
 use App\Services\V3\TeamDashboardService;
-use Illuminate\Http\Request;
 
 class TeamDashboardController extends Controller
 {
@@ -41,7 +42,7 @@ class TeamDashboardController extends Controller
      *         in="path",
      *         required=true,
      *         description="Entity type to count",
-     *         @OA\Schema(type="string", enum={"datasets", "datauses", "tools", "collections"})
+     *         @OA\Schema(type="string", enum={"datasets", "datauses", "tools", "collections", "general-enquires", "fesability-enquires", "data-access-requests"})
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -67,24 +68,40 @@ class TeamDashboardController extends Controller
             return $this->errorResponse('startDate must be less than or equal to endDate');
         }
 
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
         $response = [];
 
         switch ($entity) {
             case 'datasets':
-                $response = $this->teamDashboardService->getCount(Dataset::class, 'active_date', $id, $startDate, $endDate);
+                $response = $this->teamDashboardService->getCount(Dataset::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dataset::STATUS_ACTIVE]);
                 break;
             case 'datauses':
-                $response = $this->teamDashboardService->getCount(Dur::class, 'active_date', $id, $startDate, $endDate);
+                $response = $this->teamDashboardService->getCount(Dur::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dur::STATUS_ACTIVE]);
                 break;
             case 'tools':
-                $response = $this->teamDashboardService->getCount(Tool::class, 'active_date', $id, $startDate, $endDate);
+                $response = $this->teamDashboardService->getCount(Tool::class, 'active_date', $id, $startDate, $endDate, ['status'  => Tool::STATUS_ACTIVE]);
                 break;
             case 'collections':
-                $response = $this->teamDashboardService->getCount(Collection::class, 'active_date', $id, $startDate, $endDate);
+                $response = $this->teamDashboardService->getCount(Collection::class, 'active_date', $id, $startDate, $endDate, ['status'  => Collection::STATUS_ACTIVE]);
                 break;
             case 'publications':
-                $response = $this->teamDashboardService->getCount(Publication::class, 'active_date', $id, $startDate, $endDate);
+                $response = $this->teamDashboardService->getCount(Publication::class, 'active_date', $id, $startDate, $endDate, ['status'  => Publication::STATUS_ACTIVE]);
                 break;
+            case 'general-enquires':
+                $response = $this->teamDashboardService->getCount(EnquiryThread::class, 'created_at', $id, $startDate, $endDate, ['is_general_enquiry' => 1]);
+                break;
+            case 'fesability-enquires':
+                $response = $this->teamDashboardService->getCount(EnquiryThread::class, 'created_at', $id, $startDate, $endDate, ['is_feasibility_enquiry' => 1]);
+                break;
+            case 'data-access-requests':
+                $response = $this->teamDashboardService->getCount(TeamHasDataAccessApplication::class, 'created_at', $id, $startDate, $endDate, []);
+                break;
+            default:
+                return $this->errorResponse('Invalid entity type');
         }
 
         return $this->okResponse($response);
@@ -271,20 +288,5 @@ class TeamDashboardController extends Controller
         $response = $this->teamDashboardService->getEntityViews('data-custodian', $id, $startDate, $endDate);
 
         return $this->okResponse($response);
-    }
-
-    // GET /api/v3/teams/[id]/dashboard/generalenquires/count
-    public function generalEnquiresCount(Request $request, $id)
-    {
-    }
-
-    // GET /api/v3/teams/[id]/dashboard/fesabilityenquires/count
-    public function fesabilityEnquiresCount(Request $request, $id)
-    {
-    }
-
-    // GET /api/v3/teams/[id]/dashboard/dataaccessrequests/count
-    public function dataaccessrequestsCount(Request $request, $id)
-    {
     }
 }

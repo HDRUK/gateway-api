@@ -77,7 +77,7 @@ return [
         ],
         'constraint' => [
             'id' => '[0-9]+',
-            'entity' => 'datasets|datauses|tools|collections|publications',
+            'entity' => 'datasets|datauses|tools|collections|publications|general-enquires|fesability-enquires|data-access-requests',
         ],
     ],
     [

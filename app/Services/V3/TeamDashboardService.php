@@ -13,19 +13,20 @@ class TeamDashboardService
     ) {
     }
 
-    public function getCount(string $model, string $dateColumn, int $teamId, $startDate, $endDate)
+    public function getCount(string $model, string $dateColumn, int $teamId, $startDate, $endDate, array $extraColumn)
     {
-        $base = $model::where([
-            'team_id' => $teamId,
-            'status'  => $model::STATUS_ACTIVE,
-        ]);
+        $base = $model::where('team_id', $teamId);
+
+        if (count($extraColumn)) {
+            $base->where($extraColumn);
+        }
 
         $total = (clone $base)->count();
 
         $intervalQuery = clone $base;
 
         if ($startDate && $endDate) {
-            $intervalQuery->whereBetween($dateColumn, [$startDate, $endDate]);
+            $intervalQuery->whereBetween($dateColumn, [$startDate, $endDate . ' 23:59:59']);
         } else {
             $intervalQuery->where($dateColumn, '>=', now()->subMonths(12));
         }
