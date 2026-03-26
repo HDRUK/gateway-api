@@ -5,8 +5,10 @@ namespace Tests\Unit\Services;
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\Dur;
+use App\Models\EnquiryThread;
 use App\Models\Publication;
 use App\Models\Team;
+use App\Models\TeamHasDataAccessApplication;
 use App\Models\Tool;
 use App\Services\BigQueryService;
 use App\Services\V3\TeamDashboardService;
@@ -30,7 +32,6 @@ class TeamDashboardServiceTest extends TestCase
     {
         $this->commonSetUp();
 
-        // Bind a mock BigQueryService so getDatasetViews never hits the real API
         $this->bigQueryMock = Mockery::mock(BigQueryService::class);
         $this->app->instance(BigQueryService::class, $this->bigQueryMock);
 
@@ -50,7 +51,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_count_returns_total_and_interval_keys(): void
     {
-        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null, ['status' => Dataset::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -58,7 +59,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_datause_count_returns_total_and_interval_keys(): void
     {
-        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null, ['status' => Dur::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -66,7 +67,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_tool_count_returns_total_and_interval_keys(): void
     {
-        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null, ['status' => Tool::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -74,7 +75,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_collection_count_returns_total_and_interval_keys(): void
     {
-        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null, ['status' => Collection::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -82,7 +83,31 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_publication_count_returns_total_and_interval_keys(): void
     {
-        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null, ['status' => Publication::STATUS_ACTIVE]);
+
+        $this->assertArrayHasKey('total', $result);
+        $this->assertArrayHasKey('total_by_interval', $result);
+    }
+
+    public function test_get_general_enquiry_count_returns_total_and_interval_keys(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_general_enquiry' => 1]);
+
+        $this->assertArrayHasKey('total', $result);
+        $this->assertArrayHasKey('total_by_interval', $result);
+    }
+
+    public function test_get_feasibility_enquiry_count_returns_total_and_interval_keys(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_feasibility_enquiry' => 1]);
+
+        $this->assertArrayHasKey('total', $result);
+        $this->assertArrayHasKey('total_by_interval', $result);
+    }
+
+    public function test_get_data_access_request_count_returns_total_and_interval_keys(): void
+    {
+        $result = $this->service->getCount(TeamHasDataAccessApplication::class, 'created_at', $this->teamId, null, null, []);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -94,7 +119,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_count_returns_integer_values(): void
     {
-        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null, ['status' => Dataset::STATUS_ACTIVE]);
 
         $this->assertIsInt($result['total']);
         $this->assertIsInt($result['total_by_interval']);
@@ -102,7 +127,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_datause_count_returns_integer_values(): void
     {
-        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null, ['status' => Dur::STATUS_ACTIVE]);
 
         $this->assertIsInt($result['total']);
         $this->assertIsInt($result['total_by_interval']);
@@ -110,7 +135,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_tool_count_returns_integer_values(): void
     {
-        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null, ['status' => Tool::STATUS_ACTIVE]);
 
         $this->assertIsInt($result['total']);
         $this->assertIsInt($result['total_by_interval']);
@@ -118,7 +143,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_collection_count_returns_integer_values(): void
     {
-        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null, ['status' => Collection::STATUS_ACTIVE]);
 
         $this->assertIsInt($result['total']);
         $this->assertIsInt($result['total_by_interval']);
@@ -126,7 +151,31 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_publication_count_returns_integer_values(): void
     {
-        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null, ['status' => Publication::STATUS_ACTIVE]);
+
+        $this->assertIsInt($result['total']);
+        $this->assertIsInt($result['total_by_interval']);
+    }
+
+    public function test_get_general_enquiry_count_returns_integer_values(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_general_enquiry' => 1]);
+
+        $this->assertIsInt($result['total']);
+        $this->assertIsInt($result['total_by_interval']);
+    }
+
+    public function test_get_feasibility_enquiry_count_returns_integer_values(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_feasibility_enquiry' => 1]);
+
+        $this->assertIsInt($result['total']);
+        $this->assertIsInt($result['total_by_interval']);
+    }
+
+    public function test_get_data_access_request_count_returns_integer_values(): void
+    {
+        $result = $this->service->getCount(TeamHasDataAccessApplication::class, 'created_at', $this->teamId, null, null, []);
 
         $this->assertIsInt($result['total']);
         $this->assertIsInt($result['total_by_interval']);
@@ -138,7 +187,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_count_values_are_non_negative(): void
     {
-        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null, ['status' => Dataset::STATUS_ACTIVE]);
 
         $this->assertGreaterThanOrEqual(0, $result['total']);
         $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
@@ -146,7 +195,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_datause_count_values_are_non_negative(): void
     {
-        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null, ['status' => Dur::STATUS_ACTIVE]);
 
         $this->assertGreaterThanOrEqual(0, $result['total']);
         $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
@@ -154,7 +203,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_tool_count_values_are_non_negative(): void
     {
-        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null, ['status' => Tool::STATUS_ACTIVE]);
 
         $this->assertGreaterThanOrEqual(0, $result['total']);
         $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
@@ -162,7 +211,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_collection_count_values_are_non_negative(): void
     {
-        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null, ['status' => Collection::STATUS_ACTIVE]);
 
         $this->assertGreaterThanOrEqual(0, $result['total']);
         $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
@@ -170,7 +219,31 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_publication_count_values_are_non_negative(): void
     {
-        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null, ['status' => Publication::STATUS_ACTIVE]);
+
+        $this->assertGreaterThanOrEqual(0, $result['total']);
+        $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
+    }
+
+    public function test_get_general_enquiry_count_values_are_non_negative(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_general_enquiry' => 1]);
+
+        $this->assertGreaterThanOrEqual(0, $result['total']);
+        $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
+    }
+
+    public function test_get_feasibility_enquiry_count_values_are_non_negative(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_feasibility_enquiry' => 1]);
+
+        $this->assertGreaterThanOrEqual(0, $result['total']);
+        $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
+    }
+
+    public function test_get_data_access_request_count_values_are_non_negative(): void
+    {
+        $result = $this->service->getCount(TeamHasDataAccessApplication::class, 'created_at', $this->teamId, null, null, []);
 
         $this->assertGreaterThanOrEqual(0, $result['total']);
         $this->assertGreaterThanOrEqual(0, $result['total_by_interval']);
@@ -182,35 +255,56 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_count_interval_does_not_exceed_total(): void
     {
-        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null, ['status' => Dataset::STATUS_ACTIVE]);
 
         $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
     }
 
     public function test_get_datause_count_interval_does_not_exceed_total(): void
     {
-        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null, ['status' => Dur::STATUS_ACTIVE]);
 
         $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
     }
 
     public function test_get_tool_count_interval_does_not_exceed_total(): void
     {
-        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null, ['status' => Tool::STATUS_ACTIVE]);
 
         $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
     }
 
     public function test_get_collection_count_interval_does_not_exceed_total(): void
     {
-        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null, ['status' => Collection::STATUS_ACTIVE]);
 
         $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
     }
 
     public function test_get_publication_count_interval_does_not_exceed_total(): void
     {
-        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null);
+        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, null, null, ['status' => Publication::STATUS_ACTIVE]);
+
+        $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
+    }
+
+    public function test_get_general_enquiry_count_interval_does_not_exceed_total(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_general_enquiry' => 1]);
+
+        $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
+    }
+
+    public function test_get_feasibility_enquiry_count_interval_does_not_exceed_total(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, null, null, ['is_feasibility_enquiry' => 1]);
+
+        $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
+    }
+
+    public function test_get_data_access_request_count_interval_does_not_exceed_total(): void
+    {
+        $result = $this->service->getCount(TeamHasDataAccessApplication::class, 'created_at', $this->teamId, null, null, []);
 
         $this->assertLessThanOrEqual($result['total'], $result['total_by_interval']);
     }
@@ -221,7 +315,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_count_with_date_range_returns_correct_keys(): void
     {
-        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
+        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Dataset::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -229,7 +323,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_datause_count_with_date_range_returns_correct_keys(): void
     {
-        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
+        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Dur::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -237,7 +331,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_tool_count_with_date_range_returns_correct_keys(): void
     {
-        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
+        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Tool::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -245,7 +339,7 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_collection_count_with_date_range_returns_correct_keys(): void
     {
-        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
+        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Collection::STATUS_ACTIVE]);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -253,7 +347,31 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_publication_count_with_date_range_returns_correct_keys(): void
     {
-        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
+        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Publication::STATUS_ACTIVE]);
+
+        $this->assertArrayHasKey('total', $result);
+        $this->assertArrayHasKey('total_by_interval', $result);
+    }
+
+    public function test_get_general_enquiry_count_with_date_range_returns_correct_keys(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, '2024-01-01', '2024-12-31', ['is_general_enquiry' => 1]);
+
+        $this->assertArrayHasKey('total', $result);
+        $this->assertArrayHasKey('total_by_interval', $result);
+    }
+
+    public function test_get_feasibility_enquiry_count_with_date_range_returns_correct_keys(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, '2024-01-01', '2024-12-31', ['is_feasibility_enquiry' => 1]);
+
+        $this->assertArrayHasKey('total', $result);
+        $this->assertArrayHasKey('total_by_interval', $result);
+    }
+
+    public function test_get_data_access_request_count_with_date_range_returns_correct_keys(): void
+    {
+        $result = $this->service->getCount(TeamHasDataAccessApplication::class, 'created_at', $this->teamId, '2024-01-01', '2024-12-31', []);
 
         $this->assertArrayHasKey('total', $result);
         $this->assertArrayHasKey('total_by_interval', $result);
@@ -265,35 +383,56 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_count_with_future_date_range_returns_zero_interval(): void
     {
-        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31');
+        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31', ['status' => Dataset::STATUS_ACTIVE]);
 
         $this->assertEquals(0, $result['total_by_interval']);
     }
 
     public function test_get_datause_count_with_future_date_range_returns_zero_interval(): void
     {
-        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31');
+        $result = $this->service->getCount(Dur::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31', ['status' => Dur::STATUS_ACTIVE]);
 
         $this->assertEquals(0, $result['total_by_interval']);
     }
 
     public function test_get_tool_count_with_future_date_range_returns_zero_interval(): void
     {
-        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31');
+        $result = $this->service->getCount(Tool::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31', ['status' => Tool::STATUS_ACTIVE]);
 
         $this->assertEquals(0, $result['total_by_interval']);
     }
 
     public function test_get_collection_count_with_future_date_range_returns_zero_interval(): void
     {
-        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31');
+        $result = $this->service->getCount(Collection::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31', ['status' => Collection::STATUS_ACTIVE]);
 
         $this->assertEquals(0, $result['total_by_interval']);
     }
 
     public function test_get_publication_count_with_future_date_range_returns_zero_interval(): void
     {
-        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31');
+        $result = $this->service->getCount(Publication::class, 'active_date', $this->teamId, '2099-01-01', '2099-12-31', ['status' => Publication::STATUS_ACTIVE]);
+
+        $this->assertEquals(0, $result['total_by_interval']);
+    }
+
+    public function test_get_general_enquiry_count_with_future_date_range_returns_zero_interval(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, '2099-01-01', '2099-12-31', ['is_general_enquiry' => 1]);
+
+        $this->assertEquals(0, $result['total_by_interval']);
+    }
+
+    public function test_get_feasibility_enquiry_count_with_future_date_range_returns_zero_interval(): void
+    {
+        $result = $this->service->getCount(EnquiryThread::class, 'created_at', $this->teamId, '2099-01-01', '2099-12-31', ['is_feasibility_enquiry' => 1]);
+
+        $this->assertEquals(0, $result['total_by_interval']);
+    }
+
+    public function test_get_data_access_request_count_with_future_date_range_returns_zero_interval(): void
+    {
+        $result = $this->service->getCount(TeamHasDataAccessApplication::class, 'created_at', $this->teamId, '2099-01-01', '2099-12-31', []);
 
         $this->assertEquals(0, $result['total_by_interval']);
     }
@@ -304,34 +443,54 @@ class TeamDashboardServiceTest extends TestCase
 
     public function test_get_dataset_count_total_is_same_regardless_of_date_range(): void
     {
-        $withRange    = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
-        $withoutRange = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null);
+        $withRange    = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Dataset::STATUS_ACTIVE]);
+        $withoutRange = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, null, null, ['status' => Dataset::STATUS_ACTIVE]);
 
         $this->assertEquals($withoutRange['total'], $withRange['total']);
     }
 
     public function test_get_datause_count_total_is_same_regardless_of_date_range(): void
     {
-        $withRange    = $this->service->getCount(Dur::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
-        $withoutRange = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null);
+        $withRange    = $this->service->getCount(Dur::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Dur::STATUS_ACTIVE]);
+        $withoutRange = $this->service->getCount(Dur::class, 'active_date', $this->teamId, null, null, ['status' => Dur::STATUS_ACTIVE]);
 
         $this->assertEquals($withoutRange['total'], $withRange['total']);
     }
 
     public function test_get_tool_count_total_is_same_regardless_of_date_range(): void
     {
-        $withRange    = $this->service->getCount(Tool::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
-        $withoutRange = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null);
+        $withRange    = $this->service->getCount(Tool::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Tool::STATUS_ACTIVE]);
+        $withoutRange = $this->service->getCount(Tool::class, 'active_date', $this->teamId, null, null, ['status' => Tool::STATUS_ACTIVE]);
 
         $this->assertEquals($withoutRange['total'], $withRange['total']);
     }
 
     public function test_get_collection_count_total_is_same_regardless_of_date_range(): void
     {
-        $withRange    = $this->service->getCount(Collection::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31');
-        $withoutRange = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null);
+        $withRange    = $this->service->getCount(Collection::class, 'active_date', $this->teamId, '2024-01-01', '2024-12-31', ['status' => Collection::STATUS_ACTIVE]);
+        $withoutRange = $this->service->getCount(Collection::class, 'active_date', $this->teamId, null, null, ['status' => Collection::STATUS_ACTIVE]);
 
         $this->assertEquals($withoutRange['total'], $withRange['total']);
+    }
+
+    // -------------------------------------------------------------------------
+    // getCount – end date includes full day (23:59:59)
+    // -------------------------------------------------------------------------
+
+    public function test_get_dataset_count_interval_includes_end_of_day(): void
+    {
+        // Seed a dataset with active_date matching end of day boundary
+        $dataset = Dataset::factory()->create([
+            'team_id'     => $this->teamId,
+            'status'      => Dataset::STATUS_ACTIVE,
+            'active_date' => '2024-06-01 23:30:00',
+        ]);
+
+        $result = $this->service->getCount(Dataset::class, 'active_date', $this->teamId, '2024-06-01', '2024-06-01', ['status' => Dataset::STATUS_ACTIVE]);
+
+        $this->assertGreaterThanOrEqual(1, $result['total_by_interval']);
+
+        $dataset->forceDelete();
     }
 
     // -------------------------------------------------------------------------
@@ -413,7 +572,6 @@ class TeamDashboardServiceTest extends TestCase
             })
             ->andReturn([]);
 
-        // 365-day range → monthly
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-12-31');
 
         $this->addToAssertionCount(1);
@@ -429,7 +587,6 @@ class TeamDashboardServiceTest extends TestCase
             })
             ->andReturn([]);
 
-        // 90-day range → weekly
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-03-31');
 
         $this->addToAssertionCount(1);
@@ -441,12 +598,10 @@ class TeamDashboardServiceTest extends TestCase
             ->shouldReceive('query')
             ->once()
             ->withArgs(function (string $sql) {
-                // Daily format has no TRUNC keyword — just the raw date column
                 return !str_contains($sql, 'MONTH') && !str_contains($sql, 'WEEK');
             })
             ->andReturn([]);
 
-        // 14-day range → daily
         $this->service->getDatasetViews($this->teamId, '2024-01-01', '2024-01-14');
 
         $this->addToAssertionCount(1);

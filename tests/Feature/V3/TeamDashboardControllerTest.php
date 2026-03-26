@@ -47,6 +47,10 @@ class TeamDashboardControllerTest extends TestCase
             ->shouldReceive('getDatatasetViewsTop')
             ->andReturn([]);
 
+        $this->serviceMock
+            ->shouldReceive('getEntityViews')
+            ->andReturn([['counter' => 0]]);
+
         $this->app->instance(TeamDashboardService::class, $this->serviceMock);
     }
 
@@ -100,6 +104,27 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_get_general_enquiry_count_without_auth_returns_unauthorised(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/general-enquires/count');
+
+        $response->assertStatus(401);
+    }
+
+    public function test_get_feasibility_enquiry_count_without_auth_returns_unauthorised(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/fesability-enquires/count');
+
+        $response->assertStatus(401);
+    }
+
+    public function test_get_data_access_request_count_without_auth_returns_unauthorised(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/data-access-requests/count');
+
+        $response->assertStatus(401);
+    }
+
     public function test_get_dataset_views_360_without_auth_returns_unauthorised(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360');
@@ -110,6 +135,20 @@ class TeamDashboardControllerTest extends TestCase
     public function test_get_dataset_views_top_without_auth_returns_unauthorised(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/top');
+
+        $response->assertStatus(401);
+    }
+
+    public function test_get_collection_views_without_auth_returns_unauthorised(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views');
+
+        $response->assertStatus(401);
+    }
+
+    public function test_get_datacustodian_views_without_auth_returns_unauthorised(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views');
 
         $response->assertStatus(401);
     }
@@ -158,9 +197,49 @@ class TeamDashboardControllerTest extends TestCase
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
     }
 
+    public function test_get_general_enquiry_count_with_invalid_team_id_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/general-enquires/count', [], $this->headerNonAdmin);
+
+        $response->assertStatus(400);
+        $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
+    }
+
+    public function test_get_feasibility_enquiry_count_with_invalid_team_id_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/fesability-enquires/count', [], $this->headerNonAdmin);
+
+        $response->assertStatus(400);
+        $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
+    }
+
+    public function test_get_data_access_request_count_with_invalid_team_id_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/data-access-requests/count', [], $this->headerNonAdmin);
+
+        $response->assertStatus(400);
+        $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
+    }
+
     public function test_get_dataset_views_top_with_invalid_team_id_returns_without_success(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/views/top', [], $this->headerNonAdmin);
+
+        $response->assertStatus(400);
+        $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
+    }
+
+    public function test_get_collection_views_with_invalid_team_id_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/collections/views', [], $this->headerNonAdmin);
+
+        $response->assertStatus(400);
+        $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
+    }
+
+    public function test_get_datacustodian_views_with_invalid_team_id_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datacustodians/views', [], $this->headerNonAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -210,6 +289,30 @@ class TeamDashboardControllerTest extends TestCase
         $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
     }
 
+    public function test_get_general_enquiry_count_with_invalid_interval_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/general-enquires/count?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
+
+        $response->assertStatus(500);
+        $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_feasibility_enquiry_count_with_invalid_interval_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/fesability-enquires/count?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
+
+        $response->assertStatus(500);
+        $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_data_access_request_count_with_invalid_interval_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/data-access-requests/count?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
+
+        $response->assertStatus(500);
+        $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
+    }
+
     public function test_get_dataset_views_360_with_invalid_interval_returns_without_success(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
@@ -226,14 +329,29 @@ class TeamDashboardControllerTest extends TestCase
         $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
     }
 
+    public function test_get_collection_views_with_invalid_interval_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
+
+        $response->assertStatus(500);
+        $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_datacustodian_views_with_invalid_interval_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
+
+        $response->assertStatus(500);
+        $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
+    }
+
     // -------------------------------------------------------------------------
     // Unknown entity returns error
     // -------------------------------------------------------------------------
 
-    public function test_entity_count_returns_ok_for_unknown_entity(): void
+    public function test_entity_count_with_unknown_entity_returns_error(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/unknown/count', [], $this->headerNonAdmin);
-
         $response->assertStatus(500);
     }
 
@@ -281,6 +399,30 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertJsonStructure(['message', 'data' => ['total', 'total_by_interval']]);
     }
 
+    public function test_get_general_enquiry_count_returns_expected_json_structure(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/general-enquires/count', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['message', 'data' => ['total', 'total_by_interval']]);
+    }
+
+    public function test_get_feasibility_enquiry_count_returns_expected_json_structure(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/fesability-enquires/count', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['message', 'data' => ['total', 'total_by_interval']]);
+    }
+
+    public function test_get_data_access_request_count_returns_expected_json_structure(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/data-access-requests/count', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['message', 'data' => ['total', 'total_by_interval']]);
+    }
+
     public function test_get_dataset_views_360_returns_expected_json_structure(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360', [], $this->headerNonAdmin);
@@ -292,6 +434,22 @@ class TeamDashboardControllerTest extends TestCase
     public function test_get_dataset_views_top_returns_expected_json_structure(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/top', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['message', 'data']);
+    }
+
+    public function test_get_collection_views_returns_expected_json_structure(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['message', 'data']);
+    }
+
+    public function test_get_datacustodian_views_returns_expected_json_structure(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views', [], $this->headerNonAdmin);
 
         $response->assertOk();
         $response->assertJsonStructure(['message', 'data']);
@@ -382,6 +540,50 @@ class TeamDashboardControllerTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // collection_views and datacustodian_views: data is an array
+    // -------------------------------------------------------------------------
+
+    public function test_get_collection_views_returns_array_data(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertIsArray($response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_datacustodian_views_returns_array_data(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertIsArray($response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_collection_views_counter_value_is_numeric(): void
+    {
+        $this->serviceMock
+            ->shouldReceive('getEntityViews')
+            ->andReturn([['counter' => 15]]);
+
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertIsNumeric($response->decodeResponseJson()['data'][0]['counter']);
+    }
+
+    public function test_get_datacustodian_views_counter_value_is_numeric(): void
+    {
+        $this->serviceMock
+            ->shouldReceive('getEntityViews')
+            ->andReturn([['counter' => 8]]);
+
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertIsNumeric($response->decodeResponseJson()['data'][0]['counter']);
+    }
+
+    // -------------------------------------------------------------------------
     // Valid date interval passes through
     // -------------------------------------------------------------------------
 
@@ -395,6 +597,27 @@ class TeamDashboardControllerTest extends TestCase
     public function test_get_dataset_count_with_valid_interval_returns_success(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/count?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_general_enquiry_count_with_valid_interval_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/general-enquires/count?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_feasibility_enquiry_count_with_valid_interval_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/fesability-enquires/count?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_data_access_request_count_with_valid_interval_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/data-access-requests/count?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
 
         $response->assertOk();
     }
@@ -420,6 +643,34 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_get_collection_views_with_valid_interval_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_collection_views_with_equal_start_and_end_date_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views?startDate=2024-06-01&endDate=2024-06-01', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_datacustodian_views_with_valid_interval_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_datacustodian_views_with_equal_start_and_end_date_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views?startDate=2024-06-01&endDate=2024-06-01', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
     // -------------------------------------------------------------------------
     // No date params defaults to last 12 months
     // -------------------------------------------------------------------------
@@ -438,5 +689,42 @@ class TeamDashboardControllerTest extends TestCase
 
         $response->assertOk();
         $this->assertIsArray($response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_collection_views_without_dates_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertIsArray($response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_datacustodian_views_without_dates_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertIsArray($response->decodeResponseJson()['data']);
+    }
+
+    public function test_get_general_enquiry_count_without_dates_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/general-enquires/count', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_feasibility_enquiry_count_without_dates_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/fesability-enquires/count', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_get_data_access_request_count_without_dates_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/data-access-requests/count', [], $this->headerNonAdmin);
+
+        $response->assertOk();
     }
 }

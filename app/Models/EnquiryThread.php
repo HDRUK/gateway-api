@@ -40,7 +40,7 @@ class EnquiryThread extends Model
      */
     protected $table = 'enquiry_threads';
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     /**
      * Get and Set the team IDs.
