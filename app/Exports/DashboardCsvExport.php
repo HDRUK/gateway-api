@@ -40,7 +40,6 @@ class DashboardCsvExport implements FromArray
         ];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // data uses
         $rows[] = ['Data Uses'];
@@ -51,7 +50,6 @@ class DashboardCsvExport implements FromArray
         ];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // tools
         $rows[] = ['Analysis Scripts'];
@@ -62,7 +60,6 @@ class DashboardCsvExport implements FromArray
         ];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // publications
         $rows[] = ['Publications'];
@@ -73,7 +70,6 @@ class DashboardCsvExport implements FromArray
         ];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // collections
         $rows[] = ['Collections'];
@@ -84,7 +80,6 @@ class DashboardCsvExport implements FromArray
         ];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // 360 dataset views
         $rows[] = ['360 Dataset Views'];
@@ -97,7 +92,6 @@ class DashboardCsvExport implements FromArray
         }
 
         $rows[] = [''];
-        $rows[] = [];
 
         // top dataset views
         $rows[] = ['Most Dataset Views'];
@@ -110,7 +104,6 @@ class DashboardCsvExport implements FromArray
         }
 
         $rows[] = [''];
-        $rows[] = [];
 
         // other views
         $rows[] = ['Other Views'];
@@ -121,7 +114,6 @@ class DashboardCsvExport implements FromArray
         $rows[] = [$this->val($this->collectionViews[0]['counter'])];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // data custodian page
         $rows[] = ['Data Custodian page'];
@@ -129,7 +121,6 @@ class DashboardCsvExport implements FromArray
         $rows[] = [$this->val($this->dataCustodianViews[0]['counter'])];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // enquiries and requests
         $rows[] = ['Enquiries and requests'];
@@ -143,7 +134,6 @@ class DashboardCsvExport implements FromArray
         ];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // feasibility enquiries
         $rows[] = ['Feasibility enquiries'];
@@ -154,7 +144,6 @@ class DashboardCsvExport implements FromArray
         ];
 
         $rows[] = [''];
-        $rows[] = [];
 
         // data access requests
         $rows[] = ['Data access requests'];
@@ -170,10 +159,5 @@ class DashboardCsvExport implements FromArray
     private function val(mixed $value): string
     {
         return (string) ($value ?? 0);
-    }
-
-    private function spacer(): array
-    {
-        return [[], []];
     }
 }

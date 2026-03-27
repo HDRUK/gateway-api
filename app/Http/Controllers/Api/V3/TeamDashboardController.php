@@ -46,6 +46,20 @@ class TeamDashboardController extends Controller
      *         description="Entity type to count",
      *         @OA\Schema(type="string", enum={"datasets", "datauses", "tools", "collections", "general-enquires", "fesability-enquires", "data-access-requests"})
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -123,6 +137,20 @@ class TeamDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -170,6 +198,20 @@ class TeamDashboardController extends Controller
      *         required=true,
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -220,6 +262,20 @@ class TeamDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -262,6 +318,20 @@ class TeamDashboardController extends Controller
      *         required=true,
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -306,12 +376,41 @@ class TeamDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful response",
+     *         description="CSV file download containing dashboard metrics for the team",
+     *         @OA\MediaType(
+     *             mediaType="text/csv",
+     *             @OA\Schema(type="string", format="binary")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid team ID",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="success"),
-     *             @OA\Property(property="data", type="integer", example=0),
+     *             @OA\Property(property="message", type="string", example="Invalid argument(s)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Invalid date interval",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="error"),
+     *             @OA\Property(property="data", type="string", example="startDate must be less than or equal to endDate")
      *         )
      *     )
      * )
