@@ -67,7 +67,7 @@ return [
     // dasboard endpoints for data custodian/team
 
     [
-        'name'                => 'datasets.count',
+        'name'                => 'dashboard.count',
         'method'              => 'get',
         'path'                => '/teams/{id}/dashboard/{entity}/count',
         'methodController'    => 'TeamDashboardController@entityCount',
@@ -81,7 +81,7 @@ return [
         ],
     ],
     [
-        'name'                => 'datasets.views.360',
+        'name'                => 'dashboard.datasets.views.360',
         'method'              => 'get',
         'path'                => '/teams/{id}/dashboard/datasets/views/360',
         'methodController'    => 'TeamDashboardController@datasetViews360',
@@ -94,7 +94,7 @@ return [
         ],
     ],
     [
-        'name'                => 'datasets.views.top',
+        'name'                => 'dashboard.datasets.views.top',
         'method'              => 'get',
         'path'                => '/teams/{id}/dashboard/datasets/views/top',
         'methodController'    => 'TeamDashboardController@datasetViewsTop',
@@ -107,7 +107,7 @@ return [
         ],
     ],
     [
-        'name'                => 'collections.views',
+        'name'                => 'dashboard.collections.views',
         'method'              => 'get',
         'path'                => '/teams/{id}/dashboard/collections/views',
         'methodController'    => 'TeamDashboardController@collectionViews',
@@ -120,10 +120,23 @@ return [
         ],
     ],
     [
-        'name'                => 'datacustodians.views',
+        'name'                => 'dashboard.datacustodians.views',
         'method'              => 'get',
         'path'                => '/teams/{id}/dashboard/datacustodians/views',
         'methodController'    => 'TeamDashboardController@datacustodianViews',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name'                => 'dashboard.download.csv',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/download/csv',
+        'methodController'    => 'TeamDashboardController@downloadCsv',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',

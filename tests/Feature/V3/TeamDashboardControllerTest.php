@@ -153,6 +153,13 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_download_csv_without_auth_returns_unauthorised(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/download/csv');
+
+        $response->assertStatus(401);
+    }
+
     // -------------------------------------------------------------------------
     // Invalid team ID
     // -------------------------------------------------------------------------
@@ -240,6 +247,14 @@ class TeamDashboardControllerTest extends TestCase
     public function test_get_datacustodian_views_with_invalid_team_id_returns_without_success(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datacustodians/views', [], $this->headerNonAdmin);
+
+        $response->assertStatus(400);
+        $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
+    }
+
+    public function test_download_csv_with_invalid_team_id_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/download/csv', [], $this->headerNonAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -340,6 +355,14 @@ class TeamDashboardControllerTest extends TestCase
     public function test_get_datacustodian_views_with_invalid_interval_returns_without_success(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datacustodians/views?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
+
+        $response->assertStatus(500);
+        $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
+    }
+
+    public function test_download_csv_with_invalid_interval_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/download/csv?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
 
         $response->assertStatus(500);
         $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
@@ -726,5 +749,46 @@ class TeamDashboardControllerTest extends TestCase
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/data-access-requests/count', [], $this->headerNonAdmin);
 
         $response->assertOk();
+    }
+
+    // -------------------------------------------------------------------------
+    // downloadCsv – valid requests
+    // -------------------------------------------------------------------------
+
+    public function test_download_csv_returns_csv_file(): void
+    {
+        $response = $this->get('/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/download/csv', $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
+    }
+
+    public function test_download_csv_with_valid_interval_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/download/csv?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_download_csv_with_equal_start_and_end_date_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/download/csv?startDate=2024-06-01&endDate=2024-06-01', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_download_csv_without_dates_returns_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/download/csv', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+    }
+
+    public function test_download_csv_content_disposition_header_contains_filename(): void
+    {
+        $response = $this->get('/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/download/csv', $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertStringContainsString('dashboard.csv', $response->headers->get('Content-Disposition'));
     }
 }

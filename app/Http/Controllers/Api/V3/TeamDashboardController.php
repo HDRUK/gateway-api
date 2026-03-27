@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V3;
 
+use App\Exports\DashboardCsvExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V3\TeamDashboard\GetTeamDashboard;
 use App\Http\Traits\Responses;
@@ -13,6 +14,7 @@ use App\Models\Publication;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Tool;
 use App\Services\V3\TeamDashboardService;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TeamDashboardController extends Controller
 {
@@ -288,5 +290,77 @@ class TeamDashboardController extends Controller
         $response = $this->teamDashboardService->getEntityViews('data-custodian', $id, $startDate, $endDate);
 
         return $this->okResponse($response);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dashboard/download/csv",
+     *     operationId="fetch_dashboard_download_csv_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="TeamDashboardController@downloadCsv",
+     *     description="Download dashboard data custodian in csv format",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(property="data", type="integer", example=0),
+     *         )
+     *     )
+     * )
+     */
+    public function downloadCsv(GetTeamDashboard $request, $id)
+    {
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $entityDatasets = $this->teamDashboardService->getCount(Dataset::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dataset::STATUS_ACTIVE]);
+        $entityDataUses = $this->teamDashboardService->getCount(Dur::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dur::STATUS_ACTIVE]);
+        $entityTools = $this->teamDashboardService->getCount(Tool::class, 'active_date', $id, $startDate, $endDate, ['status'  => Tool::STATUS_ACTIVE]);
+        $entityPublications = $this->teamDashboardService->getCount(Publication::class, 'active_date', $id, $startDate, $endDate, ['status'  => Publication::STATUS_ACTIVE]);
+        $entityCollections = $this->teamDashboardService->getCount(Collection::class, 'active_date', $id, $startDate, $endDate, ['status'  => Collection::STATUS_ACTIVE]);
+        $entityGeneralEnquiries = $this->teamDashboardService->getCount(EnquiryThread::class, 'created_at', $id, $startDate, $endDate, ['is_general_enquiry' => 1]);
+        $entityFeasabilityEnquiries = $this->teamDashboardService->getCount(EnquiryThread::class, 'created_at', $id, $startDate, $endDate, ['is_feasibility_enquiry' => 1]);
+        $entityDataAccessRequests = $this->teamDashboardService->getCount(TeamHasDataAccessApplication::class, 'created_at', $id, $startDate, $endDate, []);
+        $dataset360Views = $this->teamDashboardService->getDatasetViews($id, $startDate, $endDate);
+        $datasetTopViews = $this->teamDashboardService->getDatatasetViewsTop($id, $startDate, $endDate);
+        $collectionViews = $this->teamDashboardService->getEntityViews('collection', $id, $startDate, $endDate);
+        $dataCustodianViews = $this->teamDashboardService->getEntityViews('data-custodian', $id, $startDate, $endDate);
+
+        return Excel::download(
+            new DashboardCsvExport(
+                $entityDatasets,
+                $entityDataUses,
+                $entityTools,
+                $entityPublications,
+                $entityCollections,
+                $entityGeneralEnquiries,
+                $entityFeasabilityEnquiries,
+                $entityDataAccessRequests,
+                $dataset360Views,
+                $datasetTopViews,
+                $collectionViews,
+                $dataCustodianViews,
+                $startDate,
+                $endDate,
+            ),
+            'dashboard.csv',
+        );
     }
 }
