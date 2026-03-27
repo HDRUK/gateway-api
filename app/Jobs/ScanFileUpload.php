@@ -57,6 +57,7 @@ class ScanFileUpload implements ShouldQueue
     private ?int $collectionId = null;
     private ?int $applicationId = null;
     private ?int $questionId = null;
+    private ?int $answerIndex = null;
     private ?int $reviewId = null;
     private bool $isLocalOrTestEnv = false;
 
@@ -82,6 +83,7 @@ class ScanFileUpload implements ShouldQueue
         ?int $collectionId,
         ?int $applicationId,
         ?int $questionId,
+        ?int $answerIndex,
         ?int $reviewId,
     ) {
         $this->uploadId = $uploadId;
@@ -98,6 +100,7 @@ class ScanFileUpload implements ShouldQueue
         $this->collectionId = $collectionId;
         $this->applicationId = $applicationId;
         $this->questionId = $questionId;
+        $this->answerIndex = $answerIndex;
         $this->reviewId = $reviewId;
         $this->isLocalOrTestEnv = (strtoupper(config('app.env')) === 'TESTING' || strtoupper(config('app.env')) === 'LOCAL');
 
@@ -574,11 +577,13 @@ class ScanFileUpload implements ShouldQueue
                     [
                         'application_id' => $this->applicationId,
                         'question_id' => $this->questionId,
+                        'answer_index' => $this->answerIndex,
                     ],
                     [
                         'application_id' => $this->applicationId,
                         'question_id' => $this->questionId,
                         'contributor_id' => $this->userId,
+                        'answer_index' => $this->answerIndex,
                         'answer' => [
                             'value' => [
                                 'filename' => $upload->filename,
@@ -591,6 +596,7 @@ class ScanFileUpload implements ShouldQueue
                 $answer = DataAccessApplicationAnswer::where([
                     'application_id' => $this->applicationId,
                     'question_id' => $this->questionId,
+                    'answer_index' => $this->answerIndex,
                 ])->first();
                 if ($answer) {
                     $thisFile = [[
@@ -608,6 +614,7 @@ class ScanFileUpload implements ShouldQueue
                     DataAccessApplicationAnswer::create([
                         'application_id' => $this->applicationId,
                         'question_id' => $this->questionId,
+                        'answer_index' => $this->answerIndex,
                         'contributor_id' => $this->userId,
                         'answer' => [
                             'value' => [[
@@ -625,6 +632,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'dataAccessApplication',
                 'entity_id' => $this->applicationId,
                 'question_id' => $this->questionId,
+                'answer_index' => $this->answerIndex,
             ]);
 
             \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
