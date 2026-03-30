@@ -109,16 +109,12 @@ class DashboardCsvExport implements FromArray
         $rows[] = ['Other Views'];
 
         // collections
-        $rows[] = ['Collections'];
-        $rows[] = ['Counter'];
-        $rows[] = [$this->val($this->collectionViews[0]['counter'])];
+        $rows[] = ['Collections', $this->val($this->collectionViews[0]['counter'])];
 
         $rows[] = [''];
 
         // data custodian page
-        $rows[] = ['Data Custodian page'];
-        $rows[] = ['Counter'];
-        $rows[] = [$this->val($this->dataCustodianViews[0]['counter'])];
+        $rows[] = ['Data Custodian page', $this->val($this->dataCustodianViews[0]['counter'])];
 
         $rows[] = [''];
 

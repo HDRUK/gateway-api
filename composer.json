@@ -15,8 +15,10 @@
     ],
     "require": {
         "php": "^8.3",
+        "barryvdh/laravel-dompdf": "^3.1",
         "darkaonline/l5-swagger": "^8.4",
         "elasticsearch/elasticsearch": "^8.10",
+        "goat1000/svggraph": "^3.20",
         "google/cloud-bigquery": "^1.35",
         "google/cloud-logging": "^1.30",
         "google/cloud-pubsub": "^2.1",

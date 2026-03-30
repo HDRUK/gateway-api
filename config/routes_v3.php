@@ -145,5 +145,18 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name'                => 'dashboard.download.pdf',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/download/pdf',
+        'methodController'    => 'TeamDashboardController@downloadPdf',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 
 ];
