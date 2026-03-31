@@ -130,7 +130,12 @@ trait MetadataVersioning
             'version' => $currDataset->lastMetadataVersionNumber()->version,
         ])->first();
 
-        $dv->metadata = json_encode($metadataSaveObject);
+        // title/short_title are regular columns (converted from STORED GENERATED
+        // in migration 2026_03_11_133601). Update them explicitly here to keep
+        // them in sync with the metadata payload on every v2 overwrite.
+        $dv->metadata    = json_encode($metadataSaveObject);
+        $dv->title       = $newMetadata['summary']['title'] ?? null;
+        $dv->short_title = $newMetadata['summary']['shortTitle'] ?? ($newMetadata['summary']['title'] ?? null);
         $dv->save();
 
         return $dv->id;

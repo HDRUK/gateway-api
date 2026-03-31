@@ -22,6 +22,13 @@ class DurObserver
                 $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
             }
         }
+
+        if (!is_null($dur) && $dur->status === Dur::STATUS_ACTIVE && $dur->active_date === null) {
+            $dur->active_date = now();
+            $dur->withoutEvents(function () use ($dur) {
+                $dur->save();
+            });
+        }
     }
 
     /**
@@ -52,6 +59,13 @@ class DurObserver
             if ($dur->team_id) {
                 $this->reindexElasticDataProviderWithRelations((int) $dur->team_id, 'dataset');
             }
+        }
+
+        if (!is_null($dur) && $dur->status === Dur::STATUS_ACTIVE && $dur->active_date === null) {
+            $dur->active_date = now();
+            $dur->withoutEvents(function () use ($dur) {
+                $dur->save();
+            });
         }
     }
 

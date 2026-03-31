@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use App\Http\Traits\DatasetFetch;
-use App\Models\Traits\SortManager;
 use App\Models\Traits\EntityCounter;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Prunable;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Traits\SortManager;
+use App\Observers\ToolObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
+#[ObservedBy([ToolObserver::class])]
 class Tool extends Model
 {
     use HasFactory;

@@ -230,9 +230,14 @@ class TeamTest extends TestCase
                     'team_logo',
                     'introduction',
                     'durs',
+                    'associated_durs',
                     'tools',
+                    'associated_tools',
                     'publications',
+                    'associated_publications',
                     'collections',
+                    'associated_collections',
+                    'aliases',
                 ],
             ]);
     }

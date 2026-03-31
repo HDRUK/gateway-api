@@ -72,6 +72,12 @@ return [
         'enabled' => env('GOOGLE_CLOUD_LOGGING_ENABLED', false),
     ],
 
+    'googlebigquery' => [
+        'project_id' => env('GOOGLE_CLOUD_BIGQUERY_PROJECT_ID', 'gcp_bigquery_project_id'),
+        'dashboard_dataset' => env('GOOGLE_CLOUD_BIGQUERY_DASHBOARD_DATASET', 'gcp_bigquery_dashboard_dataset'),
+        'dashboard_table' => env('GOOGLE_CLOUD_BIGQUERY_DASHBOARD_TABLE', 'gcp_bigquery_dashboard_table'),
+    ],
+
     'elasticclient' => [
         'verify_ssl' => env('ELASTICSEARCH_VERIFY_SSL', false),
         'user' => env('ELASTICSEARCH_USER'),
