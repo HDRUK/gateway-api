@@ -9,12 +9,12 @@ return new class extends Migration {
     {
         Schema::create('project_grant_has_dataset_version', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('project_grant_id');
+            $table->unsignedBigInteger('project_grant_version_id');
             $table->unsignedBigInteger('dataset_version_id');
 
-            $table->foreign('project_grant_id')
+            $table->foreign('project_grant_version_id')
                 ->references('id')
-                ->on('project_grants')
+                ->on('project_grant_versions')
                 ->onDelete('cascade');
 
             $table->foreign('dataset_version_id')
@@ -24,7 +24,10 @@ return new class extends Migration {
 
             $table->timestamps();
 
-            $table->unique(['project_grant_id', 'dataset_version_id'], 'project_grant_dataset_version_unique');
+            $table->unique(
+                ['project_grant_version_id', 'dataset_version_id'],
+                'project_grant_version_dataset_version_unique'
+            );
         });
     }
 
@@ -33,4 +36,3 @@ return new class extends Migration {
         Schema::dropIfExists('project_grant_has_dataset_version');
     }
 };
-

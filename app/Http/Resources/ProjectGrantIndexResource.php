@@ -8,22 +8,21 @@ class ProjectGrantIndexResource extends JsonResource
 {
     public function toArray($request): array
     {
+        $latest = null;
+        if ($this->relationLoaded('versions') && $this->versions->isNotEmpty()) {
+            $latest = $this->versions->sortByDesc('version')->first();
+        } elseif ($this->relationLoaded('latestVersion') && $this->latestVersion) {
+            $latest = $this->latestVersion;
+        }
+
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
             'team_id' => $this->team_id,
-            'version' => $this->version,
             'pid' => $this->pid,
-            'projectGrantName' => $this->projectGrantName,
-            'leadResearcher' => $this->leadResearcher,
-            'leadResearchInstitute' => $this->leadResearchInstitute,
-            'grantNumbers' => $this->grantNumbers,
-            'projectGrantStartDate' => $this->projectGrantStartDate,
-            'projectGrantEndDate' => $this->projectGrantEndDate,
-            'projectGrantScope' => $this->projectGrantScope,
+            'latest_version' => $latest ? (new ProjectGrantVersionResource($latest))->resolve($request) : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
     }
 }
-

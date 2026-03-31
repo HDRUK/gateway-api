@@ -151,8 +151,9 @@ class Dur extends Model
         }
 
         $projectGrantIds = DB::table('project_grant_has_dataset_version')
-            ->whereIn('dataset_version_id', $datasetVersionIds)
-            ->pluck('project_grant_id')
+            ->join('project_grant_versions', 'project_grant_versions.id', '=', 'project_grant_has_dataset_version.project_grant_version_id')
+            ->whereIn('project_grant_has_dataset_version.dataset_version_id', $datasetVersionIds)
+            ->pluck('project_grant_versions.project_grant_id')
             ->unique()
             ->toArray();
 

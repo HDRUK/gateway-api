@@ -9,8 +9,8 @@ return new class extends Migration {
     {
         Schema::create('project_grants', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('version');
-            $table->string('pid')->index();
+            // Stable business key: aligns with the parent Dataset.pid
+            $table->string('pid')->unique();
 
             $table->unsignedBigInteger('user_id')->nullable()->index();
             $table->unsignedBigInteger('team_id')->nullable()->index();
@@ -18,21 +18,8 @@ return new class extends Migration {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('team_id')->references('id')->on('teams')->onDelete('set null');
 
-            $table->string('projectGrantName');
-            $table->string('leadResearcher')->nullable();
-            $table->string('leadResearchInstitute')->nullable();
-
-            // JSON array (metadata provides `grantNumbers` as a string in many cases)
-            $table->json('grantNumbers')->nullable();
-
-            $table->date('projectGrantStartDate')->nullable();
-            $table->date('projectGrantEndDate')->nullable();
-            $table->text('projectGrantScope')->nullable();
-
             $table->timestamps();
             $table->softDeletes();
-
-            $table->unique(['pid', 'version', 'projectGrantName'], 'project_grants_unique');
         });
     }
 
@@ -41,4 +28,3 @@ return new class extends Migration {
         Schema::dropIfExists('project_grants');
     }
 };
-

@@ -16,13 +16,13 @@ class ProjectGrantHasDatasetVersion extends Model
     protected $table = 'project_grant_has_dataset_version';
 
     protected $fillable = [
-        'project_grant_id',
+        'project_grant_version_id',
         'dataset_version_id',
     ];
 
-    public function projectGrant(): BelongsTo
+    public function projectGrantVersion(): BelongsTo
     {
-        return $this->belongsTo(ProjectGrant::class, 'project_grant_id', 'id');
+        return $this->belongsTo(ProjectGrantVersion::class, 'project_grant_version_id', 'id');
     }
 
     public function datasetVersion(): BelongsTo
@@ -30,4 +30,3 @@ class ProjectGrantHasDatasetVersion extends Model
         return $this->belongsTo(DatasetVersion::class, 'dataset_version_id', 'id');
     }
 }
-

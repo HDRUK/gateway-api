@@ -344,6 +344,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'feature-flags.enabled',
+        'method' => 'get',
+        'path' => '/feature-flags/enabled',
+        'methodController' => 'FeatureController@enabled',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'features.me',
         'method' => 'get',
         'path' => '/features/me',

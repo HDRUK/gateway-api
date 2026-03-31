@@ -13,13 +13,13 @@ class ProjectGrantHasTool extends Model
     protected $table = 'project_grant_has_tools';
 
     protected $fillable = [
-        'project_grant_id',
+        'project_grant_version_id',
         'tool_id',
     ];
 
-    public function projectGrant(): BelongsTo
+    public function projectGrantVersion(): BelongsTo
     {
-        return $this->belongsTo(ProjectGrant::class, 'project_grant_id', 'id');
+        return $this->belongsTo(ProjectGrantVersion::class, 'project_grant_version_id', 'id');
     }
 
     public function tool(): BelongsTo
@@ -27,4 +27,3 @@ class ProjectGrantHasTool extends Model
         return $this->belongsTo(Tool::class, 'tool_id', 'id');
     }
 }
-

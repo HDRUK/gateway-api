@@ -13,13 +13,13 @@ class ProjectGrantHasPublication extends Model
     protected $table = 'project_grant_has_publications';
 
     protected $fillable = [
-        'project_grant_id',
+        'project_grant_version_id',
         'publication_id',
     ];
 
-    public function projectGrant(): BelongsTo
+    public function projectGrantVersion(): BelongsTo
     {
-        return $this->belongsTo(ProjectGrant::class, 'project_grant_id', 'id');
+        return $this->belongsTo(ProjectGrantVersion::class, 'project_grant_version_id', 'id');
     }
 
     public function publication(): BelongsTo
@@ -27,4 +27,3 @@ class ProjectGrantHasPublication extends Model
         return $this->belongsTo(Publication::class, 'publication_id', 'id');
     }
 }
-

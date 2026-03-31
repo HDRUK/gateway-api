@@ -12,22 +12,15 @@ class ProjectGrantResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'team_id' => $this->team_id,
-            'version' => $this->version,
             'pid' => $this->pid,
-            'projectGrantName' => $this->projectGrantName,
-            'leadResearcher' => $this->leadResearcher,
-            'leadResearchInstitute' => $this->leadResearchInstitute,
-            'grantNumbers' => $this->grantNumbers,
-            'projectGrantStartDate' => $this->projectGrantStartDate,
-            'projectGrantEndDate' => $this->projectGrantEndDate,
-            'projectGrantScope' => $this->projectGrantScope,
-            'datasetVersions' => $this->whenLoaded('datasetVersions'),
-            'publications' => $this->whenLoaded('publications'),
-            'tools' => $this->whenLoaded('tools'),
+            'versions' => ProjectGrantVersionResource::collection($this->whenLoaded('versions')),
+            'latest_version' => $this->when(
+                $this->relationLoaded('latestVersion') && $this->latestVersion,
+                fn () => (new ProjectGrantVersionResource($this->latestVersion))->resolve($request)
+            ),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,
         ];
     }
 }
-

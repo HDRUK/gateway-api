@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ProjectGrant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProjectGrantService
@@ -21,25 +22,56 @@ class ProjectGrantService
         $sortField = $tmp[0];
         $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'asc';
 
-        return ProjectGrant::query()
-            ->when($pid, fn ($q) => $q->where('pid', '=', $pid))
-            ->when($version, fn ($q) => $q->where('version', '=', $version))
-            ->when($projectGrantName, fn ($q) => $q->where('projectGrantName', 'LIKE', '%' . $projectGrantName . '%'))
-            ->when($userId, fn ($q) => $q->where('user_id', '=', $userId))
-            ->when($teamId, fn ($q) => $q->where('team_id', '=', $teamId))
-            ->when($withRelated, fn ($q) => $q->with(['datasetVersions', 'publications', 'tools']))
-            ->when($sort, fn ($q) => $q->orderBy($sortField, $sortDirection))
-            ->paginate($perPage, ['*'], 'page');
+        $query = ProjectGrant::query()
+            ->when($pid, fn (Builder $q) => $q->where('pid', '=', $pid))
+            ->when($userId, fn (Builder $q) => $q->where('user_id', '=', $userId))
+            ->when($teamId, fn (Builder $q) => $q->where('team_id', '=', $teamId))
+            ->when($version, function (Builder $q) use ($version) {
+                $q->whereHas('versions', fn (Builder $v) => $v->where('version', '=', $version));
+            })
+            ->when($projectGrantName, function (Builder $q) use ($projectGrantName) {
+                $q->whereHas('versions', fn (Builder $v) => $v->where('projectGrantName', 'LIKE', '%' . $projectGrantName . '%'));
+            });
+
+        if ($sortField === 'version') {
+            $query->withMax('versions', 'version')
+                ->orderBy('versions_max_version', $sortDirection);
+        } else {
+            $query->when($sort, fn (Builder $q) => $q->orderBy($sortField, $sortDirection));
+        }
+
+        if ($withRelated) {
+            $query->with([
+                'versions' => function ($q) {
+                    $q->orderByDesc('version');
+                },
+                'versions.datasetVersions',
+                'versions.publications',
+                'versions.tools',
+            ]);
+        } else {
+            $query->with('latestVersion');
+        }
+
+        return $query->paginate($perPage, ['*'], 'page');
     }
 
     public function findById(int $projectGrantId, bool $withRelated): ?ProjectGrant
     {
         $query = ProjectGrant::withTrashed()->where(['id' => $projectGrantId]);
         if ($withRelated) {
-            $query = $query->with(['datasetVersions', 'publications', 'tools']);
+            $query = $query->with([
+                'versions' => function ($q) {
+                    $q->orderByDesc('version');
+                },
+                'versions.datasetVersions',
+                'versions.publications',
+                'versions.tools',
+            ]);
+        } else {
+            $query = $query->with('latestVersion');
         }
 
         return $query->first();
     }
 }
-

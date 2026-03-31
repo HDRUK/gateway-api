@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use App\Observers\ProjectGrantObserver;
 
@@ -21,17 +21,9 @@ class ProjectGrant extends Model
     protected $table = 'project_grants';
 
     protected $fillable = [
+        'pid',
         'user_id',
         'team_id',
-        'version',
-        'pid',
-        'projectGrantName',
-        'leadResearcher',
-        'leadResearchInstitute',
-        'grantNumbers',
-        'projectGrantStartDate',
-        'projectGrantEndDate',
-        'projectGrantScope',
     ];
 
     public function user(): BelongsTo
@@ -44,45 +36,19 @@ class ProjectGrant extends Model
         return $this->belongsTo(Team::class, 'team_id', 'id');
     }
 
-    protected $casts = [
-        'grantNumbers' => 'array',
-        'projectGrantStartDate' => 'date',
-        'projectGrantEndDate' => 'date',
-    ];
+    /**
+     * Versioned snapshots for this grant (same role as dataset_versions for datasets).
+     */
+    public function versions(): HasMany
+    {
+        return $this->hasMany(ProjectGrantVersion::class, 'project_grant_id', 'id');
+    }
 
     /**
-     * Dataset versions that this project grant is associated with.
+     * Highest `version` number for this grant (for list views without loading all rows).
      */
-    public function datasetVersions(): BelongsToMany
+    public function latestVersion(): HasOne
     {
-        return $this->belongsToMany(
-            DatasetVersion::class,
-            'project_grant_has_dataset_version',
-            'project_grant_id',
-            'dataset_version_id'
-        );
-    }
-
-    public function publications(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Publication::class,
-            'project_grant_has_publications',
-            'project_grant_id',
-            'publication_id'
-        )
-            ->where('publications.status', 'ACTIVE');
-    }
-
-    public function tools(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Tool::class,
-            'project_grant_has_tools',
-            'project_grant_id',
-            'tool_id'
-        )
-            ->where('tools.status', 'ACTIVE');
+        return $this->hasOne(ProjectGrantVersion::class)->latestOfMany('version');
     }
 }
-

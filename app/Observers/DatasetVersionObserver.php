@@ -65,9 +65,10 @@ class DatasetVersionObserver
             $datasetVersion->active_date = now();
             $datasetVersion->save();
         } elseif (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
+            // Project grant first: stable grant + version row must exist before publication/tool linkage pivots.
+            ExtractProjectGrantsFromMetadata::dispatch($datasetVersion->id);
             ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
             ExtractToolsFromMetadata::dispatch($datasetVersion->id);
-            ExtractProjectGrantsFromMetadata::dispatch($datasetVersion->id);
 
             $this->reindexElastic($dataset->id);
             if ($dataset->team_id) {

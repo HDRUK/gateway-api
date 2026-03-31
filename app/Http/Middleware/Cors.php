@@ -19,10 +19,14 @@ class Cors
             $allowedOrigins[] = $dta;
         }
 
+        $defaultAllowHeaders = 'Content-Type, Origin, Authorization, x-request-session-id, x-partner-context';
+        // Preflight sends Access-Control-Request-Headers; echo it so the browser’s list (casing/order) matches exactly.
+        $allowHeaders = $request->headers->get('Access-Control-Request-Headers') ?: $defaultAllowHeaders;
+
         $headers = [
             'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization, x-request-session-id',
+            'Access-Control-Allow-Headers' => $allowHeaders,
             'Vary' => 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
         ];
 
