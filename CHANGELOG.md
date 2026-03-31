@@ -1,3 +1,25 @@
+## [2.38.0](https://github.com/HDRUK/gateway-api/compare/v2.37.0...v2.38.0) (2026-03-31)
+
+### ✨ Features
+
+* **GAT-7181:** Dataset Versioning V3 endpoints using JSONPatch deltas. (#1580) ([4cfc186](https://github.com/HDRUK/gateway-api/commit/4cfc1868fd854bb6da5b7604e1098817152309e5)), closes [GAT-7181](GAT-7181)
+* **GAT-7581:** custodian network owned or associated entities (#1591) ([bd76c9b](https://github.com/HDRUK/gateway-api/commit/bd76c9ba5ca3d9386f6e531e0733d466b4452673)), closes [GAT-7581](GAT-7581)
+* **GAT-7581:** custodian owned or associated entities (#1589) ([6eec9e4](https://github.com/HDRUK/gateway-api/commit/6eec9e48da7dbbf6a5fd2001737963389d9a8e59)), closes [GAT-7581](GAT-7581)
+* **GAT-7581:** custodian owned or associated entities update (#1590) ([2464a08](https://github.com/HDRUK/gateway-api/commit/2464a086e534ac2c917fb8bcb9adc654dec0e0d5)), closes [GAT-7581](GAT-7581)
+* **GAT-7966:** updated semantic pipeline merge back to dev (#1585) ([1711944](https://github.com/HDRUK/gateway-api/commit/17119444d6e9e4cfc2bcd61b4642738b0d1d9878)), closes [GAT-7966](GAT-7966)
+* **GAT-8488:** Update permission for route (#1598) ([a0aff46](https://github.com/HDRUK/gateway-api/commit/a0aff467fe2004074d6072d5d7b6a4d84f0e2c11)), closes [GAT-8488](GAT-8488)
+* **GAT-8500:** bigquery service (#1593) ([4e9ed48](https://github.com/HDRUK/gateway-api/commit/4e9ed4873f8488ab2153566fc642d794621153a2)), closes [GAT-8500](GAT-8500)
+* **GAT-8500:** dashboard data custodian resources (#1594) ([5669fd3](https://github.com/HDRUK/gateway-api/commit/5669fd35100c39bd1591e0e96d2eb5d807b2f2d7)), closes [GAT-8500](GAT-8500)
+* **GAT-8504:** data custodian dashboard dataset views widget (#1595) ([f62aaa5](https://github.com/HDRUK/gateway-api/commit/f62aaa57cb66a1f23f402c138edb121080ad1ef4)), closes [GAT-8504](GAT-8504)
+* **GAT-8506:** Data Custodian dashboard top dataset views widget (#1597) ([fc6e0c9](https://github.com/HDRUK/gateway-api/commit/fc6e0c971a006ac3e1f707a4e7088f58f4feccea)), closes [GAT-8506](GAT-8506)
+* **GAT-8508:** data custodian dashboard other views (#1599) ([b35e866](https://github.com/HDRUK/gateway-api/commit/b35e866b9cf6443646904bf2ba33485b289215d2)), closes [GAT-8508](GAT-8508)
+* **GAT-8510:** data custodian dashboard enquiries and requests (#1601) ([b95cd53](https://github.com/HDRUK/gateway-api/commit/b95cd53d28df8e2900f2e6ac0ba7f22accea37dc)), closes [GAT-8510](GAT-8510)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** lint (#1592) ([a927148](https://github.com/HDRUK/gateway-api/commit/a92714822ccd5aa24ec81f983a82bfc68ae7348b)), closes [GAT-0000](GAT-0000)
+* **GAT-0000:** Reworks cr_uid management away from session and into s… (#1596) ([d45d92f](https://github.com/HDRUK/gateway-api/commit/d45d92f0de867e6f3bf971252132e8325262dffc)), closes [GAT-0000](GAT-0000)
+
 ## [2.37.0](https://github.com/HDRUK/gateway-api/compare/v2.36.0...v2.37.0) (2026-03-19)
 
 ### ✨ Features
