@@ -1,3 +1,9 @@
+## [2.38.1](https://github.com/HDRUK/gateway-api/compare/v2.38.0...v2.38.1) (2026-04-01)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** testing rquest session (#1606) ([813eebe](https://github.com/HDRUK/gateway-api/commit/813eebeaf8e7ee7fcb899e7300e0315a693ba2d1)), closes [GAT-0000](GAT-0000)
+
 ## [2.38.0](https://github.com/HDRUK/gateway-api/compare/v2.37.0...v2.38.0) (2026-03-31)
 
 ### ✨ Features
