@@ -1485,6 +1485,7 @@ class CohortRequestController extends Controller
 
             // oidc/session setup (shared)
             OauthUser::where('user_id', $userId)->delete();
+            session(['cr_uid' => $userId]);
 
             Auditor::log([
                 'user_id' => $userId,
