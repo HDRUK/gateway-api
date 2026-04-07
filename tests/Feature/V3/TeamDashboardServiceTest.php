@@ -794,7 +794,7 @@ class TeamDashboardServiceTest extends TestCase
 
         $result = $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
 
-        $this->assertEquals(42, $result[0]['counter']);
+        $this->assertEquals(42, $result['counter']);
     }
 
     public function test_get_entity_views_returns_zero_counter_when_no_results(): void
@@ -806,6 +806,6 @@ class TeamDashboardServiceTest extends TestCase
 
         $result = $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
 
-        $this->assertEquals(0, $result[0]['counter']);
+        $this->assertEquals(0, $result['counter']);
     }
 }
