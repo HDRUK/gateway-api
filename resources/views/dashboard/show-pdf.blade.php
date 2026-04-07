@@ -213,7 +213,7 @@
                                             </td>
                                             <td class="list-num"
                                                 style="background:#f0f2f5; padding:10px 12px; text-align:right; width:60px; border-radius:0 6px 6px 0;">
-                                                {{ $collectionViews['counter'] }}
+                                                {{ $collectionViews[0]['counter'] }}
                                             </td>
                                         </tr>
                                         <tr>
@@ -223,7 +223,7 @@
                                             </td>
                                             <td class="list-num"
                                                 style="background:#f0f2f5; padding:10px 12px; text-align:right; width:60px; border-radius:0 6px 6px 0;">
-                                                {{ $dataCustodianViews['counter'] }}
+                                                {{ $dataCustodianViews[0]['counter'] }}
                                             </td>
                                         </tr>
                                     </table>

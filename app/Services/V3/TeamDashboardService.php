@@ -138,8 +138,6 @@ class TeamDashboardService
             'endDate'   => $endDate,
         ];
 
-        $responseBq = $this->bigQueryService->query($sql, $params);
-
-        return $responseBq[0];
+        return $this->bigQueryService->query($sql, $params);
     }
 }

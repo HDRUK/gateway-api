@@ -444,7 +444,6 @@ class TeamDashboardController extends Controller
         $datasetTopViews = $this->teamDashboardService->getDatatasetViewsTop($id, $startDate, $endDate);
         $collectionViews = $this->teamDashboardService->getEntityViews('collection', $id, $startDate, $endDate);
         $dataCustodianViews = $this->teamDashboardService->getEntityViews('data-custodian', $id, $startDate, $endDate);
-
         return Excel::download(
             new DashboardCsvExport(
                 $entityDatasets,
