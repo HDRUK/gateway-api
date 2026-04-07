@@ -152,7 +152,7 @@ return [
         'methodController'    => 'TeamDashboardController@downloadPdf',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',

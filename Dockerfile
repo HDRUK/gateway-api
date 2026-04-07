@@ -21,8 +21,6 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     zip \
     default-mysql-client \
-    libmagickwand-dev \
-    libmagickcore-dev \
     librsvg2-bin \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" gd pdo pdo_mysql soap zip iconv bcmath \
@@ -33,17 +31,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Redis
-RUN apt-get update && apt-get install -y \
-    autoconf \
-    g++ \
-    make \
-    && pecl install -o -f redis \
-    && rm -rf /tmp/pear \
-    && docker-php-ext-enable redis
-
-# Install Imagick
-RUN pecl install imagick \
-    && docker-php-ext-enable imagick \
+RUN pecl install redis-6.3.0 \
+    && docker-php-ext-enable redis \
     && rm -rf /tmp/pear
 
 # Install Composer
