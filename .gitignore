@@ -28,3 +28,4 @@ _ide_helper.php
 application_default_credentials.json
 
 frankenphp
+/resources/.DS_Store

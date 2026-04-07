@@ -21,6 +21,9 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     zip \
     default-mysql-client \
+    libmagickwand-dev \
+    libmagickcore-dev \
+    librsvg2-bin \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" gd pdo pdo_mysql soap zip iconv bcmath \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
@@ -29,9 +32,18 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install sockets \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Redis (PHP 8.4 compatible)
-RUN pecl install redis-6.3.0 \
-    && docker-php-ext-enable redis \
+# Install Redis
+RUN apt-get update && apt-get install -y \
+    autoconf \
+    g++ \
+    make \
+    && pecl install -o -f redis \
+    && rm -rf /tmp/pear \
+    && docker-php-ext-enable redis
+
+# Install Imagick
+RUN pecl install imagick \
+    && docker-php-ext-enable imagick \
     && rm -rf /tmp/pear
 
 # Install Composer
@@ -46,11 +58,12 @@ COPY . /var/www
 
 # for local development and using google cloud services, we need to set the GOOGLE_APPLICATION_CREDENTIALS to point to the service account credentials file. 
 # In production, this will be set to the default application credentials provided by the environment.
-# ENV GOOGLE_APPLICATION_CREDENTIALS=/var/www/application_default_credentials.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=/var/www/application_default_credentials.json
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
     && npm install --save-dev chokidar \
+    && mkdir -p storage/app/tmp \
     && chmod -R 777 storage bootstrap/cache \
     && php artisan optimize:clear \
     && php artisan optimize \

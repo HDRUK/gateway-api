@@ -35,6 +35,7 @@
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.2",
         "maatwebsite/excel": "^3.1",
+        "mpdf/mpdf": "^8.3",
         "nyholm/psr7": "^1.8",
         "predis/predis": "^2.2",
         "socialiteproviders/microsoft-azure": "^5.1",

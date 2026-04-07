@@ -15,6 +15,8 @@ use App\Models\TeamHasDataAccessApplication;
 use App\Models\Tool;
 use App\Services\V3\TeamDashboardService;
 use Maatwebsite\Excel\Facades\Excel;
+use Mpdf\Mpdf;
+use App\Services\DashboardSvgCharts;
 
 class TeamDashboardController extends Controller
 {
@@ -22,6 +24,7 @@ class TeamDashboardController extends Controller
 
     public function __construct(
         private readonly TeamDashboardService $teamDashboardService,
+        private readonly DashboardSvgCharts $svgCharts
     ) {
     }
 
@@ -461,5 +464,167 @@ class TeamDashboardController extends Controller
             ),
             'dashboard.csv',
         );
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dashboard/download/pdf",
+     *     operationId="fetch_dashboard_download_pdf_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="TeamDashboardController@downloadPdf",
+     *     description="Download dashboard data custodian in pdf format",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="CSV file download containing dashboard metrics for the team",
+     *         @OA\MediaType(
+     *             mediaType="text/csv",
+     *             @OA\Schema(type="string", format="binary")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid team ID",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Invalid argument(s)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Invalid date interval",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="error"),
+     *             @OA\Property(property="data", type="string", example="startDate must be less than or equal to endDate")
+     *         )
+     *     )
+     * )
+     */
+    public function downloadPdf(GetTeamDashboard $request, $id)
+    {
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $entityDatasets = $this->teamDashboardService->getCount(Dataset::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dataset::STATUS_ACTIVE]);
+        $entityDataUses = $this->teamDashboardService->getCount(Dur::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dur::STATUS_ACTIVE]);
+        $entityTools = $this->teamDashboardService->getCount(Tool::class, 'active_date', $id, $startDate, $endDate, ['status'  => Tool::STATUS_ACTIVE]);
+        $entityPublications = $this->teamDashboardService->getCount(Publication::class, 'active_date', $id, $startDate, $endDate, ['status'  => Publication::STATUS_ACTIVE]);
+        $entityCollections = $this->teamDashboardService->getCount(Collection::class, 'active_date', $id, $startDate, $endDate, ['status'  => Collection::STATUS_ACTIVE]);
+        $entityGeneralEnquiries = $this->teamDashboardService->getCount(EnquiryThread::class, 'created_at', $id, $startDate, $endDate, ['is_general_enquiry' => 1]);
+        $entityFeasabilityEnquiries = $this->teamDashboardService->getCount(EnquiryThread::class, 'created_at', $id, $startDate, $endDate, ['is_feasibility_enquiry' => 1]);
+        $entityDataAccessRequests = $this->teamDashboardService->getCount(TeamHasDataAccessApplication::class, 'created_at', $id, $startDate, $endDate, []);
+        $dataset360Views = $this->teamDashboardService->getDatasetViews($id, $startDate, $endDate);
+        $datasetTopViews = $this->teamDashboardService->getDatatasetViewsTop($id, $startDate, $endDate);
+        $collectionViews = $this->teamDashboardService->getEntityViews('collection', $id, $startDate, $endDate);
+        $dataCustodianViews = $this->teamDashboardService->getEntityViews('data-custodian', $id, $startDate, $endDate);
+        $period = [$startDate, $endDate];
+
+        // 360 dataset views
+        $datasetViewsLabels = array_values(collect($dataset360Views)->pluck('date')->toArray());
+        $datasetViewsValues = array_values(collect($dataset360Views)->pluck('counter')->toArray());
+
+        $lineChartSvg = $this->svgCharts->renderLineChart([
+            'labels' => $datasetViewsLabels,
+            'values' => $datasetViewsValues,
+        ]);
+
+        // top dataset views
+        $mostViewedDatasets = [];
+        foreach ($datasetTopViews as $datasetView) {
+            $mostViewedDatasets[] = [
+                'label' => $datasetView['title'],
+                'value' => $datasetView['counter'],
+            ];
+        }
+
+        $barChartSvg = $this->svgCharts->renderBarChart([
+            'labels' => array_column($mostViewedDatasets, 'label'),
+            'values' => array_column($mostViewedDatasets, 'value'),
+        ]);
+
+        $html =  view(
+            'dashboard.show-pdf',
+            compact(
+                'entityDatasets',
+                'entityDataUses',
+                'entityTools',
+                'entityPublications',
+                'entityCollections',
+                'entityGeneralEnquiries',
+                'entityFeasabilityEnquiries',
+                'entityDataAccessRequests',
+                'dataset360Views',
+                'datasetTopViews',
+                'collectionViews',
+                'dataCustodianViews',
+                'startDate',
+                'endDate',
+                'lineChartSvg',
+                'barChartSvg',
+            )
+        )->render();
+
+        $filename = "dashboard_{$startDate}_{$endDate}.pdf";
+
+        if (empty(trim($html))) {
+            throw new \RuntimeException('Dashboard view rendered empty HTML. Check that all variables are passed correctly.');
+        }
+
+        $mpdf = new Mpdf([
+            'mode'          => 'utf-8',
+            'format'        => 'A4',
+            'margin_top'    => 10,
+            'margin_bottom' => 10,
+            'margin_left'   => 10,
+            'margin_right'  => 10,
+            'tempDir'       => storage_path('app/tmp'),
+            'default_font'  => 'sourcesans3',
+            'fontDir'       => [
+                resource_path('fonts'),
+            ],
+            'fontdata'      => [
+                'sourcesans3' => [
+                    'R'  => 'SourceSans3-Regular.ttf',
+                    'B'  => 'SourceSans3-Bold.ttf',
+                    'I'  => 'SourceSans3-Italic.ttf',
+                    'BI' => 'SourceSans3-BoldItalic.ttf',
+                ],
+            ],
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output($filename, 'S'), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

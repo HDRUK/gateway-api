@@ -47,13 +47,13 @@ class TeamDashboardService
 
         if ($diffInDays >= 180) {
             // Monthly
-            $dateTrunc  = "FORMAT_DATE('%Y-%m', DATE_TRUNC(date, MONTH))";
+            $dateTrunc  = "FORMAT_DATE('%b', DATE_TRUNC(date, MONTH))";
         } elseif ($diffInDays >= 30) {
             // Weekly
-            $dateTrunc  = "FORMAT_DATE('%Y-%W', DATE_TRUNC(date, WEEK))";
+            $dateTrunc  = "FORMAT_DATE('%W', DATE_TRUNC(date, WEEK))";
         } else {
             // Daily
-            $dateTrunc  = "FORMAT_DATE('%Y-%m-%d', date)";
+            $dateTrunc  = "FORMAT_DATE('%d', date)";
         }
 
         $sql = "
@@ -138,6 +138,8 @@ class TeamDashboardService
             'endDate'   => $endDate,
         ];
 
-        return $this->bigQueryService->query($sql, $params);
+        $responseBq = $this->bigQueryService->query($sql, $params);
+
+        return $responseBq[0];
     }
 }
