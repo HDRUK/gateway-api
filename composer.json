@@ -131,9 +131,9 @@
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         },
-        "_comment": "Ignore PKSA-y2cr-5h3j-g3ys due it being in dispute state. See: https://www.cve.org/CVERecord?id=CVE-2025-45769",
+        "_comment": "Ignore PKSA-y2cr-5h3j-g3ys or PKSA-wc55-9qj2-7v4h due it being in dispute state. See: https://www.cve.org/CVERecord?id=CVE-2025-45769 or ",
         "audit": {
-            "ignore": ["PKSA-y2cr-5h3j-g3ys"]
+            "ignore": ["PKSA-y2cr-5h3j-g3ys", "PKSA-wc55-9qj2-7v4h"]
         }
     },
     "minimum-stability": "stable",

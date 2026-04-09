@@ -2,9 +2,10 @@
 
 namespace App\Jobs;
 
-use Auditor;
-use Config;
-use Exception;
+use App\Http\Traits\LoggingContext;
+use App\Http\Traits\MetadataOnboard;
+use App\Imports\ImportDurFile;
+use App\Imports\ImportStructuralMetadata;
 use App\Models\Collection;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationReviewHasFile;
@@ -17,22 +18,21 @@ use App\Models\DurHasDatasetVersion;
 use App\Models\QuestionBank;
 use App\Models\Team;
 use App\Models\Upload;
-use App\Imports\ImportDur;
-use App\Imports\ImportStructuralMetadata;
-use App\Http\Traits\LoggingContext;
-use App\Http\Traits\MetadataOnboard;
-use MetadataManagementController as MMC;
+use Auditor;
+use Config;
+use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Http\Response;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Response;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Maatwebsite\Excel\Facades\Excel;
+use MetadataManagementController as MMC;
 
 class ScanFileUpload implements ShouldQueue
 {
@@ -259,7 +259,31 @@ class ScanFileUpload implements ShouldQueue
             ];
             $path = Storage::disk($this->fileSystem . '_scanned')->path($loc);
 
-            $import = new ImportDur($data);
+            // checking errors
+            $importDryRun = new ImportDurFile($data, true);
+
+            if ($this->isLocalOrTestEnv) {
+                Excel::import($importDryRun, $path);
+            } else {
+                Excel::import($importDryRun, $path, $this->fileSystem . '_scanned');
+            }
+
+            if (!empty($importDryRun->errors)) {
+                $upload->update([
+                    'status' => 'FAILED',
+                    'file_location' => $loc,
+                    'entity_type' => 'dur',
+                    'error' => 'Import failed. No records were saved due to validation errors.',
+                    'error_details' => $importDryRun->errors,
+                ]);
+
+                \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+
+                return;
+            }
+
+            // import
+            $import = new ImportDurFile($data, false);
 
             if ($this->isLocalOrTestEnv) {
                 Excel::import($import, $path);
@@ -267,7 +291,7 @@ class ScanFileUpload implements ShouldQueue
                 Excel::import($import, $path, $this->fileSystem . '_scanned');
             }
 
-            $durIds = $import->durImport->durIds;
+            $durIds = $import->durIds;
 
             $upload->update([
                 'status' => 'PROCESSED',
@@ -283,6 +307,7 @@ class ScanFileUpload implements ShouldQueue
             $upload->update([
                 'status' => 'FAILED',
                 'file_location' => $loc,
+                'entity_type' => 'dur',
                 'error' => $e->getMessage()
             ]);
 
