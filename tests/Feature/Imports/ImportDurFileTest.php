@@ -344,4 +344,32 @@ class ImportDurFileTest extends TestCase
         $message = $import->errors[0]['message'];
         $this->assertStringContainsString('Row 3', $message);
     }
+
+    public function test_contains_processing_after_invalid_row(): void
+    {
+        $import = new ImportDurFile($this->data, dryRun: true);
+        $this->runImport($import, [
+            $this->validateRow([1 => '   ']),   // invalid row ; 3
+            $this->validateRow(),               // valid row : 4
+        ]);
+
+        $rows = array_values(array_column($import->errors, 'row'));
+        $this->assertContains(3, $rows);
+        $this->assertNotContains(4, $rows);
+    }
+
+    public function test_collects_errors_from_all_rows(): void
+    {
+        $import = new ImportDurFile($this->data, dryRun: true);
+        $this->runImport($import, [
+            $this->validateRow([1 => '   ']),   // invalid row ; 3
+            $this->validateRow([9 => '   ']),   // invalid row : 4
+            $this->validateRow([28 => '   ']),  // invalid row : 5
+        ]);
+
+        $rows = array_values(array_column($import->errors, 'row'));
+        $this->assertContains(3, $rows);
+        $this->assertContains(4, $rows);
+        $this->assertContains(5, $rows);
+    }
 }
