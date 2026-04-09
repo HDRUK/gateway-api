@@ -1411,21 +1411,6 @@ class CohortRequestController extends Controller
         ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
-    private function isScrambled(string $email)
-    {
-        $indicatorsOfScrambled = [
-            "member@",
-            "staff@",
-            "student@",
-            "employee@",
-            "postgraduatetaught@",
-        ];
-
-        return array_any($indicatorsOfScrambled, function (string $item) use ($email) {
-            return str_contains(strtolower($email), $item);
-        });
-    }
-
     /**
      * Shared guard: validates JWT user, approved request, permissions, user+email,
      * clears oauth user, sets session, logs auditor.
@@ -1472,7 +1457,15 @@ class CohortRequestController extends Controller
             if (! $user) {
                 throw new Exception('Unauthorized for access :: The user not found');
             }
-            $email = (($user->provider === 'open-athens' && $this->isScrambled($user->email)) || $user->preferred_email === 'secondary')
+            /*
+
+            // NOTE - 02/03/2026
+            // - this check is unneccessary
+            // - this check is not good for many open-athens users who have a blank secondary email
+            // - the original idea was because open athens primary email can be scrambled, so needs to fall back to use a secondary
+            // - 
+
+            $email = ($user->provider === 'open-athens' || $user->preferred_email === 'secondary')
                 ? $user->secondary_email
                 : $user->email;
 
@@ -1481,7 +1474,7 @@ class CohortRequestController extends Controller
             }
             if (filter_var(trim($email), FILTER_VALIDATE_EMAIL) === false) {
                 throw new Exception('Unauthorized for access :: The user email is not valid');
-            }
+            }*/
 
             // oidc/session setup (shared)
             OauthUser::where('user_id', $userId)->delete();
