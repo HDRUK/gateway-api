@@ -9,7 +9,7 @@ class CollectionHydrator
 {
     public function hydrate(array $hits): array
     {
-        $matchedIds = array_map(fn($h) => (int)$h['_id'], $hits);
+        $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
 
         $models = Collection::whereIn('id', $matchedIds)
             ->get()

@@ -12,7 +12,7 @@ class DatasetHydrator
 {
     public function hydrate(array $hits, string $viewType = 'full'): array
     {
-        $matchedIds = array_map(fn($h) => (int)$h['_id'], $hits);
+        $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
 
         // Single query for all datasets + team + latestMetadata (replaces N individual queries)
         $models = Dataset::with(['team', 'latestMetadata'])
@@ -92,7 +92,7 @@ class DatasetHydrator
             $hits[$i]['team'] = [
                 'id'                        => $model->team->id,
                 'is_question_bank'          => $model->team->is_question_bank,
-                'has_published_dar_template'=> $publishedDarByTeam->has($model->team_id),
+                'has_published_dar_template' => $publishedDarByTeam->has($model->team_id),
                 'name'                      => $model->team->name,
                 'member_of'                 => $model->team->member_of,
                 'is_dar'                    => $model->team->is_dar,

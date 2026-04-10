@@ -281,7 +281,8 @@ class Dur extends Model
     /**
      * Retrieve versions associated with this dur
      */
-    public function versions()
+    /** @return BelongsToMany<DatasetVersion, $this> */
+    public function versions(): BelongsToMany
     {
         return $this->belongsToMany(
             DatasetVersion::class,

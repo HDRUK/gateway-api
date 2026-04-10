@@ -167,7 +167,7 @@ class SearchController extends Controller
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = array_column($datasetsArray, '_id');
 
-            $datasetsArray = (new DatasetHydrator)->hydrate($datasetsArray, $viewType);
+            $datasetsArray = (new DatasetHydrator())->hydrate($datasetsArray, $viewType);
 
             if ($download && strtolower($downloadType) === 'list') {
                 Auditor::log([
@@ -279,7 +279,7 @@ class SearchController extends Controller
             $datasetsArray = $response['hits']['hits'];
             $matchedIds = array_column($datasetsArray, '_id');
 
-            $datasetsArray = (new DatasetHydrator)->hydrate($datasetsArray);
+            $datasetsArray = (new DatasetHydrator())->hydrate($datasetsArray);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -427,7 +427,7 @@ class SearchController extends Controller
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = array_column($toolsArray, '_id');
 
-            $toolsArray = (new ToolHydrator)->hydrate($toolsArray);
+            $toolsArray = (new ToolHydrator())->hydrate($toolsArray);
 
             $toolsArray = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
@@ -573,7 +573,7 @@ class SearchController extends Controller
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = array_column($collectionArray, '_id');
 
-            $collectionArray = (new CollectionHydrator)->hydrate($collectionArray);
+            $collectionArray = (new CollectionHydrator())->hydrate($collectionArray);
             $collectionArray = $this->sortSearchResult($collectionArray, $sortField, $sortDirection);
 
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -738,7 +738,7 @@ class SearchController extends Controller
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = array_column($durArray, '_id');
 
-            $durArray = (new DataUseHydrator)->hydrate($durArray);
+            $durArray = (new DataUseHydrator())->hydrate($durArray);
 
             if ($download) {
                 Auditor::log([
@@ -936,7 +936,7 @@ class SearchController extends Controller
                 $totalResults = $response['hits']['total']['value'];
                 $matchedIds = array_column($pubArray, '_id');
 
-                $pubArray = (new PublicationHydrator)->hydrate($pubArray);
+                $pubArray = (new PublicationHydrator())->hydrate($pubArray);
             } else {
                 if (isset($input['query']) && is_array($input['query'])) {
                     $urlString = config('gateway.search_service_url') . '/search/federated_papers/field_search/array';
@@ -1226,7 +1226,7 @@ class SearchController extends Controller
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = array_column($dataCustodianNetworksArray, '_id');
 
-            $dataCustodianNetworksArray = (new DataCustodianNetworkHydrator)->hydrate($dataCustodianNetworksArray);
+            $dataCustodianNetworksArray = (new DataCustodianNetworkHydrator())->hydrate($dataCustodianNetworksArray);
 
             if ($download) {
                 Auditor::log([
@@ -1377,7 +1377,7 @@ class SearchController extends Controller
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = array_column($dataCustodianArray, '_id');
 
-            $dataCustodianArray = (new DataCustodianHydrator)->hydrate($dataCustodianArray);
+            $dataCustodianArray = (new DataCustodianHydrator())->hydrate($dataCustodianArray);
 
             if ($download) {
                 Auditor::log([
@@ -1429,7 +1429,7 @@ class SearchController extends Controller
         }
 
         if ($sortDirection === 'asc') {
-            usort($resultArray, fn($a, $b) => $a['_source'][$sortField] <=> $b['_source'][$sortField]);
+            usort($resultArray, fn ($a, $b) => $a['_source'][$sortField] <=> $b['_source'][$sortField]);
         } else {
             usort($resultArray, function ($a, $b) use ($sortField) {
                 $aVal = $a['_source'][$sortField];
