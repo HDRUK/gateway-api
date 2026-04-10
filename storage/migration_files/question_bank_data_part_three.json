@@ -1,0 +1,124 @@
+[
+    {
+        "title": "Safe outputs",
+        "description": "Safe outputs ensure that all research outputs cannot be used to identify data subjects. They typically include ‘descriptive statistics’ that have been sufficiently aggregated such that identification is near enough impossible, and modelled outputs which are inherently non-confidential. The purpose of this section is to ensure that:\n\n- controls are in place to minimise risks associated with planned outputs and publications \n- the researchers aim to openly publish their results to enable use, scrutiny and further research.",
+        "subSections": [
+            {
+                "name": "Associated Gateway resources",
+                "description": "This section should include information on the planned use of datasets not already included in this application. The following information is required:\n\nA descriptive name so that it is clear what the dataset is. \n\nSufficient information to explain the content of the dataset.  \n\nWhether the proposal requires linkage of data, the use of matched controls, or the extraction of anonymised data.\n\nPlease indicate which organisation or body is undertaking these processes and which variables from the data sources requested will be used to achieve the proposed linkage. This should cover every dataset and variable you will require.\n",
+                "sub_section": "safeoutputs",
+                "questions": [
+                    {
+                        "title": "Do you intend for the datasets requested to be linked with any additional tools, other than the datasets listed in this application?",
+                        "guidance": "Please specify if you intend for the datasets to be linked with any additional tools. Please also provide relevant information on the organisations undertaking linkages and provide a data flow diagram where applicable. Documents can be uploaded in the Additional Files section of this form.",
+                        "required": true,
+                        "field": {
+                                "component": "RadioGroup",
+                                "options": [
+                                    {
+                                            "value": "Yes",
+                                            "label": "Yes",
+                                            "conditional": [
+                                                {
+                                                        "question": "Specify all tools, organisations which will perform the linkage and how the linkage will take place.",
+                                                        "guidance": "Please include details of the organisations undertaking the process of linkage.",
+                                                        "input": {
+                                                            "type": "textareaInput"
+                                                        }
+                                                }
+                                            ]
+                                    },
+                                    {
+                                            "value": "No",
+                                            "label": "No",
+                                            "conditional": null
+                                    }
+                                ],
+                                "validations": [
+                                    {
+                                            "message": "Please select an option",
+                                            "min": 1
+                                    }
+                                ]
+                        }
+                    },
+                    {
+                        "title": "Do you intend for the datasets requested to be linked with any additional publications, other than the datasets listed in this application?",
+                        "guidance": "Please specify if you intend for the datasets to be linked with any additional publications. Please also provide relevant information on the organisations undertaking linkages and provide a data flow diagram where applicable. Documents can be uploaded in the Additional Files section of this form.",
+                        "required": true,
+                        "field": {
+                                "component": "RadioGroup",
+                                "options": [
+                                    {
+                                            "value": "Yes",
+                                            "label": "Yes",
+                                            "conditional": [
+                                                {
+                                                        "question": "Specify all publications, organisations which will perform the linkage and how the linkage will take place.",
+                                                        "guidance": "Please include details of the organisations undertaking the process of linkage.",
+                                                        "input": {
+                                                            "type": "textareaInput"
+                                                        }
+                                                }
+                                            ]
+                                    },
+                                    {
+                                            "value": "No",
+                                            "label": "No",
+                                            "conditional": null
+                                    }
+                                ],
+                                "validations": [
+                                    {
+                                            "message": "Please select an option",
+                                            "min": 1
+                                    }
+                                ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Associated Exterrnal resources",
+                "description": "This section should include information on the planned use of datasets not already included in this application. The following information is required:\n\nA descriptive name so that it is clear what the dataset is. \n\nSufficient information to explain the content of the dataset.  \n\nWhether the proposal requires linkage of data, the use of matched controls, or the extraction of anonymised data.\n\nPlease indicate which organisation or body is undertaking these processes and which variables from the data sources requested will be used to achieve the proposed linkage. This should cover every dataset and variable you will require.\n",
+                "sub_section": "safeoutputs",
+                "questions": [
+                    {
+                        "title": "Do you intend for the datasets requested to be linked with any additional external links, other than the datasets listed in this application?",
+                        "guidance": "Please specify if you intend for the datasets to be linked with any additional external links. Please also provide relevant information on the organisations undertaking linkages and provide a data flow diagram where applicable. Documents can be uploaded in the Additional Files section of this form.",
+                        "required": true,
+                        "field": {
+                                "component": "RadioGroup",
+                                "options": [
+                                    {
+                                            "value": "Yes",
+                                            "label": "Yes",
+                                            "conditional": [
+                                                {
+                                                        "question": "Specify all external links, organisations which will perform the linkage and how the linkage will take place.",
+                                                        "guidance": "Please include details of the organisations undertaking the process of linkage.",
+                                                        "input": {
+                                                            "type": "textareaInput"
+                                                        }
+                                                }
+                                            ]
+                                    },
+                                    {
+                                            "value": "No",
+                                            "label": "No",
+                                            "conditional": null
+                                    }
+                                ],
+                                "validations": [
+                                    {
+                                            "message": "Please select an option",
+                                            "min": 1
+                                    }
+                                ]
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]
