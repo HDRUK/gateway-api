@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V2;
 
 use App\Services\SearchAggregator;
 use Illuminate\Http\Request;
-
 use App\Http\Controllers\Controller;
 
 class SearchController extends Controller

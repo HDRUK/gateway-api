@@ -9,7 +9,7 @@ class DataCustodianHydrator
 {
     public function hydrate(array $hits): array
     {
-        $matchedIds = array_map(fn($h) => (int)$h['_id'], $hits);
+        $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
 
         $models = Team::whereIn('id', $matchedIds)
             ->get()

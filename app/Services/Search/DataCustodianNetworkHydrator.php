@@ -10,7 +10,7 @@ class DataCustodianNetworkHydrator
 {
     public function hydrate(array $hits): array
     {
-        $matchedIds = array_map(fn($h) => (int)$h['_id'], $hits);
+        $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
 
         // Load networks with teams eager-loaded
         $models = DataProviderColl::whereIn('id', $matchedIds)
@@ -19,7 +19,7 @@ class DataCustodianNetworkHydrator
             ->keyBy('id');
 
         // Batch-load all datasets for all teams across all networks in 1 query
-        $allTeamIds = $models->flatMap(fn($m) => $m->teams->pluck('id'))->unique()->all();
+        $allTeamIds = $models->flatMap(fn ($m) => $m->teams->pluck('id'))->unique()->all();
 
         $datasetsByTeam = !empty($allTeamIds)
             ? Dataset::where('status', 'ACTIVE')
@@ -51,8 +51,8 @@ class DataCustodianNetworkHydrator
     private function buildDatasetTitles(DataProviderColl $provider, $datasetsByTeam): array
     {
         $titles = $provider->teams
-            ->flatMap(fn($team) => $datasetsByTeam->get($team->id, collect()))
-            ->map(fn($dataset) => $dataset->latestMetadata?->short_title
+            ->flatMap(fn ($team) => $datasetsByTeam->get($team->getKey(), collect()))
+            ->map(fn ($dataset) => $dataset->latestMetadata?->short_title
                 ?? $dataset->latestMetadata?->metadata['metadata']['summary']['shortTitle']
                 ?? null)
             ->filter()
@@ -66,8 +66,8 @@ class DataCustodianNetworkHydrator
     private function buildLocations(DataProviderColl $provider, $datasetsByTeam): array
     {
         return $provider->teams
-            ->flatMap(fn($team) => $datasetsByTeam->get($team->id, collect()))
-            ->flatMap(fn($dataset) => $dataset->allSpatialCoverages)
+            ->flatMap(fn ($team) => $datasetsByTeam->get($team->getKey(), collect()))
+            ->flatMap(fn ($dataset) => $dataset->allSpatialCoverages)
             ->pluck('region')
             ->unique()
             ->values()

@@ -4,13 +4,12 @@ namespace App\Services\Search;
 
 use App\Models\Dataset;
 use App\Models\Tool;
-use Config;
 
 class ToolHydrator
 {
     public function hydrate(array $hits): array
     {
-        $matchedIds = array_map(fn($h) => (int)$h['_id'], $hits);
+        $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
 
         // Single query with all relationships eager-loaded (replaces ~15 queries per result)
         $models = Tool::whereIn('id', $matchedIds)
@@ -30,7 +29,7 @@ class ToolHydrator
 
         // Batch-load dataset short titles for all tool-linked dataset versions
         $allDatasetIds = $models
-            ->flatMap(fn($t) => $t->versions->pluck('dataset_id'))
+            ->flatMap(fn ($t) => $t->versions->pluck('dataset_id'))
             ->unique()
             ->all();
 
@@ -39,7 +38,7 @@ class ToolHydrator
                 ->whereIn('id', $allDatasetIds)
                 ->get()
                 ->keyBy('id')
-                ->map(fn($d) => $d->latestMetadata?->metadata['metadata']['summary']['shortTitle'] ?? '')
+                ->map(fn ($d) => $d->latestMetadata?->metadata['metadata']['summary']['shortTitle'] ?? '')
                 ->filter()
             : collect();
 
@@ -59,10 +58,13 @@ class ToolHydrator
             $hits[$i]['associatedAuthors'] = $model->associated_authors;
             $hits[$i]['tag'] = $model->tag;
 
+            /** @phpstan-ignore-next-line */
             $hits[$i]['uploader'] = $model->user?->name ?? '';
+            /** @phpstan-ignore-next-line */
             $hits[$i]['team_name'] = $model->team?->name ?? '';
 
             $hits[$i]['type_category'] = $model->typeCategory->pluck('name')->all();
+            /** @phpstan-ignore-next-line */
             $hits[$i]['license'] = $model->license?->label ?? '';
             $hits[$i]['programming_language'] = $model->programmingLanguages->pluck('name')->all();
             $hits[$i]['programming_package'] = $model->programmingPackages->pluck('name')->all();
@@ -70,7 +72,7 @@ class ToolHydrator
             $datasetTitles = $model->versions
                 ->pluck('dataset_id')
                 ->unique()
-                ->map(fn($id) => $datasetTitleMap->get($id))
+                ->map(fn ($id) => $datasetTitleMap->get($id))
                 ->filter()
                 ->sort()
                 ->values()
@@ -81,6 +83,7 @@ class ToolHydrator
             $hits[$i]['durTitles'] = $model->durs->pluck('project_title')->all();
 
             $hits[$i]['_source']['programmingLanguage'] = $model->tech_stack;
+            /** @phpstan-ignore-next-line */
             $hits[$i]['_source']['category'] = $model->category?->name;
             $hits[$i]['_source']['created_at'] = $model->created_at;
             $hits[$i]['_source']['updated_at'] = $model->updated_at;

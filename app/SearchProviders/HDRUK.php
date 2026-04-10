@@ -3,7 +3,6 @@
 namespace App\SearchProviders;
 
 use Auditor;
-
 use Http;
 use App\Models\Filter;
 use App\Models\Dataset;
@@ -36,68 +35,65 @@ class HDRUK implements SearchProvider
         return null;
     }
 
-    public function getSearchURI(): string {
+    public function getSearchURI(): string
+    {
         return config('gateway.search_service_url') . "/search/{$this->getDefaultSearchType()}";
     }
 
     public function search(string $query): array
     {
         // try {
-            $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
-            $input['aggs'] = $aggs;
+        $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
+        $input['aggs'] = $aggs;
 
-            $response = Http::post($this->getSearchURI(), $input);
+        $response = Http::post($this->getSearchURI(), $input);
 
-            if (!$response->successful()) {
-                return response()->json([
-                    'message' => 'No response from ' . $this->getSearchURI,
-                ], 404);
+        if (!$response->successful()) {
+            return [];
+        }
+
+        $response = $response->json();
+
+        if (
+            !isset($response['hits']) || !is_array($response['hits']) ||
+            !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
+            !isset($response['hits']['total']['value'])
+        ) {
+            return [];
+        }
+
+        $datasetsArray = $response['hits']['hits'];
+        $totalResults = $response['hits']['total']['value'];
+        $matchedIds = [];
+
+        foreach (array_values($datasetsArray) as $i => $d) {
+            $matchedIds[] = $d['_id'];
+        }
+
+        foreach ($matchedIds as $i => $matchedId) {
+            $model = Dataset::with('team')->where('id', $matchedId)->first();
+
+            if (!$model) {
+                continue;
             }
 
-            $response = $response->json();
-
-            if (
-                !isset($response['hits']) || !is_array($response['hits']) ||
-                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
-                !isset($response['hits']['total']['value'])
-            ) {
-                return response()->json([
-                    'message' => 'Hits not being properly returned by the search service',
-                ], 404);
+            $latestVersion = $model->latestVersion();
+            if (is_null($latestVersion)) {
+                continue;
             }
 
-            $datasetsArray = $response['hits']['hits'];
-            $totalResults = $response['hits']['total']['value'];
-            $matchedIds = [];
+            $model = $model->toArray();
+            $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
+            $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
+        }
 
-            foreach (array_values($datasetsArray) as $i => $d) {
-                $matchedIds[] = $d['_id'];
-            }
+        $newArr = [];
 
-            foreach ($matchedIds as $i => $matchedId) {
-                $model = Dataset::with('team')->where('id', $matchedId)->first();
+        foreach ($datasetsArray as $arr) {
+            $newArr[] = $arr['_source'];
+        }
 
-                if (!$model) {
-                    continue;
-                }
-
-                $latestVersion = $model->latestVersion();
-                if (is_null($latestVersion)) {
-                    continue;
-                }
-
-                $model = $model->toArray();
-                $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
-                $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
-            }
-
-            $newArr = [];
-
-            foreach ($datasetsArray as $arr) {
-                $newArr[] = $arr['_source'];
-            }
-
-            return $newArr;
+        return $newArr;
 
         // } catch (\Throwable $e) {
         //     Auditor::log([

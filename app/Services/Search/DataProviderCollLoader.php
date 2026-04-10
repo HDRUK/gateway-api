@@ -34,11 +34,12 @@ class DataProviderCollLoader
             ->get()
             ->keyBy('id');
 
-        return $pivots->map(fn($rows) =>
+        return $pivots->map(
+            fn ($rows) =>
             $rows->pluck('data_provider_coll_id')
-                ->map(fn($id) => $colls->get($id))
+                ->map(fn ($id) => $colls->get($id))
                 ->filter()
-                ->map(fn($c) => ['id' => $c->id, 'name' => $c->name])
+                ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])
                 ->values()
                 ->all()
         );

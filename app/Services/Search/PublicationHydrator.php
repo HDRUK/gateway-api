@@ -23,7 +23,7 @@ class PublicationHydrator
 
     public function hydrate(array $hits): array
     {
-        $matchedIds = array_map(fn($h) => (int)$h['_id'], $hits);
+        $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
 
         $models = Publication::whereIn('id', $matchedIds)
             ->get()
@@ -142,7 +142,7 @@ class PublicationHydrator
         $result = [];
         foreach ($links as $pubId => $rows) {
             $result[$pubId] = $rows->pluck('collection_id')
-                ->map(fn($id) => $models->get($id))
+                ->map(fn ($id) => $models->get($id))
                 ->filter()
                 ->values();
         }
@@ -170,7 +170,7 @@ class PublicationHydrator
         $result = [];
         foreach ($links as $pubId => $rows) {
             $result[$pubId] = $rows->pluck('tool_id')
-                ->map(fn($id) => $models->get($id))
+                ->map(fn ($id) => $models->get($id))
                 ->filter()
                 ->values();
         }
@@ -198,7 +198,7 @@ class PublicationHydrator
         $result = [];
         foreach ($links as $pubId => $rows) {
             $result[$pubId] = $rows->pluck('dur_id')
-                ->map(fn($id) => $models->get($id))
+                ->map(fn ($id) => $models->get($id))
                 ->filter()
                 ->values();
         }

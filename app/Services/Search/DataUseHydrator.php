@@ -8,7 +8,7 @@ class DataUseHydrator
 {
     public function hydrate(array $hits): array
     {
-        $matchedIds = array_map(fn($h) => (int)$h['_id'], $hits);
+        $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
 
         // Single query with all relationships (replaces per-DUR queries for tools, collections, versions)
         $models = Dur::with([
@@ -54,16 +54,16 @@ class DataUseHydrator
     private function buildDatasetTitles(Dur $dur): array
     {
         $titles = $dur->versions
-            ->map(fn($version) => [
+            ->map(fn ($version) => [
                 'title' => $version->short_title
                     ?? $version->metadata['metadata']['summary']['shortTitle']
                     ?? '',
                 'id'    => $version->dataset_id,
             ])
-            ->filter(fn($t) => !empty($t['title']))
+            ->filter(fn ($t) => !empty($t['title']))
             ->all();
 
-        usort($titles, fn($a, $b) => strcasecmp($a['title'], $b['title']));
+        usort($titles, fn ($a, $b) => strcasecmp($a['title'], $b['title']));
 
         return $titles;
     }
