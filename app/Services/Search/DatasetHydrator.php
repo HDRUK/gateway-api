@@ -69,7 +69,7 @@ class DatasetHydrator
                 continue;
             }
 
-            // Resolve gatewayId (PID → integer ID)
+            // Resolve gatewayId (PID to integer ID)
             $gatewayId = $metadata['summary']['publisher']['gatewayId'] ?? null;
             if ($gatewayId && str_contains((string)$gatewayId, '-')) {
                 $team = $teamsByPid->get($gatewayId);
