@@ -14,6 +14,7 @@ class SearchAggregator
         $this->providers = $providers;
     }
 
+    // Intentionally not exposed via swagger for the time being
     public function search(string $query): array
     {
         $results = [];
