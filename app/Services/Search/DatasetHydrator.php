@@ -38,7 +38,7 @@ class DatasetHydrator
             if (!$latestVersion) {
                 continue;
             }
-            $gatewayId = $latestVersion->metadata['metadata']['summary']['publisher']['gatewayId'] ?? null;
+            $gatewayId = Arr::get($latestVersion->metadata, 'metadata.summary.publisher.gatewayId');
             if ($gatewayId && str_contains((string)$gatewayId, '-')) {
                 $pidsToResolve[] = $gatewayId;
             }
@@ -62,7 +62,12 @@ class DatasetHydrator
                 continue;
             }
 
-            $metadata = $latestVersion->metadata['metadata'];
+            $metadata = $latestVersion->metadata['metadata'] ?? null;
+            if (!$metadata) {
+                \Log::warning('Missing metadata structure for dataset version id=' . $latestVersion->id . ', dataset id=' . $model->id);
+                unset($hits[$i]);
+                continue;
+            }
 
             // Resolve gatewayId (PID → integer ID)
             $gatewayId = $metadata['summary']['publisher']['gatewayId'] ?? null;
@@ -104,7 +109,7 @@ class DatasetHydrator
     {
         $materialTypes = $this->getMaterialTypes($metadata);
         $containsBioSamples = !empty($materialTypes);
-        $hasTechnicalMetadata = (bool)count(Arr::get($metadata, 'structuralMetadata', []));
+        $hasTechnicalMetadata = (bool)count(Arr::get($metadata, 'structuralMetadata') ?? []);
 
         $accessServiceCategory = $metadata['accessibility']['access']['accessServiceCategory'] ?? null;
 
