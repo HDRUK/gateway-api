@@ -33,6 +33,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property string $create_origin
  * @property mixed $created
  * @property mixed $updated
+ * @property boolean $is_cohort_discovery
  * @property Team|null $team
  * @property int|null $durs_count
  * @property int|null $publications_count
@@ -51,12 +52,13 @@ class DatasetResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            'id'            => $this->id,
-            'pid'           => $this->pid,
-            'status'        => $this->status,
-            'create_origin' => $this->create_origin,
-            'created'       => $this->created,
-            'updated'       => $this->updated,
+            'id'                  => $this->id,
+            'pid'                 => $this->pid,
+            'status'              => $this->status,
+            'create_origin'       => $this->create_origin,
+            'created'             => $this->created,
+            'updated'             => $this->updated,
+            'is_cohort_discovery' => $this->is_cohort_discovery,
 
             'team' => $this->when(
                 isset($this->team),
