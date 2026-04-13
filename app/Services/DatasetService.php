@@ -90,18 +90,30 @@ class DatasetService
 
         $latestVersionId = $dataset->latestVersionID($dataset->id);
 
-        $activeCollections = $dataset->allActiveCollections ?? [];
+        // Cache version IDs on the model so that each allActive* accessor
+        // (tools, collections, durs, publications, namedEntities) reuses this
+        // result instead of re-querying the same versions table 5 times.
+        $dataset->cachedVersionIds = $dataset->versions()->pluck('id')->toArray();
 
-        $dataset->durs_count         = $this->countActiveDurs($latestVersionId);
-        $dataset->publications_count = $this->countActivePublications($latestVersionId);
+        $activeCollections  = $dataset->allActiveCollections ?? [];
+        $activeDurs         = $dataset->allActiveDurs ?? [];
+        $activePublications = $dataset->allActivePublications ?? [];
+
+        // Derive counts directly from the already-loaded collections rather than
+        // issuing separate COUNT queries against the database.
+        $dataset->durs_count         = collect($activeDurs)->filter(
+            fn ($d) => in_array($latestVersionId, $d['dataset_version_ids'] ?? [])
+        )->count();
+        $dataset->publications_count = collect($activePublications)->filter(
+            fn ($p) => collect($p['dataset_versions'] ?? [])->contains('dataset_version_id', $latestVersionId)
+        )->count();
         $dataset->tools_count        = count($dataset->allActiveTools);
         $dataset->collections_count  = count($activeCollections);
         $dataset->spatialCoverage    = $dataset->allSpatialCoverages ?? [];
-        $dataset->durs               = $dataset->allActiveDurs ?? [];
-        $dataset->publications       = $dataset->allActivePublications ?? [];
+        $dataset->durs               = $activeDurs;
+        $dataset->publications       = $activePublications;
         $dataset->named_entities     = $dataset->allNamedEntities ?? [];
         $dataset->collections        = $activeCollections;
-        $dataset->linkages           = $this->getLinkages($latestVersionId);
 
         if ($outputSchemaModel && $outputSchemaVersion) {
             $latestVersion = $dataset->latestVersion();
@@ -125,6 +137,7 @@ class DatasetService
                 ->first();
             $withLinks->metadata = json_encode(['metadata' => $translated['metadata']]);
             $dataset->setRelation('versions', [$withLinks]);
+            $dataset->linkages = $this->getLinkages($latestVersionId, $withLinks->metadata);
 
         } elseif ($outputSchemaModel) {
             throw new \InvalidArgumentException('schema_model provided without schema_version');
@@ -148,6 +161,13 @@ class DatasetService
 
                 $dataset->setRelation('versions', [$withLinks]);
             }
+
+            // Pass the already-fetched metadata so getLinkages does not need to
+            // re-query the version row for its linkage section.
+            $dataset->linkages = $this->getLinkages(
+                $latestVersionId,
+                $withLinks?->metadata
+            );
         }
 
         $teamPublishedDARTemplates = DataAccessTemplate::where([
@@ -489,7 +509,12 @@ class DatasetService
      *
      * Only returns linkages whose target dataset is ACTIVE.
      */
-    public function getLinkages(int $datasetVersionId): array
+    /**
+     * @param array|string|null $preloadedMetadata  Already-decoded metadata array (or JSON string)
+     *                                               from the caller. When provided the extra
+     *                                               DatasetVersion fetch is skipped entirely.
+     */
+    public function getLinkages(int $datasetVersionId, array|string|null $preloadedMetadata = null): array
     {
         $datasetLinkages = DatasetVersionHasDatasetVersion::query()
             ->where('dataset_version_has_dataset_version.dataset_version_source_id', $datasetVersionId)
@@ -511,9 +536,17 @@ class DatasetService
             ->values()
             ->toArray();
 
-        $metadataLinkage = DatasetVersion::where('id', $datasetVersionId)
-            ->select('metadata')
-            ->first()['metadata']['metadata']['linkage']['datasetLinkage'] ?? [];
+        if ($preloadedMetadata !== null) {
+            $metadata = is_string($preloadedMetadata)
+                ? json_decode($preloadedMetadata, true)
+                : $preloadedMetadata;
+        } else {
+            $metadata = DatasetVersion::where('id', $datasetVersionId)
+                ->select('metadata')
+                ->first()['metadata'] ?? [];
+        }
+
+        $metadataLinkage = $metadata['metadata']['linkage']['datasetLinkage'] ?? [];
         $allTitles       = [];
 
         foreach ($metadataLinkage as $linkageType => $link) {
@@ -942,40 +975,4 @@ class DatasetService
         }
     }
 
-    /**
-     * Raw SQL count of active DURs linked to a dataset version.
-     * Mirrors ModelHelpers@countActiveDursForDatasetVersion.
-     * Pre-computed by the service so the Resource runs no queries.
-     */
-    private function countActiveDurs(int $datasetVersionId): ?int
-    {
-        $result = DB::select('
-            SELECT COUNT(dur_has_dataset_version.id) AS count
-            FROM dur_has_dataset_version
-            INNER JOIN dur ON dur.id = dur_has_dataset_version.dur_id
-            WHERE dur_has_dataset_version.dataset_version_id = :dataset_version_id
-              AND dur_has_dataset_version.deleted_at IS NULL
-              AND dur.status = \'ACTIVE\'
-        ', ['dataset_version_id' => $datasetVersionId]);
-
-        return $result[0]->count ?? null;
-    }
-
-    /**
-     * Raw SQL count of active Publications linked to a dataset version.
-     * Mirrors ModelHelpers@countActivePublicationsForDatasetVersion.
-     */
-    private function countActivePublications(int $datasetVersionId): ?int
-    {
-        $result = DB::select('
-            SELECT COUNT(publication_has_dataset_version.id) AS count
-            FROM publication_has_dataset_version
-            INNER JOIN publications ON publications.id = publication_has_dataset_version.publication_id
-            WHERE publication_has_dataset_version.dataset_version_id = :dataset_version_id
-              AND publication_has_dataset_version.deleted_at IS NULL
-              AND publications.status = \'ACTIVE\'
-        ', ['dataset_version_id' => $datasetVersionId]);
-
-        return $result[0]->count ?? null;
-    }
 }

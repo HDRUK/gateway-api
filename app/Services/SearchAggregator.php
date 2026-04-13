@@ -33,7 +33,7 @@ class SearchAggregator
                         'query' => $query,
                         'results' => $results,
                     ],
-                ];                
+                ];
             } catch (\Throwable $e) {
                 \Log::error("Search provider {$provider->getShortName()} failed with error ", [
                     'error' => $e->getMessage(),
