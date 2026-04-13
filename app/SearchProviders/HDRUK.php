@@ -103,5 +103,7 @@ class HDRUK implements SearchProvider
             ]);
             \Log::info($e->getMessage());
         }
+
+        return [];
     }
 }

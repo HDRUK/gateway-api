@@ -26,24 +26,25 @@ class SearchAggregator
                     'about' => $provider->getProviderBlurb(),
                     $provider->search($query),
                 ];
+
+                return [
+                    'message' => 'success',
+                    'data' => [
+                        'query' => $query,
+                        'results' => $results,
+                    ],
+                ];                
             } catch (\Throwable $e) {
                 \Log::error("Search provider {$provider->getShortName()} failed with error ", [
                     'error' => $e->getMessage(),
                 ]);
-
-                return [
-                    'message' => 'failed',
-                    'data' => null,
-                ];
+                continue;
             }
         }
 
         return [
-            'message' => 'success',
-            'data' => [
-                'query' => $query,
-                'results' => $results,
-            ],
+            'message' => 'failed',
+            'data' => null,
         ];
     }
 }
