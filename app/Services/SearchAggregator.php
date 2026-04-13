@@ -30,6 +30,11 @@ class SearchAggregator
                 \Log::error("Search provider {$provider->getShortName()} failed with error ", [
                     'error' => $e->getMessage(),
                 ]);
+
+                return [
+                    'message' => 'failed',
+                    'data' => null,
+                ];
             }
         }
 
