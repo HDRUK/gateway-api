@@ -33,6 +33,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property string $create_origin
  * @property mixed $created
  * @property mixed $updated
+ * @property boolean $is_cohort_discovery
  * @property Team|null $team
  * @property int|null $durs_count
  * @property int|null $publications_count
