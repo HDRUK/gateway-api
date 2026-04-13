@@ -24,6 +24,122 @@ class AuthController extends Controller
         $this->jwt = $jwt;
     }
 
+   /**
+     * @OA\Post(
+     *    path="/api/v1/auth/cookie",
+     *    operationId="authenticationWithCookie",
+     *    tags={"Authentication"},
+     *    summary="AuthController@checkAuthorizationWithCookie",
+     *    description="Generate Jwt and return it as a cookie based on email and password with dynamic lifetime",
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials and optional cookie lifetime in minutes",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(
+     *                property="email",
+     *                type="string",
+     *                example="user1@mail.com",
+     *                description="Email"
+     *             ),
+     *             @OA\Property(
+     *                property="password",
+     *                type="string",
+     *                example="password123!",
+     *                description="Password"
+     *             ),
+     *             @OA\Property(
+     *                property="cookie_lifetime",
+     *                type="integer",
+     *                example=1440,
+     *                description="Optional: cookie lifetime in minutes (default 1440 = 1 day)"
+     *             ),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response with JWT cookie",
+     *    ),
+     *    @OA\Response(
+     *       response="401",
+     *       description="Unauthorized",
+     *    ),
+     * )
+     */
+    public function checkAuthorizationWithCookie(Request $request)
+    {
+        try {
+            $input = $request->all();
+
+            $user = User::where('email', $input['email'])
+                        ->where('provider', Config::get('constants.provider.service')) //this could be whoever
+                        ->first();
+
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], 401);
+            }
+
+            if (!Hash::check($input['password'], $user['password'])) {
+                return response()->json(['message' => 'Password is not matching'], 401);
+            }
+
+            $jwt = $this->createJwt($user);
+
+            Auditor::log([
+                'user_id' => $user['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Authorization for user via cookie",
+            ]);
+
+            // Dynamic cookie lifetime with max of 7 days (10080 minutes)
+            $requestedLifetime = isset($input['cookie_lifetime']) ? (int)$input['cookie_lifetime'] : 1440;
+            $cookieLifetime = min($requestedLifetime, 10080); // cap at 7 days
+
+            return response()->json(['message' => 'Login successful'])
+                            ->cookie('token', $jwt, $cookieLifetime, null, null, false, true);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/auth/signout",
+     *    operationId="signOut",
+     *    tags={"Authentication"},
+     *    summary="AuthController@signOut",
+     *    description="Logs out the user by deleting the JWT cookie",
+     *    @OA\Response(
+     *       response="200",
+     *       description="Successfully logged out",
+     *    ),
+     * )
+     */
+    public function signOut(Request $request)
+    {
+        try {
+            Auditor::log([
+                'user_id' => auth()->id() ?? null,
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "User logged out and cookie cleared",
+            ]);
+
+            // Expire the JWT cookie
+            return response()->json(['message' => 'Successfully logged out'])
+                            ->cookie('token', null, 0, null, null, false, true);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
+        }
+    }
+
+
+
     /**
      * @OA\Post(
      *    path="/api/v1/auth",
