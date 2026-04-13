@@ -42,66 +42,66 @@ class HDRUK implements SearchProvider
 
     public function search(string $query): array
     {
-        // try {
-        $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
-        $input['aggs'] = $aggs;
+        try {
+            $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
+            $input['aggs'] = $aggs;
 
-        $response = Http::post($this->getSearchURI(), $input);
+            $response = Http::post($this->getSearchURI(), $input);
 
-        if (!$response->successful()) {
-            return [];
-        }
-
-        $response = $response->json();
-
-        if (
-            !isset($response['hits']) || !is_array($response['hits']) ||
-            !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
-            !isset($response['hits']['total']['value'])
-        ) {
-            return [];
-        }
-
-        $datasetsArray = $response['hits']['hits'];
-        $totalResults = $response['hits']['total']['value'];
-        $matchedIds = [];
-
-        foreach (array_values($datasetsArray) as $i => $d) {
-            $matchedIds[] = $d['_id'];
-        }
-
-        foreach ($matchedIds as $i => $matchedId) {
-            $model = Dataset::with('team')->where('id', $matchedId)->first();
-
-            if (!$model) {
-                continue;
+            if (!$response->successful()) {
+                return [];
             }
 
-            $latestVersion = $model->latestVersion();
-            if (is_null($latestVersion)) {
-                continue;
+            $response = $response->json();
+
+            if (
+                !isset($response['hits']) || !is_array($response['hits']) ||
+                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
+                !isset($response['hits']['total']['value'])
+            ) {
+                return [];
             }
 
-            $model = $model->toArray();
-            $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
-            $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
+            $datasetsArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
+            $matchedIds = [];
+
+            foreach (array_values($datasetsArray) as $i => $d) {
+                $matchedIds[] = $d['_id'];
+            }
+
+            foreach ($matchedIds as $i => $matchedId) {
+                $model = Dataset::with('team')->where('id', $matchedId)->first();
+
+                if (!$model) {
+                    continue;
+                }
+
+                $latestVersion = $model->latestVersion();
+                if (is_null($latestVersion)) {
+                    continue;
+                }
+
+                $model = $model->toArray();
+                $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
+                $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
+            }
+
+            $newArr = [];
+
+            foreach ($datasetsArray as $arr) {
+                $newArr[] = $arr['_source'];
+            }
+
+            return $newArr;
+
+        } catch (\Throwable $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            \Log::info($e->getMessage());
         }
-
-        $newArr = [];
-
-        foreach ($datasetsArray as $arr) {
-            $newArr[] = $arr['_source'];
-        }
-
-        return $newArr;
-
-        // } catch (\Throwable $e) {
-        //     Auditor::log([
-        //         'action_type' => 'EXCEPTION',
-        //         'action_name' => class_basename($this) . '@' . __FUNCTION__,
-        //         'description' => $e->getMessage(),
-        //     ]);
-        //     \Log::info($e->getMessage());
-        // }
     }
 }
