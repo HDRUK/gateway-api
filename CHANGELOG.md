@@ -1,3 +1,9 @@
+## [2.39.1](https://github.com/HDRUK/gateway-api/compare/v2.39.0...v2.39.1) (2026-04-14)
+
+### 🐛 Bug Fixes
+
+* **GAT-8756:** New Cohort User emails are not sending (#1617) ([8d6edcc](https://github.com/HDRUK/gateway-api/commit/8d6edcc6e642153d69345b7ba48cd4965d9c6020)), closes [GAT-8756](GAT-8756)
+
 ## [2.39.0](https://github.com/HDRUK/gateway-api/compare/v2.38.1...v2.39.0) (2026-04-14)
 
 ### ✨ Features
