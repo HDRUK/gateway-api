@@ -20,6 +20,7 @@ class Upload extends Model
         'entity_id',
         'structural_metadata',
         'question_id',
+        'error_details',
     ];
 
     /**

@@ -156,7 +156,7 @@ class EmailTemplateSeeder extends Seeder
                     </mj-text>
                     
                     <mj-text align="left" line-height="1.2" font-size="13px" font-weight="400" padding="10px 0px 0px 0px">
-                        To ensure you continue to receive enquiries, responses and all other Gateway notifications, please mark the @healthdatagateway.org domain as \'safe\' within your email client. You may also need to speak to your institution to remove any blockers or filters for this address. In the meantime, we suggest checking your junk or spam folders regularly. 
+                        To ensure you continue to receive enquiries, responses and all other Gateway notifications, <b>please mark the @healthdatagateway.org domain as \'safe\'</b> within your email client. You may also need to speak to your institution to remove any blockers or filters for this address. In the meantime, we suggest checking your junk or spam folders regularly.
                     </mj-text>
                     
                     </mj-column>
@@ -855,7 +855,7 @@ class EmailTemplateSeeder extends Seeder
         EmailTemplate::create(
             [
                 'identifier' => 'cohort.discovery.access.approved',
-                'subject' => 'Congratulations! Your Cohort Discovery registration has been approved.',
+                'subject' => 'Your Cohort Discovery access request has been granted',
                 'body' => '<mjml>
                         
                             ' . $this->newHeader() . '
@@ -874,6 +874,7 @@ class EmailTemplateSeeder extends Seeder
                                             <div><br><br></div>
 
                                             You have been granted access for Cohort Discovery. Please use the buttons below to access Cohort Discovery and watch a video on how to use the tool.<br>
+                                            Please logout of your account on HDR Gateway and log back in again to reflect your refreshed access.<br>
                                             Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br>
                                             If you require further support raise a support ticket on the Health Data Research Gateway.
                                             
@@ -890,7 +891,7 @@ class EmailTemplateSeeder extends Seeder
                                     <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
                                         <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
-                                            Open your dashboard
+                                            Access Cohort Discovery
                                         </mj-button>
                                         </mj-column>
                                     </mj-section>
@@ -1638,7 +1639,11 @@ class EmailTemplateSeeder extends Seeder
                                         
                                             <div><br><br></div>
 
-                                            You have been granted access for the NHS Research SDE on Cohort Discovery. Please use the buttons below to  access Cohort Discovery and watch a video on how to use the tool.
+                                            You have been granted access for the NHS Research SDE on Cohort Discovery. Please use the buttons below to access Cohort Discovery and watch a video on how to use the tool.
+
+                                            <div><br></div>
+
+                                            Please logout of your account on HDR Gateway and log back in again to reflect your refreshed access.
 
                                             <div><br></div>
 
@@ -1663,7 +1668,7 @@ class EmailTemplateSeeder extends Seeder
                                     <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
                                         <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
-                                            Open your dashboard
+                                            Access Cohort Discovery
                                         </mj-button>
                                         </mj-column>
                                     </mj-section>
