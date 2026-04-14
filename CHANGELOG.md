@@ -1,3 +1,17 @@
+## [2.39.0](https://github.com/HDRUK/gateway-api/compare/v2.38.1...v2.39.0) (2026-04-14)
+
+### ✨ Features
+
+* **GAT-7284:** Pass answer index to dar file upload (#1603) ([261a045](https://github.com/HDRUK/gateway-api/commit/261a04583e30d56a80fa92c421086998a66c22c6)), closes [GAT-7284](GAT-7284)
+* **GAT-8249:** Revise error handling for Data Use Register upload (#1610) ([f81d37d](https://github.com/HDRUK/gateway-api/commit/f81d37d1b2f207e7bcc1012ae9f97f2a93d5665d)), closes [GAT-8249](GAT-8249)
+* **GAT-8689:** dashboard data custodian format csv (#1602) ([87aa6c1](https://github.com/HDRUK/gateway-api/commit/87aa6c124fa3535d89977bed317ec15dea736ac7)), closes [GAT-8689](GAT-8689)
+* **GAT-8694:** Review, update access confirmation emails for revised Cohort Discovery process (#1609) ([0d28a16](https://github.com/HDRUK/gateway-api/commit/0d28a16d85eca55cf9505a4a216b4251cd1280db)), closes [GAT-8694](GAT-8694)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** testing rquest session (#1606) ([ec78af1](https://github.com/HDRUK/gateway-api/commit/ec78af1c9230d6dc9dc69af56e00d993fd1283b7)), closes [GAT-0000](GAT-0000)
+* **GAT-8748:** Unable to save content to "Results / Insights" section in Analysis scripts and Software (#1613) ([3aa2261](https://github.com/HDRUK/gateway-api/commit/3aa2261cc3f07176637f43886c5087e23ade9649)), closes [GAT-8748](GAT-8748)
+* **GAT-8752:** Add is_cohort_discovery field to DatasetResource (#1614) ([8d97f62](https://github.com/HDRUK/gateway-api/commit/8d97f621fd8dd73a87403aade25deb193f89c2f4)), closes [GAT-8752](GAT-8752)
 
 ## [2.38.1](https://github.com/HDRUK/gateway-api/compare/v2.38.0...v2.38.1) (2026-04-01)
 
