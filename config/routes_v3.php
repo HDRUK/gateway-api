@@ -146,4 +146,74 @@ return [
         ],
     ],
 
+    // data access dashboard
+    [
+        'name'                => 'dar.dashboard.my.applications',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/count',
+        'methodController'    => 'DataAccessDashboardController@getMyApplications',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name'                => 'dar.dashboard.status.applications',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/status',
+        'methodController'    => 'DataAccessDashboardController@getApplicationStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name'                => 'dar.dashboard.average.time.applications',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/average-time',
+        'methodController'    => 'DataAccessDashboardController@getAverageTimeToApproval',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name'                => 'dar.dashboard.required.actions.applications',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/required-actions',
+        'methodController'    => 'DataAccessDashboardController@getRequiredActions',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // no done
+    [
+        'name'                => 'dar.dashboard.timeline.applications',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/timeline',
+        'methodController'    => 'DataAccessDashboardController@getApplicationTimeline',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+
 ];
