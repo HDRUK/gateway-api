@@ -2,7 +2,6 @@
 
 namespace App\Services\V3;
 
-use Config;
 use App\Models\BankHoliday;
 use App\Models\DataAccessApplication;
 use App\Models\TeamHasDataAccessApplication;
@@ -11,8 +10,6 @@ use DB;
 
 class DataAccessDashboardService
 {
-    // ->paginate(Config::get('constants.per_page'), ['*'], 'page');
-
     public function myApplications(int $teamId)
     {
         $total = DB::select('

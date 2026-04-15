@@ -20,42 +20,192 @@ class DataAccessDashboardController extends Controller
     ) {
     }
 
-    // figma - my applications
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/count",
+     *     operationId="fetch_dar_my_applications_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@getMyApplications",
+     *     description="Get Dar applications for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function getMyApplications(Request $request, int $id)
     {
         $response = $this->dataAccessDashboardService->myApplications($id);
         return $this->okResponse($response);
     }
 
-    // figma - current status
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/status",
+     *     operationId="fetch_dar_applications_current_status_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@getApplicationStatus",
+     *     description="Get Dar applications current status for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function getApplicationStatus(Request $request, int $id)
     {
         $response = $this->dataAccessDashboardService->statusApplications($id);
         return $this->okResponse($response);
     }
 
-    // figma - Average Time to Approval
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/average-time",
+     *     operationId="fetch_dar_applications_average_time_to_approval_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@getAverageTimeToApproval",
+     *     description="Get Dar applications average time to approval for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function getAverageTimeToApproval(Request $request, int $id)
     {
         $response = $this->dataAccessDashboardService->averageTimeToApproval($id);
         return $this->okResponse($response);
     }
 
-    //figma - Messages and Actions
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/required-actions",
+     *     operationId="fetch_dar_applications_required_actions_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@getRequiredActions",
+     *     description="Get Dar applications required actions for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function getRequiredActions(Request $request, int $id)
     {
         $response = $this->dataAccessDashboardService->requiredActions($id);
         return $this->okResponse($response);
     }
 
-    // figma - Application Timeline
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/timeline",
+     *     operationId="fetch_dar_applications_application_timeline_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@getApplicationTimeline",
+     *     description="Get Dar applications timeline for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function getApplicationTimeline(Request $request, int $id)
     {
         $response = $this->dataAccessDashboardService->applicationTimeline($id);
         return $this->okResponse($response);
     }
 
-    // figma - export export
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/export/csv",
+     *     operationId="fetch_dar_applications_dashboard_export_csv_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@exportDashboardCsv",
+     *     description="Get Dar applications dashboard export csv for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function exportDashboardCsv(Request $request, int $id)
     {
         $myApplications = $this->dataAccessDashboardService->myApplications($id);
@@ -74,7 +224,32 @@ class DataAccessDashboardController extends Controller
         );
     }
 
-    // figma - export export
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/timeline/export/csv",
+     *     operationId="fetch_dar_applications_dashboard_timeline_export_csv_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@exportDashboardTimelineCsv",
+     *     description="Get Dar applications dashboard timeline export csv for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function exportDashboardTimelineCsv(Request $request, int $id)
     {
         $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id);
@@ -88,6 +263,32 @@ class DataAccessDashboardController extends Controller
     }
 
     // figma - export messages & required actions
+    /**
+     * @OA\Get(
+     *     path="/api/v3/teams/{id}/dar/dashboard/required-actions/export/csv",
+     *     operationId="fetch_dar_applications_dashboard_required_actions_export_csv_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="DataAccessDashboardController@exportRequiredActionsCsv",
+     *     description="Get Dar applications dashboard timeline export csv for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object")
+     *         )
+     *     )
+     * )
+     */
     public function exportRequiredActionsCsv(Request $request, int $id)
     {
         $requiredActions = $this->dataAccessDashboardService->requiredActions($id);
