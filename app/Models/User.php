@@ -14,6 +14,32 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
+/**
+ * @OA\Schema(
+ *   schema="User",
+ *   description="A registered Gateway user",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="name", type="string", nullable=true, example="Jane Smith"),
+ *   @OA\Property(property="firstname", type="string", nullable=true, example="Jane"),
+ *   @OA\Property(property="lastname", type="string", nullable=true, example="Smith"),
+ *   @OA\Property(property="email", type="string", format="email", example="jane@example.com"),
+ *   @OA\Property(property="secondary_email", type="string", format="email", nullable=true),
+ *   @OA\Property(property="preferred_email", type="string", enum={"primary","secondary"}, nullable=true, example="primary"),
+ *   @OA\Property(property="provider", type="string", nullable=true, example="google"),
+ *   @OA\Property(property="sector_id", type="integer", nullable=true),
+ *   @OA\Property(property="organisation", type="string", nullable=true, example="University of Cambridge"),
+ *   @OA\Property(property="bio", type="string", nullable=true),
+ *   @OA\Property(property="domain", type="string", nullable=true),
+ *   @OA\Property(property="link", type="string", format="uri", nullable=true),
+ *   @OA\Property(property="orcid", type="string", nullable=true, example="0000-0002-1825-0097"),
+ *   @OA\Property(property="contact_feedback", type="boolean", nullable=true, example=false),
+ *   @OA\Property(property="contact_news", type="boolean", nullable=true, example=false),
+ *   @OA\Property(property="is_admin", type="boolean", example=false),
+ *   @OA\Property(property="terms", type="boolean", example=true),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 class User extends Authenticatable
 {
     use HasApiTokens;

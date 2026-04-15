@@ -19,6 +19,29 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
+/**
+ * @OA\Schema(
+ *   schema="Collection",
+ *   description="A curated collection of datasets, tools, publications and DURs",
+ *   @OA\Property(property="id", type="integer", example=10),
+ *   @OA\Property(property="name", type="string", example="Cardiovascular Research"),
+ *   @OA\Property(property="description", type="string", nullable=true),
+ *   @OA\Property(property="image_link", type="string", nullable=true, example="/collections/cardio.jpg"),
+ *   @OA\Property(property="enabled", type="boolean", example=true),
+ *   @OA\Property(property="keywords", type="string", nullable=true),
+ *   @OA\Property(property="public", type="boolean", nullable=true, example=true),
+ *   @OA\Property(property="counter", type="integer", nullable=true, example=0),
+ *   @OA\Property(
+ *     property="status",
+ *     type="string",
+ *     enum={"ACTIVE","DRAFT","ARCHIVED"},
+ *     example="ACTIVE"
+ *   ),
+ *   @OA\Property(property="team_id", type="integer", nullable=true),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 #[ObservedBy([CollectionObserver::class])]
 class Collection extends Model
 {
