@@ -213,5 +213,35 @@ return [
         ],
     ],
 
+    // export
+    // full dashboard
+    [
+        'name'                => 'dar.dashboard.export.csv',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/export/csv',
+        'methodController'    => 'DataAccessDashboardController@exportDashboardCsv',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    // application timeline
+    [
+        'name'                => 'dar.dashboard.export.csv',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/timeline/export/csv',
+        'methodController'    => 'DataAccessDashboardController@exportDashboardTimelineCsv',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    // messages & required actions
 
 ];

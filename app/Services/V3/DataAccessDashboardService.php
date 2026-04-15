@@ -2,6 +2,7 @@
 
 namespace App\Services\V3;
 
+use Config;
 use App\Models\BankHoliday;
 use App\Models\DataAccessApplication;
 use App\Models\TeamHasDataAccessApplication;

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\V3;
 
+use App\Exports\DataAccessApplicationTimelineCsv;
+use App\Exports\DataAccessDashboardCsv;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\Responses;
 use App\Services\V3\DataAccessDashboardService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DataAccessDashboardController extends Controller
 {
@@ -49,5 +52,37 @@ class DataAccessDashboardController extends Controller
     {
         $response = $this->dataAccessDashboardService->applicationTimeline($id);
         return $this->okResponse($response);
+    }
+
+    // figma - export export
+    public function exportDashboardCsv(Request $request, int $id)
+    {
+        $myApplications = $this->dataAccessDashboardService->myApplications($id);
+        $averageTimeToApproval = $this->dataAccessDashboardService->averageTimeToApproval($id);
+        $requiredActions = $this->dataAccessDashboardService->requiredActions($id);
+        $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id);
+
+        return Excel::download(
+            new DataAccessDashboardCsv(
+                $myApplications,
+                $averageTimeToApproval,
+                $requiredActions,
+                $applicationIimeline,
+            ),
+            'dashboard.csv',
+        );
+    }
+
+    // figma - export export
+    public function exportDashboardTimelineCsv(Request $request, int $id)
+    {
+        $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id);
+
+        return Excel::download(
+            new DataAccessApplicationTimelineCsv(
+                $applicationIimeline,
+            ),
+            'dashboard.csv',
+        );
     }
 }
