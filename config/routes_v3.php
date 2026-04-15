@@ -201,19 +201,19 @@ return [
     ],
 
     // no done
-    [
-        'name'                => 'dar.dashboard.timeline.applications',
-        'method'              => 'get',
-        'path'                => '/teams/{id}/dar/dashboard/timeline',
-        'methodController'    => 'DataAccessDashboardController@getApplicationTimeline',
-        'namespaceController' => 'App\Http\Controllers\Api\V3',
-        'middleware'          => [
-            // 'jwt.verify',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
+    // [
+    //     'name'                => 'dar.dashboard.timeline.applications',
+    //     'method'              => 'get',
+    //     'path'                => '/teams/{id}/dar/dashboard/timeline',
+    //     'methodController'    => 'DataAccessDashboardController@getApplicationTimeline',
+    //     'namespaceController' => 'App\Http\Controllers\Api\V3',
+    //     'middleware'          => [
+    //         // 'jwt.verify',
+    //     ],
+    //     'constraint' => [
+    //         'id' => '[0-9]+',
+    //     ],
+    // ],
 
 
 ];

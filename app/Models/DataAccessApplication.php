@@ -98,7 +98,26 @@ class DataAccessApplication extends Model
 
     public function team()
     {
-        return $this->belongsTo(Team::class, 'team_id');
+        return $this->hasOneThrough(
+            Team::class,
+            TeamHasDataAccessApplication::class,
+            'dar_application_id',
+            'id',
+            'id',
+            'team_id'
+        );
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationReview::class, 'application_id');
+    }
+
+    public function states(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationStatus::class, 'application_id');
+    }
+
+
 
 }

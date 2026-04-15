@@ -20,6 +20,24 @@ class DataAccessApplicationStatus extends Model
      */
     protected $table = 'dar_application_statuses';
 
+    protected $appends = [
+        'days_between_states'
+    ];
+
+    public function getDaysBetweenStatesAttribute(): int
+    {
+        $prev = static::where('application_id', $this->application_id)
+            ->where('created_at', '<', $this->created_at)
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (!$prev) {
+            return 0;
+        }
+
+        return (int) $prev->created_at->diffInDays($this->created_at);
+    }
+
     protected $fillable = [
         'application_id',
         'approval_status',
@@ -27,5 +45,7 @@ class DataAccessApplicationStatus extends Model
         'review_id',
         'team_id',
     ];
+
+
 
 }

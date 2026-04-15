@@ -43,11 +43,4 @@ class DataAccessDashboardController extends Controller
         $response = $this->dataAccessDashboardService->requiredActions($id);
         return $this->okResponse($response);
     }
-
-    // not done
-    public function getApplicationTimeline(Request $request, int $id)
-    {
-        $response = $this->dataAccessDashboardService->getApplicationTimeline($id);
-        return $this->okResponse($response);
-    }
 }

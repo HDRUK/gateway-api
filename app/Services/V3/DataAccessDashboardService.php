@@ -71,17 +71,17 @@ class DataAccessDashboardService
     public function requiredActions(int $teamId)
     {
         $response = DataAccessApplication::query()
-                    ->with('team')
-                    // ->where('')
+                    ->with([
+                        'team',
+                        'reviews.comments',
+                        'user',
+                        'states'
+                    ])
+                    ->whereHas('team', fn ($q) => $q->where('teams.id', $teamId))
+                    ->whereHas('reviews', fn ($q) => $q->whereHas('comments'))
                     ->get()
                     ->toArray();
 
-
         return $response;
-    }
-
-    public function getApplicationTimeline(int $teamId)
-    {
-        return $teamId;
     }
 }
