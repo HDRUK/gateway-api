@@ -16,6 +16,62 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @OA\Schema(
+ *   schema="Dur",
+ *   description="A Data Use Register (DUR) entry describing an approved use of one or more datasets",
+ *   @OA\Property(property="id", type="integer", example=88),
+ *   @OA\Property(property="project_title", type="string", nullable=true, example="COVID-19 outcomes study"),
+ *   @OA\Property(property="project_id_text", type="string", nullable=true),
+ *   @OA\Property(property="organisation_name", type="string", nullable=true, example="NHS England"),
+ *   @OA\Property(property="organisation_sector", type="string", nullable=true),
+ *   @OA\Property(property="sector_id", type="integer", nullable=true),
+ *   @OA\Property(property="lay_summary", type="string", nullable=true),
+ *   @OA\Property(property="technical_summary", type="string", nullable=true),
+ *   @OA\Property(property="latest_approval_date", type="string", format="date", nullable=true, example="2023-07-01"),
+ *   @OA\Property(property="manual_upload", type="boolean", example=false),
+ *   @OA\Property(property="rejection_reason", type="string", nullable=true),
+ *   @OA\Property(property="sublicence_arrangements", type="string", nullable=true),
+ *   @OA\Property(property="public_benefit_statement", type="string", nullable=true),
+ *   @OA\Property(property="data_sensitivity_level", type="string", nullable=true),
+ *   @OA\Property(property="project_start_date", type="string", format="date", nullable=true, example="2023-01-01"),
+ *   @OA\Property(property="project_end_date", type="string", format="date", nullable=true, example="2025-12-31"),
+ *   @OA\Property(property="access_date", type="string", format="date", nullable=true),
+ *   @OA\Property(property="accredited_researcher_status", type="string", nullable=true),
+ *   @OA\Property(property="confidential_data_description", type="string", nullable=true),
+ *   @OA\Property(property="dataset_linkage_description", type="string", nullable=true),
+ *   @OA\Property(property="duty_of_confidentiality", type="string", nullable=true),
+ *   @OA\Property(property="legal_basis_for_data_article6", type="string", nullable=true),
+ *   @OA\Property(property="legal_basis_for_data_article9", type="string", nullable=true),
+ *   @OA\Property(property="national_data_optout", type="string", nullable=true),
+ *   @OA\Property(property="organisation_id", type="string", nullable=true),
+ *   @OA\Property(property="privacy_enhancements", type="string", nullable=true),
+ *   @OA\Property(property="request_category_type", type="string", nullable=true),
+ *   @OA\Property(property="request_frequency", type="string", nullable=true),
+ *   @OA\Property(property="access_type", type="string", nullable=true),
+ *   @OA\Property(property="non_gateway_datasets", type="array", nullable=true, @OA\Items(type="string")),
+ *   @OA\Property(property="non_gateway_applicants", type="array", nullable=true, @OA\Items(type="string")),
+ *   @OA\Property(property="funders_and_sponsors", type="array", nullable=true, @OA\Items(type="string")),
+ *   @OA\Property(property="other_approval_committees", type="array", nullable=true, @OA\Items(type="string")),
+ *   @OA\Property(property="gateway_outputs_tools", type="array", nullable=true, @OA\Items(type="string")),
+ *   @OA\Property(property="gateway_outputs_papers", type="array", nullable=true, @OA\Items(type="string")),
+ *   @OA\Property(property="non_gateway_outputs", type="array", nullable=true, @OA\Items(type="string")),
+ *   @OA\Property(property="enabled", type="boolean", example=true),
+ *   @OA\Property(property="last_activity", type="string", format="date-time", nullable=true),
+ *   @OA\Property(property="counter", type="integer", nullable=true, example=0),
+ *   @OA\Property(property="user_id", type="integer", nullable=true),
+ *   @OA\Property(property="team_id", type="integer", nullable=true),
+ *   @OA\Property(property="applicant_id", type="integer", nullable=true),
+ *   @OA\Property(
+ *     property="status",
+ *     type="string",
+ *     enum={"ACTIVE","DRAFT","ARCHIVED"},
+ *     example="ACTIVE"
+ *   ),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 #[ObservedBy([DurObserver::class])]
 class Dur extends Model
 {

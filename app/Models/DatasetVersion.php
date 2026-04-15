@@ -14,6 +14,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @OA\Schema(
+ *   schema="DatasetVersion",
+ *   description="A versioned snapshot of dataset metadata in GWDM format",
+ *   @OA\Property(property="id", type="integer", example=101),
+ *   @OA\Property(property="dataset_id", type="integer", example=1),
+ *   @OA\Property(property="version", type="integer", example=3),
+ *   @OA\Property(property="title", type="string", nullable=true, example="UK Biobank"),
+ *   @OA\Property(property="short_title", type="string", nullable=true, example="UKB"),
+ *   @OA\Property(
+ *     property="metadata",
+ *     type="object",
+ *     nullable=true,
+ *     description="Full GWDM-format metadata document for this version"
+ *   ),
+ *   @OA\Property(
+ *     property="patch",
+ *     type="array",
+ *     nullable=true,
+ *     description="RFC 6902 JSON Patch array used to reconstruct this version from the previous snapshot. Null for full snapshots (v1 and every 10th version).",
+ *     @OA\Items(type="object")
+ *   ),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 #[ObservedBy(DatasetVersionObserver::class)]
 class DatasetVersion extends Model
 {

@@ -18,6 +18,33 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property array $linkages
+ *
+ * @OA\Schema(
+ *   schema="Dataset",
+ *   description="A dataset record managed by the Gateway",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="user_id", type="integer", nullable=true, example=42),
+ *   @OA\Property(property="team_id", type="integer", nullable=true, example=7),
+ *   @OA\Property(property="pid", type="string", nullable=true, example="d4b3c2a1-0000-0000-0000-000000000000"),
+ *   @OA\Property(property="datasetid", type="string", nullable=true, example="some-legacy-id"),
+ *   @OA\Property(property="version", type="integer", nullable=true, example=3),
+ *   @OA\Property(
+ *     property="status",
+ *     type="string",
+ *     enum={"ACTIVE","DRAFT","ARCHIVED"},
+ *     example="ACTIVE"
+ *   ),
+ *   @OA\Property(
+ *     property="create_origin",
+ *     type="string",
+ *     enum={"MANUAL","API","GMI"},
+ *     nullable=true,
+ *     example="MANUAL"
+ *   ),
+ *   @OA\Property(property="is_cohort_discovery", type="boolean", example=false),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
  */
 #[ObservedBy(DatasetObserver::class)]
 class Dataset extends Model
