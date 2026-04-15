@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class DataAccessApplication extends Model
 {
@@ -96,7 +97,7 @@ class DataAccessApplication extends Model
         );
     }
 
-    public function team()
+    public function team(): HasOneThrough
     {
         return $this->hasOneThrough(
             Team::class,
