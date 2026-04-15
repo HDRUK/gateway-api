@@ -84,7 +84,7 @@ class DataAccessDashboardService
 
                 $workingDays = 0;
 
-                $current = Carbon::parse($from)->addDay();
+                $current = Carbon::parse($from);
                 $end = Carbon::parse($to);
 
                 while ($current->lte($end)) {
