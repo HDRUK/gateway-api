@@ -43,4 +43,11 @@ class DataAccessDashboardController extends Controller
         $response = $this->dataAccessDashboardService->requiredActions($id);
         return $this->okResponse($response);
     }
+
+    // figma - Application Timeline
+    public function getApplicationTimeline(Request $request, int $id)
+    {
+        $response = $this->dataAccessDashboardService->applicationTimeline($id);
+        return $this->okResponse($response);
+    }
 }

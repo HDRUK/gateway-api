@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class DataAccessApplicationStatus extends Model
 {
@@ -35,7 +36,31 @@ class DataAccessApplicationStatus extends Model
             return 0;
         }
 
-        return (int) $prev->created_at->diffInDays($this->created_at);
+        $holidays = BankHoliday::query()
+            ->where([
+                'country' => 'GB',
+                'region' => 'england-and-wales',
+            ])
+            ->whereBetween('holiday_date', [
+                $prev->created_at->toDateString(),
+                $this->created_at->toDateString(),
+            ])
+            ->pluck('holiday_date')
+            ->map(fn ($d) => Carbon::parse($d)->toDateString())
+            ->toArray();
+
+        $days = 0;
+        $current = $prev->created_at->copy()->addDay();
+
+        while ($current->lte($this->created_at)) {
+            if (!$current->isWeekend() && !in_array($current->toDateString(), $holidays)) {
+                $days++;
+            }
+
+            $current->addDay();
+        }
+
+        return $days;
     }
 
     protected $fillable = [
