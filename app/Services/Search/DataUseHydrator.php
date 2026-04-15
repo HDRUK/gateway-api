@@ -3,7 +3,6 @@
 namespace App\Services\Search;
 
 use App\Models\Dur;
-use Illuminate\Support\Facades\DB;
 
 class DataUseHydrator
 {
@@ -15,11 +14,12 @@ class DataUseHydrator
         $models = Dur::with([
             'versions' => function ($query) {
                 // Select only what buildDatasetTitles needs — never load the full metadata blob.
+                // short_title and title are stored columns (not generated); no JSON extraction needed.
                 $query->select([
                     'dataset_versions.id',
                     'dataset_versions.dataset_id',
                     'dataset_versions.short_title',
-                    DB::raw("JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.metadata.summary.shortTitle')) as fallback_title"),
+                    'dataset_versions.title',
                 ]);
             },
             'tools',         // already filters status=ACTIVE in relationship
@@ -65,7 +65,7 @@ class DataUseHydrator
         $titles = $dur->versions
             ->map(fn ($version) => [
                 'title' => $version->short_title
-                    ?? $version->fallback_title
+                    ?? $version->title
                     ?? '',
                 'id'    => $version->dataset_id,
             ])
