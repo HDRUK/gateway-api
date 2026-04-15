@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V3;
 
 use App\Exports\DataAccessApplicationTimelineCsv;
 use App\Exports\DataAccessDashboardCsv;
+use App\Exports\DataAccessRequiredActionsCsv;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\Responses;
 use App\Services\V3\DataAccessDashboardService;
@@ -81,6 +82,21 @@ class DataAccessDashboardController extends Controller
         return Excel::download(
             new DataAccessApplicationTimelineCsv(
                 $applicationIimeline,
+            ),
+            'dashboard.csv',
+        );
+    }
+
+    // figma - export messages & required actions
+    public function exportRequiredActionsCsv(Request $request, int $id)
+    {
+        $requiredActions = $this->dataAccessDashboardService->requiredActions($id);
+
+        dd($requiredActions);
+
+        return Excel::download(
+            new DataAccessRequiredActionsCsv(
+                $requiredActions,
             ),
             'dashboard.csv',
         );

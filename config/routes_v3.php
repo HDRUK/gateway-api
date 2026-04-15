@@ -243,5 +243,18 @@ return [
         ],
     ],
     // messages & required actions
+    [
+        'name'                => 'dar.dashboard.export.csv',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dar/dashboard/required-actions/export/csv',
+        'methodController'    => 'DataAccessDashboardController@exportRequiredActionsCsv',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            // 'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 
 ];
