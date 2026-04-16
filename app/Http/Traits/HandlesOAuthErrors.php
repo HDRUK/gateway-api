@@ -3,13 +3,14 @@
 namespace App\Http\Traits;
 
 use Exception;
-use Illuminate\Http\Response;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Nyholm\Psr7\Response as Psr7Response;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Laravel\Passport\Http\Controllers\ConvertsPsrResponses;
+use Symfony\Component\HttpFoundation\Response;
 
 trait HandlesOAuthErrors
 {
@@ -21,7 +22,7 @@ trait HandlesOAuthErrors
      * @param  \Closure  $callback
      * @return \Illuminate\Http\Response
      */
-    protected function withErrorHandling($callback)
+    protected function withErrorHandling($callback): Response
     {
         try {
             return $callback();
@@ -34,7 +35,7 @@ trait HandlesOAuthErrors
         } catch (Exception $e) {
             $this->exceptionHandler()->report($e);
 
-            return new Response($this->configuration()->get('app.debug') ?
+            return new HttpResponse($this->configuration()->get('app.debug') ?
                 $e->getMessage() : 'Error.', 500);
         }
     }
@@ -44,7 +45,7 @@ trait HandlesOAuthErrors
      *
      * @return \Illuminate\Contracts\Config\Repository
      */
-    protected function configuration()
+    protected function configuration(): Repository
     {
         return Container::getInstance()->make(Repository::class);
     }
@@ -54,7 +55,7 @@ trait HandlesOAuthErrors
      *
      * @return \Illuminate\Contracts\Debug\ExceptionHandler
      */
-    protected function exceptionHandler()
+    protected function exceptionHandler(): ExceptionHandler
     {
         return Container::getInstance()->make(ExceptionHandler::class);
     }
