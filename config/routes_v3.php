@@ -154,7 +154,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@getMyApplications',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -167,7 +167,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@getApplicationStatus',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -180,7 +180,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@getAverageTimeToApproval',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -193,7 +193,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@getRequiredActions',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -206,7 +206,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@getApplicationTimeline',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -222,7 +222,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@exportDashboardCsv',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -236,7 +236,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@exportDashboardTimelineCsv',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -250,7 +250,7 @@ return [
         'methodController'    => 'DataAccessDashboardController@exportRequiredActionsCsv',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            // 'jwt.verify',
+            'jwt.verify',
         ],
         'constraint' => [
             'id' => '[0-9]+',

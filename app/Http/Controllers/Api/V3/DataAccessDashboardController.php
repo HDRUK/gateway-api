@@ -6,9 +6,9 @@ use App\Exports\DataAccessApplicationTimelineCsv;
 use App\Exports\DataAccessDashboardCsv;
 use App\Exports\DataAccessRequiredActionsCsv;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\V3\DataAccessDashboard\GetTeamDataAccessDashboard;
 use App\Http\Traits\Responses;
 use App\Services\V3\DataAccessDashboardService;
-use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DataAccessDashboardController extends Controller
@@ -46,7 +46,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function getMyApplications(Request $request, int $id)
+    public function getMyApplications(GetTeamDataAccessDashboard $request, int $id)
     {
         $response = $this->dataAccessDashboardService->myApplications($id);
         return $this->okResponse($response);
@@ -78,7 +78,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function getApplicationStatus(Request $request, int $id)
+    public function getApplicationStatus(GetTeamDataAccessDashboard $request, int $id)
     {
         $response = $this->dataAccessDashboardService->statusApplications($id);
         return $this->okResponse($response);
@@ -110,7 +110,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function getAverageTimeToApproval(Request $request, int $id)
+    public function getAverageTimeToApproval(GetTeamDataAccessDashboard $request, int $id)
     {
         $response = $this->dataAccessDashboardService->averageTimeToApproval($id);
         return $this->okResponse($response);
@@ -142,7 +142,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function getRequiredActions(Request $request, int $id)
+    public function getRequiredActions(GetTeamDataAccessDashboard $request, int $id)
     {
         $response = $this->dataAccessDashboardService->requiredActions($id);
         return $this->okResponse($response);
@@ -174,7 +174,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function getApplicationTimeline(Request $request, int $id)
+    public function getApplicationTimeline(GetTeamDataAccessDashboard $request, int $id)
     {
         $response = $this->dataAccessDashboardService->applicationTimeline($id);
         return $this->okResponse($response);
@@ -206,7 +206,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function exportDashboardCsv(Request $request, int $id)
+    public function exportDashboardCsv(GetTeamDataAccessDashboard $request, int $id)
     {
         $myApplications = $this->dataAccessDashboardService->myApplications($id);
         $averageTimeToApproval = $this->dataAccessDashboardService->averageTimeToApproval($id);
@@ -250,7 +250,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function exportDashboardTimelineCsv(Request $request, int $id)
+    public function exportDashboardTimelineCsv(GetTeamDataAccessDashboard $request, int $id)
     {
         $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id);
 
@@ -289,7 +289,7 @@ class DataAccessDashboardController extends Controller
      *     )
      * )
      */
-    public function exportRequiredActionsCsv(Request $request, int $id)
+    public function exportRequiredActionsCsv(GetTeamDataAccessDashboard $request, int $id)
     {
         $requiredActions = $this->dataAccessDashboardService->requiredActions($id);
 
