@@ -13,6 +13,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use League\OAuth2\Server\AuthorizationServer;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
+use Symfony\Component\HttpFoundation\Response;
 
 class OAuth2Controller extends Controller
 {
@@ -32,7 +33,7 @@ class OAuth2Controller extends Controller
         ServerRequestInterface $psrRequest,
         Request $request,
         ClientRepository $clients,
-    ) {
+    ): Response {
         $state = $request->query('state');
 
         try {
