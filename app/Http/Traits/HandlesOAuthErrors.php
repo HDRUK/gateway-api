@@ -10,6 +10,8 @@ use Nyholm\Psr7\Response as Psr7Response;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Laravel\Passport\Http\Controllers\ConvertsPsrResponses;
+use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 trait HandlesOAuthErrors
 {
@@ -21,16 +23,17 @@ trait HandlesOAuthErrors
      * @param  \Closure  $callback
      * @return \Illuminate\Http\Response
      */
-    protected function withErrorHandling($callback): Response
+    protected function withErrorHandling($callback): SymfonyResponse
     {
         try {
             return $callback();
         } catch (OAuthServerException $e) {
             $this->exceptionHandler()->report($e);
 
-            return $this->convertResponse(
-                $e->generateHttpResponse(new Psr7Response())
-            );
+            $psrResponse = $e->generateHttpResponse(new Psr7Response());
+            $factory = new HttpFoundationFactory();
+
+            return $factory->createResponse($psrResponse);
         } catch (Exception $e) {
             $this->exceptionHandler()->report($e);
 
