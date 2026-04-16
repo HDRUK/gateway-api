@@ -3,14 +3,13 @@
 namespace App\Http\Traits;
 
 use Exception;
-use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Http\Response;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Nyholm\Psr7\Response as Psr7Response;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Laravel\Passport\Http\Controllers\ConvertsPsrResponses;
-use Symfony\Component\HttpFoundation\Response;
 
 trait HandlesOAuthErrors
 {
@@ -35,7 +34,7 @@ trait HandlesOAuthErrors
         } catch (Exception $e) {
             $this->exceptionHandler()->report($e);
 
-            return new HttpResponse($this->configuration()->get('app.debug') ?
+            return new Response($this->configuration()->get('app.debug') ?
                 $e->getMessage() : 'Error.', 500);
         }
     }
