@@ -46,7 +46,7 @@ COPY . /var/www
 
 # for local development and using google cloud services, we need to set the GOOGLE_APPLICATION_CREDENTIALS to point to the service account credentials file. 
 # In production, this will be set to the default application credentials provided by the environment.
-ENV GOOGLE_APPLICATION_CREDENTIALS=/var/www/application_default_credentials.json
+# ENV GOOGLE_APPLICATION_CREDENTIALS=/var/www/application_default_credentials.json
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \
