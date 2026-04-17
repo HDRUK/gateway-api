@@ -12,7 +12,7 @@ jobs:
         id: generate-deployment-token
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.DEPLOY_APP_ID }}
+          client-id: ${{ secrets.DEPLOY_APP_ID }}
           private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
           owner: HDRUK
           repositories: |
