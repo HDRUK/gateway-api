@@ -11,7 +11,6 @@ use Laravel\Passport\Http\Controllers\ConvertsPsrResponses;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Nyholm\Psr7\Response as Psr7Response;
 
 trait HandlesOAuthErrors
@@ -24,7 +23,7 @@ trait HandlesOAuthErrors
      * @param  \Closure  $callback
      * @return \Illuminate\Http\Response
      */
-    protected function withErrorHandling($callback): SymfonyResponse
+    protected function withErrorHandling($callback): Response
     {
         $factory = new HttpFoundationFactory();
 
@@ -32,21 +31,35 @@ trait HandlesOAuthErrors
             $result = $callback();
 
             if ($result instanceof ResponseInterface) {
-                return $factory->createResponse($result);
+                $symfonyResponse = $factory->createResponse($result);
+
+                return new Response(
+                    $symfonyResponse->getContent(),
+                    $symfonyResponse->getStatusCode(),
+                    $symfonyResponse->headers->all()
+                );
             }
 
-            return $result;
+            if ($result instanceof Response) {
+                return $result;
+            }
+
+            return new Response($result);
         } catch (OAuthServerException $e) {
             $this->exceptionHandler()->report($e);
 
             $psrResponse = $e->generateHttpResponse(new Psr7Response());
+            $symfonyResponse = $factory->createResponse($psrResponse);
 
-            return $factory->createResponse($psrResponse);
+            return new Response(
+                $symfonyResponse->getContent(),
+                $symfonyResponse->getStatusCode(),
+                $symfonyResponse->headers->all()
+            );
         } catch (Exception $e) {
             $this->exceptionHandler()->report($e);
 
-            return new Response($this->configuration()->get('app.debug') ?
-                $e->getMessage() : 'Error.', 500);
+            return new Response($this->configuration()->get('app.debug') ? $e->getMessage() : 'Error.', 500);
         }
     }
 
