@@ -3,15 +3,16 @@
 namespace App\Http\Traits;
 
 use Exception;
-use Illuminate\Http\Response;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
-use Nyholm\Psr7\Response as Psr7Response;
 use Illuminate\Contracts\Debug\ExceptionHandler;
-use League\OAuth2\Server\Exception\OAuthServerException;
+use Illuminate\Http\Response;
 use Laravel\Passport\Http\Controllers\ConvertsPsrResponses;
+use League\OAuth2\Server\Exception\OAuthServerException;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Nyholm\Psr7\Response as Psr7Response;
 
 trait HandlesOAuthErrors
 {
@@ -25,13 +26,20 @@ trait HandlesOAuthErrors
      */
     protected function withErrorHandling($callback): SymfonyResponse
     {
+        $factory = new HttpFoundationFactory();
+
         try {
-            return $callback();
+            $result = $callback();
+
+            if ($result instanceof ResponseInterface) {
+                return $factory->createResponse($result);
+            }
+
+            return $result;
         } catch (OAuthServerException $e) {
             $this->exceptionHandler()->report($e);
 
             $psrResponse = $e->generateHttpResponse(new Psr7Response());
-            $factory = new HttpFoundationFactory();
 
             return $factory->createResponse($psrResponse);
         } catch (Exception $e) {

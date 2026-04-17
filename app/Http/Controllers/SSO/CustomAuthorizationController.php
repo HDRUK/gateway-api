@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\SSO;
 
-use App\Models\OauthUser;
-use Illuminate\Http\Request;
-use Laravel\Passport\Passport;
-use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
-use Laravel\Passport\ClientRepository;
 use App\Http\Traits\HandlesOAuthErrors;
-use Nyholm\Psr7\Response as Psr7Response;
-use Psr\Http\Message\ServerRequestInterface;
-use League\OAuth2\Server\AuthorizationServer;
+use App\Models\OauthUser;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\Request;
+use Laravel\Passport\Bridge\User;
+use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
+use Laravel\Passport\Passport;
+use League\OAuth2\Server\AuthorizationServer;
+use Psr\Http\Message\ServerRequestInterface;
+use Nyholm\Psr7\Response as Psr7Response;
 
 class CustomAuthorizationController extends Controller
 {
@@ -88,13 +88,12 @@ class CustomAuthorizationController extends Controller
      * Approve the authorization request.
      *
      * @param  \League\OAuth2\Server\RequestTypes\AuthorizationRequest  $authRequest
-     * @param  Integer  $userId
+     * @param  Int  $userId
      * @return \Psr\Http\Message\ResponseInterface
      */
     private function approveRequest($authRequest, int $userId)
     {
-        $authRequest->setUser(new User($userId));
-
+        $authRequest->setUser(new User((int) $userId));
         $authRequest->setAuthorizationApproved(true);
 
         return $this->server->completeAuthorizationRequest(
