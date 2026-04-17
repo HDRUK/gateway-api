@@ -23,8 +23,10 @@ class CustomAccessTokenController extends PassportAccessTokenController
 
         $psrRequest = $psrHttpFactory->createRequest($request);
 
+        $psrResponse = $psr17Factory->createResponse();
+
         try {
-            return parent::issueToken($psrRequest);
+            return parent::issueToken($psrRequest, $psrResponse);
         } catch (OAuthServerException $e) {
             return response()->json([
                 'code' => $e->getCode(),
