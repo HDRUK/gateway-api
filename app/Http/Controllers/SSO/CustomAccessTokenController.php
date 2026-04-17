@@ -13,6 +13,7 @@ class CustomAccessTokenController extends PassportAccessTokenController
     public function issueOAuthToken(Request $request)
     {
         $psr17Factory = new Psr17Factory();
+
         $psrHttpFactory = new PsrHttpFactory(
             $psr17Factory,
             $psr17Factory,
