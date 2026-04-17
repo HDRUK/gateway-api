@@ -23,10 +23,7 @@ jobs:
         with:
           app-id: ${{ secrets.DEPLOY_APP_ID }}
           private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
-          client-id: ${{ secrets.DEPLOY_APP_ID }}
-          owner: HDRUK
-          repositories: |
-            ${{ github.event.repository.name }}
+          repositories: "HDRUK/${{ github.event.repository.name }}"
 
       - name: Checkout
         id: checkout
