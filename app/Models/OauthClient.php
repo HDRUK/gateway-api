@@ -15,7 +15,11 @@ class OauthClient extends Model
 
     protected $fillable = [
         'owner_id',
-        'redirect',
+        'redirect_uris',
+    ];
+
+    protected $casts = [
+        'redirect_uris' => 'array',
     ];
 
     /**

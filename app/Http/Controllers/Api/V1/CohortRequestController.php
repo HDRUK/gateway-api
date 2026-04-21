@@ -1532,7 +1532,7 @@ class CohortRequestController extends Controller
             'response_type' => 'code',
             'client_id' => $cohortClient->id,
             'scope' => 'openid email profile rquestroles cohort_discovery_roles',
-            'redirect_uri' => implode(',', $cohortClient->redirect_uris),
+            'redirect_uri' => $cohortClient->redirect_uris,
             'nonce' => $nonce,
             'state' => encrypt($userId),
         ], '', '&', PHP_QUERY_RFC3986);

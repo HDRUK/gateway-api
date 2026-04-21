@@ -59,11 +59,16 @@ return new class () extends Migration {
                     'user_id',
                     'redirect',
                     'personal_access_client',
+                    'password_client',
                 ]);
 
                 $table->text('redirect_uris')->nullable(false)->change();
                 $table->text('grant_types')->nullable(false)->change();
             });
+        } else {
+            DB::statement('CREATE TABLE oauth_clients_new AS SELECT id, name, owner_id, owner_type, secret, provider, redirect_uris, grant_types, revoked, created_at, updated_at FROM oauth_clients');
+            DB::statement('DROP TABLE oauth_clients');
+            DB::statement('ALTER TABLE oauth_clients_new RENAME TO oauth_clients');
         }
 
 
