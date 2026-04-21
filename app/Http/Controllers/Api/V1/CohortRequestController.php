@@ -1528,11 +1528,13 @@ class CohortRequestController extends Controller
 
         $nonce = bin2hex(random_bytes(16));
 
+        $redirectUris = json_decode($cohortClient->redirect_uris, 0);
+
         $query = http_build_query([
             'response_type' => 'code',
             'client_id' => $cohortClient->id,
             'scope' => 'openid email profile rquestroles cohort_discovery_roles',
-            'redirect_uri' => $cohortClient->redirect_uris,
+            'redirect_uri' => $redirectUris[0] ?? null,
             'nonce' => $nonce,
             'state' => encrypt($userId),
         ], '', '&', PHP_QUERY_RFC3986);
