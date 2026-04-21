@@ -694,7 +694,6 @@ class CohortRequestTest extends TestCase
             [],
             $this->header
         );
-        dd($response);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $response->assertJsonStructure(['data' => ['redirect_url']]);
