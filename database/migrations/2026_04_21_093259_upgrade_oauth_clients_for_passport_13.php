@@ -1,0 +1,71 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class () extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::dropIfExists('oauth_clients_12x');
+        DB::statement('CREATE TABLE oauth_clients_12x LIKE oauth_clients');
+        DB::statement('INSERT INTO oauth_clients_12x SELECT * FROM oauth_clients');
+
+        Schema::table('oauth_clients', function (Blueprint $table) {
+            $table->nullableMorphs('owner', after: 'user_id');
+
+            $table->after('provider', function (Blueprint $table) {
+                $table->text('redirect_uris')->nullable();
+                $table->text('grand_types')->nullable();
+            });
+        });
+
+        DB::table('oauth_clients')->cursor()->each(function ($client) {
+            $ownerType = null;
+
+            if ($client->user_id) {
+                $provider = $client->provider ?: config('aouth.guards.api.provider');
+                $ownerType = config("auth.providers.{$provider}.model");
+            }
+
+            $redirectUris = json_encode(array_values(array_filter(array_map('trim', explode(',', $client->redirect ?? '')))));
+
+            $grandTypes = json_encode(array_values(array_filter([
+                $client->personal_access_client ? 'personal_access' : null,
+                'authorization_code'
+            ])));
+
+            DB::table('oauth_clients')
+                ->where('id', $client->id)
+                ->update([
+                    'owner_id' => $client->user_id,
+                    'owner_type' => $ownerType,
+                    'redirect_uris' => $redirectUris,
+                    'grand_types' => $grandTypes,
+                ]);
+        });
+
+        Schema::table('oauth_clients', function (Blueprint $table) {
+            $table->dropColumn([
+                'user_id',
+                'redirect',
+                'personal_access_client',
+            ]);
+
+            $table->text('redirect_uris')->nullable(false)->change();
+            $table->text('grand_types')->nullable(false)->change();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // not yet
+    }
+};
