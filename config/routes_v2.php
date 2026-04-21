@@ -1228,4 +1228,16 @@ return [
         'constraint' => [],
     ],
 
+    // Intentionally removed for the time being
+    // // SearchAggregator
+    // [
+    //     'name' => 'search_agg.post',
+    //     'method' => 'post',
+    //     'path' => '/search/aggregation',
+    //     'methodController' => 'SearchController@search',
+    //     'namespaceController' => 'App\Http\Controllers\Api\V2',
+    //     'middleware' => [],
+    //     'constraint' => [],
+    // ],
+
 ];

@@ -207,6 +207,7 @@ return [
         App\Providers\ElasticClientControllerServiceProvider::class,
         App\Providers\HelperServiceProvider::class,
         App\Providers\AppFeatureServiceProvider::class,
+        App\Providers\SearchServiceProvider::class,
 
     ],
 
