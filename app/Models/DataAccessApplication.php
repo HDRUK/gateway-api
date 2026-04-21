@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class DataAccessApplication extends Model
 {
@@ -95,5 +96,29 @@ class DataAccessApplication extends Model
                 })
         );
     }
+
+    public function team(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            Team::class,
+            TeamHasDataAccessApplication::class,
+            'dar_application_id',
+            'id',
+            'id',
+            'team_id'
+        );
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationReview::class, 'application_id');
+    }
+
+    public function states(): HasMany
+    {
+        return $this->hasMany(DataAccessApplicationStatus::class, 'application_id');
+    }
+
+
 
 }
