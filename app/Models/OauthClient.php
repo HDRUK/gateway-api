@@ -14,7 +14,7 @@ class OauthClient extends Model
     use Prunable;
 
     protected $fillable = [
-        'user_id',
+        'owner_id',
         'redirect',
     ];
 

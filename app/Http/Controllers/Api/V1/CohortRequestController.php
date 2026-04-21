@@ -1519,7 +1519,7 @@ class CohortRequestController extends Controller
         }
 
         $cohortClient = OauthClient::where([
-            'user_id' => $cohortServiceAccount->id,
+            'owner_id' => $cohortServiceAccount->id,
         ])->first();
 
         if (! $cohortClient) {
