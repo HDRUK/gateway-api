@@ -28,7 +28,7 @@
         "laravel/helpers": "^1.6",
         "laravel/horizon": "^5.29",
         "laravel/octane": "^2.8.1",
-        "laravel/passport": "^12.2",
+        "laravel/passport": "^13.0",
         "laravel/pennant": "^1.16",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.9",
@@ -131,9 +131,9 @@
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         },
-        "_comment": "Ignore PKSA-y2cr-5h3j-g3ys or PKSA-wc55-9qj2-7v4h due it being in dispute state. See: https://www.cve.org/CVERecord?id=CVE-2025-45769 or ",
+        "_comment": "Ignore PKSA-y2cr-5h3j-g3ys due it being in dispute state. See: https://www.cve.org/CVERecord?id=CVE-2025-45769 or ",
         "audit": {
-            "ignore": ["PKSA-y2cr-5h3j-g3ys", "PKSA-wc55-9qj2-7v4h"]
+            "ignore": ["PKSA-y2cr-5h3j-g3ys"]
         }
     },
     "minimum-stability": "stable",

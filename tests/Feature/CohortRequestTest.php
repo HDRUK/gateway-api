@@ -7,8 +7,6 @@ use App\Models\CohortRequestHasPermission;
 use App\Models\OauthClient;
 use App\Models\Permission;
 use App\Models\User;
-//use App\Models\UserHasWorkgroup;
-//use App\Models\Workgroup;
 use Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -639,13 +637,14 @@ class CohortRequestTest extends TestCase
         if (! OauthClient::where('user_id', $serviceUser->id)->exists()) {
             $client = (new OauthClient())->forceFill([
                 'id' => (string) Str::uuid(),
-                'user_id' => $serviceUser->id,
+                'owner_id' => $serviceUser->id,
                 'name' => 'cohort-discovery-oauth-client',
                 'secret' => bcrypt(Str::random(40)),
                 'provider' => null,
-                'redirect' => Config::get('services.cohort_discovery_service.auth_url') ?? 'https://cohort.local/callback',
-                'personal_access_client' => false,
-                'password_client' => false,
+                'redirect_uris' => json_encode([Config::get('services.cohort_discovery_service.auth_url') ?? 'https://cohort.local/callback']),
+                'grant_types' => json_encode(['authorization_code']),
+                // 'personal_access_client' => false,
+                // 'password_client' => false,
                 'revoked' => false,
             ]);
             $client->save();

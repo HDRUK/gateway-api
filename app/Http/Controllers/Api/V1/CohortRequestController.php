@@ -1519,7 +1519,7 @@ class CohortRequestController extends Controller
         }
 
         $cohortClient = OauthClient::where([
-            'user_id' => $cohortServiceAccount->id,
+            'owner_id' => $cohortServiceAccount->id,
         ])->first();
 
         if (! $cohortClient) {
@@ -1532,7 +1532,7 @@ class CohortRequestController extends Controller
             'response_type' => 'code',
             'client_id' => $cohortClient->id,
             'scope' => 'openid email profile rquestroles cohort_discovery_roles',
-            'redirect_uri' => $cohortClient->redirect,
+            'redirect_uri' => $cohortClient->redirect_uris[0] ?? null,
             'nonce' => $nonce,
             'state' => encrypt($userId),
         ], '', '&', PHP_QUERY_RFC3986);

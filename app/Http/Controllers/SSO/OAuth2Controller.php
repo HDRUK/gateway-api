@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\SSO;
 
-use App\Models\OauthUser;
-use Illuminate\Http\Request;
-use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
-use Laravel\Passport\ClientRepository;
 use App\Http\Traits\HandlesOAuthErrors;
+use App\Models\OauthUser;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\Request;
+// use Illuminate\Http\Response;
+use Laravel\Passport\Bridge\User;
+use Laravel\Passport\ClientRepository;
+use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
+use League\OAuth2\Server\AuthorizationServer;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
-use League\OAuth2\Server\AuthorizationServer;
-use Illuminate\Contracts\Routing\ResponseFactory;
-use Laravel\Passport\Http\Controllers\RetrievesAuthRequestFromSession;
+use Symfony\Component\HttpFoundation\Response;
 
 class OAuth2Controller extends Controller
 {
@@ -32,7 +34,7 @@ class OAuth2Controller extends Controller
         ServerRequestInterface $psrRequest,
         Request $request,
         ClientRepository $clients,
-    ) {
+    ): Response {
         $state = $request->query('state');
 
         try {

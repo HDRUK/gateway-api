@@ -14,8 +14,12 @@ class OauthClient extends Model
     use Prunable;
 
     protected $fillable = [
-        'user_id',
-        'redirect',
+        'owner_id',
+        'redirect_uris',
+    ];
+
+    protected $casts = [
+        'redirect_uris' => 'array',
     ];
 
     /**
