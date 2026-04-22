@@ -7,8 +7,6 @@ use App\Models\CohortRequestHasPermission;
 use App\Models\OauthClient;
 use App\Models\Permission;
 use App\Models\User;
-//use App\Models\UserHasWorkgroup;
-//use App\Models\Workgroup;
 use Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
