@@ -13,6 +13,9 @@ class CustomAccessTokenController extends PassportAccessTokenController
 {
     public function issueOAuthToken(Request $request)
     {
+        \Log::debug('Oauth request body', $request->all());
+        \Log::debug('Oauth headers', $request->headers->all());
+
         $psr17Factory = new Psr17Factory();
         $psrHttpFactory = new PsrHttpFactory(
             $psr17Factory,
@@ -23,8 +26,9 @@ class CustomAccessTokenController extends PassportAccessTokenController
 
         $psrRequest = $psrHttpFactory->createRequest($request);
 
-        // $psrResponse = $psr17Factory->createResponse();
         $psrRequest = $psrRequest->withParsedBody($request->all() ?? []);
+
+        \Log::debug('PSR parsed body', (array) $psrRequest->getParsedBody());
 
         try {
             return parent::issueToken($psrRequest, new Psr7Response());
