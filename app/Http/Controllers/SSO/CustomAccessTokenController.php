@@ -25,7 +25,6 @@ class CustomAccessTokenController extends PassportAccessTokenController
         );
 
         $psrRequest = $psrHttpFactory->createRequest($request);
-
         $psrRequest = $psrRequest->withParsedBody($request->all() ?? []);
 
         \Log::debug('PSR parsed body', (array) $psrRequest->getParsedBody());
