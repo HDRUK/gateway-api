@@ -480,7 +480,7 @@ class TeamDatasetController extends Controller
             $elasticIndexing = $request->boolean('elastic_indexing', false);
 
             $team = Team::where('id', $teamId)->first()->toArray();
-
+            \Log::info('Dataset: ', $input);
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
             $inputSchema = $request->query('input_schema', null);

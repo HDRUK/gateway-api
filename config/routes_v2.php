@@ -496,7 +496,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,datasets.create',
         ],
         'constraint' => [
@@ -511,7 +511,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [
@@ -527,7 +527,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [
