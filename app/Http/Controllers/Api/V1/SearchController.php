@@ -1272,7 +1272,6 @@ class SearchController extends Controller
                     $pubArray[$i]['full_text_url'] = Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url');
                     $pubArray[$i]['url'] = Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url');
                 }
-                dd($pubArray);
             }
 
             if ($download) {
