@@ -1253,6 +1253,10 @@ class SearchController extends Controller
 
                 $pubArray = $response['resultList']['result'] ?? [];
                 $totalResults = $response['hitCount'];
+                $pubArray = array_filter($pubArray, function ($paper) {
+                    return Arr::has($paper, 'fullTextUrlList.fullTextUrl.0.url');
+                });
+
                 foreach ($pubArray as $i => $paper) {
                     $pubArray[$i]['id'] = $paper['id'];
                     $pubArray[$i]['_source']['year_of_publication'] = $paper['pubYear'];
@@ -1265,9 +1269,10 @@ class SearchController extends Controller
                     $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ?
                         $paper['journalInfo']['journal']['title'] : '';
                     $pubArray[$i]['year_of_publication'] = $paper['pubYear'];
-                    $pubArray[$i]['full_text_url'] = Arr::has($paper, 'fullTextUrlList.fullTextUrl.0.url') ? Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url') : '';
-                    $pubArray[$i]['url'] = Arr::has($paper, 'fullTextUrlList.fullTextUrl.0.url') ? Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url') : '';
+                    $pubArray[$i]['full_text_url'] = Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url');
+                    $pubArray[$i]['url'] = Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url');
                 }
+                dd($pubArray);
             }
 
             if ($download) {
