@@ -2,57 +2,58 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Config;
-use Auditor;
-use Exception;
-use CloudLogger;
-use App\Models\Dur;
-use App\Models\Team;
-use App\Models\Tool;
-use App\Models\User;
-use App\Models\Filter;
-use App\Models\Dataset;
-use App\Models\License;
-use App\Models\Collection;
-use App\Models\DurHasTool;
-use App\Models\Publication;
-use App\Models\TypeCategory;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use App\Exports\DataProviderCollExport;
+use App\Exports\DataProviderExport;
+use App\Exports\DatasetListExport;
+use App\Exports\DatasetTableExport;
 use App\Exports\DataUseExport;
-use App\Models\DatasetVersion;
+use App\Exports\PublicationExport;
 use App\Exports\ToolListExport;
-use App\Models\DataProviderColl;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Search\DOISearch;
+use App\Http\Requests\Search\PublicationSearch;
+use App\Http\Requests\Search\Search;
+use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\IndexElastic;
 use App\Http\Traits\LoggingContext;
-use App\Models\DurHasPublication;
-use Illuminate\Http\JsonResponse;
+use App\Http\Traits\PaginateFromArray;
+use App\Models\Collection;
+use App\Models\CollectionHasPublication;
 use App\Models\DataAccessTemplate;
-use App\Exports\DatasetListExport;
-use App\Exports\PublicationExport;
-use App\Models\ProgrammingPackage;
-use App\Models\PublicationHasTool;
-use App\Exports\DataProviderExport;
-use App\Exports\DatasetTableExport;
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasTool;
+use App\Models\Dur;
+use App\Models\DurHasPublication;
+use App\Models\DurHasTool;
+use App\Models\Filter;
+use App\Models\License;
 use App\Models\ProgrammingLanguage;
+use App\Models\ProgrammingPackage;
+use App\Models\Publication;
+use App\Models\PublicationHasDatasetVersion;
+use App\Models\PublicationHasTool;
+use App\Models\Team;
+use App\Models\Tool;
+use App\Models\ToolHasProgrammingLanguage;
+use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTypeCategory;
-use App\Http\Controllers\Controller;
+use App\Models\TypeCategory;
+use App\Models\User;
+use Auditor;
+use CloudLogger;
+use Config;
+use Exception;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Models\DatasetVersionHasTool;
-use App\Http\Traits\PaginateFromArray;
-use App\Exports\DataProviderCollExport;
-use App\Http\Requests\Search\DOISearch;
-use App\Models\DataProviderCollHasTeam;
-use App\Models\CollectionHasPublication;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
-use App\Http\Traits\GetValueByPossibleKeys;
-use App\Models\PublicationHasDatasetVersion;
-use App\Http\Requests\Search\PublicationSearch;
-use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use App\Http\Requests\Search\Search;
 
 class SearchController extends Controller
 {
@@ -1231,6 +1232,7 @@ class SearchController extends Controller
 
                 try {
                     $response = Http::withHeaders($loggingContext)->post($urlString, $input);
+
                 } catch (ConnectionException $e) {
                     Auditor::log([
                         'action_type' => 'EXCEPTION',
@@ -1251,8 +1253,12 @@ class SearchController extends Controller
 
                 $pubArray = $response['resultList']['result'] ?? [];
                 $totalResults = $response['hitCount'];
+                $pubArray = array_filter($pubArray, function ($paper) {
+                    return Arr::has($paper, 'fullTextUrlList.fullTextUrl.0.url');
+                });
+
                 foreach ($pubArray as $i => $paper) {
-                    $pubArray[$i]['testid'] = $paper;
+                    $pubArray[$i]['id'] = $paper['id'];
                     $pubArray[$i]['_source']['year_of_publication'] = $paper['pubYear'];
                     $pubArray[$i]['_source']['title'] = $paper['title'];
                     $pubArray[$i]['paper_title'] = $paper['title'];
@@ -1263,8 +1269,8 @@ class SearchController extends Controller
                     $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ?
                         $paper['journalInfo']['journal']['title'] : '';
                     $pubArray[$i]['year_of_publication'] = $paper['pubYear'];
-                    $pubArray[$i]['full_text_url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
-                    $pubArray[$i]['url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
+                    $pubArray[$i]['full_text_url'] = Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url');
+                    $pubArray[$i]['url'] = Arr::get($paper, 'fullTextUrlList.fullTextUrl.0.url');
                 }
             }
 
