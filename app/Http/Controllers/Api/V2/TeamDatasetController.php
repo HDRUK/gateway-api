@@ -481,7 +481,7 @@ class TeamDatasetController extends Controller
 
             $team = Team::where('id', $teamId)->first()->toArray();
 
-            $input['metadata'] = decodeHtmlEntitiesRecursive($this->extractMetadata($input['metadata']));
+            $input['metadata'] = $this->extractMetadata($input['metadata']);
 
             $inputSchema = $request->query('input_schema', null);
             $inputVersion = $request->query('input_version', null);
@@ -619,7 +619,7 @@ class TeamDatasetController extends Controller
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
-            $payload = decodeHtmlEntitiesRecursive($this->extractMetadata($input['metadata']));
+            $payload = $this->extractMetadata($input['metadata']);
             $payload['extra'] = [
                 'id'            => $id,
                 'pid'           => $currentPid,
