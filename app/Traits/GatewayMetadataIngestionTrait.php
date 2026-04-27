@@ -2,18 +2,19 @@
 
 namespace App\Traits;
 
-use Http;
-use Config;
-use MetadataManagementController as MMC;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Collection;
-use App\Models\Team;
-use App\Models\Dataset;
-use App\Models\Federation;
-use App\Models\DatasetVersion;
 use App\Http\Traits\MetadataVersioning;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Federation;
+use App\Models\Team;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
+use Carbon\Carbon;
+use Config;
+use Http;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use MetadataManagementController as MMC;
 
 trait GatewayMetadataIngestionTrait
 {
@@ -217,7 +218,7 @@ trait GatewayMetadataIngestionTrait
 
                         if ($traserResponse['wasTranslated']) {
                             $ds->update([
-                                'updated_at' => \Carbon\Carbon::now(),
+                                'updated' => Carbon::now(),
                             ]);
 
                             $versionNumber = $ds->lastMetadataVersionNumber()->version;
