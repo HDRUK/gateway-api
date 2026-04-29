@@ -37,20 +37,31 @@ class AliasReplyScannerService
     {
         $client = $this->getImapClient();
         $inbox = $client->getFolder(config('mail.mailers.ars.inbox'));
-
         return $inbox->messages()->all()->get()->filter(fn ($message) => !$this->isOutOfOffice($message));
     }
 
     private function isOutOfOffice($message): bool
     {
-        $headers = $message->getHeader();
-        $autoSubmitted = strtolower((string) $headers->get('auto-submitted'));
-        if ($autoSubmitted && $autoSubmitted !== 'no') {
+        $header = $message->getHeader();
+        $raw = $header->raw ?? '';
+
+        if (preg_match('/^Auto-Submitted:\s*(.+)$/im', $raw, $m)) {
+            $val = strtolower(trim($m[1]));
+            if ($val && $val !== 'no') {
+                return true;
+            }
+        }
+
+        if (preg_match('/^X-Autoreply:/im', $raw) || preg_match('/^X-Autorespond:/im', $raw)) {
             return true;
         }
 
-        if ($headers->get('x-autoreply') || $headers->get('x-autorespond')) {
-            return true;
+        $subject = strtolower((string) $message->getSubject());
+        $oooKeywords = ['out of office', 'automatic reply', 'auto-reply', 'autoreply', 'on vacation', 'away from'];
+        foreach ($oooKeywords as $keyword) {
+            if (str_contains($subject, $keyword)) {
+                return true;
+            }
         }
 
         return false;
@@ -59,6 +70,7 @@ class AliasReplyScannerService
     public function getNewMessagesSafe()
     {
         $messages = $this->getNewMessages();
+
         return $messages->filter(function ($msg) {
             $body = $this->getSanitisedBody($msg);
             // 17/12/2024 - temporary turn off
@@ -70,6 +82,7 @@ class AliasReplyScannerService
     {
         $body = $message->getHTMLBody();
         $sanitized = strip_tags($body);
+
         return $sanitized;
     }
     public function checkBodyIsSensible($text)
