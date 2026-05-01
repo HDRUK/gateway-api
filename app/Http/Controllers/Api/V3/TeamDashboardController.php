@@ -14,6 +14,7 @@ use App\Models\Publication;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Tool;
 use App\Services\V3\TeamDashboardService;
+use Illuminate\Http\JsonResponse;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TeamDashboardController extends Controller
@@ -77,17 +78,13 @@ class TeamDashboardController extends Controller
      */
     public function entityCount(GetTeamDashboard $request, $id, $entity)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = [];
 
@@ -168,17 +165,13 @@ class TeamDashboardController extends Controller
      */
     public function datasetViews360(GetTeamDashboard $request, $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->teamDashboardService->getDatasetViews($id, $startDate, $endDate);
 
@@ -231,17 +224,13 @@ class TeamDashboardController extends Controller
      */
     public function datasetViewsTop(GetTeamDashboard $request, $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->teamDashboardService->getDatatasetViewsTop($id, $startDate, $endDate);
 
@@ -288,17 +277,13 @@ class TeamDashboardController extends Controller
      */
     public function collectionViews(GetTeamDashboard $request, $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->teamDashboardService->getEntityViews('collection', $id, $startDate, $endDate);
 
@@ -345,17 +330,13 @@ class TeamDashboardController extends Controller
      */
     public function datacustodianViews(GetTeamDashboard $request, $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->teamDashboardService->getEntityViews('data-custodian', $id, $startDate, $endDate);
 
@@ -417,17 +398,13 @@ class TeamDashboardController extends Controller
      */
     public function downloadCsv(GetTeamDashboard $request, $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $entityDatasets = $this->teamDashboardService->getCount(Dataset::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dataset::STATUS_ACTIVE]);
         $entityDataUses = $this->teamDashboardService->getCount(Dur::class, 'active_date', $id, $startDate, $endDate, ['status'  => Dur::STATUS_ACTIVE]);
@@ -461,5 +438,20 @@ class TeamDashboardController extends Controller
             ),
             'dashboard.csv',
         );
+    }
+
+    private function resolveDateRange(GetTeamDashboard $request): JsonResponse|array
+    {
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        return [
+            $startDate ?? now()->subYear()->format('Y-m-d'),
+            $endDate ?? now()->format('Y-m-d'),
+        ];
     }
 }
