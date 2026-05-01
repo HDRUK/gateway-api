@@ -10,6 +10,7 @@ use App\Http\Requests\V3\DataAccessDashboard\GetTeamDataAccessDashboard;
 use App\Http\Traits\Responses;
 use App\Services\V3\DataAccessDashboardService;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\JsonResponse;
 
 class DataAccessDashboardController extends Controller
 {
@@ -62,17 +63,13 @@ class DataAccessDashboardController extends Controller
      */
     public function getMyApplications(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->dataAccessDashboardService->myApplications($id, $startDate, $endDate);
         return $this->okResponse($response);
@@ -120,17 +117,13 @@ class DataAccessDashboardController extends Controller
      */
     public function getApplicationStatus(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->dataAccessDashboardService->statusApplications($id, $startDate, $endDate);
         return $this->okResponse($response);
@@ -178,17 +171,13 @@ class DataAccessDashboardController extends Controller
      */
     public function getAverageTimeToApproval(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->dataAccessDashboardService->averageTimeToApproval($id, $startDate, $endDate);
         return $this->okResponse($response);
@@ -236,17 +225,13 @@ class DataAccessDashboardController extends Controller
      */
     public function getRequiredActions(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->dataAccessDashboardService->requiredActions($id, $startDate, $endDate);
         return $this->okResponse($response);
@@ -294,17 +279,13 @@ class DataAccessDashboardController extends Controller
      */
     public function getApplicationTimeline(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $response = $this->dataAccessDashboardService->applicationTimeline($id, $startDate, $endDate);
         return $this->okResponse($response);
@@ -352,17 +333,13 @@ class DataAccessDashboardController extends Controller
      */
     public function exportDashboardCsv(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $myApplications = $this->dataAccessDashboardService->myApplications($id, $startDate, $endDate);
         $averageTimeToApproval = $this->dataAccessDashboardService->averageTimeToApproval($id, $startDate, $endDate);
@@ -422,17 +399,13 @@ class DataAccessDashboardController extends Controller
      */
     public function exportDashboardTimelineCsv(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id, $startDate, $endDate);
 
@@ -444,7 +417,6 @@ class DataAccessDashboardController extends Controller
         );
     }
 
-    // figma - export messages & required actions
     /**
      * @OA\Get(
      *     path="/api/v3/teams/{id}/dar/dashboard/required-actions/export/csv",
@@ -473,17 +445,13 @@ class DataAccessDashboardController extends Controller
      */
     public function exportRequiredActionsCsv(GetTeamDataAccessDashboard $request, int $id)
     {
-        $startDate = $request->query('startDate') ?? null;
-        $endDate = $request->query('endDate') ?? null;
+        $dateRange = $this->resolveDateRange($request);
 
-        if ($startDate && $endDate && $startDate > $endDate) {
-            return $this->errorResponse('startDate must be less than or equal to endDate');
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
         }
 
-        if ($startDate === null || $endDate === null) {
-            $startDate = now()->subYear()->format('Y-m-d');
-            $endDate = now()->format('Y-m-d');
-        }
+        [$startDate, $endDate] = $dateRange;
 
         $requiredActions = $this->dataAccessDashboardService->requiredActions($id, $startDate, $endDate);
 
@@ -493,5 +461,20 @@ class DataAccessDashboardController extends Controller
             ),
             'dashboard.csv',
         );
+    }
+
+    private function resolveDateRange(GetTeamDataAccessDashboard $request): JsonResponse|array
+    {
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        return [
+            $startDate ?? now()->subYear()->format('Y-m-d'),
+            $endDate ?? now()->format('Y-m-d'),
+        ];
     }
 }
