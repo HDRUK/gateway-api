@@ -34,6 +34,20 @@ class DataAccessDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -48,7 +62,19 @@ class DataAccessDashboardController extends Controller
      */
     public function getMyApplications(GetTeamDataAccessDashboard $request, int $id)
     {
-        $response = $this->dataAccessDashboardService->myApplications($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = $this->dataAccessDashboardService->myApplications($id, $startDate, $endDate);
         return $this->okResponse($response);
     }
 
@@ -66,6 +92,20 @@ class DataAccessDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -80,7 +120,19 @@ class DataAccessDashboardController extends Controller
      */
     public function getApplicationStatus(GetTeamDataAccessDashboard $request, int $id)
     {
-        $response = $this->dataAccessDashboardService->statusApplications($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = $this->dataAccessDashboardService->statusApplications($id, $startDate, $endDate);
         return $this->okResponse($response);
     }
 
@@ -98,6 +150,20 @@ class DataAccessDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -112,7 +178,19 @@ class DataAccessDashboardController extends Controller
      */
     public function getAverageTimeToApproval(GetTeamDataAccessDashboard $request, int $id)
     {
-        $response = $this->dataAccessDashboardService->averageTimeToApproval($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = $this->dataAccessDashboardService->averageTimeToApproval($id, $startDate, $endDate);
         return $this->okResponse($response);
     }
 
@@ -130,6 +208,20 @@ class DataAccessDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -144,7 +236,19 @@ class DataAccessDashboardController extends Controller
      */
     public function getRequiredActions(GetTeamDataAccessDashboard $request, int $id)
     {
-        $response = $this->dataAccessDashboardService->requiredActions($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = $this->dataAccessDashboardService->requiredActions($id, $startDate, $endDate);
         return $this->okResponse($response);
     }
 
@@ -162,6 +266,20 @@ class DataAccessDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -176,7 +294,19 @@ class DataAccessDashboardController extends Controller
      */
     public function getApplicationTimeline(GetTeamDataAccessDashboard $request, int $id)
     {
-        $response = $this->dataAccessDashboardService->applicationTimeline($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $response = $this->dataAccessDashboardService->applicationTimeline($id, $startDate, $endDate);
         return $this->okResponse($response);
     }
 
@@ -194,6 +324,20 @@ class DataAccessDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -208,10 +352,22 @@ class DataAccessDashboardController extends Controller
      */
     public function exportDashboardCsv(GetTeamDataAccessDashboard $request, int $id)
     {
-        $myApplications = $this->dataAccessDashboardService->myApplications($id);
-        $averageTimeToApproval = $this->dataAccessDashboardService->averageTimeToApproval($id);
-        $requiredActions = $this->dataAccessDashboardService->requiredActions($id);
-        $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $myApplications = $this->dataAccessDashboardService->myApplications($id, $startDate, $endDate);
+        $averageTimeToApproval = $this->dataAccessDashboardService->averageTimeToApproval($id, $startDate, $endDate);
+        $requiredActions = $this->dataAccessDashboardService->requiredActions($id, $startDate, $endDate);
+        $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id, $startDate, $endDate);
 
         return Excel::download(
             new DataAccessDashboardCsv(
@@ -238,6 +394,20 @@ class DataAccessDashboardController extends Controller
      *         description="Team ID",
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",
@@ -252,7 +422,19 @@ class DataAccessDashboardController extends Controller
      */
     public function exportDashboardTimelineCsv(GetTeamDataAccessDashboard $request, int $id)
     {
-        $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
+
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $applicationIimeline = $this->dataAccessDashboardService->applicationTimeline($id, $startDate, $endDate);
 
         return Excel::download(
             new DataAccessApplicationTimelineCsv(
@@ -291,9 +473,19 @@ class DataAccessDashboardController extends Controller
      */
     public function exportRequiredActionsCsv(GetTeamDataAccessDashboard $request, int $id)
     {
-        $requiredActions = $this->dataAccessDashboardService->requiredActions($id);
+        $startDate = $request->query('startDate') ?? null;
+        $endDate = $request->query('endDate') ?? null;
 
-        dd($requiredActions);
+        if ($startDate && $endDate && $startDate > $endDate) {
+            return $this->errorResponse('startDate must be less than or equal to endDate');
+        }
+
+        if ($startDate === null || $endDate === null) {
+            $startDate = now()->subYear()->format('Y-m-d');
+            $endDate = now()->format('Y-m-d');
+        }
+
+        $requiredActions = $this->dataAccessDashboardService->requiredActions($id, $startDate, $endDate);
 
         return Excel::download(
             new DataAccessRequiredActionsCsv(
