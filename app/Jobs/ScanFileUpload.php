@@ -828,6 +828,7 @@ class ScanFileUpload implements ShouldQueue
         $width = $size->width();
         $height = $size->height();
         $ratio = $size->aspectRatio();
+        unset($image, $manager);
 
         if ($width < Config::get('image_uploads.width') || $height < Config::get('image_uploads.height')) {
             $result = false;

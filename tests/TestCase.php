@@ -28,6 +28,8 @@ abstract class TestCase extends BaseTestCase
         if ($this->shouldFakeQueue) {
             Queue::fake();
         }
+
+        config(['logging.default' => 'null']);
     }
 
     protected function disableMiddleware(): void

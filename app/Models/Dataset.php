@@ -18,6 +18,33 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property array $linkages
+ *
+ * @OA\Schema(
+ *   schema="Dataset",
+ *   description="A dataset record managed by the Gateway",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="user_id", type="integer", nullable=true, example=42),
+ *   @OA\Property(property="team_id", type="integer", nullable=true, example=7),
+ *   @OA\Property(property="pid", type="string", nullable=true, example="d4b3c2a1-0000-0000-0000-000000000000"),
+ *   @OA\Property(property="datasetid", type="string", nullable=true, example="some-legacy-id"),
+ *   @OA\Property(property="version", type="integer", nullable=true, example=3),
+ *   @OA\Property(
+ *     property="status",
+ *     type="string",
+ *     enum={"ACTIVE","DRAFT","ARCHIVED"},
+ *     example="ACTIVE"
+ *   ),
+ *   @OA\Property(
+ *     property="create_origin",
+ *     type="string",
+ *     enum={"MANUAL","API","GMI"},
+ *     nullable=true,
+ *     example="MANUAL"
+ *   ),
+ *   @OA\Property(property="is_cohort_discovery", type="boolean", example=false),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
  */
 #[ObservedBy(DatasetObserver::class)]
 class Dataset extends Model
@@ -37,6 +64,13 @@ class Dataset extends Model
     public const ORIGIN_GMI = 'GMI';
 
     public string $prevStatus = '';
+
+    /**
+     * Cached version IDs to avoid repeated `versions()->pluck('id')` queries
+     * when multiple accessors are called in the same request cycle.
+     * Set this before calling allActiveTools/allActiveDurs/etc. in a loop.
+     */
+    public ?array $cachedVersionIds = null;
 
     /**
      * Table associated with this model
@@ -446,8 +480,10 @@ class Dataset extends Model
      */
     public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId, $includeIntermediate = false, $filterActive = false)
     {
-        // Step 1: Get the dataset version IDs
-        $versionIds = $this->versions()->pluck('id')->toArray();
+        // Get the dataset version IDs — reuse the cached copy when available
+        // so repeated accessor calls within the same request don't re-query.
+        $versionIds = $this->cachedVersionIds
+            ?? $this->versions()->pluck('id')->toArray();
 
         // Step 2: Use the version IDs to find all related entityIDs through the linkage table
         $linkageRecords = $linkageTable::whereIn('dataset_version_id', $versionIds)
@@ -461,7 +497,6 @@ class Dataset extends Model
                 }
             );
 
-
         $entityIds = $linkageRecords->pluck($foreignTableId)->unique()->toArray();
 
         // Step 3: Retrieve all entities using the collected entities IDs
@@ -471,21 +506,20 @@ class Dataset extends Model
             })
             ->get();
 
-        // Iterate through each entity and add associated dataset versions
-        foreach ($entities as $entity) {
-            // Retrieve dataset version IDs associated with the current entity
+        // Pre-group linkage records by entity ID so the loop below is O(n)
+        // rather than O(n2). Without this, each iteration does a full Collection
+        // scan (Collection::where), which was measured at ~620ms for 82 DURs
+        // and ~770ms for 92 named entities.
+        $linkageByEntityId = $linkageRecords->groupBy($foreignTableId);
 
-            $filteredLinkage = $linkageRecords->where($foreignTableId, $entity->id);
+        foreach ($entities as $entity) {
+            $filteredLinkage = $linkageByEntityId->get($entity->id) ?? collect();
 
             if ($includeIntermediate) {
                 $entity->setAttribute('dataset_versions', $filteredLinkage->values()->toArray());
             } else {
-                // Extract dataset version IDs and link types associated with the current entity
-                $datasetVersionIds = $filteredLinkage->pluck('dataset_version_id')->toArray();
-                // Add associated dataset versions to the entity object
-                $entity->setAttribute('dataset_version_ids', $datasetVersionIds);
+                $entity->setAttribute('dataset_version_ids', $filteredLinkage->pluck('dataset_version_id')->toArray());
             }
-
         }
 
         // Return the collection of entities with injected dataset version IDs
