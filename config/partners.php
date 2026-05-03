@@ -3,6 +3,9 @@
 use App\Models\Dataset;
 use App\Http\Resources\DatasetResource;
 use App\Http\Resources\DatasetIndexResource;
+use App\Models\ProjectGrant;
+use App\Http\Resources\ProjectGrantResource;
+use App\Http\Resources\ProjectGrantIndexResource;
 
 /**
  * Partner context configuration.
@@ -50,6 +53,7 @@ return [
 
         'HDRUK' => [
             Dataset::class => DatasetResource::class,
+            ProjectGrant::class => ProjectGrantResource::class,
         ],
 
         // 'PARTNER_X' => [
@@ -69,6 +73,7 @@ return [
 
         'HDRUK' => [
             Dataset::class => DatasetIndexResource::class,
+            ProjectGrant::class => ProjectGrantIndexResource::class,
         ],
 
         // 'PARTNER_X' => [

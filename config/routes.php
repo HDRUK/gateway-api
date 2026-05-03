@@ -361,6 +361,28 @@ return [
         ],
     ],
 
+    // project grants
+    [
+        'name' => 'project_grants.index',
+        'method' => 'get',
+        'path' => '/project_grants',
+        'methodController' => 'ProjectGrantController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'project_grants.show',
+        'method' => 'get',
+        'path' => '/project_grants/{id}',
+        'methodController' => 'ProjectGrantController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // filters
     [
         'name' => 'filters',

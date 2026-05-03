@@ -7,6 +7,7 @@ use App\Models\DatasetVersion;
 use App\Http\Traits\IndexElastic;
 use App\Jobs\ExtractToolsFromMetadata;
 use App\Jobs\ExtractPublicationsFromMetadata;
+use App\Jobs\ExtractProjectGrantsFromMetadata;
 
 class DatasetVersionObserver
 {
@@ -64,6 +65,7 @@ class DatasetVersionObserver
             $datasetVersion->active_date = now();
             $datasetVersion->save();
         } elseif (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
+            ExtractProjectGrantsFromMetadata::dispatch($datasetVersion->id);
             ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
             ExtractToolsFromMetadata::dispatch($datasetVersion->id);
 
