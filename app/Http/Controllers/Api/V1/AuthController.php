@@ -9,19 +9,30 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use App\Context\PartnerContext;
+use App\Services\CrukAuthService;
 use App\Http\Controllers\JwtController;
 use App\Exceptions\UnauthorizedException;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\LoginRequest;
 
 class AuthController extends Controller
 {
     private JwtController $jwt;
+    private CrukAuthService $crukAuthService;
+    private PartnerContext $partnerContext;
 
     /**
      * constructor
      */
-    public function __construct(JwtController $jwt)
-    {
+    public function __construct(
+        JwtController $jwt,
+        CrukAuthService $crukAuthService,
+        PartnerContext $partnerContext
+    ) {
         $this->jwt = $jwt;
+        $this->crukAuthService = $crukAuthService;
+        $this->partnerContext = $partnerContext;
     }
 
     /**
@@ -48,6 +59,12 @@ class AuthController extends Controller
      *                type="string",
      *                example="password123!",
      *                description="Password"
+     *             ),
+     *             @OA\Property(
+     *                property="provider",
+     *                type="string",
+     *                example="service",
+     *                description="Optional. Set to 'cruk' for CRUK auth only; otherwise ignored (service)."
      *             ),
      *          ),
      *       ),
@@ -79,7 +96,12 @@ class AuthController extends Controller
         try {
             $input = $request->all();
 
-            $user = User::where('email', $input['email'])->where('provider', Config::get('constants.provider.service'))->first();
+            $provider = Config::get('constants.provider.service');
+            if (!empty($input['provider']) && $input['provider'] === Config::get('constants.provider.cruk')) {
+                $provider = Config::get('constants.provider.cruk');
+            }
+
+            $user = User::where('email', $input['email'])->where('provider', $provider)->first();
             if (!$user) {
                 throw new Exception("User not found");
             }
@@ -165,6 +187,202 @@ class AuthController extends Controller
                 "access_token" => $jwt,
                 "token_type" => "bearer"
             ])->setStatusCode(200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/auth/register",
+     *    operationId="register",
+     *    tags={"Authentication"},
+     *    summary="AuthController@register",
+     *    description="Register a new user with email and password",
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user registration data",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(
+     *                property="email",
+     *                type="string",
+     *                example="john@example.com",
+     *                description="Email address"
+     *             ),
+     *             @OA\Property(
+     *                property="password",
+     *                type="string",
+     *                example="SecurePassword123!",
+     *                description="Password (minimum 8 characters)"
+     *             ),
+     *             @OA\Property(
+     *                property="firstname",
+     *                type="string",
+     *                example="John",
+     *                description="First name (optional)"
+     *             ),
+     *             @OA\Property(
+     *                property="lastname",
+     *                type="string",
+     *                example="Doe",
+     *                description="Last name (optional)"
+     *             ),
+     *             @OA\Property(
+     *                property="provider",
+     *                type="string",
+     *                example="cruk",
+     *                description="Optional. Set to 'cruk' for CRUK registration only; otherwise ignored (service)."
+     *             ),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="access_token",
+     *             type="string",
+     *             example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_jwt_token"
+     *          ),
+     *          @OA\Property(
+     *             property="token_type",
+     *             type="string",
+     *             example="bearer",
+     *          ),
+     *          @OA\Property(
+     *             property="user",
+     *             type="object",
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="email", type="string", example="john@example.com"),
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="400",
+     *       description="Validation error",
+     *    ),
+     *    @OA\Response(
+     *       response="409",
+     *       description="Email already exists",
+     *    ),
+     * )
+     */
+    public function register(RegisterRequest $request)
+    {
+        try {
+            $input = $request->validated();
+            $auth = $this->crukAuthService->register($input);
+            $user = $auth['user'];
+
+            // Log the registration
+            Auditor::log([
+                'user_id' => $user->id,
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => "User registered: {$user->email}",
+            ]);
+
+            $resourceClass = $this->partnerContext->resourceFor(CrukAuthService::class);
+            return $resourceClass::make($auth)
+                ->response()
+                ->setStatusCode(200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/auth/login",
+     *    operationId="login",
+     *    tags={"Authentication"},
+     *    summary="AuthController@login",
+     *    description="Login with email and password",
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(
+     *                property="email",
+     *                type="string",
+     *                example="john@example.com",
+     *                description="Email address"
+     *             ),
+     *             @OA\Property(
+     *                property="password",
+     *                type="string",
+     *                example="SecurePassword123!",
+     *                description="Password"
+     *             ),
+     *             @OA\Property(
+     *                property="provider",
+     *                type="string",
+     *                example="cruk",
+     *                description="Optional. Set to 'cruk' for CRUK login only; otherwise ignored (service)."
+     *             ),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="access_token",
+     *             type="string",
+     *             example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_jwt_token"
+     *          ),
+     *          @OA\Property(
+     *             property="token_type",
+     *             type="string",
+     *             example="bearer",
+     *          ),
+     *          @OA\Property(
+     *             property="user",
+     *             type="object",
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="email", type="string", example="john@example.com"),
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="400",
+     *       description="Validation error",
+     *    ),
+     *    @OA\Response(
+     *       response="401",
+     *       description="Invalid credentials",
+     *    ),
+     * )
+     */
+    public function login(LoginRequest $request)
+    {
+        try {
+            $input = $request->validated();
+            $auth = $this->crukAuthService->login($input);
+            $user = $auth['user'];
+
+            // Log the login
+            Auditor::log([
+                'user_id' => $user->id,
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => "User logged in: {$user->email}",
+            ]);
+
+            $resourceClass = $this->partnerContext->resourceFor(CrukAuthService::class);
+            return $resourceClass::make($auth)
+                ->response()
+                ->setStatusCode(200);
+        } catch (UnauthorizedException $e) {
+            throw $e;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

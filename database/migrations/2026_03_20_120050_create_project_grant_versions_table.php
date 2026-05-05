@@ -13,15 +13,15 @@ return new class () extends Migration {
 
             $table->unsignedInteger('version');
 
-            $table->string('projectGrantName');
-            $table->string('leadResearcher')->nullable();
-            $table->string('leadResearchInstitute')->nullable();
+            $table->string('project_grant_name');
+            $table->string('lead_researcher')->nullable();
+            $table->string('lead_research_institute')->nullable();
 
-            $table->json('grantNumbers')->nullable();
+            $table->json('grant_numbers')->nullable();
 
-            $table->date('projectGrantStartDate')->nullable();
-            $table->date('projectGrantEndDate')->nullable();
-            $table->text('projectGrantScope')->nullable();
+            $table->date('project_grant_start_date')->nullable();
+            $table->date('project_grant_end_date')->nullable();
+            $table->text('project_grant_scope')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

@@ -3,7 +3,6 @@
 namespace App\Context;
 
 use Illuminate\Http\Request;
-use App\Http\Resources\DatasetResource;
 use App\Models\Dataset;
 
 /**
@@ -82,11 +81,15 @@ class PartnerContext
 
     private function defaultResourceFor(string $modelClass): string
     {
-        return config('partners.resources.HDRUK.' . $modelClass, $modelClass);
+        $defaultMap = config('partners.resources.HDRUK', []);
+
+        return $defaultMap[$modelClass] ?? $modelClass;
     }
 
     private function defaultIndexResourceFor(string $modelClass): string
     {
-        return config('partners.index_resources.HDRUK.' . $modelClass, $modelClass);
+        $defaultMap = config('partners.index_resources.HDRUK', []);
+
+        return $defaultMap[$modelClass] ?? $modelClass;
     }
 }
