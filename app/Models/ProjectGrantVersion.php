@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
-use App\Observers\ProjectGrantVersionObserver;
 
-#[ObservedBy([ProjectGrantVersionObserver::class])]
 class ProjectGrantVersion extends Model
 {
     use HasFactory;
@@ -23,19 +20,19 @@ class ProjectGrantVersion extends Model
     protected $fillable = [
         'project_grant_id',
         'version',
-        'projectGrantName',
-        'leadResearcher',
-        'leadResearchInstitute',
-        'grantNumbers',
-        'projectGrantStartDate',
-        'projectGrantEndDate',
-        'projectGrantScope',
+        'project_grant_name',
+        'lead_researcher',
+        'lead_research_institute',
+        'grant_numbers',
+        'project_grant_start_date',
+        'project_grant_end_date',
+        'project_grant_scope',
     ];
 
     protected $casts = [
-        'grantNumbers' => 'array',
-        'projectGrantStartDate' => 'date',
-        'projectGrantEndDate' => 'date',
+        'grant_numbers' => 'array',
+        'project_grant_start_date' => 'date',
+        'project_grant_end_date' => 'date',
     ];
 
     public function projectGrant(): BelongsTo

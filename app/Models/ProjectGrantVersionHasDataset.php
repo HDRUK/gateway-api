@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProjectGrantHasDataset extends Model
+class ProjectGrantVersionHasDataset extends Model
 {
     use HasFactory;
 

@@ -30,7 +30,7 @@ class ProjectGrantService
                 $q->whereHas('versions', fn (Builder $v) => $v->where('version', '=', $version));
             })
             ->when($projectGrantName, function (Builder $q) use ($projectGrantName) {
-                $q->whereHas('versions', fn (Builder $v) => $v->where('projectGrantName', 'LIKE', '%' . $projectGrantName . '%'));
+                $q->whereHas('versions', fn (Builder $v) => $v->where('project_grant_name', 'LIKE', '%' . $projectGrantName . '%'));
             });
 
         if ($sortField === 'version') {

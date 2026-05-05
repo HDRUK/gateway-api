@@ -4,9 +4,9 @@ namespace App\Jobs;
 
 use App\Models\Dataset;
 use App\Models\ProjectGrant;
-use App\Models\ProjectGrantHasDataset;
-use App\Models\ProjectGrantHasPublication;
-use App\Models\ProjectGrantHasTool;
+use App\Models\ProjectGrantVersionHasDataset;
+use App\Models\ProjectGrantVersionHasPublication;
+use App\Models\ProjectGrantVersionHasTool;
 use App\Models\ProjectGrantVersion;
 use App\Models\Team;
 use App\Models\User;
@@ -147,25 +147,25 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
                 'version' => (int) $metadata->version,
             ],
             [
-                'projectGrantName' => $projectGrantName,
-                'leadResearcher' => $project['leadResearcher'] ?? null,
-                'leadResearchInstitute' => $project['leadResearchInstitute'] ?? null,
-                'grantNumbers' => $grantNumbers,
-                'projectGrantStartDate' => $project['projectStartDate'] ?? null,
-                'projectGrantEndDate' => $project['projectEndDate'] ?? null,
-                'projectGrantScope' => $project['projectScope'] ?? null,
+                'project_grant_name' => $projectGrantName,
+                'lead_researcher' => $project['leadResearcher'] ?? null,
+                'lead_research_institute' => $project['leadResearchInstitute'] ?? null,
+                'grant_numbers' => $grantNumbers,
+                'project_grant_start_date' => $project['projectStartDate'] ?? null,
+                'project_grant_end_date' => $project['projectEndDate'] ?? null,
+                'project_grant_scope' => $project['projectScope'] ?? null,
             ]
         );
 
         // Ensure stable dataset-level link exists for this grant.
-        ProjectGrantHasDataset::firstOrCreate([
+        ProjectGrantVersionHasDataset::firstOrCreate([
             'project_grant_id' => $projectGrant->id,
             'dataset_id' => (int) $dataset->id,
         ]);
 
         // Rebuild version-scoped links for this version row (idempotent for metadata re-ingestion).
-        ProjectGrantHasPublication::where('project_grant_version_id', $projectGrantVersion->id)->delete();
-        ProjectGrantHasTool::where('project_grant_version_id', $projectGrantVersion->id)->delete();
+        ProjectGrantVersionHasPublication::where('project_grant_version_id', $projectGrantVersion->id)->delete();
+        ProjectGrantVersionHasTool::where('project_grant_version_id', $projectGrantVersion->id)->delete();
 
         // Publications linked to this dataset version
         $publicationIds = DB::table('publication_has_dataset_version')
@@ -178,7 +178,7 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
             ->all();
 
         foreach ($publicationIds as $publicationId) {
-            ProjectGrantHasPublication::create([
+            ProjectGrantVersionHasPublication::create([
                 'project_grant_version_id' => $projectGrantVersion->id,
                 'publication_id' => (int) $publicationId,
             ]);
@@ -195,7 +195,7 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
             ->all();
 
         foreach ($toolIds as $toolId) {
-            ProjectGrantHasTool::create([
+            ProjectGrantVersionHasTool::create([
                 'project_grant_version_id' => $projectGrantVersion->id,
                 'tool_id' => (int) $toolId,
             ]);
