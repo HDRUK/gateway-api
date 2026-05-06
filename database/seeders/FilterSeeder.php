@@ -37,7 +37,8 @@ class FilterSeeder extends Seeder
             'geographicLocation',
             'dataProviderColl',
             'accessService',
-            'sampleAvailability'
+            'sampleAvailability',
+            'projectGrantNames',
         ];
 
         $this->seed_filter("dataset", $filters);

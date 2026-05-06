@@ -106,7 +106,7 @@ trait IndexElastic
                 'isCohortDiscovery' => $datasetMatch->is_cohort_discovery,
                 'datasetAliases' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetAliases'], ''),
                 // Project grants (for search & filtering)
-                'project_grants' => $projectGrants,
+                'projectGrants' => $projectGrants,
                 'projectGrantNames' => array_values(array_unique(array_filter(array_map(
                     fn (array $g) => $g['projectGrantName'] ?? null,
                     $projectGrants
