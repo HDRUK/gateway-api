@@ -22,6 +22,7 @@ use App\Models\ProgrammingLanguage;
 use App\Models\ProgrammingPackage;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
+use App\Models\ProjectGrantVersion;
 use App\Models\Sector;
 use App\Models\Tag;
 use App\Models\Team;
@@ -76,6 +77,7 @@ trait IndexElastic
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsBioSamples = $this->getContainsBioSamples($materialTypes);
+            $projectGrants = $this->projectGrantsForDataset($datasetMatch->id);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -103,6 +105,12 @@ trait IndexElastic
                 'formatAndStandards' => $this->formatAndStandard($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'isCohortDiscovery' => $datasetMatch->is_cohort_discovery,
                 'datasetAliases' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetAliases'], ''),
+                // Project grants (for search & filtering)
+                'project_grants' => $projectGrants,
+                'projectGrantNames' => array_values(array_unique(array_filter(array_map(
+                    fn (array $g) => $g['projectGrantName'] ?? null,
+                    $projectGrants
+                )))),
             ];
 
             $params = [
@@ -142,6 +150,71 @@ trait IndexElastic
             return null;
         }
         return array_filter(explode(';,;', $value));
+    }
+
+    /**
+     * Fetch all project grants linked to a dataset, along with their latest version fields.
+     *
+     * Returned shape is intentionally small and search-friendly.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function projectGrantsForDataset(int $datasetId): array
+    {
+        $grantIds = \DB::table('project_grant_has_dataset')
+            ->where('dataset_id', $datasetId)
+            ->pluck('project_grant_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        if (!count($grantIds)) {
+            return [];
+        }
+
+        $latestVersionByGrant = ProjectGrantVersion::query()
+            ->select('project_grant_id', \DB::raw('MAX(version) as max_version'))
+            ->whereIn('project_grant_id', $grantIds)
+            ->groupBy('project_grant_id');
+
+        $versions = ProjectGrantVersion::query()
+            ->joinSub($latestVersionByGrant, 'latest', function ($join) {
+                $join
+                    ->on('latest.project_grant_id', '=', 'project_grant_versions.project_grant_id')
+                    ->on('latest.max_version', '=', 'project_grant_versions.version');
+            })
+            ->select([
+                'project_grant_versions.project_grant_id',
+                'project_grant_versions.version',
+                'project_grant_versions.project_grant_name',
+                'project_grant_versions.lead_researcher',
+                'project_grant_versions.lead_research_institute',
+                'project_grant_versions.grant_numbers',
+                'project_grant_versions.project_grant_start_date',
+                'project_grant_versions.project_grant_end_date',
+                'project_grant_versions.project_grant_scope',
+            ])
+            ->get()
+            ->keyBy('project_grant_id');
+
+        return array_values(array_map(function (int $grantId) use ($versions) {
+            $v = $versions->get($grantId);
+            if (!$v) {
+                return ['project_grant_id' => $grantId];
+            }
+
+            return [
+                'project_grant_id' => (int) $v->project_grant_id,
+                'version' => (int) $v->version,
+                'projectGrantName' => $v->project_grant_name,
+                'leadResearcher' => $v->lead_researcher,
+                'leadResearchInstitute' => $v->lead_research_institute,
+                'grantNumbers' => $v->grant_numbers,
+                'projectGrantStartDate' => $v->project_grant_start_date,
+                'projectGrantEndDate' => $v->project_grant_end_date,
+                'projectGrantScope' => $v->project_grant_scope,
+            ];
+        }, $grantIds));
     }
 
     /**
