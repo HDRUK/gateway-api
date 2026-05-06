@@ -98,7 +98,7 @@ class DarCloneTemplate extends Command
 
         $cloned = \DB::transaction(function () use($template, $templateQuestions, $toTeamId) {
             $clonedTemplate = $template->replicate();
-            $clonedTemplate->team_id = $toTeamId;
+            $clonedTemplate->team_id = (int) $toTeamId;
             $clonedTemplate->user_id = $template->user_id;
             $clonedTemplate->published = false;
             $clonedTemplate->locked = false;
