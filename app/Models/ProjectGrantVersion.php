@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\ProjectGrantVersionObserver;
 
+#[ObservedBy([ProjectGrantVersionObserver::class])]
 class ProjectGrantVersion extends Model
 {
     use HasFactory;

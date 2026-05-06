@@ -9,7 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use App\Observers\ProjectGrantObserver;
 
+#[ObservedBy([ProjectGrantObserver::class])]
 class ProjectGrant extends Model
 {
     use HasFactory;
