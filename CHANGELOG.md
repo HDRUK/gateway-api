@@ -1,3 +1,14 @@
+## [2.40.0](https://github.com/HDRUK/gateway-api/compare/v2.39.1...v2.40.0) (2026-05-07)
+
+### ✨ Features
+
+* **GAT-8135:** Data Access Module business intelligence dashboard (#1616) ([0a8cdf8](https://github.com/HDRUK/gateway-api/commit/0a8cdf86c8c6d1fb1a8cc194fc30c52e2c2ce88b)), closes [GAT-8135](GAT-8135)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** fix autoreply ars (#1618) ([09d5ab1](https://github.com/HDRUK/gateway-api/commit/09d5ab1567d0b72afd3c0fc01f76e353182e3323))
+* **GAT-8764:** update node packages (#1622) ([e51bfb1](https://github.com/HDRUK/gateway-api/commit/e51bfb1770aec77d776e8dfaab88478f8d1aaef8)), closes [GAT-8764](GAT-8764)
+
 ## [2.39.1](https://github.com/HDRUK/gateway-api/compare/v2.39.0...v2.39.1) (2026-04-14)
 
 ### 🐛 Bug Fixes
