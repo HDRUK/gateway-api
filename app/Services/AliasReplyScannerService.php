@@ -43,12 +43,13 @@ class AliasReplyScannerService
 
     private function isOutOfOffice($message): bool
     {
-        $autoSubmitted = $message->getHeader()->get('auto-submitted');
-        if ($autoSubmitted && strtolower($autoSubmitted->value) !== 'no') {
+        $headers = $message->getHeader();
+        $autoSubmitted = strtolower((string) $headers->get('auto-submitted'));
+        if ($autoSubmitted && $autoSubmitted !== 'no') {
             return true;
         }
 
-        if ($message->getHeader()->get('x-auto-response-suppress')) {
+        if ($headers->get('x-autoreply') || $headers->get('x-autorespond')) {
             return true;
         }
 
