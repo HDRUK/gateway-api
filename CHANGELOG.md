@@ -1,3 +1,18 @@
+## [2.41.0](https://github.com/HDRUK/gateway-api/compare/v2.40.0...v2.41.0) (2026-05-08)
+
+### ✨ Features
+
+* **GAT-8737:** Fundamental optimisations for search upgrades (#1611) ([40218dc](https://github.com/HDRUK/gateway-api/commit/40218dca9d9a3938dff8cab8ef7a184bb544540d)), closes [GAT-8737](GAT-8737)
+* **GAT-8759:** Update Data Access Module business intelligence dashboard (#1628) ([80d0dd8](https://github.com/HDRUK/gateway-api/commit/80d0dd8323548b0b2ddaacafc1bc36756a14f798)), closes [GAT-8759](GAT-8759)
+* **GAT-8833:** Creating a command that clones a template from one team to another team (#1629) ([cbe3e53](https://github.com/HDRUK/gateway-api/commit/cbe3e536b1448f7a7651c8a4897cb71b7c21e011)), closes [GAT-8833](GAT-8833)
+
+### 🐛 Bug Fixes
+
+* **GAT-7839:** NWL ASC issue with update on follow up (#1624) ([1e1afee](https://github.com/HDRUK/gateway-api/commit/1e1afee96ba94e00a406ddb19544186e6f24fcda)), closes [GAT-7839](GAT-7839)
+* **GAT-8776:** update ars - for ooo (#1627) ([6bf0a27](https://github.com/HDRUK/gateway-api/commit/6bf0a2780a8e8f6f17286b0c2686578b06c81c42)), closes [GAT-8776](GAT-8776)
+* **GAT-8785:** LSDE each run only brings a few datasets over each time. (#1626) ([2dbde6d](https://github.com/HDRUK/gateway-api/commit/2dbde6d6049cf01e16c31daa19c00fb39d45f9ee)), closes [GAT-8785](GAT-8785)
+* **GAT-8786:** PHS - error on External Publications link (#1625) ([957345a](https://github.com/HDRUK/gateway-api/commit/957345a9945ddfc74493ca918f920fe37501a5e7)), closes [GAT-8786](GAT-8786)
+
 ## [2.40.0](https://github.com/HDRUK/gateway-api/compare/v2.39.1...v2.40.0) (2026-05-07)
 
 ### ✨ Features
