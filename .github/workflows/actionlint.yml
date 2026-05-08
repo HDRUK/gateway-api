@@ -6,6 +6,10 @@ permissions:
 
 on:
   pull_request:
+    paths:
+      - ".github/workflows/**/*.yml"
+      - ".github/workflows/**/*.yaml"
+
   push:
     paths:
       - ".github/workflows/**/*.yml"
