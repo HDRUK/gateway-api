@@ -13,6 +13,7 @@
   </testsuites>
   <coverage/>
   <php>
+    <ini name="memory_limit" value="256M"/>
     <env name="APP_ENV" value="testing"/>
     <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/><!-- test-only key, not used in production -->
     <env name="FEATURE_FLAGGING_CONFIG_URL" value="https://raw.githubusercontent.com/HDRUK/hdruk-feature-configurations/refs/heads/main/dev/features.json" />

@@ -10,34 +10,36 @@ use DB;
 
 class DataAccessDashboardService
 {
-    public function myApplications(int $teamId)
+    public function myApplications(int $teamId, $startDate, $endDate)
     {
         $total = DB::select('
                 SELECT dar_applications.submission_status, count(*) counter
                 FROM dar_applications
                 JOIN team_has_dar_applications on (team_has_dar_applications.team_id = ? and dar_applications.id = team_has_dar_applications.dar_application_id)
+                WHERE dar_applications.created_at BETWEEN ? AND ?
                 GROUP BY dar_applications.submission_status
-            ', [$teamId]);
+            ', [$teamId, $startDate, $endDate . ' 23:59:59']);
 
 
         return $total;
     }
 
     // ??
-    public function statusApplications(int $teamId)
+    public function statusApplications(int $teamId, $startDate, $endDate)
     {
         $response = DB::select('
             SELECT dar_applications.*
             FROM dar_applications
             JOIN team_has_dar_applications on (team_has_dar_applications.team_id = ? and dar_applications.id = team_has_dar_applications.dar_application_id)
+            WHERE dar_applications.created_at BETWEEN ? AND ?
             ORDER BY dar_applications.updated_at DESC
             LIMIT 3
-        ', [$teamId]);
+        ', [$teamId, $startDate, $endDate . ' 23:59:59']);
 
         return $response;
     }
 
-    public function averageTimeToApproval(int $teamId)
+    public function averageTimeToApproval(int $teamId, $startDate, $endDate)
     {
         $appIds = TeamHasDataAccessApplication::where('team_id', $teamId)->select('dar_application_id')->pluck('dar_application_id')->toArray();
 
@@ -56,10 +58,11 @@ class DataAccessDashboardService
                     MAX(CASE WHEN approval_status IN (?, ?) THEN created_at END) as last_status_date
                 FROM dar_application_statuses
                 WHERE application_id IN (' . $appIds . ')
+                AND dar_application_statuses.created_at BETWEEN ? AND ?
                 GROUP BY application_id
                 HAVING COUNT(CASE WHEN submission_status = ? THEN 1 END) > 0
                     AND COUNT(CASE WHEN approval_status IN (?, ?) THEN 1 END) > 0
-        ', ['SUBMITTED', 'APPROVED', 'APPROVED_COMMENTS', 'SUBMITTED', 'APPROVED', 'APPROVED_COMMENTS']);
+        ', ['SUBMITTED', 'APPROVED', 'APPROVED_COMMENTS', $startDate, $endDate . ' 23:59:59', 'SUBMITTED', 'APPROVED', 'APPROVED_COMMENTS']);
 
         if (empty($rows)) {
             return [
@@ -111,7 +114,7 @@ class DataAccessDashboardService
         }
     }
 
-    public function requiredActions(int $teamId)
+    public function requiredActions(int $teamId, $startDate, $endDate)
     {
         $response = DataAccessApplication::query()
                     ->with([
@@ -122,13 +125,14 @@ class DataAccessDashboardService
                     ])
                     ->whereHas('team', fn ($q) => $q->where('teams.id', $teamId))
                     ->whereHas('reviews', fn ($q) => $q->whereHas('comments'))
+                    ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
                     ->get()
                     ->toArray();
 
         return $response;
     }
 
-    public function applicationTimeline(int $teamId)
+    public function applicationTimeline(int $teamId, $startDate, $endDate)
     {
         $response = DataAccessApplication::query()
                     ->with([
@@ -137,6 +141,7 @@ class DataAccessDashboardService
                     ])
                     ->whereHas('team', fn ($q) => $q->where('teams.id', $teamId))
                     ->whereHas('reviews', fn ($q) => $q->whereHas('comments'))
+                    ->whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])
                     ->get()
                     ->toArray();
 

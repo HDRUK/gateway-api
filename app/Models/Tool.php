@@ -15,6 +15,34 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * @OA\Schema(
+ *   schema="Tool",
+ *   description="A software tool or model associated with datasets in the Gateway",
+ *   @OA\Property(property="id", type="integer", example=55),
+ *   @OA\Property(property="name", type="string", example="My Analysis Tool"),
+ *   @OA\Property(property="url", type="string", format="uri", nullable=true, example="https://github.com/org/tool"),
+ *   @OA\Property(property="description", type="string", nullable=true),
+ *   @OA\Property(property="results_insights", type="string", nullable=true),
+ *   @OA\Property(property="license", type="integer", nullable=true, description="Foreign key to licenses table"),
+ *   @OA\Property(property="tech_stack", type="string", nullable=true),
+ *   @OA\Property(property="category_id", type="integer", nullable=true),
+ *   @OA\Property(property="user_id", type="integer", nullable=true),
+ *   @OA\Property(property="enabled", type="boolean", example=true),
+ *   @OA\Property(property="associated_authors", type="string", nullable=true),
+ *   @OA\Property(property="contact_address", type="string", nullable=true),
+ *   @OA\Property(property="any_dataset", type="boolean", example=false),
+ *   @OA\Property(
+ *     property="status",
+ *     type="string",
+ *     enum={"ACTIVE","DRAFT","ARCHIVED"},
+ *     example="ACTIVE"
+ *   ),
+ *   @OA\Property(property="team_id", type="integer", nullable=true),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 #[ObservedBy([ToolObserver::class])]
 class Tool extends Model
 {
