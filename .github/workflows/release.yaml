@@ -10,6 +10,6 @@ jobs:
   release:
     uses: HDRUK/github-actions-templates/.github/workflows/docker-build.yaml@main
     with:
-      environment: '["preprod","prod"]'
+      environment: prod
       chart_path: chart/gateway-api/Chart.yaml
     secrets: inherit
