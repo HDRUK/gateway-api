@@ -12,6 +12,7 @@ use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 
 class ImportMk1DarData extends Command
 {
@@ -19,6 +20,8 @@ class ImportMk1DarData extends Command
                                 {--user-id= : User ID (required)}
                                 {--template-id= : Template ID (required)}
                                 {--team-id= : Team ID (required)}
+                                {--csv-url= : URL to the DAR question ID mapping CSV (required)}
+                                {--json-url= : URL to the production data requests JSON (required)}
     ';
 
     protected $description = 'Import DAR data from MK1, scoped to a user, template, and team';
@@ -35,11 +38,15 @@ class ImportMk1DarData extends Command
         $userId     = $this->option('user-id');
         $templateId = $this->option('template-id');
         $teamId     = $this->option('team-id');
+        $csvUrl     = $this->option('csv-url');
+        $jsonUrl    = $this->option('json-url');
 
         $missing = array_keys(array_filter([
             '--user-id'     => $userId,
             '--template-id' => $templateId,
             '--team-id'     => $teamId,
+            '--csv-url'     => $csvUrl,
+            '--json-url'    => $jsonUrl,
         ], fn ($v) => blank($v)));
 
         if (! empty($missing)) {
@@ -66,8 +73,14 @@ class ImportMk1DarData extends Command
 
         $this->info("Validated: User #{$userId}, Template #{$templateId}, Team #{$teamId}.");
 
-        $this->readCsvFile(storage_path() . '/migration_files/dar_question_id_mapping.csv');
-        $darMk1Data = $this->readJsonFile(storage_path() . '/migration_files/production.data_requests.json');
+        if (! $this->readCsvFromUrl($csvUrl)) {
+            return self::FAILURE;
+        }
+
+        $darMk1Data = $this->readJsonFromUrl($jsonUrl);
+        if ($darMk1Data === null) {
+            return self::FAILURE;
+        }
 
         foreach ($darMk1Data as $itemMk1) {
             if (!array_key_exists('questionAnswers', $itemMk1)) {
@@ -170,7 +183,7 @@ class ImportMk1DarData extends Command
         }
     }
 
-    private function addAnswersToDarApp(array $questionAnswers, int $darAppId, $userId): void
+    private function addAnswersToDarApp(array $questionAnswers, int $darAppId, int $userId): void
     {
         foreach ($questionAnswers as $key => $value) {
             $question = $this->getMK2QuestionId($key);
@@ -219,36 +232,54 @@ class ImportMk1DarData extends Command
         }
     }
 
-    private function readCsvFile(string $migrationFile): void
+    private function readCsvFromUrl(string $url): bool
     {
-        $file = fopen($migrationFile, 'r');
-        $headers = fgetcsv($file);
+        $response = Http::get($url);
 
-        while (($row = fgetcsv($file)) !== false) {
+        if ($response->failed()) {
+            $this->error("Failed to fetch CSV from: {$url} (status {$response->status()})");
+            return false;
+        }
+
+        $lines = explode("\n", trim($response->body()));
+        $file  = array_map('str_getcsv', $lines);
+
+        if (empty($file)) {
+            $this->error('CSV file is empty.');
+            return false;
+        }
+
+        $headers = array_shift($file);
+        $headers = array_map(fn ($h) => trim($h, "\xEF\xBB\xBF"), $headers);
+
+        foreach ($file as $row) {
+            if (empty(array_filter($row))) {
+                continue;
+            }
             $item = [];
             foreach ($row as $key => $value) {
-                $item[trim($headers[$key], "\xEF\xBB\xBF")] = $value ?: '';
+                $item[$headers[$key]] = $value ?: '';
             }
-
             $this->darQuestionsMapping[] = $item;
         }
 
-        fclose($file);
+        return true;
     }
 
-    private function readJsonFile(string $migrationFile): array
+    private function readJsonFromUrl(string $url): ?array
     {
-        if (! file_exists($migrationFile)) {
-            $this->error("JSON file not found: {$migrationFile}");
-            return [];
+        $response = Http::get($url);
+
+        if ($response->failed()) {
+            $this->error("Failed to fetch JSON from: {$url} (status {$response->status()})");
+            return null;
         }
 
-        $contents = file_get_contents($migrationFile);
-        $decoded  = json_decode($contents, associative: true);
+        $decoded = $response->json();
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->error('Failed to parse JSON file: ' . json_last_error_msg());
-            return [];
+        if (is_null($decoded)) {
+            $this->error('Failed to parse JSON response from: ' . $url);
+            return null;
         }
 
         return $decoded;
