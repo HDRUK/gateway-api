@@ -31,6 +31,11 @@ class ProcessFederationJobTest extends TestCase
         $this->commonSetUp();
     }
 
+    private function mockGsms(): void
+    {
+        $this->mock(GoogleSecretManagerService::class);
+    }
+
     private function makeFederation(): array
     {
         $team = Team::factory()->create();
@@ -109,6 +114,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_is_running_cleared_after_successful_handle(): void
     {
         [, $federation] = $this->makeFederation();
+        $this->mockGsms();
         $this->fakeRemoteCatalogue([]);
 
         (new ProcessFederation($federation))->handle();
@@ -119,6 +125,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_is_running_cleared_when_remote_returns_error(): void
     {
         [, $federation] = $this->makeFederation();
+        $this->mockGsms();
 
         Http::fake([
             $this->catalogueUrlPattern() => Http::response([], 503),
@@ -136,6 +143,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_non_200_remote_catalogue_throws_runtime_exception(): void
     {
         [, $federation] = $this->makeFederation();
+        $this->mockGsms();
 
         Http::fake([
             $this->catalogueUrlPattern() => Http::response(['error' => 'unavailable'], 503),
@@ -150,6 +158,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_runtime_exception_message_includes_url_and_body(): void
     {
         [, $federation] = $this->makeFederation();
+        $this->mockGsms();
 
         Http::fake([
             $this->catalogueUrlPattern() => Http::response('Gateway Timeout', 504),
@@ -167,6 +176,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_local_gmi_dataset_absent_from_remote_is_archived(): void
     {
         [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
 
         // "shared" exists in both remote and local — prevents early abort, no create/archive for it
         $this->makeGmiDataset($team->id, 'shared-pid');
@@ -187,6 +197,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_non_gmi_dataset_absent_from_remote_is_not_archived(): void
     {
         [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
 
         $this->makeGmiDataset($team->id, 'shared-pid');
 
@@ -213,6 +224,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_update_skips_gracefully_when_dataset_version_is_missing(): void
     {
         [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
 
         // Dataset exists locally but has NO DatasetVersion record
         $this->makeGmiDataset($team->id, 'no-version-pid');
@@ -236,6 +248,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_update_skips_gracefully_when_version_key_is_absent_from_metadata(): void
     {
         [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
 
         $dataset = $this->makeGmiDataset($team->id, 'bad-meta-pid');
 
@@ -302,6 +315,7 @@ class ProcessFederationJobTest extends TestCase
     public function test_gmi_dataset_from_another_team_is_never_archived(): void
     {
         [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
         $otherTeam = Team::factory()->create();
 
         // "shared" keeps the remote non-empty so archiving runs

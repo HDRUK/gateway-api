@@ -58,7 +58,7 @@ class ProcessFederation implements ShouldQueue
         try {
             // Here and not in constructor because this library makes excessive use
             // of closures which can't be serialised by Laravel cache.
-            $this->gsms = new GoogleSecretManagerService();
+            $this->gsms = app(GoogleSecretManagerService::class);
             $remoteItems = $this->pullCatalogueList($this->federation, $this->gsms);
 
             if ($remoteItems->isEmpty()) {
