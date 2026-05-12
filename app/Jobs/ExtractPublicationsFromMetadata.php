@@ -128,7 +128,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 $pub = Publication::where('id', $publicationId)->first();
                 if (!is_null($pub)) {
                     $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
-                    $this->indexElasticPublication((string) $publicationId);
 
                     continue;
                 }
@@ -139,7 +138,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
             if (!is_null($checkPublication)) {
                 \Log::warning('ExtractPublicationsFromMetadata :: Publication already exists.', $this->loggingContext);
                 $this->createLinkPublicationDatasetVersion($checkPublication->id, $datasetVersionId, $type);
-                $this->indexElasticPublication((string) $checkPublication->id);
 
                 continue;
             }
@@ -187,7 +185,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
                 );
 
                 $this->createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type);
-                $this->indexElasticPublication((string) $publicationId);
 
                 continue;
             }
@@ -221,10 +218,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     public function createLinkPublicationDatasetVersion($publicationId, $datasetVersionId, $type)
     {
         return PublicationHasDatasetVersion::updateOrCreate([
-            'publication_id' => $publicationId,
-            'dataset_version_id' => $datasetVersionId,
-            'link_type' => $type,
-        ], [
             'publication_id' => $publicationId,
             'dataset_version_id' => $datasetVersionId,
             'link_type' => $type,
