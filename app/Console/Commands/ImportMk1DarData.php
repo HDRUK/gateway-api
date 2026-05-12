@@ -244,7 +244,7 @@ class ImportMk1DarData extends Command
         $lines = explode("\n", trim($response->body()));
         $file  = array_map('str_getcsv', $lines);
 
-        if (empty($file)) {
+        if (count($file) === 0) {
             $this->error('CSV file is empty.');
             return false;
         }
