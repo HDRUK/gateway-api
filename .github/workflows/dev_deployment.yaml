@@ -11,7 +11,7 @@ jobs:
     uses: HDRUK/github-actions-templates/.github/workflows/docker-build.yaml@main
     with:
       chart_path: chart/gateway-api/Chart.yaml
-      environments: '["dev"]'
+      environment: '["dev"]'
     secrets: inherit
 
   deploy:
