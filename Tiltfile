@@ -85,6 +85,9 @@ if cfg.get('clamavEnabled'):
 if cfg.get("mysqlEnabled"):
     include(cfg.get("mysqlRoot") + "/Tiltfile")
 
+if cfg.get("mailhogEnabled"):
+    include(cfg.get("mailhogRoot") + "/Tiltfile")
+
 ## Implements a watcher for local file changes to automatically
 ## fix linting issues in real-time, locally.
 local_resource('linting', cmd='composer run lint', deps=['./'])
@@ -120,4 +123,7 @@ if cfg.get("mysqlEnabled"):
 if cfg.get("elasticEnabled"):
     deps.append("elasticsearch")
 
-k8s_resource(cfg.get("name"), port_forwards=8000, labels=["Service"], resource_deps=deps)
+if cfg.get("mailhogEnabled"):
+    deps.append("mailhog")
+
+k8s_resource(cfg.get("name"), port_forwards=8000, labels=["API"], resource_deps=deps)
