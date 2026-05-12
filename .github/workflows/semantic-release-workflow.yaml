@@ -1,23 +1,5 @@
 name: Semantic Release workflow
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  checks: write
-  statuses: write
-  actions: write
-  packages: write
-  pages: write
-  id-token: write
-  deployments: write
-  repository-projects: write
-  security-events: write
-  artifact-metadata: write
-  attestations: write
-  discussions: write
-  models: read
-
 on:
   push:
     branches:
