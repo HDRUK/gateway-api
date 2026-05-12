@@ -31,10 +31,6 @@ class ProcessFederationJobTest extends TestCase
         $this->commonSetUp();
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
     private function makeFederation(): array
     {
         $team = Team::factory()->create();
@@ -82,10 +78,6 @@ class ProcessFederationJobTest extends TestCase
         ]);
     }
 
-    // -------------------------------------------------------------------------
-    // Job configuration
-    // -------------------------------------------------------------------------
-
     public function test_job_dispatched_to_federation_queue(): void
     {
         Queue::fake();
@@ -114,10 +106,6 @@ class ProcessFederationJobTest extends TestCase
         $this->assertSame(3, $job->tries);
     }
 
-    // -------------------------------------------------------------------------
-    // is_running lifecycle (issue #6)
-    // -------------------------------------------------------------------------
-
     public function test_is_running_cleared_after_successful_handle(): void
     {
         [, $federation] = $this->makeFederation();
@@ -144,10 +132,6 @@ class ProcessFederationJobTest extends TestCase
 
         $this->assertFalse($federation->fresh()->is_running);
     }
-
-    // -------------------------------------------------------------------------
-    // pullCatalogueList — RuntimeException on non-200 (issue #3)
-    // -------------------------------------------------------------------------
 
     public function test_non_200_remote_catalogue_throws_runtime_exception(): void
     {
@@ -179,10 +163,6 @@ class ProcessFederationJobTest extends TestCase
             $this->assertStringContainsString(self::BASE_URL, $e->getMessage());
         }
     }
-
-    // -------------------------------------------------------------------------
-    // Archive path (issue #4 + existing behaviour)
-    // -------------------------------------------------------------------------
 
     public function test_local_gmi_dataset_absent_from_remote_is_archived(): void
     {
@@ -229,10 +209,6 @@ class ProcessFederationJobTest extends TestCase
 
         $this->assertSame(Dataset::STATUS_ACTIVE, $manualDataset->fresh()->status);
     }
-
-    // -------------------------------------------------------------------------
-    // Null DatasetVersion guard (issue #4)
-    // -------------------------------------------------------------------------
 
     public function test_update_skips_gracefully_when_dataset_version_is_missing(): void
     {
@@ -286,10 +262,6 @@ class ProcessFederationJobTest extends TestCase
             Dataset::where('pid', 'bad-meta-pid')->first()->status
         );
     }
-
-    // -------------------------------------------------------------------------
-    // Error logging fix — exception message must not be empty (issue #1)
-    // -------------------------------------------------------------------------
 
     public function test_create_exception_catch_block_logs_real_message(): void
     {
