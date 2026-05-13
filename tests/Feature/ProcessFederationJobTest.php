@@ -293,7 +293,7 @@ class ProcessFederationJobTest extends TestCase
         Log::spy();
 
         // Use a concrete class that exercises the trait method directly
-        $trait = new class {
+        $trait = new class () {
             use \App\Traits\GatewayMetadataIngestionTrait;
         };
 
@@ -307,7 +307,8 @@ class ProcessFederationJobTest extends TestCase
 
         Log::shouldHaveReceived('error')
             ->once()
-            ->withArgs(fn (string $msg) =>
+            ->withArgs(
+                fn (string $msg) =>
                 str_contains($msg, 'meaningful error from storeMetadata')
             );
     }

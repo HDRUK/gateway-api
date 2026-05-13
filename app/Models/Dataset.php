@@ -261,13 +261,12 @@ class Dataset extends Model
     /**
      * Helper function to use JSON functions to search by title within metadata.
      */
-    public function searchByTitle(string $title): DatasetVersion
+    public function searchByTitle(string $title): DatasetVersion|null
     {
         return DatasetVersion::where('dataset_id', $this->id)
             ->whereRaw(
-                "
-                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
-                "
+                "LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER(?)",
+                ['%' . $title . '%']
             )->latest('version')->first();
     }
 
