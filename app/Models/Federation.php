@@ -72,6 +72,14 @@ class Federation extends Model
     ];
 
     /**
+     * Fields that must never appear in serialised API responses.
+     * auth_secret_key is only ever used transiently for federation tests.
+     */
+    protected $hidden = [
+        'auth_secret_key',
+    ];
+
+    /**
      * Specifically requests that Laravel casts the tiny ints as boolean
      */
     protected $casts = [

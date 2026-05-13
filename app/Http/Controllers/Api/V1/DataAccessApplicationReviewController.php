@@ -100,7 +100,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view reviews on');
+            $this->checkTeamAccess($teamId, $id, 'view reviews on', (int)$jwtUser['id']);
 
             $reviews = DataAccessApplicationReview::where('application_id', $id)
                 ->with(['comments','files'])
@@ -314,7 +314,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view reviews on');
+            $this->checkTeamAccess($teamId, $id, 'view reviews on', (int)$jwtUser['id']);
             $upload = Upload::where('uuid', $fileId)->first();
 
             if ($upload) {
@@ -539,7 +539,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'add reviews to');
+            $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
 
             $review = DataAccessApplicationReview::create([
                 'application_id' => $id,
@@ -631,7 +631,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'add reviews to');
+            $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
 
             $review = DataAccessApplicationReview::create([
                 'application_id' => $id,
@@ -759,7 +759,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'add reviews to');
+            $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
 
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
@@ -878,7 +878,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'add reviews to');
+            $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
 
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
@@ -1263,7 +1263,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'delete reviews from');
+            $this->checkTeamAccess($teamId, $id, 'delete reviews from', (int)$jwtUser['id']);
 
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
@@ -1358,7 +1358,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'delete reviews from');
+            $this->checkTeamAccess($teamId, $id, 'delete reviews from', (int)$jwtUser['id']);
 
             $review = DataAccessApplicationReview::findOrFail($reviewId);
 
@@ -1475,7 +1475,7 @@ class DataAccessApplicationReviewController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
 
         try {
-            $this->checkTeamAccess($teamId, $id, "delete files");
+            $this->checkTeamAccess($teamId, $id, "delete files", (int)$jwtUser['id']);
 
             $file = Upload::where('uuid', $fileId)->first();
 
