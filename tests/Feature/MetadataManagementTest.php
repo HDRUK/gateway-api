@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use App\Models\TeamHasUser;
 use App\Models\Team;
+use App\Models\TeamHasUser;
+use Illuminate\Support\Facades\Queue;
+use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
@@ -128,6 +129,8 @@ class MetadataManagementTest extends TestCase
 
     public function test_can_edit_dataset_with_public_schema_as_active(): void
     {
+        Queue::fake();
+
         $initialActiveId = $this->initialActiveIds[0];
         $initialDataset = Dataset::where("id", $initialActiveId)->first();
         $versionBeforeUpdate = $initialDataset->lastMetadataVersionNumber()->version;
@@ -147,6 +150,7 @@ class MetadataManagementTest extends TestCase
             ],
             $this->header,
         );
+        dd($responseUpdateDataset);
 
         $responseUpdateDataset->assertStatus(200);
 
