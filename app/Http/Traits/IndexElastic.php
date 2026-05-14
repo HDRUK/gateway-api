@@ -825,6 +825,20 @@ trait IndexElastic
         }
     }
 
+    public function documentExistsElastic(string $indexType, string $id): void
+    {
+        try {
+            ECC::documentExists($indexType, $id);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function datasetExists(string|int $id)
+    {
+        return $this->documentExistsElastic(ECC::ELASTIC_NAME_DATASET, $id);
+    }
+
     public function deleteDurFromElastic(string $id)
     {
         $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DUR);

@@ -49,6 +49,17 @@ cmd_button(
     icon_name="table",
 )
 
+cmd_button(
+    name="gateway-api-shell",
+    text="Open Shell",
+    resource="gateway-api",
+    argv=[
+        "osascript", "-e",
+        'tell app "iTerm" to create window with default profile command "kubectl exec -it deploy/gateway-api -- bash"'
+    ],
+    icon_name="terminal",
+)
+
 # Load in any locally set config
 cfg = read_json("tiltconf.json")
 
