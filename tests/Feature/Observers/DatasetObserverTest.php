@@ -4,6 +4,7 @@ namespace Tests\Feature\Observers;
 
 use App\Jobs\DeindexDataset;
 use App\Jobs\IndexDataset;
+use App\Jobs\ReindexDataset;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\TeamHasUser;
@@ -103,7 +104,7 @@ class DatasetObserverTest extends TestCase
         Queue::assertNotPushed(IndexDataset::class);
     }
 
-    public function testDatasetObserverDispatchesIndexDatasetWhenActiveDatasetIsUpdated(): void
+    public function testDatasetObserverDispatchesReindexDatasetWhenActiveDatasetIsUpdated(): void
     {
         Queue::fake();
 
@@ -112,7 +113,7 @@ class DatasetObserverTest extends TestCase
 
         (new DatasetObserver())->updated($dataset);
 
-        Queue::assertPushed(IndexDataset::class);
+        Queue::assertPushed(ReindexDataset::class);
     }
 
     public function testDatasetObserverDispatchesDeindexDatasetOnDeletedEventWhenPreviouslyActive(): void
