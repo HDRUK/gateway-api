@@ -150,7 +150,6 @@ class MetadataManagementTest extends TestCase
             ],
             $this->header,
         );
-        dd($responseUpdateDataset);
 
         $responseUpdateDataset->assertStatus(200);
 
