@@ -55,10 +55,29 @@ cmd_button(
     resource="gateway-api",
     argv=[
         "osascript", "-e",
-        'tell app "iTerm" to create window with default profile command "kubectl exec -it deploy/gateway-api -- bash"'
+        'tell application "iTerm2" to activate',
+        "-e",
+        'tell application "iTerm2"',
+        "-e",
+        'set newWindow to (create window with default profile)',
+        "-e",
+        'delay 2',
+        "-e",
+        'tell current session of newWindow',
+        "-e",
+        'write text "n"',
+        "-e",
+        'delay 1',
+        "-e",
+        'write text "kubectl exec -it deploy/gateway-api -- bash"',
+        "-e",
+        'end tell',
+        "-e",
+        'end tell',
     ],
     icon_name="terminal",
 )
+
 
 # Load in any locally set config
 cfg = read_json("tiltconf.json")

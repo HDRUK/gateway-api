@@ -1462,12 +1462,13 @@ class DatasetController extends Controller
     public function exportMetadata(ExportDataset $request, int $id): StreamedResponse
     {
         $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $download_type = strtolower($input['download_type']);
 
         $dataset = Dataset::where('id', '=', $id)->first();
 
         $result = $dataset->latestVersion()['metadata']['metadata'];
-        $originalMetadata = $dataset->latestVersion()['metadata']['original_metadata'];
+        // $originalMetadata = $dataset->latestVersion()['metadata']['original_metadata'];
 
         $response = new StreamedResponse(
             function () use ($result, $download_type) {
@@ -1635,6 +1636,13 @@ class DatasetController extends Controller
         }
         $response->headers->set('Content-Disposition', 'attachment;filename="' . $filename . '"');
         $response->headers->set('Cache-Control', 'max-age=0');
+
+        Auditor::log([
+            'team_id' => $dataset->team_id,
+            'action_type' => 'export',
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'description' => 'Export dataset ' . $download_type . ' for dataset ' . $id,
+        ]);
 
         return $response;
     }
