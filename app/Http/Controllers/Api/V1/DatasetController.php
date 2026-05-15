@@ -1467,7 +1467,6 @@ class DatasetController extends Controller
         $dataset = Dataset::where('id', '=', $id)->first();
 
         $result = $dataset->latestVersion()['metadata']['metadata'];
-        // $originalMetadata = $dataset->latestVersion()['metadata']['original_metadata'];
 
         $response = new StreamedResponse(
             function () use ($result, $download_type) {
