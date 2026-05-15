@@ -1462,7 +1462,6 @@ class DatasetController extends Controller
     public function exportMetadata(ExportDataset $request, int $id): StreamedResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $download_type = strtolower($input['download_type']);
 
         $dataset = Dataset::where('id', '=', $id)->first();
