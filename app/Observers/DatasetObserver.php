@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Jobs\DeindexDataset;
 use App\Jobs\IndexDataset;
+use App\Jobs\ReindexDataset;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 
@@ -55,7 +56,7 @@ class DatasetObserver
         }
 
         if ($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
-            IndexDataset::dispatch($dataset->id);
+            ReindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
         }
     }
 

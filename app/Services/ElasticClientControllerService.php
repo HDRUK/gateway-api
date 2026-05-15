@@ -179,7 +179,6 @@ class ElasticClientControllerService
         }
     }
 
-
     /**
      * Makes an HTTP DELETE request to delete a document in Elasticsearch.
      *
@@ -189,6 +188,9 @@ class ElasticClientControllerService
      */
     public function deleteDocument(array $params)
     {
+        $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        \Log::info('Delete from elastic doc '. $params['index'] . ' ' . $params['id'], $this->loggingContext);
+
         $url = $this->baseUrl . '/' . $params['index'] . '/_doc/' . $params['id'];
         try {
             $response = $this->makeRequest()
@@ -228,6 +230,35 @@ class ElasticClientControllerService
         }
 
         return 0;  // Return 0 if the request fails
+    }
+
+    /**
+     * Check if a document exists in the given Elasticsearch index.
+     *
+     * @param string $index The Elasticsearch index name.
+     * @param string|int $id The document ID to look up.
+     *
+     * @return string Returns 'found' if the document exists,
+     *                'not_found' if it does not,
+     *                or 'false' if the request throws an exception.
+     */
+    public function documentExists(string $index, string|int $id): string|bool
+    {
+        $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+        \Log::info('Check if exists in elastisc doc '. $index . ' ' . $id, $this->loggingContext);
+
+        $url = $this->baseUrl . '/' . $index . '/_doc/' . $id;
+
+        try {
+            $response = $this->makeRequest()->get($url);
+
+            return $response->successful() ? 'found' : 'not_found';
+        } catch (RequestException $e) {
+            $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+            \Log::error('Failed to delete document: ' . $e->getMessage(), $this->loggingContext);
+
+            throw new \Exception('Failed to delete document: ' . $e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**

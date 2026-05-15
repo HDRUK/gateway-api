@@ -247,6 +247,8 @@ class ProcessFederationJobTest extends TestCase
 
     public function test_update_skips_gracefully_when_version_key_is_absent_from_metadata(): void
     {
+        Queue::fake();
+
         [$team, $federation] = $this->makeFederation();
         $this->mockGsms();
 
