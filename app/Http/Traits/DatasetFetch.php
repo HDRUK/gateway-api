@@ -70,13 +70,9 @@ trait DatasetFetch
             // Retrieve dataset version IDs associated with the current dataset
             $datasetVersionIds = DatasetVersion::where('dataset_id', $dataset->id)->whereIn('id', $versionIds)->pluck('id')->toArray();
 
-            $metadata = $dataset->lastMetadata();
+            $datasetTitle = DatasetVersion::where('dataset_id', $dataset->id)->whereIn('id', $versionIds)->orderByDesc('version')->value('title');
 
-            $title = $metadata['metadata']['summary']['title'] ?? null;
-
-            if ($title) {
-                $dataset->setAttribute('name', $title ?? null);
-            }
+            $dataset->setAttribute('name', $datasetTitle ?? null); // This can be modified to return metadata
 
             // Add associated dataset versions to the dataset object
             $dataset->setAttribute('dataset_version_ids', $datasetVersionIds);
@@ -84,6 +80,7 @@ trait DatasetFetch
             if ($linkageTable instanceof DatasetVersionHasTool) {
                 $link_type = DatasetVersionHasTool::where($localTableId, $this->id)->whereIn('dataset_version_id', $datasetVersionIds)->select(['link_type'])->first();
                 $dataset->setAttribute('link_type', $link_type['link_type']);
+                $dataset->setAttribute('title', $datasetTitle);
             } elseif ($linkageTable instanceof PublicationHasDatasetVersion) {
                 $link_type = PublicationHasDatasetVersion::where($localTableId, $this->id)->whereIn('dataset_version_id', $datasetVersionIds)->select(['link_type'])->first();
                 $dataset->setAttribute('link_type', $link_type['link_type']);
