@@ -12,9 +12,9 @@
 # CI / DevOps
 # ====================
 .github/                        @HDRUK/tech-team-devops @HDRUK/tech-team-backend
-docker-compose*.yml             @HDRUK/tech-team-devops
-Dockerfile*                     @HDRUK/tech-team-devops
-.env.example                    @HDRUK/tech-team-devops
+docker-compose*.yml             @HDRUK/tech-team-devops @HDRUK/tech-team-backend
+Dockerfile*                     @HDRUK/tech-team-devops @HDRUK/tech-team-backend
+.env.example                    @HDRUK/tech-team-devops @HDRUK/tech-team-backend
 
 # ====================
 # App Core
@@ -36,7 +36,7 @@ routes/                         @HDRUK/tech-team-backend
 # Database
 # ====================
 database/migrations/            @HDRUK/tech-team-backend @HDRUK/tech-team-devops
-database/seeders/               @HDRUK/tech-team-backend
+database/seeders/               @HDRUK/tech-team-backend @HDRUK/tech-team-devops
 database/factories/             @HDRUK/tech-team-backend
 
 # ====================
