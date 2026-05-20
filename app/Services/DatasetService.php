@@ -35,7 +35,8 @@ class DatasetService
         ?string $filterStatus,
         ?string $filterTitle,
         bool $withMetadata,
-        int $perPage
+        int $perPage,
+        ?string $partnerContext = null,
     ): LengthAwarePaginator {
         if (!empty($filterTitle)) {
             // Use a subquery for the status filter to avoid materialising all IDs.
@@ -44,6 +45,10 @@ class DatasetService
             // functions, so we load only the filtered version rows and deduplicate.
             $statusSubquery = Dataset::query()
                 ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
+                ->when(
+                    $partnerContext && $partnerContext !== 'HDRUK',
+                    fn ($q) => $q->where('partner_context', $partnerContext)
+                )
                 ->select('id');
 
             $matchingIds = DatasetVersion::whereIn('dataset_id', $statusSubquery)
@@ -57,7 +62,11 @@ class DatasetService
             $query = Dataset::whereIn('id', $matchingIds);
         } else {
             $query = Dataset::query()
-                ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus));
+                ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
+                ->when(
+                    $partnerContext && $partnerContext !== 'HDRUK',
+                    fn ($q) => $q->where('partner_context', $partnerContext)
+                );
         }
 
         if ($withMetadata) {
@@ -67,9 +76,15 @@ class DatasetService
         return $query->applySorting()->paginate($perPage, ['*'], 'page');
     }
 
-    public function findActive(int $id): ?Dataset
+    public function findActive(int $id, ?string $partnerContext = null): ?Dataset
     {
-        return Dataset::with('team')->where('status', Dataset::STATUS_ACTIVE)->find($id);
+        return Dataset::with('team')
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->when(
+                $partnerContext && $partnerContext !== 'HDRUK',
+                fn ($q) => $q->where('partner_context', $partnerContext)
+            )
+            ->find($id);
     }
 
     /**
@@ -222,7 +237,8 @@ class DatasetService
         Team $team,
         ?string $inputSchema,
         ?string $inputVersion,
-        bool $elasticIndexing
+        bool $elasticIndexing,
+        string $partnerContext = 'HDRUK',
     ): array {
         $input['metadata'] = $this->extractMetadata($input['metadata']);
 
@@ -270,6 +286,7 @@ class DatasetService
             'create_origin'       => $input['create_origin'],
             'status'              => $input['status'],
             'is_cohort_discovery' => $isCohortDiscovery,
+            'partner_context'     => $partnerContext,
         ]);
 
         $required = $this->buildRequiredBlock($dataset, 1);

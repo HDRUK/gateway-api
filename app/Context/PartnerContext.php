@@ -2,7 +2,6 @@
 
 namespace App\Context;
 
-use Illuminate\Http\Request;
 use App\Http\Resources\DatasetResource;
 use App\Models\Dataset;
 
@@ -27,19 +26,12 @@ use App\Models\Dataset;
  */
 class PartnerContext
 {
-    private string $partner;
-
-    public function __construct(Request $request)
+    public function getPartner(): string
     {
-        $this->partner = $request->header(
+        return request()->header(
             'x-partner-context',
             config('partners.default', 'HDRUK')
         );
-    }
-
-    public function getPartner(): string
-    {
-        return $this->partner;
     }
 
     /**
@@ -53,7 +45,7 @@ class PartnerContext
      */
     public function resourceFor(string $modelClass): string
     {
-        $partnerMap = config('partners.resources.' . $this->partner, []);
+        $partnerMap = config('partners.resources.' . $this->getPartner(), []);
 
         if (isset($partnerMap[$modelClass])) {
             return $partnerMap[$modelClass];
@@ -71,7 +63,7 @@ class PartnerContext
      */
     public function indexResourceFor(string $modelClass): string
     {
-        $partnerMap = config('partners.index_resources.' . $this->partner, []);
+        $partnerMap = config('partners.index_resources.' . $this->getPartner(), []);
 
         if (isset($partnerMap[$modelClass])) {
             return $partnerMap[$modelClass];
@@ -82,11 +74,11 @@ class PartnerContext
 
     private function defaultResourceFor(string $modelClass): string
     {
-        return config('partners.resources.HDRUK.' . $modelClass, $modelClass);
+        return config('partners.resources.HDRUK', [])[$modelClass] ?? $modelClass;
     }
 
     private function defaultIndexResourceFor(string $modelClass): string
     {
-        return config('partners.index_resources.HDRUK.' . $modelClass, $modelClass);
+        return config('partners.index_resources.HDRUK', [])[$modelClass] ?? $modelClass;
     }
 }

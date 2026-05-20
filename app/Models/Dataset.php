@@ -102,6 +102,7 @@ class Dataset extends Model
         'create_origin',
         'status',
         'is_cohort_discovery',
+        'partner_context',
     ];
 
     protected $casts = [

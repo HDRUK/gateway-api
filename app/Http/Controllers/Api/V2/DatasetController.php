@@ -93,6 +93,7 @@ class DatasetController extends Controller
                 filterTitle: $request->query('title'),
                 withMetadata: $request->boolean('with_metadata', true),
                 perPage: $request->integer('per_page', Config::get('constants.per_page')),
+                partnerContext: $this->partnerContext->getPartner(),
             );
 
             Auditor::log([
@@ -173,7 +174,7 @@ class DatasetController extends Controller
     public function showActive(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
     {
         try {
-            $dataset = $this->datasetService->findActive($id);
+            $dataset = $this->datasetService->findActive($id, $this->partnerContext->getPartner());
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -281,6 +282,7 @@ class DatasetController extends Controller
                 inputSchema: $request->query('input_schema'),
                 inputVersion: $request->query('input_version'),
                 elasticIndexing: $request->boolean('elastic_indexing', false),
+                partnerContext: $this->partnerContext->getPartner(),
             );
 
             if ($result['translated']) {
