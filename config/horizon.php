@@ -193,6 +193,19 @@ return [
             'timeout' => 60,
             'nice' => 0,
         ],
+        'supervisor-federation' => [
+            'connection' => 'redis',
+            'queue' => ['federation'],
+            'balance' => 'simple',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 150,
+            'nice' => 10,
+        ],
     ],
 
     'environments' => [
@@ -202,11 +215,19 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
+            'supervisor-federation' => [
+                'maxProcesses' => 5,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
         ],
 
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 5,
+            ],
+            'supervisor-federation' => [
+                'maxProcesses' => 2,
             ],
         ],
 
@@ -214,11 +235,19 @@ return [
             'supervisor-1' => [
                 'maxProcesses' => 5,
             ],
+            'supervisor-federation' => [
+                'maxProcesses' => 2,
+            ],
         ],
 
         'preprod' => [
             'supervisor-1' => [
                 'maxProcesses' => 5,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+            'supervisor-federation' => [
+                'maxProcesses' => 3,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],

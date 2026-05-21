@@ -27,6 +27,7 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\V2\Dataset\GetDataset;
 use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\EditTeamDataset;
+use App\Context\PartnerContext;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
@@ -42,6 +43,10 @@ class TeamDatasetController extends Controller
     use RequestTransformation;
     use DatasetsV2Helpers;
     use TrimPayload;
+
+    public function __construct(private readonly PartnerContext $partnerContext)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -501,7 +506,8 @@ class TeamDatasetController extends Controller
                 $team,
                 $inputSchema,
                 $inputVersion,
-                $elasticIndexing
+                $elasticIndexing,
+                $this->partnerContext->getPartner(),
             );
 
             if ($metadataResult['translated']) {

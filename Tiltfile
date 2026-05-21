@@ -49,6 +49,36 @@ cmd_button(
     icon_name="table",
 )
 
+cmd_button(
+    name="gateway-api-shell",
+    text="Open Shell",
+    resource="gateway-api",
+    argv=[
+        "osascript", "-e",
+        'tell application "iTerm2" to activate',
+        "-e",
+        'tell application "iTerm2"',
+        "-e",
+        'set newWindow to (create window with default profile)',
+        "-e",
+        'delay 2',
+        "-e",
+        'tell current session of newWindow',
+        "-e",
+        'write text "n"',
+        "-e",
+        'delay 1',
+        "-e",
+        'write text "kubectl exec -it deploy/gateway-api -- bash"',
+        "-e",
+        'end tell',
+        "-e",
+        'end tell',
+    ],
+    icon_name="terminal",
+)
+
+
 # Load in any locally set config
 cfg = read_json("tiltconf.json")
 
@@ -57,6 +87,7 @@ include(cfg.get("gatewayWeb2Root") + "/Tiltfile")
 # Load our service layer for deployment - if enabled
 if cfg.get("dtaWebEnabled"):
     include(cfg.get("dtaWebRoot") + "/Tiltfile")
+
 if cfg.get("traserEnabled"):
     include(cfg.get("traserServiceRoot") + "/Tiltfile")
 
@@ -81,10 +112,15 @@ if cfg.get("darasEnabled"):
 if cfg.get('clamavEnabled'):
     include(cfg.get('clamavServiceRoot') + '/Tiltfile')
 
+if cfg.get("mysqlEnabled"):
+    include(cfg.get("mysqlRoot") + "/Tiltfile")
+
+if cfg.get("mailhogEnabled"):
+    include(cfg.get("mailhogRoot") + "/Tiltfile")
+
 ## Implements a watcher for local file changes to automatically
 ## fix linting issues in real-time, locally.
 local_resource('linting', cmd='composer run lint', deps=['./'])
-
 
 docker_build(
     ref="hdruk/" + cfg.get("name"),
@@ -107,4 +143,17 @@ docker_build(
 
 k8s_yaml("chart/" + cfg.get("name") + "/deployment.yaml")
 k8s_yaml("chart/" + cfg.get("name") + "/service.yaml")
-k8s_resource(cfg.get("name"), port_forwards=8000, labels=["Service"])
+# k8s_resource(cfg.get("name"), port_forwards=8000, labels=["Service"])
+
+deps = []
+
+if cfg.get("mysqlEnabled"):
+    deps.append("mysql")
+
+if cfg.get("elasticEnabled"):
+    deps.append("elasticsearch")
+
+if cfg.get("mailhogEnabled"):
+    deps.append("mailhog")
+
+k8s_resource(cfg.get("name"), port_forwards=8000, labels=["API"], resource_deps=deps)

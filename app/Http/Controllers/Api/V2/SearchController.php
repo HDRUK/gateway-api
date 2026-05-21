@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V2;
 
 use Config;
-
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Services\SearchAggregator;

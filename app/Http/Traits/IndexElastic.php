@@ -572,6 +572,7 @@ trait IndexElastic
         try {
             $pubMatch = Publication::where(['id' => $id])->with(['keywords:id,name'])->first();
             $datasets = $pubMatch->allDatasets;
+
             $keywords = array_unique($pubMatch?->keywords->pluck('name')->toArray() ?? []);
 
             $datasetTitles = [];
@@ -596,10 +597,13 @@ trait IndexElastic
                 $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
                 $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+
+                // change from 'UNKNOWN' to 'USING' - temp
                 $linkType = PublicationHasDatasetVersion::where([
                     'publication_id' => (int)$id,
                     'dataset_version_id' => (int)$latestVersionID
-                ])->first()->link_type ?? 'UNKNOWN';
+                ])->first()->link_type ?? 'USING';
+
                 $datasetLinkTypes[] =  array_key_exists($linkType, $linkTypeMappings) ? $linkTypeMappings[$linkType] : 'Unknown';
             }
 

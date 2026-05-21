@@ -316,7 +316,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
 
             $application = DataAccessApplication::where('id', $id)
                 ->with(['questions'])
@@ -490,7 +490,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
@@ -498,7 +498,7 @@ class TeamDataAccessApplicationController extends Controller
                 'description' => 'DataAccessApplication download ' . $id,
             ]);
 
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
 
 
             $application = DataAccessApplication::where('id', $id)
@@ -643,7 +643,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
             $application = DataAccessApplication::where('id', $id)->first();
 
             $isDraft = $application['submission_status'] === 'DRAFT';
@@ -737,7 +737,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
             $application = DataAccessApplication::where('id', $id)->first();
 
             $isDraft = $application['submission_status'] === 'DRAFT';
@@ -827,7 +827,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
 
             $answers = DataAccessApplicationAnswer::where('application_id', $id)->get();
 
@@ -909,7 +909,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
 
             $statuses = DataAccessApplicationStatus::where('application_id', $id)->get();
 
@@ -1003,7 +1003,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'edit');
+            $this->checkTeamAccess($teamId, $id, 'edit', (int)$jwtUser['id']);
 
             $application = DataAccessApplication::findOrFail($id);
 
@@ -1139,7 +1139,7 @@ class TeamDataAccessApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $this->checkTeamAccess($teamId, $id, 'delete files from');
+            $this->checkTeamAccess($teamId, $id, 'delete files from', (int)$jwtUser['id']);
 
             $file = Upload::where('id', $fileId)->first();
 

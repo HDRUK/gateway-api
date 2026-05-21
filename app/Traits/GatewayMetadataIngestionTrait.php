@@ -29,7 +29,7 @@ trait GatewayMetadataIngestionTrait
         return $this->getCatalogueFromFederationArray($federation, $gsms);
     }
 
-    private function getCatalogueFromFederationModel(Federation $federation, GoogleSecretManagerService $gsms): Collection|array
+    private function getCatalogueFromFederationModel(Federation $federation, GoogleSecretManagerService $gsms): Collection
     {
         $url = $federation->endpoint_baseurl . $federation->endpoint_datasets;
         $this->log('info', "calling REMOTE collection @ {$url}");
@@ -47,14 +47,9 @@ trait GatewayMetadataIngestionTrait
             return collect(json_decode($response->body(), true)['items'])->keyBy('persistentId');
         }
 
-        return [
-            'data' => [
-                'errors' => $response->json(),
-                'status' => $response->status(),
-                'success' => false,
-                'title' => 'Test Unsuccessful',
-            ],
-        ];
+        throw new \RuntimeException(
+            "Remote catalogue returned non-200 status {$response->status()} for {$url}: " . $response->body()
+        );
     }
 
     private function getCatalogueFromFederationArray(array $federation, GoogleSecretManagerService $gsms): Collection|array
@@ -118,8 +113,8 @@ trait GatewayMetadataIngestionTrait
 
                 unset($ds);
                 $archivedCount++;
-            } catch (\Exception $e) {
-                $this->log('error', 'encountered internal error: ' . json_encode($e->getMessage()));
+            } catch (\Throwable $e) {
+                $this->log('error', "encountered internal error while ARCHIVING dataset {$pid}: " . $e->getMessage());
             }
         }
 
@@ -140,14 +135,14 @@ trait GatewayMetadataIngestionTrait
                 'pid' => $pid,
                 'team_id' => $gmi->getTeam(),
                 ])->exists()) {
-                $data = $remoteItems[$pid];
-                $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                try {
+                    $data = $remoteItems[$pid];
+                    $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
 
-                $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection: 
+                    $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection:
                     status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
 
-                if ($response->status() === 200) {
-                    try {
+                    if ($response->status() === 200) {
                         $input = [
                             'status' => 'ACTIVE',
                             'create_origin' => 'GMI',
@@ -162,9 +157,9 @@ trait GatewayMetadataIngestionTrait
                         $result = $gmi->storeMetadata($input);
                         $createdCount++;
                         $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
-                    } catch (\Exception $e) {
-                        $this->log('error', 'encountered internal error while CREATING local dataset from remote source: ' . json_encode($e));
                     }
+                } catch (\Throwable $e) {
+                    $this->log('error', "encountered internal error while CREATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
                 }
             } else {
                 $this->log('info', "attempted to re-create a dataset that already exists @ {$pid}");
@@ -184,59 +179,76 @@ trait GatewayMetadataIngestionTrait
         $updatedCount = 0;
         foreach ($remoteItems as $pid => $data) {
             if ($localItems->has($pid)) {
-                $local = $localItems[$pid];
+                try {
+                    $local = $localItems[$pid];
 
-                $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
-                if ($response->status() === 200) {
-                    $team = Team::where('id', $gmi->getTeam())->first();
-                    $ds = Dataset::where([
-                        'pid' => $pid,
-                        'team_id' => $gmi->getTeam(),
-                    ])->first();
-                    $dv = DatasetVersion::where('dataset_id', $local->id)->orderBy('id', 'desc')->first()->toArray();
+                    $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                    if ($response->status() === 200) {
+                        $team = Team::where('id', $gmi->getTeam())->first();
+                        $ds = Dataset::where([
+                            'pid' => $pid,
+                            'team_id' => $gmi->getTeam(),
+                        ])->first();
+                        $dvModel = DatasetVersion::where('dataset_id', $local->id)->orderBy('id', 'desc')->first();
 
-                    $payload = [
-                        'extra' => [
-                            'id' => $ds->id,
-                            'pid' => $ds->pid,
-                            'datasetType' => 'Health and disease',
-                            'publisherId' => $team->pid,
-                            'publisherName' => $team->name,
-                        ],
-                        'metadata' => $response->object(),
-                    ];
-
-                    $this->log('info', "version compare of REMOTE v{$data['version']} and LOCAL v{$dv['metadata']['metadata']['required']['version']}");
-
-                    if (version_compare($data['version'], $dv['metadata']['metadata']['required']['version'], '<>')) {
-                        $this->log('info', "dataset {$pid} found version difference in REMOTE metadata of v{$data['version']} vs local {$dv['metadata']['metadata']['required']['version']} - UPDATING LOCAL");
-                        $traserResponse = MMC::translateDataModelType(
-                            json_encode($payload),
-                            Config::get('metadata.GWDM.name'),
-                            Config::get('metadata.GWDM.version')
-                        );
-
-                        if ($traserResponse['wasTranslated']) {
-                            $ds->update([
-                                'updated' => Carbon::now(),
-                            ]);
-
-                            $versionNumber = $ds->lastMetadataVersionNumber()->version;
-                            $dsId = $this->updateMetadataVersion(
-                                $ds,
-                                $traserResponse['metadata'],
-                                $data,
-                            );
-
-                            $updatedCount++;
-                        } else {
-                            $this->log('info', "dataset {$pid} FAILED traser");
+                        if (!$dvModel) {
+                            $this->log('warning', "dataset {$pid} has no version record locally - skipping update");
+                            continue;
                         }
 
-                        $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
-                    } else {
-                        $this->log('info', "dataset {$pid} nothing to update - IGNORING");
+                        $dv = $dvModel->toArray();
+                        $localVersion = $dv['metadata']['metadata']['required']['version'] ?? null;
+
+                        if (!$localVersion) {
+                            $this->log('warning', "dataset {$pid} has no parseable version in local metadata - skipping update");
+                            continue;
+                        }
+
+                        $payload = [
+                            'extra' => [
+                                'id' => $ds->id,
+                                'pid' => $ds->pid,
+                                'datasetType' => 'Health and disease',
+                                'publisherId' => $team->pid,
+                                'publisherName' => $team->name,
+                            ],
+                            'metadata' => $response->object(),
+                        ];
+
+                        $this->log('info', "version compare of REMOTE v{$data['version']} and LOCAL v{$localVersion}");
+
+                        if (version_compare($data['version'], $localVersion, '<>')) {
+                            $this->log('info', "dataset {$pid} found version difference in REMOTE metadata of v{$data['version']} vs local {$localVersion} - UPDATING LOCAL");
+                            $traserResponse = MMC::translateDataModelType(
+                                json_encode($payload),
+                                Config::get('metadata.GWDM.name'),
+                                Config::get('metadata.GWDM.version')
+                            );
+
+                            if ($traserResponse['wasTranslated']) {
+                                $ds->update([
+                                    'updated' => Carbon::now(),
+                                ]);
+
+                                $versionNumber = $ds->lastMetadataVersionNumber()->version;
+                                $dsId = $this->updateMetadataVersion(
+                                    $ds,
+                                    $traserResponse['metadata'],
+                                    $data,
+                                );
+
+                                $updatedCount++;
+                            } else {
+                                $this->log('info', "dataset {$pid} FAILED traser");
+                            }
+
+                            $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
+                        } else {
+                            $this->log('info', "dataset {$pid} nothing to update - IGNORING");
+                        }
                     }
+                } catch (\Throwable $e) {
+                    $this->log('error', "encountered internal error while UPDATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
                 }
             }
         }

@@ -102,6 +102,7 @@ class Dataset extends Model
         'create_origin',
         'status',
         'is_cohort_discovery',
+        'partner_context',
     ];
 
     protected $casts = [
@@ -246,13 +247,16 @@ class Dataset extends Model
     /**
      * The very last metadata as an array
      */
-    public function lastMetadata(): array
+    public function lastMetadata(): ?array
     {
         $version = DatasetVersion::where('dataset_id', $this->id)
-            ->select(['version','id'])
             ->orderBy('version', 'desc')
-            ->first()
-            ->id;
+            ->value('id');
+
+        if (!$version) {
+            return null;
+        }
+
         $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
         return $datasetVersion['metadata'];
     }
@@ -261,13 +265,12 @@ class Dataset extends Model
     /**
      * Helper function to use JSON functions to search by title within metadata.
      */
-    public function searchByTitle(string $title): DatasetVersion
+    public function searchByTitle(string $title): DatasetVersion|null
     {
         return DatasetVersion::where('dataset_id', $this->id)
             ->whereRaw(
-                "
-                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
-                "
+                "LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER(?)",
+                ['%' . $title . '%']
             )->latest('version')->first();
     }
 

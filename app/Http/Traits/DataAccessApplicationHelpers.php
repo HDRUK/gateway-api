@@ -33,7 +33,7 @@ trait DataAccessApplicationHelpers
     public function getDARHeader(string $id, ?string $teamId, ?string $userId, array $jwtUser): DataAccessApplication
     {
         if (!is_null($teamId)) {
-            $this->checkTeamAccess($teamId, $id, 'view');
+            $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
         } else {
             $application = DataAccessApplication::where('id', $id)->with(['questions'])->firstOrFail();
 
@@ -168,18 +168,27 @@ trait DataAccessApplicationHelpers
         }
     }
 
-    public function checkTeamAccess(int $teamId, int $id, string $op): void
+    public function checkTeamAccess(int $teamId, int $id, string $op, int $userId): void
     {
-        $access = count(
-            TeamHasDataAccessApplication::where([
-                'team_id' => $teamId,
-                'dar_application_id' => $id
-            ])->get()
-        );
+        $teamHasApp = TeamHasDataAccessApplication::where([
+            'team_id' => $teamId,
+            'dar_application_id' => $id,
+        ])->exists();
 
-        if (!$access) {
+        if (!$teamHasApp) {
             throw new UnauthorizedException(
                 "Team does not have permission to use this endpoint to $op this application."
+            );
+        }
+
+        $userInTeam = TeamHasUser::where([
+            'team_id' => $teamId,
+            'user_id' => $userId,
+        ])->exists();
+
+        if (!$userInTeam) {
+            throw new UnauthorizedException(
+                "User does not have permission to use this endpoint to $op this application."
             );
         }
     }
