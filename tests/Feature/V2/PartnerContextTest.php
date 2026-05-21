@@ -253,6 +253,29 @@ class PartnerContextTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Feature flag — allow_cross_context_read
+    // -------------------------------------------------------------------------
+
+    public function test_hdruk_context_index_excludes_other_partner_datasets_when_cross_context_read_disabled(): void
+    {
+        config(['partners.allow_cross_context_read' => false]);
+
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $initialHdrukCount = Dataset::where('partner_context', 'HDRUK')->count();
+
+        $this->createDataset($teamId, $userId, 'HDRUK');
+        $this->createDataset($teamId, $userId, 'CRUK');
+
+        $response = $this->json('GET', self::DATASETS_URL, [], $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // Flag off → HDRUK sees only its own datasets
+        $this->assertCount($initialHdrukCount + 1, $response->json('data'));
+
+        config(['partners.allow_cross_context_read' => true]);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 

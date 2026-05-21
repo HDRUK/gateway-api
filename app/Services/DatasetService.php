@@ -46,7 +46,7 @@ class DatasetService
             $statusSubquery = Dataset::query()
                 ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
                 ->when(
-                    $partnerContext && $partnerContext !== 'HDRUK',
+                    $partnerContext && ($partnerContext !== 'HDRUK' || !config('partners.allow_cross_context_read', true)),
                     fn ($q) => $q->where('partner_context', $partnerContext)
                 )
                 ->select('id');
@@ -64,7 +64,7 @@ class DatasetService
             $query = Dataset::query()
                 ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
                 ->when(
-                    $partnerContext && $partnerContext !== 'HDRUK',
+                    $partnerContext && ($partnerContext !== 'HDRUK' || !config('partners.allow_cross_context_read', true)),
                     fn ($q) => $q->where('partner_context', $partnerContext)
                 );
         }

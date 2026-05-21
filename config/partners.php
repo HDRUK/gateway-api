@@ -42,6 +42,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cross-context read (HDRUK portal safeguard)
+    |--------------------------------------------------------------------------
+    | When true (default), the HDRUK operator context sees datasets from ALL
+    | partners. Set to false to restrict HDRUK to its own datasets — useful
+    | while partner schemas are in development and risk breaking the portal.
+    */
+    'allow_cross_context_read' => env('HDRUK_CROSS_CONTEXT_READ', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Detail (show) resource map
     |--------------------------------------------------------------------------
     | Keyed by partner identifier → model class → resource class.
