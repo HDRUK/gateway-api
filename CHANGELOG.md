@@ -1,3 +1,25 @@
+## [2.42.0](https://github.com/HDRUK/gateway-api/compare/v2.41.0...v2.42.0) (2026-05-21)
+
+### ✨ Features
+
+* **GAT-8774:** Import DAR MK1 NNRD data (#1634) ([13b742a](https://github.com/HDRUK/gateway-api/commit/13b742aab7a286fb2e94390343198416ebe694ad)), closes [GAT-8774](undefinedGAT-8774)
+* **GAT-8812:** updated reusable pipelines (#1630) ([bf92d09](https://github.com/HDRUK/gateway-api/commit/bf92d096486f0859bd00355cf37c772abbf7abd5)), closes [GAT-8812](undefinedGAT-8812)
+* **GAT-8907:** Add logging of the download data buttons on the dataset page to logs (#1646) ([e83f05d](https://github.com/HDRUK/gateway-api/commit/e83f05d186edaadb9fcc7a1cbb0799fd556b1f7b)), closes [GAT-8907](undefinedGAT-8907)
+* **GAT-8924:** Adds partner_context to dataset to ensure separation … (#1649) ([d175655](https://github.com/HDRUK/gateway-api/commit/d175655f4b05db961a1dbb0aaeeca1b3f8f442c3)), closes [GAT-8924](undefinedGAT-8924)
+
+### 🐛 Bug Fixes
+
+* **GAT-7743:** Publications linked to dataset not showing all results (#1648) ([7054106](https://github.com/HDRUK/gateway-api/commit/7054106110a5f08ca86d403412b3360631f03f97)), closes [GAT-7743](undefinedGAT-7743)
+* **GAT-8785:** #4 adds trapping for potential traser translation erro… (#1641) ([f89a112](https://github.com/HDRUK/gateway-api/commit/f89a11287749da7b1a6229c68669836a30d03741)), closes [GAT-8785](undefinedGAT-8785)
+* **GAT-8785:** Introduces a few fixes for edge-cases in gmi. Also moves GMI jobs to separate queue to avoid block and drops (#1636) ([ce5010a](https://github.com/HDRUK/gateway-api/commit/ce5010a3544eb9a5fb4744c5a7bb39c993f443d4))
+* **GAT-8785:** Make elastic indexing calls async to avoid gmi falling… (#1642) ([8987660](https://github.com/HDRUK/gateway-api/commit/8987660ea6f3ce8cb01181f4c52ef40e06e55a1f)), closes [GAT-8785](undefinedGAT-8785)
+* **GAT-8812:** removed gar name (#1637) ([2875880](https://github.com/HDRUK/gateway-api/commit/287588091917e00e27d96cb86cacd54e3ceeba87)), closes [GAT-8812](undefinedGAT-8812)
+* **GAT-8812:** removed permissions section from the semantic pipeline (#1635) ([eb43df3](https://github.com/HDRUK/gateway-api/commit/eb43df324f0d315efeb3b142f30813afec974246)), closes [GAT-8812](undefinedGAT-8812)
+* **GAT-8812:** updated env variable (#1640) ([8faa465](https://github.com/HDRUK/gateway-api/commit/8faa4657ad836097fdf855cfda44d9aaf2b52c2b)), closes [GAT-8812](undefinedGAT-8812)
+* **GAT-8812:** updated reusable pipelines (#1632) ([3752be4](https://github.com/HDRUK/gateway-api/commit/3752be4ff5102c38613a7befc34bff6d2a91552c)), closes [GAT-8812](undefinedGAT-8812)
+* **GAT-8884:** [ClaudeAI] Security review highlighted vulnerabilities… (#1643) ([246a35d](https://github.com/HDRUK/gateway-api/commit/246a35d99423383d5dbd81cb6279165b550a64ec)), closes [GAT-8884](undefinedGAT-8884)
+* **GAT-8898:** update reindex es (#1644) ([e1f6e34](https://github.com/HDRUK/gateway-api/commit/e1f6e34932946cb671aef4518ae38089b29f5b34)), closes [GAT-8898](undefinedGAT-8898)
+
 ## [2.41.0](https://github.com/HDRUK/gateway-api/compare/v2.40.0...v2.41.0) (2026-05-08)
 
 ### ✨ Features
