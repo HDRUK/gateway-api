@@ -247,13 +247,16 @@ class Dataset extends Model
     /**
      * The very last metadata as an array
      */
-    public function lastMetadata(): array
+    public function lastMetadata(): ?array
     {
         $version = DatasetVersion::where('dataset_id', $this->id)
-            ->select(['version','id'])
             ->orderBy('version', 'desc')
-            ->first()
-            ->id;
+            ->value('id');
+
+        if (!$version) {
+            return null;
+        }
+
         $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
         return $datasetVersion['metadata'];
     }
