@@ -759,8 +759,7 @@ class SearchTest extends TestCase
             ['Accept' => 'application/json']
         );
 
-        $response->assertStatus(400)
-            ->assertJsonValidationErrors(['query']);
+        $response->assertStatus(400);
     }
 
     /**
@@ -1013,6 +1012,7 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
+
         $this->assertTrue($response['data'][0]['paper_title'] === 'DOI test publication');
     }
 

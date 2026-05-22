@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Search;
 
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Support\Facades\Validator;
 
 class PublicationSearch extends BaseFormRequest
 {
@@ -23,11 +24,42 @@ class PublicationSearch extends BaseFormRequest
      */
     public function rules(): array
     {
+        $queryRules = [
+            'nullable',
+            'string',
+            'max:255',
+            'regex:/^[\p{L}\p{N}\s\-\.\,\:\/\%\'\"\(\)\#\=\&\+]+$/u',
+            'not_regex:/(::char|::integer|char\s*\(|0x[0-9a-f]+|\/\*.*\*\/|xp_\w+)/i',
+        ];
+
         return [
             'query' => [
                 'nullable',
-                'max:255',
-                'not_regex:/::char|::integer|::text|--|\/\*|\*\/|;\s*(DROP|DELETE|INSERT|UPDATE|ALTER|SELECT|CREATE)/i',
+                function ($attribute, $value, $fail) use ($queryRules) {
+                    if (is_string($value)) {
+                        $validator = Validator::make(
+                            [$attribute => $value],
+                            [$attribute => $queryRules]
+                        );
+
+                        if ($validator->fails()) {
+                            $fail($validator->errors()->first($attribute));
+                        }
+                    } elseif (is_array($value)) {
+                        foreach ($value as $index => $item) {
+                            $validator = Validator::make(
+                                [$attribute => $item],
+                                [$attribute => $queryRules]
+                            );
+
+                            if ($validator->fails()) {
+                                $fail("query[{$index}]: " . $validator->errors()->first($attribute));
+                            }
+                        }
+                    } else {
+                        $fail('The query must be a string or an array of strings.');
+                    }
+                },
             ],
             'source' => [
                 'nullable',
