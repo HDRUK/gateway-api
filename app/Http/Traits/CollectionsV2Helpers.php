@@ -47,7 +47,6 @@ trait CollectionsV2Helpers
                             'dur.project_title',
                             'dur.organisation_name'
                         ]);
-
                     });
             },
             'publications' => function ($query) use ($trimmed) {
@@ -68,18 +67,21 @@ trait CollectionsV2Helpers
                         'users.id',
                         'users.name',
                         'users.email',
-                        ]);
+                    ]);
                 });
             },
             'datasetVersions' => function ($query) use ($trimmed) {
-                $query->when($trimmed, function ($q) {
-                    $q->selectRaw('
-                    dataset_versions.id,dataset_versions.dataset_id,
-                    short_title as shortTitle,
-                    CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
-                    JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType
-                ');
-                });
+                $query->whereIn('dataset_versions.id', function ($sub) {
+                    $sub->selectRaw('MAX(dv.id)')
+                        ->from('dataset_versions as dv')
+                        ->join('collection_has_dataset_version as chdv', 'chdv.dataset_version_id', '=', 'dv.id')
+                        ->join('datasets as d', 'd.id', '=', 'dv.dataset_id')
+                        ->where('d.status', Dataset::STATUS_ACTIVE)
+                        ->whereNull('d.deleted_at')
+                        ->whereNull('chdv.deleted_at')
+                        ->groupBy('dv.dataset_id');
+                })
+                    ->orderBy('dataset_versions.dataset_id');
             },
             'team',
         ])
@@ -88,7 +90,7 @@ trait CollectionsV2Helpers
 
         if ($collection) {
             if ($collection->image_link && !preg_match('/^https?:\/\//', $collection->image_link)) {
-                $collection->image_link = Config::get('services.media.base_url') .  $collection->image_link;
+                $collection->image_link = Config::get('services.media.base_url') . $collection->image_link;
             }
 
             if ($collection->users) {
@@ -106,20 +108,17 @@ trait CollectionsV2Helpers
             }
 
             if ($collection->datasetVersions) {
-                $collection->datasetVersions->map(function (DatasetVersion $dv) {
-                    $dataset = Dataset::where('id', $dv->dataset_id)->first();
-                    if ($dataset->status === Dataset::STATUS_ACTIVE) {
-                        return $dv;
-                    } else {
-                        return null;
-                    }
-                });
+                $collection->setRelation(
+                    'datasetVersions',
+                    $collection->datasetVersions
+                        ->sortByDesc('id')
+                        ->unique(fn ($dv) => $dv->dataset_id)
+                        ->values()
+                );
+                $collection->dataset_versions_count = $collection->datasetVersions->count();
             }
         }
 
-        // teams.introduction, comes out with the chars decoded.. collection.description, does not...
-        // I debugged it to high hell and got Big L involved and we assume there be dragons...
-        // so this is a lil hotfix..
         $collection->description = htmlspecialchars_decode($collection->description);
 
         return $collection;
