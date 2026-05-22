@@ -120,7 +120,7 @@ trait CollectionsV2Helpers
                     'datasetVersions',
                     $collection->datasetVersions
                         ->sortByDesc('id')
-                        ->unique(fn ($dv) => $dv->dataset_id)
+                        ->unique(fn (DatasetVersion $dv) => $dv->dataset_id)
                         ->values()
                 );
             }
