@@ -71,16 +71,24 @@ trait CollectionsV2Helpers
                 });
             },
             'datasetVersions' => function ($query) use ($trimmed) {
-                $query->whereIn('dataset_versions.id', function ($sub) {
-                    $sub->selectRaw('MAX(dv.id)')
-                        ->from('dataset_versions as dv')
-                        ->join('collection_has_dataset_version as chdv', 'chdv.dataset_version_id', '=', 'dv.id')
-                        ->join('datasets as d', 'd.id', '=', 'dv.dataset_id')
-                        ->where('d.status', Dataset::STATUS_ACTIVE)
-                        ->whereNull('d.deleted_at')
-                        ->whereNull('chdv.deleted_at')
-                        ->groupBy('dv.dataset_id');
+                $query->when($trimmed, function ($q) {
+                    $q->selectRaw('
+                        dataset_versions.id,dataset_versions.dataset_id,
+                        short_title as shortTitle,
+                        CONVERT(JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.populationSize")), SIGNED) as populationSize,
+                        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(dataset_versions.metadata), "$.metadata.summary.datasetType")) as datasetType
+                    ');
                 })
+                    ->whereIn('dataset_versions.id', function ($sub) {
+                        $sub->selectRaw('MAX(dv.id)')
+                            ->from('dataset_versions as dv')
+                            ->join('collection_has_dataset_version as chdv', 'chdv.dataset_version_id', '=', 'dv.id')
+                            ->join('datasets as d', 'd.id', '=', 'dv.dataset_id')
+                            ->where('d.status', Dataset::STATUS_ACTIVE)
+                            ->whereNull('d.deleted_at')
+                            ->whereNull('chdv.deleted_at')
+                            ->groupBy('dv.dataset_id');
+                    })
                     ->orderBy('dataset_versions.dataset_id');
             },
             'team',
@@ -115,7 +123,6 @@ trait CollectionsV2Helpers
                         ->unique(fn ($dv) => $dv->dataset_id)
                         ->values()
                 );
-                $collection->dataset_versions_count = $collection->datasetVersions->count();
             }
         }
 
