@@ -27,6 +27,7 @@ class PublicationSearch extends BaseFormRequest
             'query' => [
                 'nullable',
                 'max:255',
+                'not_regex:/::char|::integer|::text|--|\/\*|\*\/|;\s*(DROP|DELETE|INSERT|UPDATE|ALTER|SELECT|CREATE)/i',
             ],
             'source' => [
                 'nullable',
