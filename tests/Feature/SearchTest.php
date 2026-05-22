@@ -750,6 +750,18 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_id'] === '1');
     }
 
+    public function test_publications_search_returns_400_for_sql_injection_payload(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_SEARCH . '/publications',
+            ['query' => "55224RsYHR%27::char(10)::integer--"],
+            ['Accept' => 'application/json']
+        );
+
+        $response->assertStatus(400);
+    }
+
     /**
      * Search using a query with success
      *
@@ -1000,6 +1012,7 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
+
         $this->assertTrue($response['data'][0]['paper_title'] === 'DOI test publication');
     }
 
