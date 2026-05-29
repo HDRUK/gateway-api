@@ -2355,7 +2355,7 @@ class EmailTemplateSeeder extends Seeder
                                             </mj-text>
 
                                             <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
-                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration. Summary of the syncronisations is below.
+                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration [[INTEGRATION_ID]]. Summary of the syncronisations is below.
                                             </mj-text>
 
                                             <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
@@ -2428,7 +2428,7 @@ class EmailTemplateSeeder extends Seeder
                                             </mj-text>
 
                                             <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
-                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration. Summary of the syncronisations is below.
+                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration [[INTEGRATION_ID]]. Summary of the syncronisations is below.
                                             </mj-text>
 
                                             <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">

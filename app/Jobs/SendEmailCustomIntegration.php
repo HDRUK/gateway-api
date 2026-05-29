@@ -5,8 +5,6 @@ namespace App\Jobs;
 use App\Models\EmailTemplate;
 use App\Models\Federation;
 use App\Models\FederationJobRun;
-use App\Models\Role;
-use App\Models\User;
 use App\Traits\GatewayMetadataIngestionTrait;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -89,6 +87,7 @@ class SendEmailCustomIntegration implements ShouldQueue
                 '[[INTEGRATION_SUCCESS]]' => $integrationSuccessList,
                 '[[INTEGRATION_ERRORS]]' => $integrationErrorsList,
                 '[[USER_LIST]]' => $checkUser ? '' : $this->getListOfUsers($teamId),
+                '[[INTEGRATION_ID]]' => $federation['id'],
             ];
 
             SendEmailJob::dispatch($to, $template, $replacements);
@@ -140,33 +139,41 @@ class SendEmailCustomIntegration implements ShouldQueue
 
     public function checkUserPerms(int $userId, int $teamId): bool
     {
-        return Role::whereIn('name', ['custodian.team.admin', 'developer'])
-            ->whereIn('id', function ($query) use ($userId, $teamId) {
-                $query->select('tuhr.role_id')
-                    ->from('team_user_has_roles as tuhr')
-                    ->join('team_has_users as thu', 'thu.id', '=', 'tuhr.team_has_user_id')
-                    ->where('thu.team_id', $teamId)
-                    ->where('thu.user_id', $userId);
-            })
-            ->exists();
+        return (bool) \DB::selectOne("
+            SELECT EXISTS (
+                SELECT 1
+                FROM roles r
+                INNER JOIN team_user_has_roles tuhr ON tuhr.role_id = r.id
+                INNER JOIN team_has_users thu ON thu.id = tuhr.team_has_user_id
+                WHERE r.name IN ('custodian.team.admin', 'developer')
+                AND thu.team_id = :team_id
+                AND thu.user_id = :user_id
+            ) AS result
+        ", [
+            'team_id' => $teamId,
+            'user_id' => $userId,
+        ])->result;
     }
 
     public function getListOfUsers(int $teamId): string
     {
-        $users = User::whereIn('id', function ($query) use ($teamId) {
-            $query->select('thu.user_id')
-                ->from('team_has_users as thu')
-                ->join('team_user_has_roles as tuhr', 'tuhr.team_has_user_id', '=', 'thu.id')
-                ->join('roles as r', 'r.id', '=', 'tuhr.role_id')
-                ->where('thu.team_id', $teamId)
-                ->whereIn('r.name', ['custodian.team.admin', 'developer']);
-        })->pluck('name');
+        $users = \DB::select("
+            SELECT u.name
+            FROM users u
+            INNER JOIN team_has_users thu ON thu.user_id = u.id
+            INNER JOIN team_user_has_roles tuhr ON tuhr.team_has_user_id = thu.id
+            INNER JOIN roles r ON r.id = tuhr.role_id
+            WHERE thu.team_id = :team_id
+            AND r.name IN ('custodian.team.admin', 'developer')
+        ", [
+            'team_id' => $teamId,
+        ]);
 
-        if ($users->isEmpty()) {
+        if (empty($users)) {
             return '';
         }
 
-        return '<ul>' . $users->map(fn ($name) => "<li>{$name}</li>")->implode('') . '</ul>';
+        return '<ul>' . collect($users)->map(fn ($user) => "<li>{$user->name}</li>")->implode('') . '</ul>';
     }
 
     public function getUniquePid()
