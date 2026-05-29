@@ -304,7 +304,9 @@ class ProcessFederationJobTest extends TestCase
             collect(['new-pid' => ['persistentId' => 'new-pid', 'version' => '1.0']]),
             $federation,
             $mockGsms,
-            $mockGmi
+            $mockGmi,
+            'job_uuid',
+            1
         );
 
         Log::shouldHaveReceived('error')
