@@ -21,7 +21,21 @@ cmd_button(
     name="gateway-api-run-tests",
     text="Run Pest",
     resource="gateway-api",
-    argv=["kubectl", "exec", "-it", "gateway-api", "--", "composer", "run", "pest"],
+    argv=[
+        "sh", "-c",
+        "kubectl exec -it $(kubectl get pod -l app=gateway-api -o jsonpath='{.items[0].metadata.name}') -- composer run pest"
+    ],
+    icon_name="search_off",
+)
+
+cmd_button(
+    name="gateway-api-run-unit-tests",
+    text="Run PHPUnit",
+    resource="gateway-api",
+    argv=[
+        "sh", "-c",
+        "kubectl exec -it $(kubectl get pod -l app=gateway-api -o jsonpath='{.items[0].metadata.name}') -- php -d memory_limit=2048M ./vendor/bin/phpunit --testdox"
+    ],
     icon_name="search_off",
 )
 
