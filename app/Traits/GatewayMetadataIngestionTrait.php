@@ -85,7 +85,7 @@ trait GatewayMetadataIngestionTrait
         Collection $remoteItems,
         GatewayMetadataIngestionService $gmi,
         Federation $federation,
-        string $jobUuid,
+        ?string $jobUuid,
         int $attempts
     ): int {
         $this->log('info', 'testing REMOTE collection for LOCAL archive');
@@ -216,7 +216,7 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
-        string $jobUuid,
+        ?string $jobUuid,
         int $attempts
     ): int {
         $updatedCount = 0;
