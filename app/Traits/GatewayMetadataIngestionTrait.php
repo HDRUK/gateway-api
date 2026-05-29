@@ -114,8 +114,6 @@ trait GatewayMetadataIngestionTrait
                 $ds->status = Dataset::STATUS_ARCHIVED;
                 $ds->save();
                 $this->log('info', "dataset {$dsId} archived");
-                // i dont know if we need;
-                // $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'ARCHIVED', 1, $attempts);
 
                 unset($ds);
                 $archivedCount++;
