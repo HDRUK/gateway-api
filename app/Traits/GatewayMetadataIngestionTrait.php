@@ -131,7 +131,7 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
-        string $jobUuid,
+        ?string $jobUuid,
         int $attempts
     ): int {
         $createdCount = 0;

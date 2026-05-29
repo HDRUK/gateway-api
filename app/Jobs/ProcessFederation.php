@@ -53,7 +53,7 @@ class ProcessFederation implements ShouldQueue
      */
     public function handle(): void
     {
-        $jobUuid = $this->job->getJobId() ?? null;
+        $jobUuid = $this->job?->getJobId() ?? null;
         $attempts = $this->attempts();
 
         $this->federation->update(['is_running' => true]);
