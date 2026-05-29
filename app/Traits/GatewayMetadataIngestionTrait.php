@@ -223,7 +223,6 @@ trait GatewayMetadataIngestionTrait
     ): int {
         $updatedCount = 0;
         foreach ($remoteItems as $pid => $data) {
-            \Log::info($pid);
             if ($localItems->has($pid)) {
                 try {
                     $local = $localItems[$pid];
