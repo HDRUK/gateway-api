@@ -2333,5 +2333,155 @@ class EmailTemplateSeeder extends Seeder
                     }',
             ]
         );
+
+        EmailTemplate::create(
+            [
+                'identifier' => 'integration.job.fails.teamadmin_developer',
+                'subject' => 'Gateway Integration Error',
+                'body' => '<mjml>
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('An automation error occured for an integration on the Gateway for [[TEAM_NAME]]') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Dear [[USER_FIRSTNAME]],
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration. Summary of the syncronisations is below.
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                To review or edit the integration, click the link below or visit your account on the Gateway
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[INTEGRATION_LIST_URL]]" padding="0px">
+                                            View integrations
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Errors:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_ERRORS]]
+                                            </mj-text>
+
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Success:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_SUCCESS]]
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                </mj-wrapper>
+                                
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
+            ]
+        );
+
+        EmailTemplate::create(
+            [
+                'identifier' => 'integration.job.fails.no_teamadmin_developer',
+                'subject' => 'Gateway Integration Error',
+                'body' => '<mjml>
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('An automation error occured for an integration on the Gateway for [[TEAM_NAME]]') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Dear [[USER_FIRSTNAME]],
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration. Summary of the syncronisations is below.
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                To review or edit the integration, contact your Team Administrator(s) or Developer(s):
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[USER_LIST]]
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[INTEGRATION_LIST_URL]]" padding="0px">
+                                            View integrations
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Errors:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_ERRORS]]
+                                            </mj-text>
+
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Success:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_SUCCESS]]
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                </mj-wrapper>
+                                
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
+            ]
+        );
     }
 }

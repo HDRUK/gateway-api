@@ -165,6 +165,51 @@ class MetadataManagementController
     }
 
     /**
+     * Finds the matching data model schema for a given dataset by querying the TRASER service.
+     *
+     * Sends the dataset JSON to the TRASER /find endpoint with error reporting enabled,
+     * returning an array of schema matches with validation errors for each schema version.
+     *
+     * @param  string  &$dataset  The dataset JSON string to evaluate against known schemas.
+     *
+     * @return array{
+     *     message: array<int, array{
+     *         name: string,
+     *         version: string,
+     *         matches: bool,
+     *         errors: array<int, array{
+     *             keyword: string,
+     *             message: string,
+     *             schemaPath: string,
+     *             instancePath: string,
+     *             params: array<string, string>
+     *         }>
+     *     }>
+     * }|null
+     *
+     * @throws MMCException If the HTTP request to the TRASER service fails.
+     */
+    public function findDataModel(string &$dataset)
+    {
+        $loggingContext = $this->getLoggingContext(\request());
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        try {
+            $urlString = config('services.traser.url') . '/find?with_errors=1';
+
+            $response = Http::withBody(
+                $dataset,
+                'application/json'
+            )->post($urlString);
+
+            return $response->json();
+        } catch (Exception $e) {
+            \Log::info($e->getMessage(), $loggingContext);
+            throw new MMCException($e->getMessage());
+        }
+    }
+
+    /**
      * Creates an instance of a dataset record within the database
      *
      * @param array $input The array object that makes up the metadata

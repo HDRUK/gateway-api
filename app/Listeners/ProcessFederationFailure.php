@@ -4,6 +4,8 @@ namespace App\Listeners;
 
 use App\Events\FederationProcessingFailed;
 
+// use App\Jobs\SendEmailCustomIntegration;
+
 class ProcessFederationFailure
 {
     /**
@@ -11,11 +13,18 @@ class ProcessFederationFailure
      */
     public function handle(FederationProcessingFailed $event): void
     {
+        $federationId = $event->federation->id;
+        $jobUuid      = $event->jobUuid;
+
         $event->federation->update(['is_running' => 0]);
 
+        // we need another template
+        // SendEmailCustomIntegration::dispatch($federationId, $jobUuid);
+
         \Log::error('Federation processing failed', [
-            'federation_id' => $event->federation->id,
+            'federation_id' => $federationId,
             'error'         => $event->exception->getMessage(),
+            'job_uuid'      => $jobUuid,
         ]);
     }
 }

@@ -6,12 +6,14 @@
 # Load Extensions
 load("ext://uibutton", "cmd_button", "location", "text_input")
 
+update_settings(suppress_unused_image_warnings=["hdruk/mysql"])
+
 # Configure extra UI elements
 cmd_button(
     name="gateway-api-config-clear",
     text="Config clear",
     resource="gateway-api",
-    argv=["php", "artisan", "config:clear"],
+    argv=["sh", "-c", "php artisan optimize:clear && php artisan config:clear && php artisan cache:clear"],
     icon_name="refresh",
 )
 
@@ -65,10 +67,6 @@ cmd_button(
         "-e",
         'tell current session of newWindow',
         "-e",
-        'write text "n"',
-        "-e",
-        'delay 1',
-        "-e",
         'write text "kubectl exec -it deploy/gateway-api -- bash"',
         "-e",
         'end tell',
@@ -117,6 +115,9 @@ if cfg.get("mysqlEnabled"):
 
 if cfg.get("mailhogEnabled"):
     include(cfg.get("mailhogRoot") + "/Tiltfile")
+
+if cfg.get("datasetServiceEnabled"):
+    include(cfg.get("datasetServiceRoot") + "/Tiltfile")
 
 ## Implements a watcher for local file changes to automatically
 ## fix linting issues in real-time, locally.
