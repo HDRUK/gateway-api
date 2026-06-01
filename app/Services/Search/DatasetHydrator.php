@@ -5,6 +5,7 @@ namespace App\Services\Search;
 use App\Models\Dataset;
 use App\Models\DataAccessTemplate;
 use App\Models\Team;
+use App\Services\DatasetService;
 use Illuminate\Support\Arr;
 use Config;
 
@@ -62,7 +63,14 @@ class DatasetHydrator
                 continue;
             }
 
-            $metadata = $latestVersion->metadata['metadata'] ?? null;
+            // Delta rows (patch !== null) store no metadata — reconstruct from the nearest snapshot.
+            if ($latestVersion->patch !== null) {
+                $envelope = app(DatasetService::class)->getVersion($model, $latestVersion->version);
+                $metadata = $envelope['metadata'] ?? null;
+            } else {
+                $metadata = $latestVersion->metadata['metadata'] ?? null;
+            }
+
             if (!$metadata) {
                 \Log::warning('Missing metadata structure for dataset version id=' . $latestVersion->id . ', dataset id=' . $model->id);
                 unset($hits[$i]);

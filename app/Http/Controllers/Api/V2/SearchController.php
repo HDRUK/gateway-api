@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api\V2;
 
 use Config;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Search\Search;
 use App\Services\SearchAggregator;
 use Laravel\Pennant\Feature;
 
@@ -12,10 +13,9 @@ class SearchController extends Controller
 {
     public function __construct(protected SearchAggregator $aggregator)
     {
-        // Nothing, just need the DI.
     }
 
-    public function search(Request $request)
+    public function search(Search $request): JsonResponse
     {
         if (!Feature::active('V2/Search/Aggregation')) {
             return response()->json([
@@ -23,9 +23,22 @@ class SearchController extends Controller
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         }
 
-        $input = $request->all();
-        $results = $this->aggregator->search((isset($input['query']) ?? ''));
+        $type = $request->input('type');
 
-        return response()->json($results);
+        if (!$type) {
+            return response()->json(['message' => "'type' is required"], 400);
+        }
+
+        $results = $this->aggregator->search(
+            query: $request->input('query', ''),
+            type: $type,
+            params: $request->except(['query', 'type']),
+        );
+
+        $status = $results['message'] === 'success'
+            ? Config::get('statuscodes.STATUS_OK.code')
+            : 404;
+
+        return response()->json($results, $status);
     }
 }

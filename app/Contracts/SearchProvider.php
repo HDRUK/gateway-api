@@ -8,6 +8,11 @@ interface SearchProvider
     public function getShortName(): string;
     public function getProviderLogo(): string|null;
     public function getProviderBlurb(): string|null;
-    public function getSearchURI(): string;
-    public function search(string $query): array;
+    public function getSearchURI(string $type): string;
+    public function getSupportedTypes(): array;
+
+    /**
+     * @return array{hits: array, total: int, aggregations: array, ids: array}
+     */
+    public function search(string $query, string $type, array $params = []): array;
 }
