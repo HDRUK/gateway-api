@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - dev
+      - feat/GAT-8977
 
 jobs:
   build:
