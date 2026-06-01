@@ -33,6 +33,7 @@ class GatewayMetadataIngestion extends Command
 
         // First pull all active federations
         $federations = $gmi->getActiveFederations();
+
         foreach ($federations as $fed) {
             Log::info("Processing federation: {$fed['endpoint_baseurl']} (ID: {$fed['id']})");
             // Spawn a job to handle each active federation
