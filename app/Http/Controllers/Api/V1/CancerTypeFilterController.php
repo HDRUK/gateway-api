@@ -68,10 +68,10 @@ class CancerTypeFilterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $parentId = $request->has('parent_id') ? (int) $request->parent_id : null;
             $level = $request->has('level') ? (int) $request->level : null;
             $result = $this->cancerTypeFilterService->list($parentId, $level);
@@ -154,10 +154,10 @@ class CancerTypeFilterController extends Controller
      */
     public function show(Request $request, string $filter_id): JsonResponse
     {
-        try {
-            $input = request()->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $filter = $this->cancerTypeFilterService->findByFilterId($filter_id);
             if (!$filter) {
                 throw new NotFoundException('Cancer type filter not found');

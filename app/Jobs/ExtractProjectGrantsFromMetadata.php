@@ -3,7 +3,12 @@
 namespace App\Jobs;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Publication;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\ProjectGrant;
+use App\Models\Tool;
+use App\Services\DatasetService;
 use App\Models\ProjectGrantVersionHasDataset;
 use App\Models\ProjectGrantVersionHasPublication;
 use App\Models\ProjectGrantVersionHasTool;
@@ -15,7 +20,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\DB;
 use App\Http\Traits\LoggingContext;
 
 class ExtractProjectGrantsFromMetadata implements ShouldQueue
@@ -44,31 +48,30 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(DatasetService $datasetService): void
     {
         if (!$this->datasetVersionId) {
             return;
         }
 
-        $this->projectGrant($this->datasetVersionId);
+        $this->projectGrant($this->datasetVersionId, $datasetService);
     }
 
     /**
      * Extract project grant from dataset version metadata (aligned with ExtractPublicationsFromMetadata flow).
      */
-    public function projectGrant(int $datasetVersionId): void
+    public function projectGrant(int $datasetVersionId, DatasetService $datasetService): void
     {
-        $metadata = \DB::table('dataset_versions')
-            ->where('id', $datasetVersionId)
-            ->select('id', 'dataset_id', 'version', 'metadata', DB::raw('JSON_TYPE(metadata) as metadata_type'))
+        $datasetVersion = DatasetVersion::where('id', $datasetVersionId)
+            ->select(['id', 'dataset_id', 'version'])
             ->first();
 
-        if (is_null($metadata)) {
-            \Log::warning('ExtractProjectGrantsFromMetadata :: Metadata not found.', $this->loggingContext);
+        if (is_null($datasetVersion)) {
+            \Log::warning('ExtractProjectGrantsFromMetadata :: Dataset version not found.', $this->loggingContext);
             return;
         }
 
-        $dataset = Dataset::where('id', $metadata->dataset_id)->select(['id', 'pid', 'user_id', 'team_id'])->first();
+        $dataset = Dataset::where('id', $datasetVersion->dataset_id)->select(['id', 'pid', 'user_id', 'team_id'])->first();
         if (is_null($dataset)) {
             \Log::warning('ExtractProjectGrantsFromMetadata :: Dataset not found.', $this->loggingContext);
             return;
@@ -89,24 +92,15 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
         $datasetUserId = (int) $dataset->user_id;
         $datasetTeamId = (int) $dataset->team_id;
 
-        $data = null;
-        if ($metadata->metadata_type === 'OBJECT') {
-            $data = json_decode($metadata->metadata, true);
-        }
-
-        if ($metadata->metadata_type === 'STRING') {
-            $data = json_decode(json_decode($metadata->metadata), true);
-        }
-
-        if (count($data ?: []) === 0) {
+        // Reconstruct full metadata for this version (delta patches are not self-contained).
+        $data = $datasetService->getVersion($dataset, (int) $datasetVersion->version);
+        if (empty($data)) {
+            \Log::warning('ExtractProjectGrantsFromMetadata :: Metadata not found.', $this->loggingContext);
             return;
         }
 
-        // Project is under `_extension.project` in the dataset metadata examples.
+        // Project is under `_extension.project` in the dataset metadata envelope.
         $project = data_get($data, 'metadata._extension.project');
-        if (empty($project)) {
-            $project = data_get($data, '_extension.project');
-        }
         if (empty($project) || !is_array($project)) {
             return;
         }
@@ -144,7 +138,7 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
         $projectGrantVersion = ProjectGrantVersion::updateOrCreate(
             [
                 'project_grant_id' => $projectGrant->id,
-                'version' => (int) $metadata->version,
+                'version' => (int) $datasetVersion->version,
             ],
             [
                 'project_grant_name' => $projectGrantName,
@@ -168,11 +162,15 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
         ProjectGrantVersionHasTool::where('project_grant_version_id', $projectGrantVersion->id)->delete();
 
         // Publications linked to this dataset version
-        $publicationIds = DB::table('publication_has_dataset_version')
-            ->join('publications', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
-            ->where('publication_has_dataset_version.dataset_version_id', $datasetVersionId)
-            ->where('publications.status', 'ACTIVE')
-            ->pluck('publication_has_dataset_version.publication_id')
+        $publicationIds = Publication::query()
+            ->where('status', Publication::STATUS_ACTIVE)
+            ->whereIn(
+                'id',
+                PublicationHasDatasetVersion::query()
+                    ->where('dataset_version_id', $datasetVersionId)
+                    ->select('publication_id')
+            )
+            ->pluck('id')
             ->unique()
             ->values()
             ->all();
@@ -185,11 +183,9 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
         }
 
         // Tools linked to this dataset version
-        $toolIds = DB::table('dataset_version_has_tool')
-            ->join('tools', 'tools.id', '=', 'dataset_version_has_tool.tool_id')
-            ->where('dataset_version_has_tool.dataset_version_id', $datasetVersionId)
-            ->where('tools.status', 'ACTIVE')
-            ->pluck('dataset_version_has_tool.tool_id')
+        $toolIds = $datasetVersion->tools()
+            ->where('status', Tool::STATUS_ACTIVE)
+            ->pluck('id')
             ->unique()
             ->values()
             ->all();
