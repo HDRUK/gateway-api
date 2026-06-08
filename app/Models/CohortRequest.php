@@ -41,7 +41,18 @@ class CohortRequest extends Model
 
     protected $casts = [
         'accept_declaration' => 'boolean',
+        'request_expire_at' => 'datetime',
+        'nhse_sde_requested_at' => 'datetime',
+        'nhse_sde_self_declared_approved_at' => 'datetime',
+        'nhse_sde_request_expire_at' => 'datetime',
+        'nhse_sde_updated_at' => 'datetime',
     ];
+
+    public const REQUEST_APPROVED = 'APPROVED';
+    public const REQUEST_IN_PROCESS = 'IN PROCESS';
+    public const REQUEST_APPROVAL_REQUESTED = 'APPROVAL REQUESTED';
+    public const REQUEST_PENDING = 'PENDING';
+    public const REQUEST_EXPIRED = 'EXPIRED';
 
     public function user(): BelongsTo
     {
