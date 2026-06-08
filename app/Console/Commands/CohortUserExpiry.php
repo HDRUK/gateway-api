@@ -55,6 +55,11 @@ class CohortUserExpiry extends Command
         $trueExpiryDate = $this->calculateTrueExpiry($r, $expiryField);
 
         if ($trueExpiryDate === null) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'CohortUserExpiry - found null expiry for CohortRequest ID ' . $r->id,
+            ]);
             return;
         }
 
