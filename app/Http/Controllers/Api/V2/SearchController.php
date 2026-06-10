@@ -32,7 +32,7 @@ class SearchController extends Controller
         }
 
         $query  = $request->input('query') ?? '';
-        $only   = $request->input('providers', []);
+        $only   = $request->input('providers') ?? [];
         $params = $request->except(['query', 'type', 'providers']);
 
         $immediateResults  = $this->aggregator->searchImmediate($query, $type, $params, $only);
