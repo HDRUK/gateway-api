@@ -11,9 +11,12 @@ use App\Context\PartnerContext;
 use App\Services\CancerTypeFilterService;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
+use App\Http\Traits\Responses;
 
 class CancerTypeFilterController extends Controller
 {
+    use Responses;
+
     public function __construct(
         private readonly CancerTypeFilterService $cancerTypeFilterService,
         private readonly PartnerContext $partnerContext
@@ -99,10 +102,7 @@ class CancerTypeFilterController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'status' => 'INTERNAL_SERVER_ERROR',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -175,10 +175,7 @@ class CancerTypeFilterController extends Controller
                 'data' => $resourceClass::make($filter)->resolve($request),
             ], 200);
         } catch (NotFoundException $e) {
-            return response()->json([
-                'status' => 'NOT_FOUND',
-                'message' => $e->getMessage(),
-            ], 404);
+            return $this->notFoundResponse($e->getMessage());
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),
@@ -187,10 +184,7 @@ class CancerTypeFilterController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'status' => 'INTERNAL_SERVER_ERROR',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse($e->getMessage());
         }
     }
 

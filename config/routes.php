@@ -301,15 +301,6 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'feature-flags.enabled',
-        'method' => 'get',
-        'path' => '/feature-flags/enabled',
-        'methodController' => 'FeatureController@enabled',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
-    ],
-    [
         'name' => 'features.me',
         'method' => 'get',
         'path' => '/features/me',
@@ -683,17 +674,6 @@ return [
     ],
     [
         'name' => 'teams',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/team_info',
-        'methodController' => 'TeamController@info',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'teams',
         'method' => 'post',
         'path' => '/teams',
         'methodController' => 'TeamController@store',
@@ -756,28 +736,6 @@ return [
         'middleware' => [
             'jwt.verify',
         ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'teams',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/cohort_discovery_datasets',
-        'methodController' => 'TeamController@datasetsCohortDiscovery',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'teams',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/team_datasets_summary',
-        'methodController' => 'TeamController@datasetsSummary',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
         'constraint' => [
             'teamId' => '[0-9]+',
         ],
@@ -2769,21 +2727,6 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
-    [
-        'name' => 'team.federation.run.now',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/federations/{federationId}/run',
-        'methodController' => 'FederationController@runNow',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,integrations.metadata',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'federationId' => '[0-9]+',
-        ],
-    ],
 
     // cohort_requests
     [
@@ -3496,19 +3439,19 @@ return [
     [
         'name' => 'project_grants.index',
         'method' => 'get',
-        'path' => 'project_grants',
+        'path' => '/project_grants',
         'methodController' => 'ProjectGrantController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
         'name' => 'project_grants.show',
         'method' => 'get',
-        'path' => 'project_grants/{id}',
+        'path' => '/project_grants/{id}',
         'methodController' => 'ProjectGrantController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => [],
         'constraint' => [
             'id' => '[0-9]+',
         ],

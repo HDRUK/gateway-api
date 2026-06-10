@@ -22,7 +22,6 @@ use App\Models\ProgrammingLanguage;
 use App\Models\ProgrammingPackage;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
-use App\Models\ProjectGrantVersion;
 use App\Models\Sector;
 use App\Models\Tag;
 use App\Models\Team;
@@ -161,60 +160,74 @@ trait IndexElastic
      */
     private function projectGrantsForDataset(int $datasetId): array
     {
-        $grantIds = \DB::table('project_grant_has_dataset')
-            ->where('dataset_id', $datasetId)
-            ->pluck('project_grant_id')
-            ->unique()
-            ->values()
-            ->all();
+        $rows = \DB::select(
+            '
+                SELECT
+                    pghd.project_grant_id,
+                    pgv.version,
+                    pgv.project_grant_name,
+                    pgv.lead_researcher,
+                    pgv.lead_research_institute,
+                    pgv.grant_numbers,
+                    pgv.project_grant_start_date,
+                    pgv.project_grant_end_date,
+                    pgv.project_grant_scope
+                FROM project_grant_has_dataset pghd
+                LEFT JOIN (
+                    SELECT
+                        pgv_inner.project_grant_id,
+                        pgv_inner.version,
+                        pgv_inner.project_grant_name,
+                        pgv_inner.lead_researcher,
+                        pgv_inner.lead_research_institute,
+                        pgv_inner.grant_numbers,
+                        pgv_inner.project_grant_start_date,
+                        pgv_inner.project_grant_end_date,
+                        pgv_inner.project_grant_scope
+                    FROM project_grant_versions pgv_inner
+                    INNER JOIN (
+                        SELECT project_grant_id, MAX(version) AS max_version
+                        FROM project_grant_versions
+                        WHERE deleted_at IS NULL
+                        GROUP BY project_grant_id
+                    ) latest
+                        ON latest.project_grant_id = pgv_inner.project_grant_id
+                        AND latest.max_version = pgv_inner.version
+                    WHERE pgv_inner.deleted_at IS NULL
+                ) pgv ON pgv.project_grant_id = pghd.project_grant_id
+                WHERE pghd.dataset_id = :dataset_id
+            ',
+            [
+                'dataset_id' => $datasetId,
+            ]
+        );
 
-        if (!count($grantIds)) {
+        if (!count($rows)) {
             return [];
         }
 
-        $latestVersionByGrant = ProjectGrantVersion::query()
-            ->select('project_grant_id', \DB::raw('MAX(version) as max_version'))
-            ->whereIn('project_grant_id', $grantIds)
-            ->groupBy('project_grant_id');
+        return array_values(array_map(function ($row) {
+            if ($row->version === null) {
+                return ['project_grant_id' => (int) $row->project_grant_id];
+            }
 
-        $versions = ProjectGrantVersion::query()
-            ->joinSub($latestVersionByGrant, 'latest', function ($join) {
-                $join
-                    ->on('latest.project_grant_id', '=', 'project_grant_versions.project_grant_id')
-                    ->on('latest.max_version', '=', 'project_grant_versions.version');
-            })
-            ->select([
-                'project_grant_versions.project_grant_id',
-                'project_grant_versions.version',
-                'project_grant_versions.project_grant_name',
-                'project_grant_versions.lead_researcher',
-                'project_grant_versions.lead_research_institute',
-                'project_grant_versions.grant_numbers',
-                'project_grant_versions.project_grant_start_date',
-                'project_grant_versions.project_grant_end_date',
-                'project_grant_versions.project_grant_scope',
-            ])
-            ->get()
-            ->keyBy('project_grant_id');
-
-        return array_values(array_map(function (int $grantId) use ($versions) {
-            $v = $versions->get($grantId);
-            if (!$v) {
-                return ['project_grant_id' => $grantId];
+            $grantNumbers = $row->grant_numbers;
+            if (is_string($grantNumbers)) {
+                $grantNumbers = json_decode($grantNumbers, true);
             }
 
             return [
-                'project_grant_id' => (int) $v->project_grant_id,
-                'version' => (int) $v->version,
-                'projectGrantName' => $v->project_grant_name,
-                'leadResearcher' => $v->lead_researcher,
-                'leadResearchInstitute' => $v->lead_research_institute,
-                'grantNumbers' => $v->grant_numbers,
-                'projectGrantStartDate' => $v->project_grant_start_date,
-                'projectGrantEndDate' => $v->project_grant_end_date,
-                'projectGrantScope' => $v->project_grant_scope,
+                'project_grant_id' => (int) $row->project_grant_id,
+                'version' => (int) $row->version,
+                'projectGrantName' => $row->project_grant_name,
+                'leadResearcher' => $row->lead_researcher,
+                'leadResearchInstitute' => $row->lead_research_institute,
+                'grantNumbers' => $grantNumbers,
+                'projectGrantStartDate' => $row->project_grant_start_date,
+                'projectGrantEndDate' => $row->project_grant_end_date,
+                'projectGrantScope' => $row->project_grant_scope,
             ];
-        }, $grantIds));
+        }, $rows));
     }
 
     /**
