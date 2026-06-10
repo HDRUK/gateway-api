@@ -37,6 +37,8 @@ class Search extends BaseFormRequest
             'view_type' => ['nullable', 'in:full,mini'],
             'per_page' => 'integer',
             'download' => 'boolean',
+            'providers' => ['nullable', 'array'],
+            'providers.*' => ['string'],
         ];
     }
 }

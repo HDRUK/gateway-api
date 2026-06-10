@@ -15,6 +15,9 @@ class SendEmailCustomIntegration implements ShouldQueue
     use Queueable;
     use GatewayMetadataIngestionTrait;
 
+    public $tries   = 3;
+    public $backoff = [10, 30, 60];
+
     private int $federationId;
     private ?string $jobUuid;
 
@@ -23,6 +26,7 @@ class SendEmailCustomIntegration implements ShouldQueue
      */
     public function __construct(int $federationId, ?string $jobUuid)
     {
+        $this->onQueue('high');
         $this->federationId = $federationId;
         $this->jobUuid = $jobUuid;
     }

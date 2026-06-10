@@ -1238,5 +1238,14 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search_agg_results.get',
+        'method' => 'get',
+        'path' => '/search/aggregation/results/{token}',
+        'methodController' => 'SearchController@searchResults',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
 ];

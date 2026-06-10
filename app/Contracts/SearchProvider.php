@@ -11,6 +11,8 @@ interface SearchProvider
     public function getSearchURI(string $type): string;
     public function getSupportedTypes(): array;
 
+    public function isDeferred(): bool;
+
     /**
      * @return array{hits: array, total: int, aggregations: array, ids: array}
      */

@@ -17,7 +17,8 @@ class SearchAggregatorTest extends TestCase
         string $shortName,
         array $supportedTypes,
         array $result = [],
-        bool $shouldReceiveSearch = true
+        bool $shouldReceiveSearch = true,
+        bool $deferred = false
     ): SearchProvider {
         $mock = Mockery::mock(SearchProvider::class);
         $mock->shouldReceive('getShortName')->andReturn($shortName)->byDefault();
@@ -25,6 +26,7 @@ class SearchAggregatorTest extends TestCase
         $mock->shouldReceive('getProviderLogo')->andReturn(null)->byDefault();
         $mock->shouldReceive('getProviderBlurb')->andReturn(null)->byDefault();
         $mock->shouldReceive('getSupportedTypes')->andReturn($supportedTypes)->byDefault();
+        $mock->shouldReceive('isDeferred')->andReturn($deferred)->byDefault();
 
         if ($shouldReceiveSearch) {
             $mock->shouldReceive('search')
@@ -203,5 +205,97 @@ class SearchAggregatorTest extends TestCase
         $this->assertArrayHasKey('ARDC', $result['data']['results']);
         $this->assertEquals(104, $result['data']['results']['HDRUK']['total']);
         $this->assertEquals(3, $result['data']['results']['ARDC']['total']);
+    }
+
+    // -------------------------------------------------------------------------
+    // searchImmediate + getDeferredProviders
+    // -------------------------------------------------------------------------
+
+    public function test_searchImmediate_excludes_deferred_providers(): void
+    {
+        $immediate = $this->makeProvider('IMMED', ['datasets'], ['total' => 5], true, false);
+        $deferred  = $this->makeProvider('DEFER', ['datasets'], [], false, true);
+        $deferred->shouldNotReceive('search');
+
+        $aggregator = new SearchAggregator([$immediate, $deferred]);
+        $results    = $aggregator->searchImmediate('asthma', 'datasets');
+
+        $this->assertArrayHasKey('IMMED', $results);
+        $this->assertArrayNotHasKey('DEFER', $results);
+        $this->assertEquals(5, $results['IMMED']['total']);
+    }
+
+    public function test_searchImmediate_returns_empty_when_all_providers_are_deferred(): void
+    {
+        $deferred = $this->makeProvider('DEFER', ['datasets'], [], false, true);
+
+        $aggregator = new SearchAggregator([$deferred]);
+        $results    = $aggregator->searchImmediate('asthma', 'datasets');
+
+        $this->assertEmpty($results);
+    }
+
+    public function test_getDeferredProviders_returns_only_deferred_providers_for_type(): void
+    {
+        $immediate     = $this->makeProvider('IMMED', ['datasets'], [], false, false);
+        $deferred      = $this->makeProvider('DEFER', ['datasets'], [], false, true);
+        $deferredOther = $this->makeProvider('DEFER2', ['tools'], [], false, true);
+
+        $aggregator = new SearchAggregator([$immediate, $deferred, $deferredOther]);
+        $providers  = $aggregator->getDeferredProviders('datasets');
+
+        $this->assertCount(1, $providers);
+        $this->assertEquals('DEFER', $providers[0]->getShortName());
+    }
+
+    public function test_getDeferredProviders_returns_empty_when_type_not_supported(): void
+    {
+        $deferred = $this->makeProvider('DEFER', ['datasets'], [], false, true);
+
+        $aggregator = new SearchAggregator([$deferred]);
+        $providers  = $aggregator->getDeferredProviders('tools');
+
+        $this->assertCount(0, $providers);
+    }
+
+    // -------------------------------------------------------------------------
+    // Provider filter ($only)
+    // -------------------------------------------------------------------------
+
+    public function test_searchImmediate_respects_only_filter(): void
+    {
+        $a = $this->makeProvider('AAA', ['datasets'], ['total' => 1]);
+        $b = $this->makeProvider('BBB', ['datasets'], ['total' => 2]);
+        $b->shouldNotReceive('search');
+
+        $aggregator = new SearchAggregator([$a, $b]);
+        $results    = $aggregator->searchImmediate('query', 'datasets', [], ['AAA']);
+
+        $this->assertArrayHasKey('AAA', $results);
+        $this->assertArrayNotHasKey('BBB', $results);
+    }
+
+    public function test_searchImmediate_returns_all_when_only_is_empty(): void
+    {
+        $a = $this->makeProvider('AAA', ['datasets'], ['total' => 1]);
+        $b = $this->makeProvider('BBB', ['datasets'], ['total' => 2]);
+
+        $aggregator = new SearchAggregator([$a, $b]);
+        $results    = $aggregator->searchImmediate('query', 'datasets', [], []);
+
+        $this->assertArrayHasKey('AAA', $results);
+        $this->assertArrayHasKey('BBB', $results);
+    }
+
+    public function test_getDeferredProviders_respects_only_filter(): void
+    {
+        $a = $this->makeProvider('AAA', ['datasets'], [], false, true);
+        $b = $this->makeProvider('BBB', ['datasets'], [], false, true);
+
+        $aggregator = new SearchAggregator([$a, $b]);
+        $providers  = $aggregator->getDeferredProviders('datasets', ['AAA']);
+
+        $this->assertCount(1, $providers);
+        $this->assertEquals('AAA', $providers[0]->getShortName());
     }
 }

@@ -40,7 +40,7 @@ class SearchAggregationTest extends TestCase
         // Flush the Pennant in-memory cache, then write an explicit stored value
         // so Feature::active() always sees a fresh result within each test.
         Feature::flushCache();
-        Feature::activate('V2/Search/Aggregation');
+        Feature::activate('V2_SearchAggregation');
 
         // Stub the ARDC external endpoint so it never hits the real network.
         Http::fake([
@@ -59,7 +59,7 @@ class SearchAggregationTest extends TestCase
     public function test_returns_404_when_feature_flag_is_inactive(): void
     {
         Feature::flushCache();
-        Feature::deactivate('V2/Search/Aggregation');
+        Feature::deactivate('V2_SearchAggregation');
 
         $response = $this->json('POST', self::TEST_URL, ['query' => 'asthma', 'type' => 'datasets'], $this->header);
 
@@ -154,7 +154,7 @@ class SearchAggregationTest extends TestCase
         ]);
     }
 
-    public function test_ardc_results_are_present_for_dataset_search(): void
+    public function test_ardc_is_deferred_for_dataset_search(): void
     {
         $response = $this->json(
             'POST',
@@ -164,12 +164,53 @@ class SearchAggregationTest extends TestCase
         );
 
         $response->assertStatus(200);
-        // ARDC is present and has the expected structure; exact hit count depends
-        // on the ARDC external stub registered in setUp.
+        $response->assertJsonPath('data.pending', ['ARDC']);
+        $response->assertJsonStructure(['data' => ['token', 'token_ttl']]);
+        $this->assertStringStartsWith('srch_', $response->json('data.token'));
+    }
+
+    public function test_search_results_returns_ardc_after_job_runs(): void
+    {
+        // Queue driver is sync in tests, so DeferredProviderSearch runs immediately
+        // on dispatch and writes ARDC results to cache before we poll.
+        $postResponse = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['query' => 'asthma', 'type' => 'datasets'],
+            $this->header
+        );
+
+        $token = $postResponse->json('data.token');
+        $this->assertNotNull($token);
+
+        $response = $this->json('GET', "/api/v2/search/aggregation/results/{$token}", [], $this->header);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.pending', []);
         $response->assertJsonStructure([
-            'data' => ['results' => ['ARDC' => ['hits', 'total', 'aggregations']]],
+            'data' => [
+                'results' => [
+                    'ARDC' => ['provider_logo', 'about', 'hits', 'total', 'aggregations', 'ids'],
+                ],
+            ],
         ]);
-        $this->assertIsArray($response->json('data.results.ARDC.hits'));
+    }
+
+    public function test_search_results_returns_404_for_unknown_token(): void
+    {
+        $response = $this->json('GET', '/api/v2/search/aggregation/results/srch_doesnotexist', [], $this->header);
+
+        $response->assertStatus(404);
+    }
+
+    public function test_search_results_returns_404_when_feature_flag_inactive(): void
+    {
+        Feature::flushCache();
+        Feature::deactivate('V2_SearchAggregation');
+
+        $response = $this->json('GET', '/api/v2/search/aggregation/results/srch_sometoken', [], $this->header);
+
+        $response->assertStatus(404);
     }
 
 }
