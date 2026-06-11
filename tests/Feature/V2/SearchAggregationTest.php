@@ -40,7 +40,7 @@ class SearchAggregationTest extends TestCase
         // Flush the Pennant in-memory cache, then write an explicit stored value
         // so Feature::active() always sees a fresh result within each test.
         Feature::flushCache();
-        Feature::activate('V2/Search/Aggregation');
+        Feature::activate('V2_SearchAggregation');
 
         // Stub the ARDC external endpoint so it never hits the real network.
         Http::fake([
@@ -59,7 +59,7 @@ class SearchAggregationTest extends TestCase
     public function test_returns_404_when_feature_flag_is_inactive(): void
     {
         Feature::flushCache();
-        Feature::deactivate('V2/Search/Aggregation');
+        Feature::deactivate('V2_SearchAggregation');
 
         $response = $this->json('POST', self::TEST_URL, ['query' => 'asthma', 'type' => 'datasets'], $this->header);
 

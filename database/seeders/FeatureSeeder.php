@@ -15,7 +15,7 @@ class FeatureSeeder extends Seeder
         'Widgets' => false,
         'RQuest' => true,
         'CohortDiscoveryService' => false,
-        'V2/Search/Aggregation' => false,
+        'V2_SearchAggregation' => false,
     ];
 
     public function run(): void
