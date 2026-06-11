@@ -17,7 +17,7 @@ class SearchController extends Controller
 
     public function search(Search $request): JsonResponse
     {
-        if (!Feature::active('V2/Search/Aggregation')) {
+        if (!Feature::active('V2_SearchAggregation')) {
             return response()->json([
                 'message' => 'Resource not found',
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
@@ -30,7 +30,7 @@ class SearchController extends Controller
         }
 
         $results = $this->aggregator->search(
-            query: $request->input('query', ''),
+            query: $request->input('query') ?? '',
             type: $type,
             params: $request->except(['query', 'type']),
         );
