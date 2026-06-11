@@ -133,22 +133,20 @@ class HDRUK implements SearchProvider
             return $direction === 'desc' ? $hits : array_reverse($hits);
         }
 
-        if ($direction === 'asc') {
-            usort($hits, fn ($a, $b) => $a['_source'][$field] <=> $b['_source'][$field]);
-        } else {
-            usort($hits, function ($a, $b) use ($field) {
-                $aVal = $a['_source'][$field] ?? null;
-                $bVal = $b['_source'][$field] ?? null;
+        usort($hits, function ($a, $b) use ($field, $direction) {
+            $aVal = $a['_source'][$field] ?? null;
+            $bVal = $b['_source'][$field] ?? null;
 
-                if (is_string($aVal) && strtotime($aVal) !== false) {
-                    return strtotime((string)$bVal) <=> strtotime((string)$aVal);
-                } elseif (is_string($aVal)) {
-                    return strtoupper((string)$bVal) <=> strtoupper((string)$aVal);
-                } else {
-                    return $bVal <=> $aVal;
-                }
-            });
-        }
+            if (is_string($aVal) && strtotime($aVal) !== false) {
+                $cmp = strtotime((string)$aVal) <=> strtotime((string)$bVal);
+            } elseif (is_string($aVal)) {
+                $cmp = strtoupper((string)$aVal) <=> strtoupper((string)$bVal);
+            } else {
+                $cmp = $aVal <=> $bVal;
+            }
+
+            return $direction === 'asc' ? $cmp : -$cmp;
+        });
 
         return $hits;
     }
