@@ -39,6 +39,7 @@ class FilterSeeder extends Seeder
             'accessService',
             'sampleAvailability',
             'projectGrantNames',
+            'dataSource',
         ];
 
         $this->seed_filter("dataset", $filters);
