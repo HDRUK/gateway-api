@@ -12,9 +12,12 @@ use App\Context\PartnerContext;
 use App\Services\ProjectGrantService;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
+use App\Http\Traits\Responses;
 
 class ProjectGrantController extends Controller
 {
+    use Responses;
+
     public function __construct(
         private readonly ProjectGrantService $projectGrantService,
         private readonly PartnerContext $partnerContext
@@ -176,6 +179,8 @@ class ProjectGrantController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $resourceClass::make($projectGrant)->resolve($request),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return $this->notFoundResponse($e->getMessage());
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

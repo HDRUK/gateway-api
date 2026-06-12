@@ -61,11 +61,48 @@ class CancerTypeFilterTest extends TestCase
         $this->assertSame('0_0_1', $response['data'][0]['children'][0]['filter_id']);
     }
 
+    public function test_show_returns_filter_with_children(): void
+    {
+        $root = CancerTypeFilter::create([
+            'filter_id' => '88_0',
+            'label' => 'Show Root',
+            'description' => 'Show root description',
+            'category' => 'filters',
+            'primary_group' => 'cancer-type',
+            'count' => '0',
+            'parent_id' => null,
+            'level' => 0,
+            'sort_order' => 0,
+        ]);
+
+        CancerTypeFilter::create([
+            'filter_id' => '88_0_1',
+            'label' => 'Show Child',
+            'description' => null,
+            'category' => 'filters',
+            'primary_group' => 'cancer-type',
+            'count' => '0',
+            'parent_id' => $root->id,
+            'level' => 1,
+            'sort_order' => 0,
+        ]);
+
+        $response = $this->json('GET', '/api/v1/cancer-type-filters/88_0', [], ['Accept' => 'application/json']);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.filter_id', '88_0');
+        $response->assertJsonPath('data.label', 'Show Root');
+        $this->assertCount(1, $response->json('data.children'));
+    }
+
     public function test_show_returns_404_for_unknown_filter_id(): void
     {
         $response = $this->json('GET', '/api/v1/cancer-type-filters/0_0_999', [], ['Accept' => 'application/json']);
         $response->assertStatus(404);
-        $response->assertJsonStructure(['status', 'message']);
+        $response->assertJson([
+            'message' => 'not found',
+            'data' => 'Cancer type filter not found',
+        ]);
     }
 
     public function test_index_can_filter_by_parent_id(): void
