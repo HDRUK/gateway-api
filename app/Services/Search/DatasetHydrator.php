@@ -52,6 +52,7 @@ class DatasetHydrator
         foreach ($hits as $i => $hit) {
             $model = $models[(int)$hit['_id']] ?? null;
             if (!$model) {
+                \Log::warning('No dataset found for search hit id=' . $hit['_id'] . ' — check search index / DB sync');
                 unset($hits[$i]);
                 continue;
             }

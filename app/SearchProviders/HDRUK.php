@@ -77,9 +77,12 @@ class HDRUK implements SearchProvider
         try {
             $filterConfig = self::FILTER_TYPE_MAP[$type] ?? ['type' => $type, 'enabledOnly' => false];
 
-            $input          = $params;
-            $input['query'] = $query;
-            $input['aggs']  = FilterCache::get($filterConfig['type'], $filterConfig['enabledOnly']);
+            $input         = $params;
+            $input['aggs'] = FilterCache::get($filterConfig['type'], $filterConfig['enabledOnly']);
+
+            if ($query !== '') {
+                $input['query'] = $query;
+            }
 
             $response = Http::post($this->getSearchURI($type), $input);
 
@@ -103,9 +106,10 @@ class HDRUK implements SearchProvider
             $aggs    = $body['aggregations'] ?? [];
 
             $hydrated = $this->hydrate($rawHits, $type, $params['view_type'] ?? 'full');
+            $sorted   = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
 
             return [
-                'hits'         => $hydrated,
+                'hits'         => $sorted,
                 'total'        => $total,
                 'aggregations' => $aggs,
                 'ids'          => $ids,
@@ -120,6 +124,36 @@ class HDRUK implements SearchProvider
         }
 
         return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
+    }
+
+    private function sort(array $hits, string $type, string $sortParam): array
+    {
+        $parts     = explode(':', $sortParam, 2);
+        $rawField  = $parts[0];
+        $direction = $parts[1] ?? 'desc';
+
+        $field = ($type === 'datasets' && $rawField === 'title') ? 'shortTitle' : $rawField;
+
+        if ($field === 'score') {
+            return $direction === 'desc' ? $hits : array_reverse($hits);
+        }
+
+        usort($hits, function ($a, $b) use ($field, $direction) {
+            $aVal = $a['_source'][$field] ?? null;
+            $bVal = $b['_source'][$field] ?? null;
+
+            if (is_string($aVal) && strtotime($aVal) !== false) {
+                $cmp = strtotime((string)$aVal) <=> strtotime((string)$bVal);
+            } elseif (is_string($aVal)) {
+                $cmp = strtoupper((string)$aVal) <=> strtoupper((string)$bVal);
+            } else {
+                $cmp = $aVal <=> $bVal;
+            }
+
+            return $direction === 'asc' ? $cmp : -$cmp;
+        });
+
+        return $hits;
     }
 
     private function hydrate(array $hits, string $type, string $viewType = 'full'): array
