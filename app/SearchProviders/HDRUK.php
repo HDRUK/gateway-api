@@ -36,6 +36,11 @@ class HDRUK implements SearchProvider
         'data_custodians'         => ['type' => 'dataProvider',     'enabledOnly' => false],
     ];
 
+    public function isDeferred(): bool
+    {
+        return false;
+    }
+
     public function getFullName(): string
     {
         return 'Health Data Research UK';

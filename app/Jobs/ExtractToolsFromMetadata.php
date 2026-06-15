@@ -25,6 +25,9 @@ class ExtractToolsFromMetadata implements ShouldQueue
     use IndexElastic;
     use LoggingContext;
 
+    public $tries   = 3;
+    public $backoff = 30;
+
     private int $datasetVersionId = 0;
     private ?array $loggingContext = null;
 
@@ -33,6 +36,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
      */
     public function __construct(int $datasetVersionId)
     {
+        $this->onQueue('enrichment');
         $this->datasetVersionId = $datasetVersionId;
         $this->loggingContext = $this->getLoggingContext(\request());
         $this->loggingContext['method_name'] = class_basename($this);

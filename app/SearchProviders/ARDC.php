@@ -8,6 +8,11 @@ use App\Contracts\SearchProvider;
 
 class ARDC implements SearchProvider
 {
+    public function isDeferred(): bool
+    {
+        return true;
+    }
+
     public function getFullName(): string
     {
         return 'Australian Research Data Commons';
