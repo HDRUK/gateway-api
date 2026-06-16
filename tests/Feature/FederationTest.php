@@ -1312,10 +1312,9 @@ class FederationTest extends TestCase
                 'enabled' => 1,
                 'tested' => 1,
             ]);
-        var_dump($this->header);
+
         // run federation now
         $responseRunFederation = $this->get(self::TEST_URL_TEAM . '/' . $teamId . '/federations/' . $federationId . '/run', $this->header);
-        var_dump($responseRunFederation->decodeResponseJson());
         $responseRunFederation->assertStatus(200);
     }
 }
