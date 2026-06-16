@@ -1,0 +1,232 @@
+{
+    "gwdmVersion": "2.1",
+    "metadata": {
+        "required": {
+            "gatewayId": "087654b3-2c0a-4b32-9c2e-1234567890b4",
+            "gatewayPid": "087654b3-2c0a-4b32-9c2e-1234567890b4",
+            "issued": "2015-05-01T00:00:00Z",
+            "modified": "2024-02-01T00:00:00Z",
+            "version": "1.0.0",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://www.endocrineoncology.org/datasets/087654b3-2c0a-4b32-9c2e-1234567890b4"
+                }
+            ]
+        },
+        "summary": {
+            "title": "Thyroid Cancer Genomic and Follow-up Cohort",
+            "abstract": "Registry data tracking recurrence and genomic markers in papillary thyroid carcinoma post-thyroidectomy and radioiodine ablation.",
+            "dataCustodian": {
+                "identifier": "https://ror.org/088888m77",
+                "name": "Endocrine Oncology Group",
+                "logo": "https://www.endocrineoncology.org/brand.png",
+                "contactPoint": [
+                    "data@endocrineoncology.org"
+                ],
+                "description": "https://www.endocrineoncology.org/about"
+            },
+            "funders": "Thyroid Cancer Trust\nMedical Research Council",
+            "populationSize": 3120,
+            "keywords": [
+                "Thyroid",
+                "Cancer",
+                "Papillary",
+                "Genomics",
+                "Radioiodine"
+            ],
+            "doiName": "10.1300/data.99",
+            "contactPoint": "registry@endocrineoncology.org",
+            "datasetAliases": [
+                "PTC Genomic Cohort"
+            ]
+        },
+        "documentation": {
+            "description": "Registry data tracking recurrence and genomic markers in papillary thyroid carcinoma post-thyroidectomy and radioiodine ablation. This is a synthetic description generated for testing purposes.",
+            "inPipeline": "Available",
+            "associatedMedia": [
+                "https://endocrineoncology.org/docs/ptc_registry.pdf"
+            ]
+        },
+        "coverage": {
+            "typicalAgeRangeMin": 20,
+            "typicalAgeRangeMax": 80,
+            "datasetCompleteness": "https://endocrineoncology.org/thyroid/completeness"
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Biannual",
+                "startDate": "2015-05-01",
+                "timeLag": "3 months",
+                "endDate": "2023-11-30",
+                "distributionReleaseDate": "2024-02-01"
+            }
+        },
+        "observations": [
+            {
+                "observedNode": "Patients",
+                "measuredValue": 3120,
+                "observationDate": "2023-11-30",
+                "measuredProperty": "Count"
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 67
+                },
+                {
+                    "bin": "Asian or Asian British",
+                    "count": 19
+                },
+                {
+                    "bin": "White - Any other White background",
+                    "count": 6
+                },
+                {
+                    "bin": "Mixed",
+                    "count": 3
+                },
+                {
+                    "bin": "Not stated",
+                    "count": 3
+                }
+            ]
+        },
+        "projectGrants": [
+            {
+                "pid": "09_000",
+                "projectGrantName": "BRAF Mutations in Thyroid Cancer Recurrence",
+                "leadResearcher": "Dr. Thomas Silva",
+                "leadResearchInstitute": "Institute of Endocrine Sciences",
+                "grantNumber": "TCT-234, MRC-889",
+                "projectGrantStartDate": "2016-01-01",
+                "projectGrantEndDate": "2023-12-31",
+                "projectGrantScope": "Surgical pathology reports, sequencing data, and longitudinal thyroglobulin levels"
+            }
+        ],
+        "erd": "https://github.com/EndocrineOncology/ptc_db/blob/main/schema.png",
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Molecular_Pathology",
+                    "description": "Somatic mutation profiles from resected thyroid nodules",
+                    "columns": [
+                        {
+                            "name": "braf_status",
+                            "dataType": "list",
+                            "description": "list of identified BRAF point mutations",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "[V600E]",
+                                    "description": "Valine to glutamic acid substitution at codon 600",
+                                    "frequency": 1450
+                                }
+                            ]
+                        }
+                    ],
+                    "size": 3120
+                }
+            ],
+            "syntheticDataWebLink": [
+                "https://endocrineoncology.org/datasets/synthetic_ptc"
+            ]
+        },
+        "otherDataTypes": [
+            {
+                "title": "Neck Ultrasound Scans",
+                "description": "High-resolution sonograms of the thyroid bed and cervical lymph nodes",
+                "format": "DICOM"
+            }
+        ],
+        "enrichmentAndLinkage": {
+            "derivedFrom": [
+                {
+                    "title": "National Endocrine Tumor Audit",
+                    "pid": "NETA-04",
+                    "url": "https://healthdatagateway.org/en/dataset/772"
+                }
+            ],
+            "publicationUsingDataset": [
+                "10.1210/clinem/dgab112"
+            ],
+            "publicationAboutDataset": [
+                "10.1210/clinem/dgab113"
+            ],
+            "tools": [
+                "https://github.com/topics/thyroid-nodule-classification"
+            ],
+            "investigations": [
+                "EOG-505-Sub1"
+            ],
+            "similarToDatasets": [
+                {
+                    "url": "10.1210/clinem/dgaa099",
+                    "title": "Medullary Thyroid Carcinoma Database",
+                    "pid": "MTC-DB"
+                }
+            ]
+        },
+        "omics": {
+            "assay": "Targeted Gene Panel",
+            "platform": "Illumina MiSeq"
+        },
+        "icons": [
+            "Endocrinology",
+            "Genomics"
+        ],
+        "datasetFilters": [
+            {
+                "id": "0_0_0_14",
+                "label": "C73-C75 Thyroid and other endocrine glands",
+                "category": "icdOTopography",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_0_1_2_2",
+                "label": "8050/3 Papillary carcinoma, NOS",
+                "category": "805-808 Squamous cell neoplasms",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_1_5",
+                "label": "non-commercial use only",
+                "category": "accessType",
+                "primaryGroup": "access-type",
+                "description": "Limited to not-for-profit use.(DUO_0000046)"
+            },
+            {
+                "id": "0_2_3_2_0",
+                "label": "Patient-Reported Outcomes",
+                "category": "Longitudinal Follow up",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_2_0_4",
+                "label": "Rabbit",
+                "category": "Organism",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_4_3",
+                "label": "Mechanobiology",
+                "category": "Techniques",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_0_0_3",
+                "label": "Other Fluids - eg urine",
+                "category": "Material type",
+                "primaryGroup": "data-type",
+                "description": ""
+            }
+        ]
+    }
+}

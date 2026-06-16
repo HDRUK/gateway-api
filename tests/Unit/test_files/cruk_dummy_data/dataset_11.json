@@ -1,0 +1,232 @@
+{
+    "gwdmVersion": "2.1",
+    "metadata": {
+        "required": {
+            "gatewayId": "087654b3-2c0a-4b32-9c2e-1234567890b6",
+            "gatewayPid": "087654b3-2c0a-4b32-9c2e-1234567890b6",
+            "issued": "2020-06-01T00:00:00Z",
+            "modified": "2024-09-01T00:00:00Z",
+            "version": "1.0.0",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://www.myelomaresearch.org/datasets/087654b3-2c0a-4b32-9c2e-1234567890b6"
+                }
+            ]
+        },
+        "summary": {
+            "title": "Multiple Myeloma Bone Marrow Microenvironment Cohort",
+            "abstract": "Registry data tracking bone marrow microenvironment changes and measurable residual disease in patients undergoing CAR-T cell therapy for relapsed/refractory multiple myeloma.",
+            "dataCustodian": {
+                "identifier": "https://ror.org/033mm4455",
+                "name": "Myeloma Research Institute",
+                "logo": "https://www.myelomaresearch.org/assets/logo.png",
+                "contactPoint": [
+                    "data@myelomaresearch.org"
+                ],
+                "description": "https://www.myelomaresearch.org/about-us"
+            },
+            "funders": "International Myeloma Foundation\nMedical Research Council",
+            "populationSize": 850,
+            "keywords": [
+                "Multiple Myeloma",
+                "Bone Marrow",
+                "Microenvironment",
+                "CAR-T",
+                "MRD"
+            ],
+            "doiName": "10.1500/data.62",
+            "contactPoint": "access@myelomaresearch.org",
+            "datasetAliases": [
+                "Relapsed Myeloma CAR-T Cohort"
+            ]
+        },
+        "documentation": {
+            "description": "Registry data tracking bone marrow microenvironment changes and measurable residual disease in patients undergoing CAR-T cell therapy for relapsed/refractory multiple myeloma. This is a synthetic description generated for testing purposes.",
+            "inPipeline": "Available",
+            "associatedMedia": [
+                "https://myelomaresearch.org/protocols/bone_marrow_sampling.pdf"
+            ]
+        },
+        "coverage": {
+            "typicalAgeRangeMin": 45,
+            "typicalAgeRangeMax": 85,
+            "datasetCompleteness": "https://myelomaresearch.org/cohorts/completeness-metrics"
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Biannual",
+                "startDate": "2020-06-01",
+                "timeLag": "3 months",
+                "endDate": "2024-06-01",
+                "distributionReleaseDate": "2024-09-01"
+            }
+        },
+        "observations": [
+            {
+                "observedNode": "Bone Marrow Aspirates",
+                "measuredValue": 2550,
+                "observationDate": "2024-06-01",
+                "measuredProperty": "Count"
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 58
+                },
+                {
+                    "bin": "Black or Black British - African",
+                    "count": 17
+                },
+                {
+                    "bin": "Black or Black British - Caribbean",
+                    "count": 11
+                },
+                {
+                    "bin": "Asian or Asian British",
+                    "count": 5
+                },
+                {
+                    "bin": "Mixed",
+                    "count": 5
+                }
+            ]
+        },
+        "projectGrants": [
+            {
+                "pid": "11_000",
+                "projectGrantName": "Microenvironmental Drivers of CAR-T Resistance",
+                "leadResearcher": "Dr. Hannah Brooks",
+                "leadResearchInstitute": "Institute of Hematologic Oncology",
+                "grantNumber": "IMF-332, MRC-771",
+                "projectGrantStartDate": "2020-09-01",
+                "projectGrantEndDate": "2025-08-31",
+                "projectGrantScope": "scRNA-seq data, flow cytometry logs, and clinical survival tracking"
+            }
+        ],
+        "erd": "https://github.com/MyelomaResearch/mrd_db/blob/main/schema.png",
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Flow_Cytometry_MRD",
+                    "description": "Longitudinal assessments of measurable residual disease post-infusion",
+                    "columns": [
+                        {
+                            "name": "mrd_status",
+                            "dataType": "list",
+                            "description": "list of quantitative MRD levels (cells per million)",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "[MRD_Negative_10e5]",
+                                    "description": "Less than one myeloma cell per 100,000 bone marrow cells",
+                                    "frequency": 340
+                                }
+                            ]
+                        }
+                    ],
+                    "size": 850
+                }
+            ],
+            "syntheticDataWebLink": [
+                "https://myelomaresearch.org/datasets/synthetic_mm"
+            ]
+        },
+        "otherDataTypes": [
+            {
+                "title": "Whole Body PET-CT",
+                "description": "Metabolic imaging to assess extramedullary disease burden",
+                "format": "DICOM"
+            }
+        ],
+        "enrichmentAndLinkage": {
+            "derivedFrom": [
+                {
+                    "title": "National Hematology Registry",
+                    "pid": "NHR-11",
+                    "url": "https://healthdatagateway.org/en/dataset/902"
+                }
+            ],
+            "publicationUsingDataset": [
+                "10.1182/blood.2023019882"
+            ],
+            "publicationAboutDataset": [
+                "10.1182/blood.2023019883"
+            ],
+            "tools": [
+                "https://github.com/topics/multiple-myeloma-mrd"
+            ],
+            "investigations": [
+                "MRI-882-Phase1"
+            ],
+            "similarToDatasets": [
+                {
+                    "url": "10.1182/blood.2022015544",
+                    "title": "Newly Diagnosed Myeloma Genomics",
+                    "pid": "NDMM-GEN"
+                }
+            ]
+        },
+        "omics": {
+            "assay": "Single-cell RNA sequencing",
+            "platform": "10x Genomics Chromium"
+        },
+        "icons": [
+            "Hematology",
+            "Cellular Therapy"
+        ],
+        "datasetFilters": [
+            {
+                "id": "0_0_0_4",
+                "label": "C42 Hematopoietic and reticuloendothelial systems",
+                "category": "icdOTopography",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_0_1_41_1",
+                "label": "9732/3 Plasma cell myeloma",
+                "category": "973 Plasma cell neoplasms",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_1_8",
+                "label": "generally available for UK/EU use only",
+                "category": "accessType",
+                "primaryGroup": "access-type",
+                "description": "International collaborations outside the EU not generally permitted."
+            },
+            {
+                "id": "0_2_4_4_0_0",
+                "label": "Epigenomics",
+                "category": "Biological molecules (eg DNA)",
+                "primaryGroup": "Multi-omic Data",
+                "description": "chemical modifications to DNA/histones"
+            },
+            {
+                "id": "0_2_3_2_3",
+                "label": "Survival data",
+                "category": "Longitudinal Follow up",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_3_2_2",
+                "label": "Side effects",
+                "category": "Longitudinal Follow up",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_4_4_0_3",
+                "label": "Metagenomics",
+                "category": "Biological molecules (eg DNA)",
+                "primaryGroup": "Multi-omic Data",
+                "description": "genetic material from multiple organisms (usually microbes) living together"
+            }
+        ]
+    }
+}

@@ -1,0 +1,225 @@
+{
+    "gwdmVersion": "2.1",
+    "metadata": {
+        "required": {
+            "gatewayId": "087654b3-2c0a-4b32-9c2e-1234567890ac",
+            "gatewayPid": "087654b3-2c0a-4b32-9c2e-1234567890ac",
+            "issued": "2018-03-01T00:00:00Z",
+            "modified": "2024-01-15T00:00:00Z",
+            "version": "1.0.0",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://www.oncologytrust.org/datasets/087654b3-2c0a-4b32-9c2e-1234567890ac"
+                }
+            ]
+        },
+        "summary": {
+            "title": "Pancreatic Cancer Radiomics and Biomarker Cohort",
+            "abstract": "Registry data tracking treatment response patterns in advanced pancreatic ductal adenocarcinoma. Includes frequency of imaging and circulating tumor DNA details.",
+            "dataCustodian": {
+                "identifier": "https://ror.org/087654b32",
+                "name": "Oncology Research Trust",
+                "logo": "https://www.oncologytrust.org/brand/",
+                "contactPoint": [
+                    "data@oncologytrust.org"
+                ],
+                "description": "https://www.oncologytrust.org/about"
+            },
+            "funders": "National Cancer Institute\nPancreatic Cancer Action Network",
+            "populationSize": 2105,
+            "keywords": [
+                "Pancreatic",
+                "Cancer",
+                "Radiomics",
+                "Biomarkers",
+                "Response"
+            ],
+            "doiName": "10.1500/data.45",
+            "contactPoint": "access@oncologytrust.org",
+            "datasetAliases": [
+                "Pancreatic Cancer Biomarker Registry"
+            ]
+        },
+        "documentation": {
+            "description": "Registry data tracking treatment response patterns in advanced pancreatic ductal adenocarcinoma. Includes frequency of imaging and circulating tumor DNA details. This is a synthetic description generated for testing purposes.",
+            "inPipeline": "Available",
+            "associatedMedia": [
+                "https://oncologytrust/docs/radiomics_protocol.pdf"
+            ]
+        },
+        "coverage": {
+            "typicalAgeRangeMin": 35,
+            "typicalAgeRangeMax": 90,
+            "datasetCompleteness": "https://oncologytrust.org/pancreatic/completeness"
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Annual",
+                "startDate": "2018-03-01",
+                "timeLag": "More than 6 months",
+                "endDate": "2023-03-01",
+                "distributionReleaseDate": "2024-01-15"
+            }
+        },
+        "observations": [
+            {
+                "observedNode": "Patients",
+                "measuredValue": 4120,
+                "observationDate": "2023-12-01",
+                "measuredProperty": "Count"
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 71
+                },
+                {
+                    "bin": "Asian or Asian British",
+                    "count": 14
+                },
+                {
+                    "bin": "Black or Black British",
+                    "count": 9
+                },
+                {
+                    "bin": "Mixed",
+                    "count": 3
+                },
+                {
+                    "bin": "Other",
+                    "count": 1
+                }
+            ]
+        },
+        "projectGrants": [
+            {
+                "pid": "01_000",
+                "projectGrantName": "Pancreatic Cancer Radiomics Integration",
+                "leadResearcher": "Dr. Miller",
+                "leadResearchInstitute": "National Cancer Institute",
+                "grantNumber": "ORT105, ORT106",
+                "projectGrantStartDate": "2019-06-01",
+                "projectGrantEndDate": "2024-06-01",
+                "projectGrantScope": "CT imaging, genetic markers, and clinical background information"
+            }
+        ],
+        "erd": "https://github.com/OncologyResearch/panc_cohort/blob/main/assets/erd.png",
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Clinical_Features",
+                    "description": "Age, sex, tumor stage, treatment modalities",
+                    "columns": [
+                        {
+                            "name": "mutations",
+                            "dataType": "list",
+                            "description": "list of HGVS terms describing genetic mutations",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "[KRAS_G12D]",
+                                    "description": "KRAS gene mutation",
+                                    "frequency": 1200
+                                }
+                            ]
+                        }
+                    ],
+                    "size": 2500
+                }
+            ],
+            "syntheticDataWebLink": [
+                "https://oncologytrust.org/pancreatic/synthetic_data"
+            ]
+        },
+        "otherDataTypes": [
+            {
+                "title": "Abdominal CT Scans",
+                "description": "3D volumetric scans of the pancreas with tumors segmented",
+                "format": "DICOM"
+            }
+        ],
+        "enrichmentAndLinkage": {
+            "derivedFrom": [
+                {
+                    "title": "National Registry for Gastrointestinal Malignancies",
+                    "pid": "GI099",
+                    "url": "https://healthdatagateway.org/en/dataset/402"
+                }
+            ],
+            "publicationUsingDataset": [
+                "10.1016/j.ejca.2021.08.012"
+            ],
+            "publicationAboutDataset": [
+                "10.1016/j.ejca.2021.08.013"
+            ],
+            "tools": [
+                "https://github.com/topics/pancreatic-cancer-radiomics"
+            ],
+            "investigations": [
+                "ORT106"
+            ],
+            "similarToDatasets": [
+                {
+                    "url": "10.1016/j.ejca.2019.05.004",
+                    "title": "Gastrointestinal Cancer Backgrounds",
+                    "pid": "ORTxyz"
+                }
+            ]
+        },
+        "omics": {
+            "assay": "Targeted panel sequencing",
+            "platform": "Illumina HiSeq"
+        },
+        "icons": [
+            "Patient Study",
+            "Imaging"
+        ],
+        "datasetFilters": [
+            {
+                "id": "0_0_0_1_10",
+                "label": "C25 Pancreas",
+                "category": "C15-C26 Digestive organs",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_0_1_5_3",
+                "label": "8140/3 Adenocarcinoma, NOS",
+                "category": "814-838 Adenomas and adenocarcinomas",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_1_1",
+                "label": "research specific restrictions",
+                "category": "accessType",
+                "primaryGroup": "access-type",
+                "description": "Limited to studies of a certain research type (DUO_0000012)"
+            },
+            {
+                "id": "0_2_4_2",
+                "label": "Imaging Data",
+                "category": "Techniques",
+                "primaryGroup": "Techniques",
+                "description": ""
+            },
+            {
+                "id": "0_2_2_0_6",
+                "label": "Saccharomyces cerevisiae",
+                "category": "Organism",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_2_0_2",
+                "label": "Fruit fly",
+                "category": "Organism",
+                "primaryGroup": "data-type",
+                "description": ""
+            }
+        ]
+    }
+}
