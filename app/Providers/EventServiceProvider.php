@@ -21,6 +21,12 @@ class EventServiceProvider extends ServiceProvider
         \SocialiteProviders\Manager\SocialiteWasCalled::class => [
             \SocialiteProviders\Azure\AzureExtendSocialite::class . '@handle',
         ],
+        \App\Events\FederationProcessed::class => [
+            \App\Listeners\ProcessFederationSuccess::class,
+        ],
+        \App\Events\FederationProcessingFailed::class => [
+            \App\Listeners\ProcessFederationFailure::class,
+        ],
     ];
 
     /**

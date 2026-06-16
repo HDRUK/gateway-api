@@ -496,7 +496,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,datasets.create',
         ],
         'constraint' => [
@@ -511,7 +511,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [
@@ -527,7 +527,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [
@@ -1223,6 +1223,26 @@ return [
         'method' => 'get',
         'path' => '/metrics',
         'methodController' => 'KeyMetricController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
+    // SearchAggregator
+    [
+        'name' => 'search_agg.post',
+        'method' => 'post',
+        'path' => '/search/aggregation',
+        'methodController' => 'SearchController@search',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search_agg_results.get',
+        'method' => 'get',
+        'path' => '/search/aggregation/results/{token}',
+        'methodController' => 'SearchController@searchResults',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [],

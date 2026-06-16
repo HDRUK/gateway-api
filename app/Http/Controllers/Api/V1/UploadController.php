@@ -90,6 +90,7 @@ class UploadController extends Controller
             $collectionId = $request->query('collection_id', null);
             $applicationId = $request->query('application_id', null);
             $questionId = $request->query('question_id', null);
+            $answerIndex = $request->query('answer_index', null);
             $reviewId = $request->query('review_id', null);
 
             // store unscanned
@@ -129,6 +130,7 @@ class UploadController extends Controller
                 (int)$collectionId,
                 (int)$applicationId,
                 (int)$questionId,
+                (int)$answerIndex,
                 (int)$reviewId,
             );
 

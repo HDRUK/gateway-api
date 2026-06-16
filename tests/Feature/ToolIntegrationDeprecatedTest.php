@@ -39,6 +39,8 @@ class ToolIntegrationDeprecatedTest extends TestCase
     {
         $this->commonSetUp();
 
+        Tool::flushEventListeners();
+
         $this->integration = Application::where('id', 1)->first();
 
         $perms = Permission::whereIn('name', [

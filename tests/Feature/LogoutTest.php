@@ -31,6 +31,11 @@ class LogoutTest extends TestCase
         ];
     }
 
+    public function test_logout_flow_is_pending_review(): void
+    {
+        $this->markTestSkipped('Logout/login flow pending review; covered in follow-up PR.');
+    }
+
     // LS - Rmoved for now - as the whole login process is a bit strange and
     // needs looking at properly.
     //

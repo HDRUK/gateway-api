@@ -13,6 +13,7 @@ return [
     "omop_seeding_use_infile" => env("OMOP_SEEDING_USE_INFILE", true),
     "rate_limit" => env("RATE_LIMIT", 2000),
     "scanning_filesystem_disk" => env("SCANNING_FILESYSTEM_DISK", "local_scan"),
+    "search_deferred_ttl" => (int) env("SEARCH_DEFERRED_TTL", 60),
     "search_service_url" => env("SEARCH_SERVICE_URL", 'http://localhost:8003'),
     "test_user_password" => env("TEST_USER_PASSWORD", "")
 ];

@@ -33,10 +33,16 @@ class OAuth2Controller extends Controller
         Request $request,
         ClientRepository $clients,
     ) {
-        $userId = $request->session()->get('cr_uid') ?? null;
+        $state = $request->query('state');
+
+        try {
+            $userId = $state ? decrypt($state) : null;
+        } catch (\Exception $e) {
+            return $this->response->make('User not authenticated', 401);
+        }
 
         if (!$userId) {
-            abort(401, 'User not authenticated');
+            return $this->response->make('User not authenticated', 401);
         }
 
         $nonce = $request->query('nonce');

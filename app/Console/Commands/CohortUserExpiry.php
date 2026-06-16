@@ -42,60 +42,111 @@ class CohortUserExpiry extends Command
         foreach ($users as $u) {
             if (count($u->cohortRequests) > 0) {
                 foreach ($u->cohortRequests as $r) {
-                    $now = Carbon::now();
-
-                    $trueExpiryDate = $this->calculateTrueExpiry($r);
-
-                    $diff = (int) abs($trueExpiryDate->diffInDays($now));
-
-                    if (in_array($diff, $warnings)) {
-                        if ($r->request_status === 'APPROVED') {
-                            $this->sendEmail($r->id, 'WILL_EXPIRE');
-                        }
-                    }
-
-                    if ($trueExpiryDate <= $now) {
-                        if ($r->request_status === 'APPROVED') {
-                            $r->update([
-                                'request_status' => 'EXPIRED',
-                                'cohort_status' => false,
-                                'request_expire_at' => Carbon::now(),
-                            ]);
-                            foreach ($r->permissions as $p) {
-                                // Remove GENERAL_ACCESS permission from request
-                                $perm = Permission::where([
-                                    'application' => 'cohort',
-                                    'name' => 'GENERAL_ACCESS',
-                                ])->first();
-
-                                CohortRequestHasPermission::where([
-                                    'cohort_request_id' => $r->id,
-                                    'permission_id' => $perm->id,
-                                ])->delete();
-                            }
-
-                            // Log and associate with this request
-                            $log = CohortRequestLog::create([
-                                'user_id' => $u->id,
-                                'details' => 'Access expired',
-                                'request_status' => 'EXPIRED',
-                                'nhse_sde_request_status' => $r->nhse_sde_request_status,
-                            ]);
-
-                            CohortRequestHasLog::create([
-                                'cohort_request_id' => $r->id,
-                                'cohort_request_log_id' => $log->id,
-                            ]);
-
-                            $this->sendEmail($r->id, 'EXPIRED');
-                        }
-                    }
+                    $this->handleExpiryCheck($r, $u, 'request_expire_at', $warnings);
+                    $this->handleExpiryCheck($r, $u, 'nhse_sde_request_expire_at', $warnings);
                 }
             }
         }
     }
 
-    private function sendEmail($cohortId, $cohortRequestStatus)
+    private function handleExpiryCheck(CohortRequest $r, User $u, string $expiryField, array $warnings): void
+    {
+        $now = Carbon::now();
+        $trueExpiryDate = $this->calculateTrueExpiry($r, $expiryField);
+
+        if ($trueExpiryDate === null) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'CohortUserExpiry - found null expiry for CohortRequest ID ' . $r->id,
+            ]);
+            return;
+        }
+
+        $diff = (int) round(abs($trueExpiryDate->diffInDays($now)));
+
+        switch ($expiryField) {
+            case 'request_expire_at':
+                if ($trueExpiryDate <= $now) {
+                    if ($r->request_status === CohortRequest::REQUEST_APPROVED) {
+                        $this->expireRequest($r, $expiryField);
+                        $this->removePermissions($r);
+                        $this->createLog($r, $u);
+                        $this->sendEmail($r->id, CohortRequest::REQUEST_EXPIRED, $trueExpiryDate);
+                    }
+                } elseif (in_array($diff, $warnings)) {
+                    if ($r->request_status === CohortRequest::REQUEST_APPROVED) {
+                        $this->sendEmail($r->id, 'WILL_EXPIRE', $trueExpiryDate);
+                    }
+                }
+                break;
+
+            case 'nhse_sde_request_expire_at':
+                if ($trueExpiryDate <= $now) {
+                    if ($r->nhse_sde_request_status === CohortRequest::REQUEST_APPROVED) {
+                        $this->expireRequest($r, $expiryField);
+                        $this->removePermissions($r);
+                        $this->createLog($r, $u);
+                        $this->sendEmail($r->id, CohortRequest::REQUEST_EXPIRED, $trueExpiryDate);
+                    }
+                } elseif (in_array($diff, $warnings)) {
+                    if ($r->nhse_sde_request_status === CohortRequest::REQUEST_APPROVED) {
+                        $this->sendEmail($r->id, 'WILL_EXPIRE', $trueExpiryDate);
+                    }
+                }
+                break;
+
+            default:
+                throw new \InvalidArgumentException("Unknown expiry field: {$expiryField}");
+        }
+    }
+
+    private function createLog(CohortRequest $r, User $user): void
+    {
+        $log = CohortRequestLog::create([
+            'user_id' => $user->id,
+            'details' => 'Access expired',
+            'request_status' => CohortRequest::REQUEST_EXPIRED,
+            'nhse_sde_request_status' => $r->nhse_sde_request_status,
+        ]);
+
+        CohortRequestHasLog::create([
+            'cohort_request_id' => $r->id,
+            'cohort_request_log_id' => $log->id,
+        ]);
+    }
+
+    private function removePermissions(CohortRequest $r): void
+    {
+        $permId = Permission::where([
+            'application' => 'cohort',
+            'name' => 'GENERAL_ACCESS',
+        ])->value('id');
+
+        if ($permId) {
+            CohortRequestHasPermission::where([
+                'cohort_request_id' => $r->id,
+                'permission_id' => $permId,
+            ])->delete();
+        }
+    }
+
+    private function expireRequest(CohortRequest $r, string $expiryField): void
+    {
+        if ($expiryField === 'nhse_sde_request_expire_at') {
+            $r->update([
+                'nhse_sde_request_status' => CohortRequest::REQUEST_EXPIRED,
+                'nhse_sde_request_expire_at' => Carbon::now(),
+            ]);
+        } else {
+            $r->update([
+                'request_status' => CohortRequest::REQUEST_EXPIRED,
+                'request_expire_at' => Carbon::now(),
+            ]);
+        }
+    }
+
+    private function sendEmail(int $cohortId, string $cohortRequestStatus, Carbon $expiryDate): void
     {
         try {
             $cohort = CohortRequest::where('id', $cohortId)->first();
@@ -105,7 +156,7 @@ class CohortUserExpiry extends Command
                 $user['email'] : $user['secondary_email'];
             $template = null;
             switch ($cohortRequestStatus) {
-                case 'WILL_EXPIRE': // submitted
+                case 'WILL_EXPIRE':
                     $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.will.expire')->first();
                     break;
                 case 'EXPIRED':
@@ -120,11 +171,9 @@ class CohortUserExpiry extends Command
                 ],
             ];
 
-            $trueExpiryDate = $this->calculateTrueExpiry($cohort);
-
             $replacements = [
                 '[[USER_FIRSTNAME]]' => $user['firstname'],
-                '[[EXPIRE_DATE]]' => $trueExpiryDate,
+                '[[EXPIRE_DATE]]' => $expiryDate,
                 '[[CURRENT_YEAR]]' => date("Y"),
                 '[[USER_EMAIL]]' => $userEmail,
                 '[[COHORT_DISCOVERY_ACCESS_URL]]' => Config::get('cohort.cohort_discovery_access_url'),
@@ -144,21 +193,25 @@ class CohortUserExpiry extends Command
         }
     }
 
-    private function calculateTrueExpiry($cohort)
+    private function calculateTrueExpiry(CohortRequest $cohort, string $expiryField = 'request_expire_at'): Carbon|null
     {
-        $request_expire_at = null;
-        if (!is_null($cohort->request_expire_at)) {
-            $request_expire_at = Carbon::createFromFormat('Y-m-d H:i:s', $cohort->request_expire_at);
+        /** @var Carbon|null $explicitExpiry */
+        $explicitExpiry = $cohort->$expiryField;
+
+        if ($expiryField === 'nhse_sde_request_expire_at') {
+            $basedOnUpdatedAt = $cohort->nhse_sde_updated_at
+                ? $cohort->nhse_sde_updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'))
+                : null;
+        } else {
+            $basedOnUpdatedAt = $cohort->updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'));
         }
 
-        return min(
-            array_diff(
-                [
-                $cohort->updated_at->addDays((int)Config::get('cohort.cohort_access_expiry_time_in_days')),
-                $request_expire_at
-            ],
-                array(null)
-            )
-        );
+        $candidates = array_filter([$basedOnUpdatedAt, $explicitExpiry]);
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        return Carbon::instance(min($candidates));
     }
 }

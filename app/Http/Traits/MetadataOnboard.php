@@ -25,7 +25,8 @@ trait MetadataOnboard
         array $team,
         string | null $inputSchema,
         string | null $inputVersion,
-        bool $elasticIndexing
+        bool $elasticIndexing,
+        string $partnerContext = 'HDRUK',
     ): array {
         $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ?
             $input['is_cohort_discovery'] : false;
@@ -81,6 +82,7 @@ trait MetadataOnboard
                 'create_origin' => $input['create_origin'],
                 'status' => $input['status'],
                 'is_cohort_discovery' => $isCohortDiscovery,
+                'partner_context' => $partnerContext,
             ]);
 
             $publisher = null;

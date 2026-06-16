@@ -76,6 +76,7 @@ trait IndexElastic
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsBioSamples = $this->getContainsBioSamples($materialTypes);
+            $projectGrants = $this->projectGrantsForDataset($datasetMatch->id);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -103,6 +104,12 @@ trait IndexElastic
                 'formatAndStandards' => $this->formatAndStandard($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'isCohortDiscovery' => $datasetMatch->is_cohort_discovery,
                 'datasetAliases' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetAliases'], ''),
+                // Project grants (for search & filtering)
+                'projectGrants' => $projectGrants,
+                'projectGrantNames' => array_values(array_unique(array_filter(array_map(
+                    fn (array $g) => $g['projectGrantName'] ?? null,
+                    $projectGrants
+                )))),
             ];
 
             $params = [
@@ -142,6 +149,85 @@ trait IndexElastic
             return null;
         }
         return array_filter(explode(';,;', $value));
+    }
+
+    /**
+     * Fetch all project grants linked to a dataset, along with their latest version fields.
+     *
+     * Returned shape is intentionally small and search-friendly.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function projectGrantsForDataset(int $datasetId): array
+    {
+        $rows = \DB::select(
+            '
+                SELECT
+                    pghd.project_grant_id,
+                    pgv.version,
+                    pgv.project_grant_name,
+                    pgv.lead_researcher,
+                    pgv.lead_research_institute,
+                    pgv.grant_numbers,
+                    pgv.project_grant_start_date,
+                    pgv.project_grant_end_date,
+                    pgv.project_grant_scope
+                FROM project_grant_has_dataset pghd
+                LEFT JOIN (
+                    SELECT
+                        pgv_inner.project_grant_id,
+                        pgv_inner.version,
+                        pgv_inner.project_grant_name,
+                        pgv_inner.lead_researcher,
+                        pgv_inner.lead_research_institute,
+                        pgv_inner.grant_numbers,
+                        pgv_inner.project_grant_start_date,
+                        pgv_inner.project_grant_end_date,
+                        pgv_inner.project_grant_scope
+                    FROM project_grant_versions pgv_inner
+                    INNER JOIN (
+                        SELECT project_grant_id, MAX(version) AS max_version
+                        FROM project_grant_versions
+                        WHERE deleted_at IS NULL
+                        GROUP BY project_grant_id
+                    ) latest
+                        ON latest.project_grant_id = pgv_inner.project_grant_id
+                        AND latest.max_version = pgv_inner.version
+                    WHERE pgv_inner.deleted_at IS NULL
+                ) pgv ON pgv.project_grant_id = pghd.project_grant_id
+                WHERE pghd.dataset_id = :dataset_id
+            ',
+            [
+                'dataset_id' => $datasetId,
+            ]
+        );
+
+        if (!count($rows)) {
+            return [];
+        }
+
+        return array_values(array_map(function ($row) {
+            if ($row->version === null) {
+                return ['project_grant_id' => (int) $row->project_grant_id];
+            }
+
+            $grantNumbers = $row->grant_numbers;
+            if (is_string($grantNumbers)) {
+                $grantNumbers = json_decode($grantNumbers, true);
+            }
+
+            return [
+                'project_grant_id' => (int) $row->project_grant_id,
+                'version' => (int) $row->version,
+                'projectGrantName' => $row->project_grant_name,
+                'leadResearcher' => $row->lead_researcher,
+                'leadResearchInstitute' => $row->lead_research_institute,
+                'grantNumbers' => $grantNumbers,
+                'projectGrantStartDate' => $row->project_grant_start_date,
+                'projectGrantEndDate' => $row->project_grant_end_date,
+                'projectGrantScope' => $row->project_grant_scope,
+            ];
+        }, $rows));
     }
 
     /**
@@ -570,8 +656,10 @@ trait IndexElastic
     public function indexElasticPublication(string $id, bool $returnParams = false): null|array
     {
         try {
-            $pubMatch = Publication::where(['id' => $id])->first();
+            $pubMatch = Publication::where(['id' => $id])->with(['keywords:id,name'])->first();
             $datasets = $pubMatch->allDatasets;
+
+            $keywords = array_unique($pubMatch?->keywords->pluck('name')->toArray() ?? []);
 
             $datasetTitles = [];
             $datasetLinkTypes = [];
@@ -595,10 +683,13 @@ trait IndexElastic
                 $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
                 $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+
+                // change from 'UNKNOWN' to 'USING' - temp
                 $linkType = PublicationHasDatasetVersion::where([
                     'publication_id' => (int)$id,
                     'dataset_version_id' => (int)$latestVersionID
-                ])->first()->link_type ?? 'UNKNOWN';
+                ])->first()->link_type ?? 'USING';
+
                 $datasetLinkTypes[] =  array_key_exists($linkType, $linkTypeMappings) ? $linkTypeMappings[$linkType] : 'Unknown';
             }
 
@@ -622,6 +713,7 @@ trait IndexElastic
                 'datasetTitles' => $datasetTitles,
                 'publicationType' => $publicationTypes,
                 'datasetLinkTypes' => $datasetLinkTypes,
+                'keywords' => $keywords,
             ];
             $params = [
                 'index' => ECC::ELASTIC_NAME_PUBLICATION,

@@ -14,5 +14,5 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: 'php artisan queue:work'
+    command: 'php artisan queue:work --queue=federation,default'
     

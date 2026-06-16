@@ -5,6 +5,24 @@ return [
     [
         'name' => 'api.v1.auth.register',
         'method' => 'post',
+        'path' => '/auth/register',
+        'methodController' => 'AuthController@register',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'api.v1.auth.login',
+        'method' => 'post',
+        'path' => '/auth/login',
+        'methodController' => 'AuthController@login',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'api.v1.auth.check',
+        'method' => 'post',
         'path' => '/auth',
         'methodController' => 'AuthController@checkAuthorization',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -21,6 +39,28 @@ return [
             'jwt.verify',
         ],
         'constraint' => [],
+    ],
+
+    // cancer type filters
+    [
+        'name' => 'api.v1.cancer-type-filters.index',
+        'method' => 'get',
+        'path' => '/cancer-type-filters',
+        'methodController' => 'CancerTypeFilterController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'api.v1.cancer-type-filters.show',
+        'method' => 'get',
+        'path' => '/cancer-type-filters/{filter_id}',
+        'methodController' => 'CancerTypeFilterController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'filter_id' => '[0-9_]+',
+        ],
     ],
 
     // login for:  google || azure || linkedin
@@ -247,49 +287,6 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
             'teamId' => '[0-9]+',
-        ],
-    ],
-
-    // team widget settings
-    [
-        'name' => 'widget_settings',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/widget_settings',
-        'methodController' => 'TeamWidgetSettingController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'widget_settings',
-        'method' => 'post',
-        'path' => '/teams/{teamId}/widget_settings',
-        'methodController' => 'TeamWidgetSettingController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'widget_settings',
-        'method' => 'delete',
-        'path' => '/teams/{teamId}/widget_settings/{id}',
-        'methodController' => 'TeamWidgetSettingController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
         ],
     ],
 
@@ -2730,6 +2727,21 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'team.federation.run.now',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/federations/{federationId}/run',
+        'methodController' => 'FederationController@runNow',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
 
     // cohort_requests
     [
@@ -3436,6 +3448,28 @@ return [
             'sunset',
         ],
         'constraint' => [],
+    ],
+
+    // project-grants
+    [
+        'name' => 'project_grants.index',
+        'method' => 'get',
+        'path' => '/project_grants',
+        'methodController' => 'ProjectGrantController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'project_grants.show',
+        'method' => 'get',
+        'path' => '/project_grants/{id}',
+        'methodController' => 'ProjectGrantController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
 
     // form hydration
@@ -4152,7 +4186,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,question-bank.create',
+            'check.access:permissions,file-based-data-access-application.create',
         ],
         'constraint' => [],
     ],
@@ -4165,7 +4199,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,question-bank.update',
+            'check.access:permissions,file-based-data-access-application.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4180,7 +4214,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,question-bank.update',
+            'check.access:permissions,file-based-data-access-application.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',

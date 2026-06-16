@@ -18,6 +18,33 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * @property bool $has_published_dar_template
+ *
+ * @OA\Schema(
+ *   schema="Team",
+ *   description="A data custodian team that owns datasets and manages data access",
+ *   @OA\Property(property="id", type="integer", example=7),
+ *   @OA\Property(property="name", type="string", example="NHS England"),
+ *   @OA\Property(property="enabled", type="boolean", example=true),
+ *   @OA\Property(property="allows_messaging", type="boolean", example=true),
+ *   @OA\Property(property="workflow_enabled", type="boolean", example=false),
+ *   @OA\Property(property="access_requests_management", type="boolean", example=false),
+ *   @OA\Property(property="uses_5_safes", type="boolean", example=false),
+ *   @OA\Property(property="is_admin", type="boolean", example=false),
+ *   @OA\Property(property="member_of", type="string", nullable=true),
+ *   @OA\Property(property="contact_point", type="string", nullable=true, example="contact@nhsengland.nhs.uk"),
+ *   @OA\Property(property="notification_status", type="boolean", nullable=true, example=true),
+ *   @OA\Property(property="is_question_bank", type="boolean", example=false),
+ *   @OA\Property(property="team_logo", type="string", nullable=true, example="/teams/nhse.png"),
+ *   @OA\Property(property="introduction", type="string", nullable=true),
+ *   @OA\Property(property="dar_modal_content", type="string", nullable=true),
+ *   @OA\Property(property="dar_modal_header", type="string", nullable=true),
+ *   @OA\Property(property="dar_modal_footer", type="string", nullable=true),
+ *   @OA\Property(property="service", type="string", nullable=true),
+ *   @OA\Property(property="is_dar", type="boolean", example=false),
+ *   @OA\Property(property="pid", type="string", nullable=true, description="Public identifier, cast to string"),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
  */
 #[ObservedBy(TeamObserver::class)]
 class Team extends Model

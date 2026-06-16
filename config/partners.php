@@ -1,8 +1,16 @@
 <?php
 
 use App\Models\Dataset;
-use App\Http\Resources\DatasetResource;
-use App\Http\Resources\DatasetIndexResource;
+use App\Http\Resources\Api\V2\DatasetResource;
+use App\Http\Resources\Api\V2\DatasetIndexResource;
+use App\Models\ProjectGrant;
+use App\Http\Resources\Api\V1\ProjectGrantResource;
+use App\Http\Resources\Api\V1\ProjectGrantIndexResource;
+use App\Models\CancerTypeFilter;
+use App\Http\Resources\Api\V1\CancerTypeFilterResource;
+use App\Http\Resources\Api\V1\CancerTypeFilterIndexResource;
+use App\Services\CrukAuthService;
+use App\Http\Resources\Api\V1\AuthResource;
 
 /**
  * Partner context configuration.
@@ -42,6 +50,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cross-context read (HDRUK portal safeguard)
+    |--------------------------------------------------------------------------
+    | When true (default), the HDRUK operator context sees datasets from ALL
+    | partners. Set to false to restrict HDRUK to its own datasets — useful
+    | while partner schemas are in development and risk breaking the portal.
+    */
+    'allow_cross_context_read' => env('HDRUK_CROSS_CONTEXT_READ', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Detail (show) resource map
     |--------------------------------------------------------------------------
     | Keyed by partner identifier → model class → resource class.
@@ -50,6 +68,9 @@ return [
 
         'HDRUK' => [
             Dataset::class => DatasetResource::class,
+            ProjectGrant::class => ProjectGrantResource::class,
+            CancerTypeFilter::class => CancerTypeFilterResource::class,
+            CrukAuthService::class => AuthResource::class,
         ],
 
         // 'PARTNER_X' => [
@@ -69,6 +90,8 @@ return [
 
         'HDRUK' => [
             Dataset::class => DatasetIndexResource::class,
+            ProjectGrant::class => ProjectGrantIndexResource::class,
+            CancerTypeFilter::class => CancerTypeFilterIndexResource::class,
         ],
 
         // 'PARTNER_X' => [

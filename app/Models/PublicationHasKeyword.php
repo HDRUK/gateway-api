@@ -9,7 +9,6 @@ class PublicationHasKeyword extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
         'publication_id',
         'keyword_id',

@@ -44,6 +44,9 @@ class CollectionObserverTest extends TestCase
             ->once()
             ->with($countInitialCollections + 1);
 
+        $this->observer->shouldReceive('updated')
+            ->andReturnNull();
+
         $collection = Collection::factory()->create([
             'status' => Collection::STATUS_ACTIVE,
         ]);

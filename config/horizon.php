@@ -84,7 +84,9 @@ return [
     */
 
     'waits' => [
-        'redis:default' => 60,
+        'redis:high'       => 30,
+        'redis:default'    => 60,
+        'redis:enrichment' => 300,
     ],
 
     /*
@@ -119,7 +121,7 @@ return [
     */
 
     'silenced' => [
-        // App\Jobs\ExampleJob::class,
+        App\Jobs\AuditLogJob::class,
     ],
 
     /*
@@ -180,47 +182,134 @@ return [
     */
 
     'defaults' => [
-        'supervisor-1' => [
+        'supervisor-high' => [
             'connection' => 'redis',
-            'queue' => ['default'],
-            'balance' => 'simple',
+            'queue' => ['high'],
+            'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
             'maxTime' => 0,
             'maxJobs' => 0,
             'memory' => 128,
-            'tries' => 1,
+            'tries' => 3,
             'timeout' => 60,
             'nice' => 0,
+        ],
+        'supervisor-1' => [
+            'connection' => 'redis',
+            'queue' => ['default'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 2,
+            'timeout' => 200,  // covers ScanFileUpload ($timeout=180)
+            'nice' => 0,
+        ],
+        'supervisor-enrichment' => [
+            'connection' => 'redis',
+            'queue' => ['enrichment'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 660,  // covers TermExtraction ($timeout=600)
+            'nice' => 15,
+        ],
+        'supervisor-federation' => [
+            'connection' => 'redis',
+            'queue' => ['federation'],
+            'balance' => 'simple',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 150,
+            'nice' => 10,
         ],
     ],
 
     'environments' => [
         'prod' => [
+            'supervisor-high' => [
+                'maxProcesses' => 5,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
             'supervisor-1' => [
                 'maxProcesses' => 10,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
-        ],
-
-        'local' => [
-            'supervisor-1' => [
-                'maxProcesses' => 5,
+            'supervisor-enrichment' => [
+                'maxProcesses' => 3,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
             ],
-        ],
-
-        'dev' => [
-            'supervisor-1' => [
+            'supervisor-federation' => [
                 'maxProcesses' => 5,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
             ],
         ],
 
         'preprod' => [
+            'supervisor-high' => [
+                'maxProcesses' => 3,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
             'supervisor-1' => [
                 'maxProcesses' => 5,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
+            ],
+            'supervisor-enrichment' => [
+                'maxProcesses' => 2,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+            'supervisor-federation' => [
+                'maxProcesses' => 3,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+        ],
+
+        'dev' => [
+            'supervisor-high' => [
+                'maxProcesses' => 2,
+            ],
+            'supervisor-1' => [
+                'maxProcesses' => 3,
+            ],
+            'supervisor-enrichment' => [
+                'maxProcesses' => 1,
+            ],
+            'supervisor-federation' => [
+                'maxProcesses' => 2,
+            ],
+        ],
+
+        'local' => [
+            'supervisor-high' => [
+                'maxProcesses' => 2,
+            ],
+            'supervisor-1' => [
+                'maxProcesses' => 3,
+            ],
+            'supervisor-enrichment' => [
+                'maxProcesses' => 1,
+            ],
+            'supervisor-federation' => [
+                'maxProcesses' => 2,
             ],
         ],
     ],

@@ -21,7 +21,7 @@ Route::get('/alias_reply_scanner', function (Request $reqest) {
 });
 
 Route::get('/update_licenses', function (Request $reqest) {
-    Artisan::call('app:update-licenses');
+    Artisan::call('app:update-eu-licenses');
 
     return response()->json([
         'message' => 'ok',

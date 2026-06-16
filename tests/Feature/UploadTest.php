@@ -249,7 +249,8 @@ class UploadTest extends TestCase
     public function test_dataset_from_upload_with_success(): void
     {
         $countBefore = Dataset::count();
-        $team = Team::all()->random()->id;
+        // gwdm_v2_uploaded.json uses dataCustodian.identifier null — team pid must match
+        $team = Team::whereNull('pid')->firstOrFail()->id;
         $file = new UploadedFile(
             getcwd() . '/tests/Unit/test_files/gwdm_v2_uploaded.json',
             'gwdm_v2_uploaded.json',

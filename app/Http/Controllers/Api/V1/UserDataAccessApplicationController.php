@@ -42,7 +42,7 @@ class UserDataAccessApplicationController extends Controller
      *      summary="List of dar applications belonging to a user",
      *      description="List of dar applications belonging to a user",
      *      tags={"UserDataAccessApplication"},
-     *      summary="UserDataAccessApplication@index",
+     *      summary="UserDataAccessApplicationController@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -142,7 +142,7 @@ class UserDataAccessApplicationController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/users/{userId}/dar/applications/count/{field}",
-     *    tags={"UserDataAccessApplications"},
+     *    tags={"UserDataAccessApplication"},
      *    summary="UserDataAccessApplicationController@count",
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
@@ -212,7 +212,7 @@ class UserDataAccessApplicationController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/users/{userId}/dar/applications/count",
-     *    tags={"UserDataAccessApplications"},
+     *    tags={"UserDataAccessApplication"},
      *    summary="UserDataAccessApplicationController@allCounts",
      *    description="Get Counts for all status fields in the model",
      *    security={{"bearerAuth":{}}},
@@ -270,7 +270,7 @@ class UserDataAccessApplicationController extends Controller
      *      summary="Return a DAR application belonging to the user",
      *      description="Return a DAR application belonging to the user",
      *      tags={"UserDataAccessApplication"},
-     *      summary="UserDataAccessApplication@show",
+     *      summary="UserDataAccessApplicationController@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -390,7 +390,7 @@ class UserDataAccessApplicationController extends Controller
      *      summary="Get header information about a specific DAR",
      *      description="Get header information about a specific DAR",
      *      tags={"UserDataAccessApplication"},
-     *      summary="UserDataAccessApplication@showHeader",
+     *      summary="UserDataAccessApplicationController@showHeader",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -470,7 +470,7 @@ class UserDataAccessApplicationController extends Controller
      *      summary="Return answers from the user's DAR application",
      *      description="Return answers from the user's DAR application",
      *      tags={"UserDataAccessApplication"},
-     *      summary="UserDataAccessApplication@showAnswers",
+     *      summary="UserDataAccessApplicationController@showAnswers",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",

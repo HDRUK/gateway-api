@@ -17,6 +17,7 @@
         "php": "^8.3",
         "darkaonline/l5-swagger": "^8.4",
         "elasticsearch/elasticsearch": "^8.10",
+        "google/cloud-bigquery": "^1.35",
         "google/cloud-logging": "^1.30",
         "google/cloud-pubsub": "^2.1",
         "google/cloud-secret-manager": "^2.1",
@@ -40,6 +41,7 @@
         "spatie/laravel-google-cloud-storage": "^2.3",
         "staudenmeir/belongs-to-through": "^2.5",
         "staudenmeir/eloquent-has-many-deep": "^1.7",
+        "swaggest/json-diff": "^3.12",
         "webklex/laravel-imap": "^6.0"
     },
     "require-dev": {
@@ -108,7 +110,7 @@
             "vendor/bin/phpcs --standard=PSR1 app"
         ],
         "pest": [
-            "php -d memory_limit=512M vendor/bin/pest --bail --parallel --compact"
+            "php -d memory_limit=2048M vendor/bin/pest --bail --parallel --compact"
         ],
         "lint": [
             "vendor/bin/pint --preset psr12"
@@ -129,9 +131,9 @@
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         },
-        "_comment": "Ignore PKSA-y2cr-5h3j-g3ys due it being in dispute state. See: https://www.cve.org/CVERecord?id=CVE-2025-45769",
+        "_comment": "Ignore PKSA-y2cr-5h3j-g3ys or PKSA-wc55-9qj2-7v4h due it being in dispute state. See: https://www.cve.org/CVERecord?id=CVE-2025-45769 or ",
         "audit": {
-            "ignore": ["PKSA-y2cr-5h3j-g3ys"]
+            "ignore": ["PKSA-y2cr-5h3j-g3ys", "PKSA-wc55-9qj2-7v4h"]
         }
     },
     "minimum-stability": "stable",

@@ -143,7 +143,7 @@ class EmailTemplateSeeder extends Seeder
     {
         return '
             <!-- separator section start -->
-            <mj-wrapper border="none" direction="ltr" padding="5px 0px"><br></mj-wrapper>
+            <mj-wrapper border="none" direction="ltr" padding="5px 0px">&nbsp;</mj-wrapper>
             <!-- separator end -->
 
             <!-- bottom section start -->
@@ -156,7 +156,7 @@ class EmailTemplateSeeder extends Seeder
                     </mj-text>
                     
                     <mj-text align="left" line-height="1.2" font-size="13px" font-weight="400" padding="10px 0px 0px 0px">
-                        To ensure you continue to receive enquiries, responses and all other Gateway notifications, please mark the @healthdatagateway.org domain as \'safe\' within your email client. You may also need to speak to your institution to remove any blockers or filters for this address. In the meantime, we suggest checking your junk or spam folders regularly. 
+                        To ensure you continue to receive enquiries, responses and all other Gateway notifications, <b>please mark the @healthdatagateway.org domain as \'safe\'</b> within your email client. You may also need to speak to your institution to remove any blockers or filters for this address. In the meantime, we suggest checking your junk or spam folders regularly.
                     </mj-text>
                     
                     </mj-column>
@@ -855,7 +855,7 @@ class EmailTemplateSeeder extends Seeder
         EmailTemplate::create(
             [
                 'identifier' => 'cohort.discovery.access.approved',
-                'subject' => 'Congratulations! Your Cohort Discovery registration has been approved.',
+                'subject' => 'Your Cohort Discovery access request has been granted',
                 'body' => '<mjml>
                         
                             ' . $this->newHeader() . '
@@ -868,29 +868,34 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]],
-                                        
-                                            <div><br><br></div>
 
-                                            You have been granted access for Cohort Discovery. Please use the buttons below to access Cohort Discovery and watch a video on how to use the tool.<br>
-                                            Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br>
-                                            If you require further support raise a support ticket on the Health Data Research Gateway.
-                                            
-                                            <div><br><br></div>
-                                            <ul>
-                                                <li>Your Account: [[USER_EMAIL]]</li>
-                                                <li>Date of expiry: [[EXPIRE_DATE]]</li>
-                                            </ul>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]],
+                                            </mj-text>
 
-                                        </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                You have been granted access for Cohort Discovery. Please use the buttons below to access Cohort Discovery and watch a video on how to use the tool.
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                                Please logout of your account on HDR Gateway and log back in again to reflect your refreshed access.
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                                If you require further support raise a support ticket on the Health Data Research Gateway.
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="10px">
+                                                <ul>
+                                                    <li>Your Account: [[USER_EMAIL]]</li>
+                                                    <li>Date of expiry: [[EXPIRE_DATE]]</li>
+                                                </ul>
+                                            </mj-text>
+
                                         </mj-column>
                                     </mj-section>
 
                                     <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
                                         <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
-                                            Open your dashboard
+                                            Access Cohort Discovery
                                         </mj-button>
                                         </mj-column>
                                     </mj-section>
@@ -932,22 +937,24 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]],
-                                        
-                                            <div><br><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]],
+                                            </mj-text>
 
-                                            Thank you for your patience whilst we reviewed your request to the Cohort Discovery Tool. Unfortunately, your registration for access has been rejected at this time. Your request does not meet our access criteria, which includes the following:
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Thank you for your patience whilst we reviewed your request to the Cohort Discovery Tool. Unfortunately, your registration for access has been rejected at this time. Your request does not meet our access criteria, which includes the following:
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
+                                                <ul>
+                                                    <li>Registering a user profile on the Gateway</li>
+                                                    <li>Providing information outlining your role and institution information</li>
+                                                    <li>Providing justification for using the tool for public benefit</li>
+                                                </ul>
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="10px">
+                                                If you have any questions on the above decision, raise a support ticket  on the Health Data Research Gateway.
+                                            </mj-text>
 
-                                            <ul>
-                                                <li>Registering a user profile on the Gateway</li>
-                                                <li>Providing information outlining your role and institution information</li>
-                                                <li>Providing justification for using the tool for public benefit</li>
-                                            </ul>
-
-                                            If you have any questions on the above decision, raise a support ticket  on the Health Data Research Gateway.
-
-                                        </mj-text>
                                         </mj-column>
                                     </mj-section>
                                 </mj-wrapper>
@@ -976,16 +983,15 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]],
-                                        
-                                            <div><br><br></div>
-
-                                            Your Cohort Discovery registration has been received by Gateway Cohort Discovery admin. This will be reviewed and you will receive a notification via your Gateway email address when a decision is made.
-                                            <div><br></div>
-                                            We aim to get back within 5 business days of your original request.
-
-                                        </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]],
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Your Cohort Discovery registration has been received by Gateway Cohort Discovery admin. This will be reviewed and you will receive a notification via your Gateway email address when a decision is made.
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="0px">
+                                                We aim to get back within 5 business days of your original request.
+                                            </mj-text>
                                         </mj-column>
                                     </mj-section>
                                 </mj-wrapper>
@@ -1014,16 +1020,16 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]],
-                                        
-                                            <div><br><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]],
+                                            </mj-text>
 
-                                            This is an automated message to let you know that your access to the Cohort Discovery tool has been permanently removed.
-                                            <div><br></div>
-                                            If you have any question or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
-
-                                        </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                This is an automated message to let you know that your access to the Cohort Discovery tool has been permanently removed.
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                If you have any question or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
+                                            </mj-text>
                                         </mj-column>
                                     </mj-section>
                                 </mj-wrapper>
@@ -1052,16 +1058,16 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]],
-                                        
-                                            <div><br><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]],
+                                            </mj-text>
 
-                                            This is an automated message to let you know that your access to the Cohort Discovery tool has been suspended.
-                                            <div><br></div>
-                                            If you have any question or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
-
-                                        </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                This is an automated message to let you know that your access to the Cohort Discovery tool has been suspended.
+                                            </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                If you have any question or would like to discuss this further please raise a support ticket on the Health Data Research Gateway.
+                                            </mj-text>
                                         </mj-column>
                                     </mj-section>
                                 </mj-wrapper>
@@ -1520,27 +1526,31 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]],
-                                        
-                                            <div><br><br></div>
 
-                                            [[USER_NAME]] has granted you Cohort Discovery admin permission on the Gateway.
-                        
-                                            <div><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]],
+                                            </mj-text>
 
-                                            You will now be able to:
-                                            <ul>
-                                                <li>Review Cohort Discovery registration request.</li>
-                                                <li>Manage Cohort Discovery users access status.</li>
-                                                <li>Remove users Cohort Discovery access.</li>
-                                            </ul>
-                                        
-                                            <div><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[USER_NAME]] has granted you Cohort Discovery admin permission on the Gateway.
+                                            </mj-text>
 
-                                            For more information, please raise a support ticket on the Health Data Research Gateway.
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                You will now be able to:
+                                            </mj-text>
 
-                                        </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="0px">
+                                                <ul>
+                                                    <li>Review Cohort Discovery registration request.</li>
+                                                    <li>Manage Cohort Discovery users access status.</li>
+                                                    <li>Remove users Cohort Discovery access.</li>
+                                                </ul>
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                For more information, please raise a support ticket on the Health Data Research Gateway.
+                                            </mj-text>
+
                                         </mj-column>
                                     </mj-section>
 
@@ -1577,26 +1587,28 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]].
-                                        
-                                            <div><br><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]].
+                                            </mj-text>
 
-                                            You have been removed as a Cohort Discovery admin on the Gateway.
-                                        
-                                            <div><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                You have been removed as a Cohort Discovery admin on the Gateway.
+                                            </mj-text>
 
-                                            You will no longer be able to:
-                                            <ul>
-                                                <li>Review Cohort Discovery registration request.</li>
-                                                <li>Manage Cohort Discovery users access status.</li>
-                                            </ul>
-                                        
-                                            <div><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                You will no longer be able to:
+                                            </mj-text>
 
-                                            For more information, please raise a support ticket on the Health Data Research Gateway.
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="0px">
+                                                <ul>
+                                                    <li>Review Cohort Discovery registration request.</li>
+                                                    <li>Manage Cohort Discovery users access status.</li>
+                                                </ul>
+                                            </mj-text>
 
-                                        </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                For more information, please raise a support ticket on the Health Data Research Gateway.
+                                            </mj-text>
                                         </mj-column>
                                     </mj-section>
 
@@ -1633,37 +1645,40 @@ class EmailTemplateSeeder extends Seeder
                                 <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
                                     <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
-                                        <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px">
-                                            Hi [[USER_FIRSTNAME]],
-                                        
-                                            <div><br><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Hi [[USER_FIRSTNAME]],
+                                            </mj-text>
 
-                                            You have been granted access for the NHS Research SDE on Cohort Discovery. Please use the buttons below to  access Cohort Discovery and watch a video on how to use the tool.
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                You have been granted access for the NHS Research SDE on Cohort Discovery. Please use the buttons below to access Cohort Discovery and watch a video on how to use the tool.
+                                            </mj-text>
 
-                                            <div><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Please logout of your account on HDR Gateway and log back in again to reflect your refreshed access.
+                                            </mj-text>
 
-                                            Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.
+                                            </mj-text>
 
-                                            <div><br></div>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                If you require further support raise a support ticket on the Health Data Research Gateway.
+                                            </mj-text>
 
-                                            If you require further support raise a support ticket on the Health Data Research Gateway.
-
-                                            <div><br></div>
-
-                                            <ul>
-                                                <li>Your account: [[USER_EMAIL]]</li>
-                                                <li>Date of expiry: [[EXPIRY_DATE]]</li>
-                                                <li>Date of expiry for NHS Research SDE: [[NHS_EXPIRY_DATE]]</li>
-                                            </ul>
-
-                                        </mj-text>
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                <ul>
+                                                    <li>Your account: [[USER_EMAIL]]</li>
+                                                    <li>Date of expiry: [[EXPIRY_DATE]]</li>
+                                                    <li>Date of expiry for NHS Research SDE: [[NHS_EXPIRY_DATE]]</li>
+                                                </ul>
+                                            </mj-text>
                                         </mj-column>
                                     </mj-section>
 
                                     <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
                                         <mj-column border="none" vertical-align="top" padding="0px">
                                         <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[COHORT_DISCOVERY_RENEW_URL]]" padding="0px">
-                                            Open your dashboard
+                                            Access Cohort Discovery
                                         </mj-button>
                                         </mj-column>
                                     </mj-section>
@@ -2316,6 +2331,156 @@ class EmailTemplateSeeder extends Seeder
                             }
                         ]
                     }',
+            ]
+        );
+
+        EmailTemplate::create(
+            [
+                'identifier' => 'integration.job.fails.teamadmin_developer',
+                'subject' => 'Gateway Integration Error',
+                'body' => '<mjml>
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('An automation error occured for an integration on the Gateway for [[TEAM_NAME]]') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Dear [[USER_FIRSTNAME]],
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration [[INTEGRATION_ID]]. Summary of the syncronisations is below.
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                To review or edit the integration, click the link below or visit your account on the Gateway
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[INTEGRATION_LIST_URL]]" padding="0px">
+                                            View integrations
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Errors:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_ERRORS]]
+                                            </mj-text>
+
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Success:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_SUCCESS]]
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                </mj-wrapper>
+                                
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
+            ]
+        );
+
+        EmailTemplate::create(
+            [
+                'identifier' => 'integration.job.fails.no_teamadmin_developer',
+                'subject' => 'Gateway Integration Error',
+                'body' => '<mjml>
+                            ' . $this->newHeader() . '
+                            
+                            <mj-body background-color="#eeeeee" width="600px">
+                            
+                                ' . $this->newBodyTop('An automation error occured for an integration on the Gateway for [[TEAM_NAME]]') . '
+
+                                <!-- body section start -->
+                                <mj-wrapper background-color="#ffffff" border="none" direction="ltr" text-align="center" padding="20px 0">
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Dear [[USER_FIRSTNAME]],
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                This is an automated notification that on [[DATE_OF_ERROR]] there was an error during the scheduled cloud run for the integration [[INTEGRATION_ID]]. Summary of the syncronisations is below.
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                To review or edit the integration, contact your Team Administrator(s) or Developer(s):
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[USER_LIST]]
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="20px 0px 0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+                                        <mj-button align="left" background-color="#475DA7" color="#ffffff" font-weight="normal" border-radius="3px" line-height="1" target="_blank" vertical-align="middle" border="none" text-align="center" href="[[INTEGRATION_LIST_URL]]" padding="0px">
+                                            View integrations
+                                        </mj-button>
+                                        </mj-column>
+                                    </mj-section>
+
+                                    <mj-section border="none" direction="ltr" text-align="left" padding="0px 20px">
+                                        <mj-column border="none" vertical-align="top" padding="0px">
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Errors:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_ERRORS]]
+                                            </mj-text>
+
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                Success:
+                                            </mj-text>
+
+                                            <mj-text align="left" line-height="1" font-size="14px" font-weight="400" padding="0px" padding-top="10px">
+                                                [[INTEGRATION_SUCCESS]]
+                                            </mj-text>
+
+                                        </mj-column>
+                                    </mj-section>
+
+                                </mj-wrapper>
+                                
+                                <!-- body section end -->
+                            
+                                ' . $this->newBodyBottom() . '
+
+                            </mj-body>
+                            </mjml>',
             ]
         );
     }

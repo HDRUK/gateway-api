@@ -290,7 +290,7 @@ trait PublicationsV2Helper
     {
         PublicationHasKeyword::where('publication_id', $publicationId)->delete();
 
-        foreach ($keywords as $keyword) {
+        foreach (array_unique($keywords) as $keyword) {
             $kword = Keyword::firstOrCreate(
                 ['name' => $keyword],
                 ['enabled' => true]

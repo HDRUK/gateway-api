@@ -24,6 +24,9 @@ class LinkageExtraction implements ShouldQueue
     use SerializesModels;
     use LoggingContext;
 
+    public $tries   = 3;
+    public $backoff = 30;
+
     protected string $sourceDatasetId = '';
     protected string $sourceDatasetVersionId = '';
     protected string $gwdmVersion = '';
@@ -39,6 +42,7 @@ class LinkageExtraction implements ShouldQueue
      */
     public function __construct(string $datasetId, string $datasetVersionId)
     {
+        $this->onQueue('enrichment');
         try {
 
             $version = DatasetVersion::findOrFail($datasetVersionId);

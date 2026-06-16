@@ -8,7 +8,6 @@ use Exception;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
@@ -19,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\MetadataOnboard;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Traits\ModelHelpers;
+use App\Jobs\TermExtraction;
 use Maatwebsite\Excel\Facades\Excel;
 use MetadataManagementController as MMC;
 use App\Http\Traits\DatasetsV2Helpers;
@@ -27,6 +27,7 @@ use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Requests\V2\Dataset\GetDataset;
 use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\EditTeamDataset;
+use App\Context\PartnerContext;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
@@ -42,6 +43,10 @@ class TeamDatasetController extends Controller
     use RequestTransformation;
     use DatasetsV2Helpers;
     use TrimPayload;
+
+    public function __construct(private readonly PartnerContext $partnerContext)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -501,7 +506,8 @@ class TeamDatasetController extends Controller
                 $team,
                 $inputSchema,
                 $inputVersion,
-                $elasticIndexing
+                $elasticIndexing,
+                $this->partnerContext->getPartner(),
             );
 
             if ($metadataResult['translated']) {
@@ -621,11 +627,11 @@ class TeamDatasetController extends Controller
 
             $payload = $this->extractMetadata($input['metadata']);
             $payload['extra'] = [
-                "id" => $id,
-                "pid" => $currentPid,
-                "datasetType" => "Health and disease",
-                "publisherId" => $team['pid'],
-                "publisherName" => $team['name']
+                'id'            => $id,
+                'pid'           => $currentPid,
+                'datasetType'   => 'Health and disease',
+                'publisherId'   => $team['pid'],
+                'publisherName' => $team['name'],
             ];
 
             $inputSchema = $input['metadata']['schemaModel'] ?? null;
@@ -638,13 +644,12 @@ class TeamDatasetController extends Controller
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
-                $inputSchema, //user can force an input version to avoid traser unknown errors
-                $inputVersion, // as above
-                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
-                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
+                $inputSchema,
+                $inputVersion,
+                $request['status'] !== Dataset::STATUS_DRAFT,
+                $request['status'] !== Dataset::STATUS_DRAFT
             );
             if ($traserResponse['wasTranslated']) {
-                //set the gwdm metadata
                 $gwdmMetadata = $traserResponse['metadata'];
             } else {
                 return response()->json([
@@ -653,15 +658,14 @@ class TeamDatasetController extends Controller
                 ], 400);
             }
 
-            // Update the existing dataset parent record with incoming data
             $updateTime = now();
             $currDataset->update([
-                'user_id' => $jwtUser['id'] ?? $userId,
-                'team_id' => $teamId,
-                'updated' => $updateTime,
-                'pid' => $currentPid,
-                'create_origin' => $createOrigin,
-                'status' => $request['status'],
+                'user_id'          => $jwtUser['id'] ?? $userId,
+                'team_id'          => $teamId,
+                'updated'          => $updateTime,
+                'pid'              => $currentPid,
+                'create_origin'    => $createOrigin,
+                'status'           => $request['status'],
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
 
@@ -673,9 +677,7 @@ class TeamDatasetController extends Controller
                 $submittedMetadata,
             );
 
-            // Dispatch term extraction to a subprocess if the dataset moves from draft to active
             if ($request['status'] === Dataset::STATUS_ACTIVE) {
-
                 LinkageExtraction::dispatch(
                     $currDataset->id,
                     $datasetVersionId,
@@ -695,8 +697,8 @@ class TeamDatasetController extends Controller
             }
 
             Auditor::log([
-                'user_id' => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
-                'team_id' => $teamId,
+                'user_id'     => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'team_id'     => $teamId,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber) . ' updated',
@@ -705,6 +707,7 @@ class TeamDatasetController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
+
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

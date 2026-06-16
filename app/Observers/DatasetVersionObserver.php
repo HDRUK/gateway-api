@@ -2,11 +2,15 @@
 
 namespace App\Observers;
 
+use App\Http\Traits\IndexElastic;
+use App\Jobs\DeindexDataset;
+use App\Jobs\ExtractProjectGrantsFromMetadata;
+use App\Jobs\ExtractPublicationsFromMetadata;
+use App\Jobs\ExtractToolsFromMetadata;
+use App\Jobs\IndexDataset;
+use App\Jobs\ReindexDataset;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use App\Http\Traits\IndexElastic;
-use App\Jobs\ExtractToolsFromMetadata;
-use App\Jobs\ExtractPublicationsFromMetadata;
 
 class DatasetVersionObserver
 {
@@ -17,7 +21,7 @@ class DatasetVersionObserver
      */
     public function created(DatasetVersion $datasetVersion): void
     {
-        $this->elasticDatasetVersion($datasetVersion);
+        $this->elasticDatasetVersion($datasetVersion, 'created');
     }
 
     /**
@@ -25,7 +29,7 @@ class DatasetVersionObserver
      */
     public function updated(DatasetVersion $datasetVersion): void
     {
-        $this->elasticDatasetVersion($datasetVersion);
+        $this->elasticDatasetVersion($datasetVersion, 'updated');
     }
 
     /**
@@ -33,7 +37,7 @@ class DatasetVersionObserver
      */
     public function deleted(DatasetVersion $datasetVersion): void
     {
-        $this->elasticDatasetVersion($datasetVersion);
+        $this->elasticDatasetVersion($datasetVersion, 'deleted');
     }
 
     /**
@@ -52,25 +56,44 @@ class DatasetVersionObserver
         //
     }
 
-    public function elasticDatasetVersion(DatasetVersion $datasetVersion)
+    public function elasticDatasetVersion(DatasetVersion $datasetVersion, string $action)
     {
         $datasetId = $datasetVersion->dataset_id;
         $dataset = Dataset::where([
             'id' => $datasetId,
-            'status' => Dataset::STATUS_ACTIVE,
-        ])->select('id', 'status')->first();
+        ])->select('id', 'status', 'team_id')->first();
 
-        if (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE && $datasetVersion->active_date === null) {
+        if (is_null($dataset)) {
+            return;
+        }
+
+        if ($datasetVersion->active_date === null && $dataset->status === Dataset::STATUS_ACTIVE) {
             $datasetVersion->active_date = now();
             $datasetVersion->save();
-        } elseif (!is_null($dataset) && $dataset->status === Dataset::STATUS_ACTIVE) {
-            ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
-            ExtractToolsFromMetadata::dispatch($datasetVersion->id);
+        }
 
-            $this->reindexElastic($dataset->id);
-            if ($dataset->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
-            }
+        switch ($action) {
+            case 'created':
+                if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                    ExtractProjectGrantsFromMetadata::dispatch($datasetVersion->id);
+                    ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
+                    ExtractToolsFromMetadata::dispatch($datasetVersion->id);
+                    IndexDataset::dispatch($datasetId);
+                }
+                break;
+
+            case 'updated':
+                if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                    ExtractProjectGrantsFromMetadata::dispatch($datasetVersion->id);
+                    ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
+                    ExtractToolsFromMetadata::dispatch($datasetVersion->id);
+                    ReindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
+                }
+
+                break;
+            case 'deleted':
+                DeindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
+                break;
         }
     }
 }

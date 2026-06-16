@@ -65,7 +65,9 @@ class TeamWidgetController extends Controller
                     'unit',
                     'team_id',
                     'include_search_bar',
-                    'colours',
+                    'branding_primary',
+                    'branding_secondary',
+                    'branding_neutral',
                 ])
                 ->map(function ($widget) {
                     return [
@@ -78,7 +80,9 @@ class TeamWidgetController extends Controller
                         'team_id' => $widget->team_id,
                         'team_name' => $widget->team['name'],
                         'include_search_bar' => $widget->include_search_bar,
-                        'colours' => $widget->colours,
+                        'branding_primary' => $widget->branding_primary,
+                        'branding_secondary' => $widget->branding_secondary,
+                        'branding_neutral' => $widget->branding_neutral,
                     ];
                 });
 
@@ -385,12 +389,10 @@ class TeamWidgetController extends Controller
                 }
             }
 
-
             $datasetIds     = is_string($widget->included_datasets) ? array_filter(explode(',', $widget->included_datasets)) : ($widget->included_datasets ?? []);
             $dataUseIds     = is_string($widget->included_data_uses) ? array_filter(explode(',', $widget->included_data_uses)) : ($widget->included_data_uses ?? []);
             $scriptIds      = is_string($widget->included_scripts) ? array_filter(explode(',', $widget->included_scripts)) : ($widget->included_scripts ?? []);
             $collectionIds  = is_string($widget->included_collections) ? array_filter(explode(',', $widget->included_collections)) : ($widget->included_collections ?? []);
-
 
             $datasetIds     = array_map('intval', $datasetIds);
             $dataUseIds     = array_map('intval', $dataUseIds);
@@ -508,6 +510,12 @@ class TeamWidgetController extends Controller
                 $collections = [];
             }
 
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => "Retrieve data related to team {$teamId}, widget {$id} and domain origin {$domainOrigin}",
+            ]);
 
             return response()->json(['data' => [
                 'datasets' => $datasets,
@@ -522,11 +530,20 @@ class TeamWidgetController extends Controller
                     'include_search_bar'  => $widget->include_search_bar,
                     'include_cohort_link'  => $widget->include_cohort_link,
                     'keep_proportions' => $widget->keep_proportions,
-                    'colours' => $widget->colours,
+                    'branding_primary' => $widget->branding_primary,
+                    'branding_secondary' => $widget->branding_secondary,
+                    'branding_neutral' => $widget->branding_neutral,
                 ]
             ]], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             \Log::error('Error retrieving widget data', [
                 'team_id' => $teamId,
                 'widget_id' => $id,
@@ -655,7 +672,9 @@ class TeamWidgetController extends Controller
                 'included_data_uses'   => 'nullable|array',
                 'included_scripts'     => 'nullable|array',
                 'included_collections' => 'nullable|array',
-                'colours'               => 'nullable|array',
+                'branding_primary'     => 'nullable|string',
+                'branding_secondary'   => 'nullable|string',
+                'branding_neutral'     => 'nullable|string',
             ]);
 
             $validated['team_id'] = $teamId;
@@ -811,7 +830,9 @@ class TeamWidgetController extends Controller
                 'included_scripts'     => 'sometimes|array|nullable',
                 'included_collections' => 'sometimes|array|nullable',
                 'data_custodian_entities_ids' => 'sometimes|array|nullable',
-                'colours'               => 'sometimes|array|nullable',
+                'branding_primary' => 'sometimes|string|nullable',
+                'branding_secondary' => 'sometimes|string|nullable',
+                'branding_neutral' => 'sometimes|string|nullable',
             ]);
             foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'data_custodian_entities_ids'] as $field) {
                 if (isset($validated[$field]) && is_array($validated[$field])) {

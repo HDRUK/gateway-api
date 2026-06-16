@@ -17,12 +17,13 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libc-dev \
+    libicu-dev \
     wget \
     zlib1g-dev \
     zip \
     default-mysql-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j"$(nproc)" gd pdo pdo_mysql soap zip iconv bcmath \
+    && docker-php-ext-install -j"$(nproc)" gd pdo pdo_mysql soap zip iconv bcmath intl \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure pcntl --enable-pcntl \
     && docker-php-ext-install pcntl \
@@ -43,6 +44,10 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 
 # Copy the application
 COPY . /var/www
+
+# for local development and using google cloud services, we need to set the GOOGLE_APPLICATION_CREDENTIALS to point to the service account credentials file. 
+# In production, this will be set to the default application credentials provided by the environment.
+# ENV GOOGLE_APPLICATION_CREDENTIALS=/var/www/application_default_credentials.json
 
 # Composer & laravel
 RUN composer install --optimize-autoloader \

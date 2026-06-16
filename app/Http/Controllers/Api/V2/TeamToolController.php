@@ -844,6 +844,7 @@ class TeamToolController extends Controller
                 'contact_address',
                 'any_dataset',
                 'status',
+                'results_insights',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -902,7 +903,9 @@ class TeamToolController extends Controller
                     //note Calum - adding this to be safe
                     $this->deleteToolFromElastic((int) $id);
                 }
-            } else {
+            }
+
+            if ($initTool->status === Tool::STATUS_ACTIVE && $initTool->enabled === 1 && $currentTool->status !== Tool::STATUS_ACTIVE) {
                 $this->deleteToolFromElastic((int) $id);
             }
 

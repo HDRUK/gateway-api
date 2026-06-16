@@ -13,6 +13,32 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @OA\Schema(
+ *   schema="Publication",
+ *   description="A research publication linked to one or more datasets in the Gateway",
+ *   @OA\Property(property="id", type="integer", example=33),
+ *   @OA\Property(property="paper_title", type="string", example="Genomic risk factors for COVID-19 severity"),
+ *   @OA\Property(property="authors", type="string", nullable=true, example="Smith J, Jones A"),
+ *   @OA\Property(property="year_of_publication", type="integer", nullable=true, example=2023),
+ *   @OA\Property(property="paper_doi", type="string", nullable=true, example="10.1000/xyz123"),
+ *   @OA\Property(property="publication_type", type="string", nullable=true),
+ *   @OA\Property(property="journal_name", type="string", nullable=true, example="Nature Medicine"),
+ *   @OA\Property(property="abstract", type="string", nullable=true),
+ *   @OA\Property(property="url", type="string", format="uri", nullable=true),
+ *   @OA\Property(property="owner_id", type="integer", nullable=true),
+ *   @OA\Property(property="team_id", type="integer", nullable=true),
+ *   @OA\Property(property="first_publication_date", type="string", format="date", nullable=true, example="2023-03-15"),
+ *   @OA\Property(
+ *     property="status",
+ *     type="string",
+ *     enum={"ACTIVE","DRAFT","ARCHIVED"},
+ *     example="ACTIVE"
+ *   ),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 #[ObservedBy([PublicationObserver::class])]
 class Publication extends Model
 {

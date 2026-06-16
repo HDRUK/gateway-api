@@ -2,14 +2,14 @@
 
 namespace App\Observers;
 
+use App\Jobs\DeindexDataset;
+use App\Jobs\IndexDataset;
+use App\Jobs\ReindexDataset;
 use App\Models\Dataset;
-use App\Http\Traits\IndexElastic;
 use App\Models\DatasetVersion;
 
 class DatasetObserver
 {
-    use IndexElastic;
-
     /**
      * Handle the Dataset "created" event.
      */
@@ -24,10 +24,7 @@ class DatasetObserver
             'dataset_id' => $dataset->id
         ])->select('id')->first();
         if ($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
-            $this->reindexElastic($dataset->id);
-            if ($dataset->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
-            }
+            IndexDataset::dispatch($dataset->id);
         }
     }
 
@@ -55,17 +52,11 @@ class DatasetObserver
         ])->select('id')->first();
 
         if ($prevStatus === Dataset::STATUS_ACTIVE && $dataset->status !== Dataset::STATUS_ACTIVE) {
-            $this->deleteDatasetFromElastic($dataset->id);
-            if ($dataset->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
-            }
+            DeindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
         }
 
         if ($dataset->status === Dataset::STATUS_ACTIVE && !is_null($datasetVersion)) {
-            $this->reindexElastic($dataset->id);
-            if ($dataset->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
-            }
+            ReindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
         }
     }
 
@@ -85,10 +76,7 @@ class DatasetObserver
         $prevStatus = $dataset->prevStatus;
 
         if ($prevStatus === Dataset::STATUS_ACTIVE) {
-            $this->deleteDatasetFromElastic($dataset->id);
-            if ($dataset->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $dataset->team_id, 'dataset');
-            }
+            DeindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
         }
     }
 

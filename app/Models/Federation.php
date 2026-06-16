@@ -68,6 +68,15 @@ class Federation extends Model
         'enabled',
         'tested',
         'pid',
+        'is_running',
+    ];
+
+    /**
+     * Fields that must never appear in serialised API responses.
+     * auth_secret_key is only ever used transiently for federation tests.
+     */
+    protected $hidden = [
+        'auth_secret_key',
     ];
 
     /**
@@ -76,6 +85,7 @@ class Federation extends Model
     protected $casts = [
         'enabled' => 'boolean',
         'tested' => 'boolean',
+        'is_running' => 'boolean',
     ];
 
     /** @return BelongsToMany<Team, $this> */

@@ -133,3 +133,64 @@ if (!function_exists('arrayColumnToString')) {
         return null;
     }
 }
+
+if (! function_exists('decodeHtmlEntitiesRecursive')) {
+    /**
+     * Recursively decode HTML entities in a string, array, or nested structure.
+     *
+     * Common conversions:
+     *   &gt;   → >
+     *   &lt;   → <
+     *   &amp;  → &
+     *   &quot; → "
+     *   &#039; → '
+     *
+     * @param  mixed  $data     The value to decode. Accepts a string, array
+     *                          (including nested/multidimensional), or any
+     *                          scalar. Objects are returned as-is.
+     * @param  int    $flags    Bitmask of ENT_* constants passed to
+     *                          html_entity_decode(). Defaults to
+     *                          ENT_QUOTES | ENT_HTML5, which decodes both
+     *                          single and double quoted entities using the
+     *                          full HTML5 entity table.
+     * @param  string $encoding Character encoding to use for decoding.
+     *                          Defaults to 'UTF-8'.
+     *
+     * @return mixed            The decoded value, preserving the original type
+     *                          and structure of the input.
+     *
+     * @example
+     *   // Plain string
+     *   decode_html_entities_recursive('Hello &gt; World');
+     *   // → 'Hello > World'
+     *
+     * @example
+     *   // Flat array
+     *   decode_html_entities_recursive(['a' => '&lt;b&gt;', 'c' => 42]);
+     *   // → ['a' => '<b>', 'c' => 42]
+     *
+     * @example
+     *   // Multidimensional / JSON payload
+     *   $payload = json_decode($request->getContent(), true);
+     *   $clean   = decode_html_entities_recursive($payload);
+     */
+    function decodeHtmlEntitiesRecursive(
+        mixed $data,
+        int $flags = ENT_QUOTES | ENT_HTML5,
+        string $encoding = 'UTF-8',
+    ): mixed {
+        if (is_string($data)) {
+            return html_entity_decode($data, $flags, $encoding);
+        }
+
+        if (is_array($data)) {
+            return array_map(
+                static fn (mixed $item): mixed => decodeHtmlEntitiesRecursive($item, $flags, $encoding),
+                $data,
+            );
+        }
+
+        // return untouched
+        return $data;
+    }
+}

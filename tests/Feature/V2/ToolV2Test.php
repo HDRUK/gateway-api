@@ -1122,7 +1122,7 @@ class ToolV2Test extends TestCase
             ->times(1);
 
         ECC::shouldReceive("deleteDocument")
-            ->times(2);
+            ->times(1);
 
 
         $licenseId = License::where('valid_until', null)->get()->random()->id;
