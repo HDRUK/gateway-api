@@ -46,6 +46,14 @@ trait MockExternalApis
         return $json;
     }
 
+    public function getMetadataV2p1()
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p1_dataset_min.json', 0, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
+    }
+
     public function getMetadata()
     {
         $version = Config::get('metadata.GWDM.version');
@@ -59,6 +67,9 @@ trait MockExternalApis
 
             case version_compare($version, "2.0", "<="):
                 return $this->getMetadataV2p0();
+
+            case version_compare($version, "2.1", "<="):
+                return $this->getMetadataV2p1();
         }
     }
 

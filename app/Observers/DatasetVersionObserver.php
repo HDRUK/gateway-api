@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Http\Traits\IndexElastic;
 use App\Jobs\DeindexDataset;
+use App\Jobs\ExtractProjectGrantsFromMetadata;
 use App\Jobs\ExtractPublicationsFromMetadata;
 use App\Jobs\ExtractToolsFromMetadata;
 use App\Jobs\IndexDataset;
@@ -74,6 +75,7 @@ class DatasetVersionObserver
         switch ($action) {
             case 'created':
                 if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                    ExtractProjectGrantsFromMetadata::dispatch($datasetVersion->id);
                     ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
                     ExtractToolsFromMetadata::dispatch($datasetVersion->id);
                     IndexDataset::dispatch($datasetId);
@@ -82,6 +84,7 @@ class DatasetVersionObserver
 
             case 'updated':
                 if ($dataset->status === Dataset::STATUS_ACTIVE) {
+                    ExtractProjectGrantsFromMetadata::dispatch($datasetVersion->id);
                     ExtractPublicationsFromMetadata::dispatch($datasetVersion->id);
                     ExtractToolsFromMetadata::dispatch($datasetVersion->id);
                     ReindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);

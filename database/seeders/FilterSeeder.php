@@ -38,6 +38,7 @@ class FilterSeeder extends Seeder
             'dataProviderColl',
             'accessService',
             'sampleAvailability',
+            'projectGrantNames',
             'dataSource',
         ];
 

@@ -1,0 +1,171 @@
+{
+    "gwdmVersion": "2.1",
+    "metadata": {
+    "required": {
+      "gatewayId": "087654b3-2c0a-4b32-9c2e-1234567890ab",
+      "gatewayPid": "087654b3-2c0a-4b32-9c2e-1234567890ab",
+      "issued": "2018-03-01T00:00:00Z",
+      "modified": "2024-01-15T00:00:00Z",
+      "version": "1.0.0",
+      "revisions": [
+        {
+          "version": "1.0.0",
+          "url": "https://www.oncologytrust.org/datasets/087654b3-2c0a-4b32-9c2e-1234567890ab"
+        }
+      ]
+    },
+    "summary": {
+      "abstract": "Registry data tracking treatment response patterns in advanced pancreatic ductal adenocarcinoma. Includes frequency of imaging and circulating tumor DNA details.",
+      "contactPoint": "access@oncologytrust.org",
+      "keywords": "Pancreatic;,;Cancer;,;Radiomics;,;Biomarkers;,;Response",
+      "controlledKeywords": null,
+      "datasetType": null,
+      "datasetSubType": null,
+      "populationSize": 2105,
+      "description": "Other data types:\n- Abdominal CT Scans (application/dicom): 3D volumetric scans of the pancreas with tumors segmented",
+      "doiName": "10.1500/data.45",
+      "shortTitle": "Pancreatic Cancer Radiomics and Biomarker Cohort",
+      "title": "Pancreatic Cancer Radiomics and Biomarker Cohort",
+      "leadResearcher": "Dr. Miller",
+      "leadResearchInstitute": "National Cancer Institute",
+      "datasetAliases": null,
+      "publisher": {
+        "name": "Oncology Research Trust",
+        "gatewayId": "https://ror.org/087654b32",
+        "rorId": null
+      },
+      "inPipeline": null,
+      "funders": null
+    },
+    "coverage": {
+      "typicalAgeRange": null,
+      "spatial": null,
+      "pathway": null,
+      "followUp": null,
+      "datasetCompleteness": null
+    },
+    "provenance": {
+      "origin": null,
+      "temporal": {
+        "timeLag": "Other",
+        "accrualPeriodicity": null,
+        "startDate": null,
+        "endDate": null,
+        "distributionReleaseDate": null
+      }
+    },
+    "accessibility": {
+      "access": {
+        "deliveryLeadTime": "Other",
+        "jurisdiction": "GB-ENG",
+        "dataController": "Oncology Research Trust",
+        "dataProcessor": "Oncology Research Trust",
+        "accessRights": "https://www.oncologytrust.org/terms",
+        "accessService": "https://www.oncologytrust.org/data-access",
+        "accessRequestCost": "Varies",
+        "accessServiceCategory": null
+      },
+      "usage": {
+        "dataUseLimitation": "General research use",
+        "dataUseRequirement": "Return to database or resource",
+        "resourceCreator": {
+          "name": "Oncology Research Trust",
+          "gatewayId": null,
+          "rorId": null
+        }
+      },
+      "formatAndStandards": {
+        "vocabularyEncodingSchemes": "OTHER",
+        "conformsTo": "OTHER",
+        "languages": "en",
+        "formats": "CSV;,;JSON"
+      }
+    },
+    "linkage": {
+      "isGeneratedUsing": null,
+      "dataUses": null,
+      "isReferenceIn": null,
+      "datasetLinkage": null,
+      "associatedMedia": null,
+      "tools": null,
+      "investigations": null,
+      "syntheticDataWebLink": null,
+      "publicationAboutDataset": null,
+      "publicationUsingDataset": null
+    },
+    "observations": [
+      {
+        "observedNode": "Persons",
+        "measuredValue": 4120,
+        "observationDate": "2023-12-01",
+        "measuredProperty": "Count",
+        "disambiguatingDescription": null
+      }
+    ],
+    "tissuesSampleCollection": [],
+    "demographicFrequency": null,
+    "omics": null,
+    "datasetFilters": [
+      {
+        "id": "0_0_0_1_10",
+        "label": "C25 Pancreas",
+        "category": "C15-C26 Digestive organs",
+        "primaryGroup": "cancer-type",
+        "description": ""
+      },
+      {
+        "id": "0_0_1_5_3",
+        "label": "8140/3 Adenocarcinoma, NOS",
+        "category": "814-838 Adenomas and adenocarcinomas",
+        "primaryGroup": "cancer-type",
+        "description": ""
+      },
+      {
+        "id": "0_1_1",
+        "label": "research specific restrictions",
+        "category": "accessType",
+        "primaryGroup": "access-type",
+        "description": "Limited to studies of a certain research type (DUO_0000012)"
+      },
+      {
+        "id": "0_2_4_2",
+        "label": "Imaging Data",
+        "category": "Techniques",
+        "primaryGroup": "data-type",
+        "description": ""
+      },
+      {
+        "id": "0_2_2_0_6",
+        "label": "Saccharomyces cerevisiae",
+        "category": "Organism",
+        "primaryGroup": "data-type",
+        "description": ""
+      },
+      {
+        "id": "0_2_2_0_2",
+        "label": "Fruit fly",
+        "category": "Organism",
+        "primaryGroup": "data-type",
+        "description": ""
+      }
+    ],
+    "projectGrants": [
+      {
+        "pid": "ORT105",
+        "projectGrantName": "Pancreatic Cancer Radiomics Integration",
+        "leadResearcher": "Dr. Miller",
+        "leadResearchInstitute": "National Cancer Institute",
+        "grantNumber": "ORT105, ORT106",
+        "projectGrantStartDate": "2019-06-01",
+        "projectGrantEndDate": "2024-06-01",
+        "projectGrantScope": "CT imaging, genetic markers, and clinical background information"
+      }
+    ],
+    "icons": ["Patient Study", "Imaging"],
+    "erd": {
+      "image": "https://github.com/OncologyResearch/panc_cohort/blob/main/assets/erd.png",
+      "description": null
+    },
+    "structuralMetadata": null
+  }
+}

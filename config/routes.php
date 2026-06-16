@@ -5,6 +5,24 @@ return [
     [
         'name' => 'api.v1.auth.register',
         'method' => 'post',
+        'path' => '/auth/register',
+        'methodController' => 'AuthController@register',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'api.v1.auth.login',
+        'method' => 'post',
+        'path' => '/auth/login',
+        'methodController' => 'AuthController@login',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'api.v1.auth.check',
+        'method' => 'post',
         'path' => '/auth',
         'methodController' => 'AuthController@checkAuthorization',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -21,6 +39,28 @@ return [
             'jwt.verify',
         ],
         'constraint' => [],
+    ],
+
+    // cancer type filters
+    [
+        'name' => 'api.v1.cancer-type-filters.index',
+        'method' => 'get',
+        'path' => '/cancer-type-filters',
+        'methodController' => 'CancerTypeFilterController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'api.v1.cancer-type-filters.show',
+        'method' => 'get',
+        'path' => '/cancer-type-filters/{filter_id}',
+        'methodController' => 'CancerTypeFilterController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'filter_id' => '[0-9_]+',
+        ],
     ],
 
     // login for:  google || azure || linkedin
@@ -3408,6 +3448,28 @@ return [
             'sunset',
         ],
         'constraint' => [],
+    ],
+
+    // project-grants
+    [
+        'name' => 'project_grants.index',
+        'method' => 'get',
+        'path' => '/project_grants',
+        'methodController' => 'ProjectGrantController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'project_grants.show',
+        'method' => 'get',
+        'path' => '/project_grants/{id}',
+        'methodController' => 'ProjectGrantController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
 
     // form hydration

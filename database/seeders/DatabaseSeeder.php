@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             BaseDatabaseSeeder::class,
+            CancerTypeFilterSeeder::class,
             TagSeeder::class,
             FeatureSeeder::class,
             DarIntegrationSeeder::class,

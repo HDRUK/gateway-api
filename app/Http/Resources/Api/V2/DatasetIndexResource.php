@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Api\V2;
 
 use App\Models\DatasetVersion;
 use Illuminate\Http\Resources\Json\JsonResource;
