@@ -2,12 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Services\EmailTemplateAssembler;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 
 class PreviewEmailTemplate extends Command
 {
-    protected $signature = 'email:preview {identifier : The template identifier (matches the JSON filename)}';
+    protected $signature = 'email:preview
+        {identifier : The template identifier (matches the JSON filename)}
+        {--layout= : Override the layout (standard, new, none)}
+        {--header-text= : Override the header/title text injected into the layout}';
 
     protected $description = 'Render an email template\'s MJML to HTML and open it in the browser';
 
@@ -27,6 +31,26 @@ class PreviewEmailTemplate extends Command
 
         $template = json_decode(file_get_contents($file), true);
 
+        $validLayouts = ['standard', 'new', 'none'];
+
+        if ($layoutOverride = $this->option('layout')) {
+            if (!in_array($layoutOverride, $validLayouts, true)) {
+                $this->error("Invalid layout '{$layoutOverride}'. Must be one of: " . implode(', ', $validLayouts));
+                return self::FAILURE;
+            }
+            $this->line('  layout:      ' . ($template['layout'] ?? 'none') . ' → <fg=yellow>' . $layoutOverride . '</>');
+
+            $template['layout'] = $layoutOverride;
+        }
+
+        if ($headerOverride = $this->option('header-text')) {
+            $this->line("  header-text: " . ($template['header_text'] ?? '(none)') . " → <fg=yellow>{$headerOverride}</fg=yellow>");
+            $template['header_text'] = $headerOverride;
+        }
+
+        $assembler = new EmailTemplateAssembler(database_path('seeders/email-templates/_layouts'));
+        $body      = $assembler->assemble($template);
+
         // Resolve seeder-time config placeholders
         $body = str_replace(
             ['[[GCS_STORAGE_API_URI]]', '[[GCS_BUCKET]]', '[[GATEWAY_URL]]'],
@@ -35,7 +59,7 @@ class PreviewEmailTemplate extends Command
                 config('filesystems.disks.gcs_media.bucket'),
                 config('gateway.gateway_url'),
             ],
-            $template['body']
+            $body
         );
 
         // Resolve button URLs (mirrors the logic in App\Mail\Email)
