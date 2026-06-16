@@ -5,30 +5,41 @@ namespace Database\Seeders;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Illuminate\Database\Seeder;
-use Tests\Traits\MockExternalApis;
 
 class DatasetVersionSeeder extends Seeder
 {
-    use MockExternalApis;
-
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $datasets = Dataset::all();
+        $files = glob(base_path('tests/Unit/test_files/cruk_dummy_data/dataset_*.json'));
+        sort($files, SORT_NATURAL);
 
-        foreach ($datasets as $dataset) {
-            // Generate a random number of dataset versions for each dataset
-            $numVersions = rand(1, 5);
+        $datasets = Dataset::where('partner_context', 'CRUK')->orderBy('id')->get();
 
-            for ($version = 1; $version <= $numVersions; $version++) {
-                DatasetVersion::factory()->create([
-                    'dataset_id' => $dataset->id,
-                    'provider_team_id' => $dataset->team_id,
-                    'version' => $version, // Ensure the version increments
-                ]);
+        foreach ($datasets as $index => $dataset) {
+            if (!isset($files[$index])) {
+                break;
             }
+
+            $metadata = json_decode(file_get_contents($files[$index]), true);
+            $gatewayId = $metadata['metadata']['required']['gatewayId'] ?? null;
+
+            if ($gatewayId) {
+                $dataset->update(['pid' => $gatewayId]);
+            }
+
+            $summary = $metadata['metadata']['summary'] ?? [];
+
+            DatasetVersion::create([
+                'dataset_id' => $dataset->id,
+                'metadata' => $metadata,
+                'version' => 1,
+                'title' => $summary['title'] ?? null,
+                'short_title' => $summary['shortTitle'] ?? $summary['title'] ?? null,
+                'provider_team_id' => $dataset->team_id,
+            ]);
         }
     }
 }

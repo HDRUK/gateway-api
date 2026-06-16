@@ -1,0 +1,229 @@
+{
+    "gwdmVersion": "2.1",
+    "metadata": {
+        "required": {
+            "gatewayId": "087654b3-2c0a-4b32-9c2e-1234567890af",
+            "gatewayPid": "087654b3-2c0a-4b32-9c2e-1234567890af",
+            "issued": "2016-01-01T00:00:00Z",
+            "modified": "2023-12-01T00:00:00Z",
+            "version": "1.0.0",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://www.uro-oncology.org/datasets/087654b3-2c0a-4b32-9c2e-1234567890af"
+                }
+            ]
+        },
+        "summary": {
+            "title": "Prostate Cancer Active Surveillance and Progression Registry",
+            "abstract": "Registry data monitoring disease progression in men with low-risk localized prostate cancer managed through active surveillance. Includes longitudinal PSA kinetics and multiparametric MRI findings.",
+            "dataCustodian": {
+                "identifier": "https://ror.org/077111p22",
+                "name": "Urological Oncology Collaborative",
+                "logo": "https://www.uro-oncology.org/images/logo.png",
+                "contactPoint": [
+                    "registry@uro-oncology.org"
+                ],
+                "description": "https://www.uro-oncology.org/about-the-collaborative"
+            },
+            "funders": "Prostate Cancer Foundation\nMedical Research Council",
+            "populationSize": 5820,
+            "keywords": [
+                "Prostate",
+                "Cancer",
+                "Active Surveillance",
+                "PSA",
+                "mpMRI"
+            ],
+            "doiName": "10.6000/data.55",
+            "contactPoint": "data-requests@uro-oncology.org",
+            "datasetAliases": [
+                "PCa Active Surveillance Cohort"
+            ]
+        },
+        "documentation": {
+            "description": "Registry data monitoring disease progression in men with low-risk localized prostate cancer managed through active surveillance. Includes longitudinal PSA kinetics and multiparametric MRI findings. This is a synthetic description generated for testing purposes.",
+            "inPipeline": "Available",
+            "associatedMedia": [
+                "https://uro-oncology.org/documents/surveillance_protocol_v2.pdf"
+            ]
+        },
+        "coverage": {
+            "typicalAgeRangeMin": 50,
+            "typicalAgeRangeMax": 85,
+            "datasetCompleteness": "https://uro-oncology.org/data-quality/completeness-report"
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Biannual",
+                "startDate": "2016-01-01",
+                "timeLag": "6 months",
+                "endDate": "2023-06-30",
+                "distributionReleaseDate": "2023-12-01"
+            }
+        },
+        "observations": [
+            {
+                "observedNode": "Clinical Encounters",
+                "measuredValue": 34920,
+                "observationDate": "2023-06-30",
+                "measuredProperty": "Count"
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 70
+                },
+                {
+                    "bin": "Black or Black British - Caribbean",
+                    "count": 16
+                },
+                {
+                    "bin": "Black or Black British - African",
+                    "count": 7
+                },
+                {
+                    "bin": "Asian or Asian British",
+                    "count": 3
+                },
+                {
+                    "bin": "Mixed",
+                    "count": 1
+                },
+                {
+                    "bin": "Not stated",
+                    "count": 0
+                }
+            ]
+        },
+        "projectGrants": [
+            {
+                "pid": "04_000",
+                "projectGrantName": "Predictors of Reclassification in Prostate Cancer",
+                "leadResearcher": "Dr. Marcus Thorne",
+                "leadResearchInstitute": "Institute of Urological Sciences",
+                "grantNumber": "PCF-9982, MRC-443",
+                "projectGrantStartDate": "2017-04-01",
+                "projectGrantEndDate": "2024-03-31",
+                "projectGrantScope": "mpMRI images, repeat biopsy pathology reports, and PSA density calculations"
+            }
+        ],
+        "erd": "https://github.com/UroOncology/pca_registry/blob/main/database_schema.png",
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Biomarker_Tracking",
+                    "description": "Longitudinal records of blood and urine biomarkers",
+                    "columns": [
+                        {
+                            "name": "psa_levels",
+                            "dataType": "list",
+                            "description": "list of timestamped Prostate-Specific Antigen (ng/mL) values",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "[PSA_Velocity_High]",
+                                    "description": "PSA velocity exceeding 0.35 ng/mL/year",
+                                    "frequency": 850
+                                }
+                            ]
+                        }
+                    ],
+                    "size": 5820
+                }
+            ],
+            "syntheticDataWebLink": [
+                "https://uro-oncology.org/datasets/synthetic_pca"
+            ]
+        },
+        "otherDataTypes": [
+            {
+                "title": "Multiparametric MRI",
+                "description": "T2-weighted, diffusion-weighted, and dynamic contrast-enhanced prostate imaging",
+                "format": "DICOM"
+            }
+        ],
+        "enrichmentAndLinkage": {
+            "derivedFrom": [
+                {
+                    "title": "National Prostate Cancer Audit",
+                    "pid": "NPCA-02",
+                    "url": "https://healthdatagateway.org/en/dataset/811"
+                }
+            ],
+            "publicationUsingDataset": [
+                "10.1016/j.eururo.2021.10.022"
+            ],
+            "publicationAboutDataset": [
+                "10.1016/j.eururo.2021.10.023"
+            ],
+            "tools": [
+                "https://github.com/topics/prostate-mri-segmentation"
+            ],
+            "investigations": [
+                "UOC-304-Imaging"
+            ],
+            "similarToDatasets": [
+                {
+                    "url": "10.1016/j.eururo.2020.05.014",
+                    "title": "Localized Prostate Cancer Treatment Outcomes",
+                    "pid": "LPCTO-91"
+                }
+            ]
+        },
+        "omics": {
+            "assay": "Transcriptome Profiling",
+            "platform": "Affymetrix Human Transcriptome Array 2.0"
+        },
+        "icons": [
+            "Longitudinal Data",
+            "Imaging"
+        ],
+        "datasetFilters": [
+            {
+                "id": "0_0_0_11_1",
+                "label": "C61 Prostate gland",
+                "category": "C60-C63 Male genital organs",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_0_1_5_3",
+                "label": "8140/3 Adenocarcinoma, NOS",
+                "category": "814-838 Adenomas and adenocarcinomas",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_1_9",
+                "label": "not available at present",
+                "category": "accessType",
+                "primaryGroup": "access-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_3_1_4",
+                "label": "Kidney function tests",
+                "category": "Biopsy Reports and Lab Results",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_1_2_2",
+                "label": "Medication",
+                "category": "Treatment",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_4",
+                "label": "Techniques",
+                "category": "dataType",
+                "primaryGroup": "data-type",
+                "description": ""
+            }
+        ]
+    }
+}
