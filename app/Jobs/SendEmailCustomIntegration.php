@@ -20,90 +20,89 @@ class SendEmailCustomIntegration implements ShouldQueue
 
     private int $federationId;
     private ?string $jobUuid;
+    private string $outcome;
+    private ?string $errorMessage;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(int $federationId, ?string $jobUuid)
+    public function __construct(int $federationId, ?string $jobUuid, string $outcome, ?string $errorMessage = null)
     {
         $this->onQueue('high');
         $this->federationId = $federationId;
-        $this->jobUuid = $jobUuid;
+        $this->jobUuid      = $jobUuid;
+        $this->outcome      = $outcome;
+        $this->errorMessage = $errorMessage;
     }
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
-        if (!$this->jobUuid) {
-            return;
-        }
-
-        $federation = $this->getDetails($this->federationId);
-        $team = $federation['team'];
-        $teamId = $team[0]['id'];
-        $teamName = $team[0]['name'];
+        $federation    = $this->getDetails($this->federationId);
+        $team          = $federation['team'];
+        $teamId        = $team[0]['id'];
+        $teamName      = $team[0]['name'];
         $notifications = $federation['notifications'];
 
-        $integrationDetails = $this->getFederationHistory($teamId);
-
-        $integrationSuccessList = $integrationDetails['integration_success'];
-        $integrationErrorsList = $integrationDetails['integration_errors'];
-
-        $template = null;
+        $history = $this->jobUuid
+            ? $this->getFederationHistory()
+            : ['integration_success' => '<ul></ul>', 'integration_errors' => '<ul></ul>', 'success_count' => 0];
 
         foreach ($notifications as $notification) {
-            $userId = (isset($notification['user_notification']) && !is_null($notification['user_notification'])) ? $notification['user_notification']['id'] : null;
+            $userId = $notification['user_notification']['id'] ?? null;
+
             if (is_null($userId)) {
                 $this->log('warning', 'send email after integration: user id not found');
                 continue;
             }
 
-            $userEmail = $notification['user_notification']['preferred_email'] === 'primary' ? $notification['user_notification']['email'] : $notification['user_notification']['secondary_email'];
+            $userEmail = $notification['user_notification']['preferred_email'] === 'primary'
+                ? $notification['user_notification']['email']
+                : $notification['user_notification']['secondary_email'];
 
             if (is_null($userEmail)) {
                 $this->log('warning', 'send email after integration: email not found');
                 continue;
             }
 
-            $checkUser = $this->checkUserPerms($userId, $teamId);
-            if ($checkUser) {
-                $template = EmailTemplate::where('identifier', '=', 'integration.job.fails.teamadmin_developer')->first();
-            }
+            $checkUser      = $this->checkUserPerms($userId, $teamId);
+            $permSuffix     = $checkUser ? 'teamadmin_developer' : 'no_teamadmin_developer';
+            $templateId     = "integration.job.{$this->outcome}.{$permSuffix}";
 
-            if (!$checkUser) {
-                $template = EmailTemplate::where('identifier', '=', 'integration.job.fails.no_teamadmin_developer')->first();
+            $template = EmailTemplate::where('identifier', $templateId)->first();
+
+            if (!$template) {
+                $this->log('warning', "send email after integration: template '{$templateId}' not found");
+                continue;
             }
 
             $to = [
                 'to' => [
                     'email' => $userEmail,
-                    'name' => $notification['user_notification']['name'],
+                    'name'  => $notification['user_notification']['name'],
                 ],
             ];
 
             $replacements = [
-                '[[USER_FIRSTNAME]]' => $notification['user_notification']['firstname'],
-                '[[TEAM_NAME]]' => $teamName,
-                '[[DATE_OF_ERROR]]' => Carbon::now()->toDateTimeString(),
+                '[[USER_FIRSTNAME]]'       => $notification['user_notification']['firstname'],
+                '[[TEAM_NAME]]'            => $teamName,
+                '[[RUN_DATE]]'             => Carbon::now()->toDateTimeString(),
+                '[[INTEGRATION_ID]]'       => $federation['id'],
                 '[[INTEGRATION_LIST_URL]]' => config('gateway.gateway_url') . "/en/account/team/{$teamId}/integrations/integration/list",
-                '[[INTEGRATION_SUCCESS]]' => $integrationSuccessList,
-                '[[INTEGRATION_ERRORS]]' => $integrationErrorsList,
-                '[[USER_LIST]]' => $checkUser ? '' : $this->getListOfUsers($teamId),
-                '[[INTEGRATION_ID]]' => $federation['id'],
+                '[[DATASET_COUNT]]'        => (string) $history['success_count'],
+                '[[INTEGRATION_SUCCESS]]'  => $history['integration_success'],
+                '[[INTEGRATION_ERRORS]]'   => $history['integration_errors'],
+                '[[USER_LIST]]'            => $checkUser ? '' : $this->getListOfUsers($teamId),
+                '[[JOB_ERROR]]'            => $this->errorMessage ?? '',
             ];
 
             SendEmailJob::dispatch($to, $template, $replacements);
         }
     }
 
-    public function getFederationHistory(int $teamId)
+    public function getFederationHistory(): array
     {
         $pids = $this->getUniquePid();
 
-        $integrationSuccess = "<ul>";
-        $integrationErrors = "<ul>";
+        $integrationSuccess = '<ul>';
+        $integrationErrors  = '<ul>';
+        $successCount       = 0;
 
         foreach ($pids as $pid) {
             $latestAttempt = FederationJobRun::where('job_uuid', $this->jobUuid)
@@ -114,25 +113,27 @@ class SendEmailCustomIntegration implements ShouldQueue
             if ($latestAttempt->status === 1) {
                 $details = data_get($latestAttempt, 'details.message', '');
                 $integrationSuccess .= "<li>PID: {$latestAttempt->pid} - {$details}</li>";
+                $successCount++;
             }
 
             if ($latestAttempt->status === 0) {
                 $details = data_get($latestAttempt, 'details.message', []);
-                $error = $this->getErrors($details);
+                $error   = $this->getErrors($details);
                 $integrationErrors .= "<li>PID - {$latestAttempt->pid}:<br>{$error}</li>";
             }
         }
 
-        $integrationSuccess .= "</ul>";
-        $integrationErrors .= "<ul>";
+        $integrationSuccess .= '</ul>';
+        $integrationErrors  .= '</ul>';
 
         return [
             'integration_success' => $integrationSuccess,
-            'integration_errors' => $integrationErrors
+            'integration_errors'  => $integrationErrors,
+            'success_count'       => $successCount,
         ];
     }
 
-    public function getDetails(int $fedId)
+    public function getDetails(int $fedId): array
     {
         return Federation::query()
             ->where('id', $fedId)
@@ -180,16 +181,17 @@ class SendEmailCustomIntegration implements ShouldQueue
         return '<ul>' . collect($users)->map(fn ($user) => "<li>{$user->name}</li>")->implode('') . '</ul>';
     }
 
-    public function getUniquePid()
+    public function getUniquePid(): array
     {
         return FederationJobRun::select('pid')
             ->where('job_uuid', $this->jobUuid)
             ->where('federation_id', $this->federationId)
             ->distinct()
-            ->pluck('pid')->toArray();
+            ->pluck('pid')
+            ->toArray();
     }
 
-    public function getErrors(array $errors)
+    public function getErrors(array $errors): string
     {
         $string = '';
 

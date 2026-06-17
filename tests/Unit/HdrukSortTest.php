@@ -58,7 +58,7 @@ class HdrukSortTest extends TestCase
     {
         $hits = $this->hits(['Charlie', 'alpha', 'Bravo'], 'name');
 
-        $asc  = $this->sourceValues($this->sort($hits, 'tools', 'name:asc'),  'name');
+        $asc  = $this->sourceValues($this->sort($hits, 'tools', 'name:asc'), 'name');
         $desc = $this->sourceValues($this->sort($hits, 'tools', 'name:desc'), 'name');
 
         $this->assertSame(array_reverse($asc), $desc);
@@ -94,7 +94,7 @@ class HdrukSortTest extends TestCase
     {
         $hits = $this->hits(['2023-06-01', '2021-12-25', '2025-01-01'], 'updated_at');
 
-        $asc  = $this->sourceValues($this->sort($hits, 'datasets', 'updated_at:asc'),  'updated_at');
+        $asc  = $this->sourceValues($this->sort($hits, 'datasets', 'updated_at:asc'), 'updated_at');
         $desc = $this->sourceValues($this->sort($hits, 'datasets', 'updated_at:desc'), 'updated_at');
 
         $this->assertSame(array_reverse($asc), $desc);

@@ -1,0 +1,7 @@
+{
+    "identifier": "hdruk.admin.remove",
+    "layout": "standard",
+    "header_text": "hdruk.admin.assign role has been removed.",
+    "subject": "[[ASSIGNER_NAME]] - hdruk.admin.remove",
+    "body": "\n"
+}

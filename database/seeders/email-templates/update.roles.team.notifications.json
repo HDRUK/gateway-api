@@ -1,0 +1,15 @@
+{
+    "identifier": "update.roles.team.notifications",
+    "layout": "standard",
+    "header_text": "Permissions have changed for [[TEAM_NAME]]",
+    "subject": "Congratulations! Permissions have changed for team users.",
+    "body": "\n                        <mj-section>\n                            <mj-column width=\"100%\">\n                                <mj-text  line-height=\"20px\">\n                                    Dear [[TEAM_NAME]],\n                                </mj-text>\n                                <mj-text  line-height=\"20px\">\n                                    Roles within [[TEAM_NAME]] have been updated:\n                                </mj-text>\n                                <mj-text line-height=\"20px\">\n                                    [[USER_CHANGES]]\n                                </mj-text>\n                            </mj-column>\n                        </mj-section>\n                      \n                        <mj-section>\n                            <mj-column>\n                                <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View your Team</mj-button>\n                            </mj-column>\n                        </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
+            }
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "identifier": "integration.other.error",
+    "layout": "standard",
+    "header_text": "An automation error occurred for an integration on the Gateway for<br> [[TEAM_NAME]].",
+    "subject": "An automation error occurred for the [[TEAM_NAME]] team on the Gateway.",
+    "body": "\n                    <mj-section>\n                        <mj-column>\n                        <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\">\n                            Errors:<br></br>\n                            [[LIST_OF_ERRORS]]<br></br>\n                            Success:<br></br>\n                            [[LIST_OF_SUCCESS]]<br></br>\n                        </mj-text>\n                        </mj-column>\n                    </mj-section>\n"
+}

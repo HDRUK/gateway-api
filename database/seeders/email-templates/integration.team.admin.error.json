@@ -1,0 +1,15 @@
+{
+    "identifier": "integration.team.admin.error",
+    "layout": "standard",
+    "header_text": "An integration was disabled on the Gateway for<br> [[TEAM_NAME]].",
+    "subject": "An automation error occurred for the [[TEAM_NAME]] team on the Gateway.",
+    "body": "\n                <mj-section>\n                    <mj-column>\n                    <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\">\n                        Dear [[USER_FIRST_NAME]],<br></br>\n                        This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>\n                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>\n                    </mj-text>\n                    <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View integrations</mj-button>\n                    </mj-column>\n                </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+            }
+        ]
+    }
+}

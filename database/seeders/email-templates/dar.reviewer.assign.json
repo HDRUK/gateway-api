@@ -1,0 +1,7 @@
+{
+    "identifier": "dar.reviewer.assign",
+    "layout": "standard",
+    "header_text": "Congratulations! You’ve been granted the Data Access Request Reviewer permissions for [[TEAM_NAME]].",
+    "subject": "[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Reviewer",
+    "body": "\n            <mj-section>\n                <mj-column width=\"100%\">\n                    <mj-text line-height=\"20px\">\n                        Dear [[USER_FIRSTNAME]],\n                    </mj-text>\n                    <mj-text>\n                    [[ASSIGNER_NAME]] has granted you Data Access Request (DAR) Reviewer permissions for [[TEAM_NAME]] on the Gateway. \n\n                    </mj-text>\n                    <mj-text>\n                        You can now:\n                        <ul>\n                            <li style=\"line-height:20px;height:auto;\">\n                        Review sections of a data access request assigned to you for [[TEAM_NAME]]\n                        </li>\n                        </ul>\n                    </mj-text>\n                </mj-column>\n            </mj-section>\n"
+}
