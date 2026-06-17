@@ -118,7 +118,7 @@ class SendEmailCustomIntegration implements ShouldQueue
 
             if ($latestAttempt->status === 0) {
                 $details = data_get($latestAttempt, 'details.message', []);
-                $error   = $this->getErrors($details);
+                $error   = is_array($details) ? $this->getErrors($details) : (string) $details;
                 $integrationErrors .= "<li>PID - {$latestAttempt->pid}:<br>{$error}</li>";
             }
         }

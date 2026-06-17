@@ -336,6 +336,26 @@ class SendEmailCustomIntegrationTest extends TestCase
         $this->assertStringContainsString('my-dataset/2.0', $result['integration_errors']);
     }
 
+    public function test_history_handles_string_error_message_without_throwing(): void
+    {
+        FederationJobRun::create([
+            'team_id'       => self::TEAM_ID,
+            'federation_id' => self::FEDERATION_ID,
+            'job_uuid'      => self::JOB_UUID,
+            'pid'           => 'ERR-STR',
+            'status'        => 0,
+            'details'       => ['message' => 'encountered internal server error'],
+            'job_attempts'  => 1,
+        ]);
+
+        $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
+        $result = $job->getFederationHistory();
+
+        $this->assertSame(0, $result['success_count']);
+        $this->assertStringContainsString('PID - ERR-STR', $result['integration_errors']);
+        $this->assertStringContainsString('encountered internal server error', $result['integration_errors']);
+    }
+
     public function test_history_returns_empty_lists_when_no_runs_exist(): void
     {
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, 'nonexistent-uuid', 'success');
