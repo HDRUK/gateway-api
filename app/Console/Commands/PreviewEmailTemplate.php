@@ -134,7 +134,7 @@ class PreviewEmailTemplate extends Command
             '[[RUN_DATE]]'            => now()->toDateTimeString(),
             // Integration job
             '[[INTEGRATION_ID]]'      => '42',
-            '[[INTEGRATION_LIST_URL]]'=> config('gateway.gateway_url') . '/en/account/team/10/integrations/integration/list',
+            '[[INTEGRATION_LIST_URL]]' => config('gateway.gateway_url') . '/en/account/team/10/integrations/integration/list',
             '[[DATASET_COUNT]]'       => '3',
             '[[INTEGRATION_SUCCESS]]' => "<ul>{$successList}</ul>",
             '[[INTEGRATION_ERRORS]]'  => "<ul>{$errorList}</ul>",
