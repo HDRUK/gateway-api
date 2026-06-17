@@ -78,6 +78,9 @@ class PreviewEmailTemplate extends Command
             }
         }
 
+        // Replace any remaining [[PLACEHOLDER]] tokens with dummy preview data
+        $body = $this->applyDummyData($body);
+
         $this->info("Calling MJML render API for '{$identifier}'...");
 
         $response = Http::post(config('services.mjml.render_url'), ['mjml' => $body]);
@@ -88,6 +91,9 @@ class PreviewEmailTemplate extends Command
         }
 
         $html    = $response->json()['html'];
+        $subject = $template['subject'] ?? $identifier;
+        $html    = str_replace('<title>', "<title>{$subject} — ", $html);
+
         $tmpFile = sys_get_temp_dir() . "/email_preview_{$identifier}.html";
 
         file_put_contents($tmpFile, $html);
@@ -99,5 +105,43 @@ class PreviewEmailTemplate extends Command
         exec("{$opener} " . escapeshellarg($tmpFile));
 
         return self::SUCCESS;
+    }
+
+    private function applyDummyData(string $body): string
+    {
+        $successList = implode('', [
+            '<li>PID: dataset-001 - Synced OK (1 record)</li>',
+            '<li>PID: dataset-002 - Synced OK (3 records)</li>',
+            '<li>PID: dataset-003 - Synced OK (2 records)</li>',
+        ]);
+
+        $errorList = implode('', [
+            '<li>PID - dataset-004:<br><ul>' .
+                '<li>my-failing-dataset / 1.0 — Schema validation failed: \'description\' is required</li>' .
+                '<li>my-failing-dataset / 1.0 — Schema validation failed: \'keywords\' must be an array</li>' .
+            '</ul></li>',
+        ]);
+
+        $adminList = '<ul><li>Jane Doe (jane.doe@example.com)</li><li>John Smith (john.smith@example.com)</li></ul>';
+
+        $map = [
+            // Generic
+            '[[USER_FIRSTNAME]]'      => 'Jane',
+            '[[USER_LASTNAME]]'       => 'Doe',
+            '[[USER_EMAIL]]'          => 'jane.doe@example.com',
+            '[[TEAM_NAME]]'           => 'Health Data Research UK',
+            '[[TEAM_ID]]'             => '10',
+            '[[RUN_DATE]]'            => now()->toDateTimeString(),
+            // Integration job
+            '[[INTEGRATION_ID]]'      => '42',
+            '[[INTEGRATION_LIST_URL]]'=> config('gateway.gateway_url') . '/en/account/team/10/integrations/integration/list',
+            '[[DATASET_COUNT]]'       => '3',
+            '[[INTEGRATION_SUCCESS]]' => "<ul>{$successList}</ul>",
+            '[[INTEGRATION_ERRORS]]'  => "<ul>{$errorList}</ul>",
+            '[[JOB_ERROR]]'           => 'Connection timed out after 30 seconds (HTTP 504 from upstream)',
+            '[[USER_LIST]]'           => $adminList,
+        ];
+
+        return str_replace(array_keys($map), array_values($map), $body);
     }
 }
