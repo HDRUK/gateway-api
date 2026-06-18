@@ -183,7 +183,7 @@ return [
 
     'defaults' => [
         'supervisor-high' => [
-            'connection' => 'redis',
+            'connection' => 'database',
             'queue' => ['high'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
@@ -222,7 +222,7 @@ return [
             'nice' => 15,
         ],
         'supervisor-federation' => [
-            'connection' => 'redis',
+            'connection' => 'database',
             'queue' => ['federation'],
             'balance' => 'simple',
             'autoScalingStrategy' => 'time',
