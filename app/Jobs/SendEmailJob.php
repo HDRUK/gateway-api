@@ -31,7 +31,7 @@ class SendEmailJob implements ShouldQueue
      */
     public function __construct(array $to, EmailTemplate $template, array $replacements, $fromAddress = null)
     {
-        $this->onQueue('high');
+        $this->onConnection('database')->onQueue('high');
         $this->to = $to;
         $this->template = $template;
         $this->replacements = $replacements;

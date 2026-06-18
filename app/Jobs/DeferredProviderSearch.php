@@ -26,7 +26,7 @@ class DeferredProviderSearch implements ShouldQueue
         private string $type,
         private array  $params,
     ) {
-        $this->onQueue('high');
+        $this->onConnection('database')->onQueue('high');
     }
 
     public function handle(): void

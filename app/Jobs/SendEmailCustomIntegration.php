@@ -25,7 +25,7 @@ class SendEmailCustomIntegration implements ShouldQueue
 
     public function __construct(int $federationId, ?string $jobUuid, string $outcome, ?string $errorMessage = null)
     {
-        $this->onQueue('high');
+        $this->onConnection('database')->onQueue('high');
         $this->federationId = $federationId;
         $this->jobUuid      = $jobUuid;
         $this->outcome      = $outcome;
