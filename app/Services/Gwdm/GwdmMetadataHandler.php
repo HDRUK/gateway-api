@@ -136,6 +136,19 @@ abstract class GwdmMetadataHandler
         return [];
     }
 
+    /**
+     * Extract linkage data from this version and write it to the appropriate
+     * junction tables. Called by the LinkageExtraction job.
+     *
+     * No-op for the base class. Gwdm2xHandler writes to the
+     * dataset_version_has_dataset_version and publication_has_dataset_version
+     * junction tables. Gwdm30Handler will write to dataset_version_gwdm30_linkages.
+     */
+    public function extractLinkages(DatasetVersion $dv): void
+    {
+        // no-op for versions without linkage extraction support
+    }
+
     // ── Shared helpers ────────────────────────────────────────────────────────
 
     /**

@@ -3,6 +3,10 @@
 namespace App\Services\Gwdm;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasDatasetVersion;
+use App\Models\Publication;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\Team;
 
 /**
@@ -52,5 +56,136 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         $gwdm['summary']['publisher'] = $this->buildPublisher($team);
 
         return $gwdm;
+    }
+
+    // ── Linkage extraction ────────────────────────────────────────────────────
+
+    private const LINKAGE_DESCRIPTION = 'Extracted from GWDM';
+
+    public function extractLinkages(DatasetVersion $dv): void
+    {
+        $linkage = $dv->metadata['metadata']['linkage'] ?? [];
+
+        $datasetLinkages = $linkage['datasetLinkage'] ?? null;
+        $datasetLinkages = $datasetLinkages !== '' ? $datasetLinkages : null;
+
+        $aboutLinkages = $linkage['publicationAboutDataset'] ?? null;
+        $aboutLinkages = $aboutLinkages !== '' ? $aboutLinkages : null;
+
+        $usingLinkages = $linkage['publicationUsingDataset'] ?? null;
+        $usingLinkages = $usingLinkages !== '' ? $usingLinkages : null;
+
+        $this->processDatasetLinkages($dv->id, $datasetLinkages);
+        $this->processPublicationLinkages($dv->id, $aboutLinkages, 'ABOUT');
+        $this->processPublicationLinkages($dv->id, $usingLinkages, 'USING');
+    }
+
+    protected function processDatasetLinkages(int $sourceVersionId, ?array $datasetLinkages): void
+    {
+        DatasetVersionHasDatasetVersion::where([
+            'dataset_version_source_id' => $sourceVersionId,
+            'direct_linkage'            => 1,
+            'description'               => self::LINKAGE_DESCRIPTION,
+        ])->delete();
+
+        if (is_null($datasetLinkages)) {
+            return;
+        }
+
+        foreach ($datasetLinkages as $key => $data) {
+            if (!$data) {
+                continue;
+            }
+            foreach ($data as $d) {
+                $targetVersionId = $this->findTargetDataset($d);
+                if (!$targetVersionId) {
+                    continue;
+                }
+                DatasetVersionHasDatasetVersion::firstOrCreate([
+                    'dataset_version_source_id' => $sourceVersionId,
+                    'dataset_version_target_id' => $targetVersionId,
+                    'linkage_type'              => $key,
+                    'direct_linkage'            => 1,
+                    'description'               => self::LINKAGE_DESCRIPTION,
+                ]);
+            }
+        }
+    }
+
+    protected function processPublicationLinkages(int $sourceVersionId, ?array $publicationLinkages, string $linkType): void
+    {
+        PublicationHasDatasetVersion::where([
+            'dataset_version_id' => $sourceVersionId,
+            'description'        => self::LINKAGE_DESCRIPTION,
+            'link_type'          => $linkType,
+        ])->delete();
+
+        if (is_null($publicationLinkages)) {
+            return;
+        }
+
+        foreach ($publicationLinkages as $doi) {
+            if (!$doi) {
+                continue;
+            }
+
+            $publicationId = $this->findTargetPublication($doi);
+            if (!$publicationId) {
+                continue;
+            }
+
+            $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate([
+                'publication_id'     => $publicationId,
+                'dataset_version_id' => $sourceVersionId,
+                'link_type'          => $linkType,
+                'description'        => self::LINKAGE_DESCRIPTION,
+            ]);
+
+            if ($linkage->trashed()) {
+                $linkage->restore();
+            }
+        }
+    }
+
+    protected function findTargetDataset(array $data): ?int
+    {
+        $id    = $data['url'] ?? null;
+        $pid   = $data['pid'] ?? null;
+        $title = $data['title'] ?? null;
+
+        if ($id) {
+            $urlParts = explode('/', parse_url($id, PHP_URL_PATH));
+            $id = end($urlParts);
+            $dataset = Dataset::find($id);
+            if ($dataset) {
+                return $dataset->latestVersionID($dataset->id);
+            }
+        }
+
+        if ($pid) {
+            $dataset = Dataset::where('pid', $pid)->first();
+            if ($dataset) {
+                return $dataset->latestVersionID($dataset->id);
+            }
+        }
+
+        if ($title) {
+            $datasetVersion = DatasetVersion::filterTitle($title)->first();
+            if ($datasetVersion) {
+                return $datasetVersion->id;
+            }
+        }
+
+        return null;
+    }
+
+    protected function findTargetPublication(string $doi): ?int
+    {
+        $publication = Publication::whereRaw(
+            "REPLACE(REPLACE(paper_doi, 'https://doi.org/', ''), 'doi.org/', '') = ?",
+            [$doi]
+        )->first();
+
+        return $publication?->id;
     }
 }

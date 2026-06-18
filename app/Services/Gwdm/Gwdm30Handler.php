@@ -39,4 +39,13 @@ class Gwdm30Handler extends Gwdm2xHandler
         // return app(\App\Services\Gwdm\Gwdm30PersistenceService::class)->read($dv);
         return [];
     }
+
+    /**
+     * Write linkage data to dataset_version_gwdm30_linkages instead of the
+     * 2.x junction table. Implementation pending GWDM 3.0 schema finalisation.
+     */
+    public function extractLinkages(DatasetVersion $dv): void
+    {
+        // app(\App\Services\Gwdm\Gwdm30PersistenceService::class)->extractLinkages($dv);
+    }
 }
