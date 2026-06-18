@@ -160,7 +160,7 @@ class DatasetService
                 ->first();
             $withLinks->metadata = json_encode(['metadata' => $translated['metadata']]);
             $dataset->setRelation('versions', [$withLinks]);
-            $dataset->linkages = $this->getLinkages($latestVersionId, $withLinks->metadata);
+            $dataset->linkages = $this->getLinkages($latestVersionId);
 
         } elseif ($outputSchemaModel) {
             throw new \InvalidArgumentException('schema_model provided without schema_version');
@@ -185,12 +185,7 @@ class DatasetService
                 $dataset->setRelation('versions', [$withLinks]);
             }
 
-            // Pass the already-fetched metadata so getLinkages does not need to
-            // re-query the version row for its linkage section.
-            $dataset->linkages = $this->getLinkages(
-                $latestVersionId,
-                $withLinks?->metadata
-            );
+            $dataset->linkages = $this->getLinkages($latestVersionId);
         }
 
         $teamPublishedDARTemplates = DataAccessTemplate::where([
@@ -530,86 +525,44 @@ class DatasetService
     }
 
     /**
-     * Resolve dataset linkages by merging gateway-tracked relations with
-     * any free-text linkages stored in the metadata's linkage.datasetLinkage field.
-     *
-     * Only returns linkages whose target dataset is ACTIVE.
-     */
     /**
-     * @param array|string|null $preloadedMetadata  Already-decoded metadata array (or JSON string)
-     *                                               from the caller. When provided the extra
-     *                                               DatasetVersion fetch is skipped entirely.
+     * Return dataset linkages for the given version, sourced entirely from SQL.
+     * Resolved rows are joined to datasets; unresolved rows carry the raw reference
+     * data stored during extraction. Only resolved linkages whose target is ACTIVE
+     * are included; unresolved rows are always included.
      */
-    public function getLinkages(int $datasetVersionId, array|string|null $preloadedMetadata = null): array
+    public function getLinkages(int $datasetVersionId): array
     {
-        // GWDM 3.0 extension point — uncomment when structured linkage table exists.
-        // $version = DatasetVersion::where('id', $datasetVersionId)->value('gwdm_version');
-        // if ($version === '3.0') {
-        //     return \App\Models\Gwdm30\DatasetVersionLinkage::where('dataset_version_id', $datasetVersionId)
-        //         ->get()
-        //         ->map(fn ($row) => [
-        //             'title'        => $row->target_title,
-        //             'url'          => $row->target_url,
-        //             'dataset_id'   => $row->target_dataset_id,
-        //             'linkage_type' => $row->linkage_type,
-        //         ])
-        //         ->toArray();
-        // }
-
-        $datasetLinkages = DatasetVersionHasDatasetVersion::query()
+        // SQL is the complete source of truth for linkage data. Resolved rows are joined
+        // to dataset_versions/datasets; unresolved rows (target_id = NULL) carry the raw
+        // title/url from the original metadata so nothing is discarded.
+        return DatasetVersionHasDatasetVersion::query()
             ->where('dataset_version_has_dataset_version.dataset_version_source_id', $datasetVersionId)
-            ->join('dataset_versions', 'dataset_versions.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
-            ->join('datasets', 'datasets.id', '=', 'dataset_versions.dataset_id')
-            ->where('datasets.status', Dataset::STATUS_ACTIVE)
+            ->where('dataset_version_has_dataset_version.direct_linkage', 1)
+            ->leftJoin('dataset_versions', 'dataset_versions.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
+            ->leftJoin('datasets', 'datasets.id', '=', 'dataset_versions.dataset_id')
+            ->where(function ($q) {
+                $q->whereNull('datasets.id')
+                  ->orWhere('datasets.status', Dataset::STATUS_ACTIVE);
+            })
             ->select([
                 'dataset_version_has_dataset_version.linkage_type',
+                'dataset_version_has_dataset_version.raw_title',
+                'dataset_version_has_dataset_version.raw_url',
                 'dataset_versions.short_title',
                 'datasets.id as target_dataset_id',
             ])
             ->get()
             ->map(fn ($row) => [
-                'title'        => $row->short_title,
-                'url'          => config('gateway.gateway_url') . '/en/dataset/' . $row->target_dataset_id,
+                'title'        => $row->short_title ?? $row->raw_title,
+                'url'          => $row->target_dataset_id
+                    ? config('gateway.gateway_url') . '/en/dataset/' . $row->target_dataset_id
+                    : $row->raw_url,
                 'dataset_id'   => $row->target_dataset_id,
                 'linkage_type' => $row->linkage_type,
             ])
             ->values()
             ->toArray();
-
-        if ($preloadedMetadata !== null) {
-            $metadata = is_string($preloadedMetadata)
-                ? json_decode($preloadedMetadata, true)
-                : $preloadedMetadata;
-        } else {
-            $metadata = DatasetVersion::where('id', $datasetVersionId)
-                ->select('metadata')
-                ->first()['metadata'] ?? [];
-        }
-
-        $metadataLinkage = $metadata['metadata']['linkage']['datasetLinkage'] ?? [];
-        $allTitles       = [];
-
-        foreach ($metadataLinkage as $linkageType => $link) {
-            if ($link && is_array($link)) {
-                foreach ($link as $l) {
-                    $allTitles[] = ['title' => $l['title'], 'linkage_type' => $linkageType];
-                }
-            }
-        }
-
-        $gatewayTitles = array_column($datasetLinkages, 'title');
-        foreach ($allTitles as $title) {
-            if ($title['title'] && !in_array($title['title'], $gatewayTitles)) {
-                $datasetLinkages[] = [
-                    'title'        => $title['title'],
-                    'url'          => null,
-                    'dataset_id'   => null,
-                    'linkage_type' => $title['linkage_type'],
-                ];
-            }
-        }
-
-        return $datasetLinkages;
     }
 
     /**
@@ -711,7 +664,7 @@ class DatasetService
         // We always need the row itself for gwdmVersion and original_metadata.
         $row = DatasetVersion::where('dataset_id', $datasetId)
             ->where('version', $targetVersion)
-            ->first(['metadata', 'patch', 'gwdm_version']);
+            ->first(['id', 'metadata', 'patch', 'gwdm_version']);
 
         // Prefer the indexed column; fall back to JSON envelope; then context default.
         $storedVersion = $row->gwdm_version

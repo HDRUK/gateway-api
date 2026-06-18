@@ -98,9 +98,22 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             }
             foreach ($data as $d) {
                 $targetVersionId = $this->findTargetDataset($d);
+
                 if (!$targetVersionId) {
+                    // Store unresolved reference so afterRead() can reconstruct it from SQL.
+                    DatasetVersionHasDatasetVersion::create([
+                        'dataset_version_source_id' => $sourceVersionId,
+                        'dataset_version_target_id' => null,
+                        'linkage_type'              => $key,
+                        'direct_linkage'            => 1,
+                        'description'               => self::LINKAGE_DESCRIPTION,
+                        'raw_url'                   => $d['url'] ?? null,
+                        'raw_pid'                   => $d['pid'] ?? null,
+                        'raw_title'                 => $d['title'] ?? null,
+                    ]);
                     continue;
                 }
+
                 DatasetVersionHasDatasetVersion::firstOrCreate([
                     'dataset_version_source_id' => $sourceVersionId,
                     'dataset_version_target_id' => $targetVersionId,
@@ -130,7 +143,16 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             }
 
             $publicationId = $this->findTargetPublication($doi);
+
             if (!$publicationId) {
+                // Store unresolved DOI so afterRead() can reconstruct it from SQL.
+                PublicationHasDatasetVersion::create([
+                    'publication_id'     => null,
+                    'dataset_version_id' => $sourceVersionId,
+                    'link_type'          => $linkType,
+                    'description'        => self::LINKAGE_DESCRIPTION,
+                    'raw_doi'            => $doi,
+                ]);
                 continue;
             }
 
@@ -187,5 +209,98 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         )->first();
 
         return $publication?->id;
+    }
+
+    // ── Read path ─────────────────────────────────────────────────────────────
+
+    /**
+     * Reconstruct the GWDM `linkage` section entirely from SQL junction tables,
+     * making SQL the single source of truth for 2.x linkage data on reads.
+     *
+     * Returns [] (falls through to the stored JSON blob) when no extracted rows
+     * exist — this covers legacy rows that pre-date this migration. Re-dispatching
+     * LinkageExtraction for those versions will backfill the SQL rows.
+     */
+    public function afterRead(DatasetVersion $dv): array
+    {
+        $resolvedDatasets = DatasetVersionHasDatasetVersion::query()
+            ->where('dataset_version_has_dataset_version.dataset_version_source_id', $dv->id)
+            ->where('dataset_version_has_dataset_version.direct_linkage', 1)
+            ->where('dataset_version_has_dataset_version.description', self::LINKAGE_DESCRIPTION)
+            ->whereNotNull('dataset_version_has_dataset_version.dataset_version_target_id')
+            ->join('dataset_versions as dv', 'dv.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
+            ->join('datasets as d', 'd.id', '=', 'dv.dataset_id')
+            ->select(
+                'dataset_version_has_dataset_version.linkage_type',
+                'dv.short_title',
+                'd.pid',
+                'd.id as dataset_id',
+            )
+            ->get();
+
+        $unresolvedDatasets = DatasetVersionHasDatasetVersion::query()
+            ->where('dataset_version_source_id', $dv->id)
+            ->where('direct_linkage', 1)
+            ->where('description', self::LINKAGE_DESCRIPTION)
+            ->whereNull('dataset_version_target_id')
+            ->select('linkage_type', 'raw_url', 'raw_pid', 'raw_title')
+            ->get();
+
+        $publications = PublicationHasDatasetVersion::query()
+            ->where('publication_has_dataset_version.dataset_version_id', $dv->id)
+            ->where('publication_has_dataset_version.description', self::LINKAGE_DESCRIPTION)
+            ->leftJoin('publications', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
+            ->select(
+                'publication_has_dataset_version.link_type',
+                'publications.paper_doi',
+                'publication_has_dataset_version.raw_doi',
+            )
+            ->get();
+
+        $hasExtractedRows = $resolvedDatasets->isNotEmpty()
+            || $unresolvedDatasets->isNotEmpty()
+            || $publications->isNotEmpty();
+
+        if (!$hasExtractedRows) {
+            return [];
+        }
+
+        $datasetLinkage = [];
+        foreach ($resolvedDatasets as $row) {
+            $datasetLinkage[$row->linkage_type][] = [
+                'url'   => config('gateway.gateway_url') . '/en/dataset/' . $row->dataset_id,
+                'pid'   => $row->pid,
+                'title' => $row->short_title,
+            ];
+        }
+        foreach ($unresolvedDatasets as $row) {
+            $datasetLinkage[$row->linkage_type][] = [
+                'url'   => $row->raw_url,
+                'pid'   => $row->raw_pid,
+                'title' => $row->raw_title,
+            ];
+        }
+
+        $aboutDataset = [];
+        $usingDataset = [];
+        foreach ($publications as $row) {
+            $doi = $row->paper_doi ?? $row->raw_doi;
+            if (!$doi) {
+                continue;
+            }
+            if ($row->link_type === 'ABOUT') {
+                $aboutDataset[] = $doi;
+            } else {
+                $usingDataset[] = $doi;
+            }
+        }
+
+        return [
+            'linkage' => [
+                'datasetLinkage'          => $datasetLinkage,
+                'publicationAboutDataset' => $aboutDataset,
+                'publicationUsingDataset' => $usingDataset,
+            ],
+        ];
     }
 }
