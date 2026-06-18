@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use MetadataManagementController as MMC;
+use App\Context\GwdmVersionContext;
+use App\Context\OutputSchemaContext;
 use App\Http\Controllers\Controller;
 use App\Models\Dataset;
 use App\Models\Team;
@@ -13,6 +15,32 @@ use Illuminate\Support\Facades\Http;
 
 class FormHydrationController extends Controller
 {
+    /**
+     * GWDM metadata dot-paths used by getDefaultValues() to extract per-team defaults.
+     *
+     * Keyed by GWDM version string. The '2.1' entry inherits '2.0' paths unless
+     * GWDM 2.1 restructures these fields — add overrides here if it does.
+     * Add a '3.0' entry when structured SQL columns replace the JSON paths.
+     */
+    private const DEFAULTS_PATHS = [
+        '2.0' => [
+            'dataUseLimitation'   => 'metadata.metadata.accessibility.usage.dataUseLimitation',
+            'dataUseRequirements' => 'metadata.metadata.accessibility.usage.dataUseRequirements',
+            'accessRights'        => 'metadata.metadata.accessibility.access.accessRights',
+            'accessService'       => 'metadata.metadata.accessibility.access.accessService',
+            'accessRequestCost'   => 'metadata.metadata.accessibility.access.accessRequestCost',
+            'deliveryLeadTime'    => 'metadata.metadata.accessibility.access.deliveryLeadTime',
+            'formats'             => 'metadata.metadata.accessibility.formatAndStandards.formats',
+        ],
+        '2.1' => [],  // inherits '2.0' paths; override here if 2.1 restructures these fields
+    ];
+
+    public function __construct(
+        private readonly OutputSchemaContext $outputSchemaContext,
+        private readonly GwdmVersionContext $gwdmVersionContext,
+    ) {
+    }
+
     /**
      * @OA\Get(
      *      path="/api/v1/form_hydration/schema",
@@ -57,8 +85,12 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $model   = $request->input('model',
+            $this->outputSchemaContext->schemaModel() ?? Config::get('form_hydration.schema.model')
+        );
+        $version = $request->input('version',
+            $this->outputSchemaContext->schemaVersion() ?? Config::get('form_hydration.schema.latest_version')
+        );
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
 
@@ -127,8 +159,12 @@ class FormHydrationController extends Controller
      */
     public function onboardingFormHydration(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $model   = $request->input('model',
+            $this->outputSchemaContext->schemaModel() ?? Config::get('form_hydration.schema.model')
+        );
+        $version = $request->input('version',
+            $this->outputSchemaContext->schemaVersion() ?? Config::get('form_hydration.schema.latest_version')
+        );
         $dataTypes = $request->input('dataTypes', '');
         $teamId = $request->input('team_id', null);
 
@@ -170,34 +206,39 @@ class FormHydrationController extends Controller
 
             $datasets = $datasets->toArray();
 
+            // Resolve paths for the active GWDM version; fall back to 2.0 if the
+            // version has no override entry in DEFAULTS_PATHS.
+            $gwdmVersion = $this->gwdmVersionContext->targetVersion();
+            $paths = self::DEFAULTS_PATHS[$gwdmVersion] ?? self::DEFAULTS_PATHS['2.0'];
+
             $datasetDefaultValues['Data use limitation'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.usage.dataUseLimitation',
+                $paths['dataUseLimitation'],
                 $datasets,
                 true
             );
             $datasetDefaultValues['Data use requirements'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.usage.dataUseRequirements',
+                $paths['dataUseRequirements'],
                 $datasets,
                 true
             );
             $datasetDefaultValues['Access rights'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.accessRights',
+                $paths['accessRights'],
                 $datasets
             );
             $datasetDefaultValues['Access service description'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.accessService',
+                $paths['accessService'],
                 $datasets
             );
             $datasetDefaultValues['Access request cost'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.accessRequestCost',
+                $paths['accessRequestCost'],
                 $datasets
             );
             $datasetDefaultValues['Time to dataset access'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.deliveryLeadTime',
+                $paths['deliveryLeadTime'],
                 $datasets
             );
             $datasetDefaultValues['Format'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.formatAndStandards.formats',
+                $paths['formats'],
                 $datasets,
                 true
             );

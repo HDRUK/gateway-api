@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Context\OutputSchemaContext;
 use App\Context\PartnerContext;
 use App\Services\DatasetService;
 use App\Http\Traits\CheckAccess;
@@ -32,6 +33,7 @@ class DatasetController extends Controller
     public function __construct(
         private readonly DatasetService $datasetService,
         private readonly PartnerContext $partnerContext,
+        private readonly OutputSchemaContext $outputSchemaContext,
     ) {
     }
 
@@ -186,8 +188,8 @@ class DatasetController extends Controller
 
             $dataset = $this->datasetService->prepareForShow(
                 $dataset,
-                $request->query('schema_model'),
-                $request->query('schema_version'),
+                $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
+                $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
             );
 
             Auditor::log([

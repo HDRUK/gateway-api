@@ -49,7 +49,9 @@ class LinkageExtraction implements ShouldQueue
 
             $this->sourceDatasetId = $datasetId;
             $this->sourceDatasetVersionId = $datasetVersionId;
-            $this->gwdmVersion = $version->metadata['gwdmVersion'];
+            // Read from the indexed column; avoids JSON extraction and is reliable
+            // on delta rows where metadata stores only the reduced envelope.
+            $this->gwdmVersion = $version->gwdm_version ?? $version->metadata['gwdmVersion'] ?? '2.0';
 
             $datasetLinkage = $version->metadata['metadata']['linkage']['datasetLinkage'] ?? null;
             $this->datasetLinkages = $datasetLinkage !== '' ? $datasetLinkage : null;
@@ -84,15 +86,11 @@ class LinkageExtraction implements ShouldQueue
     public function handle(): void
     {
         try {
-            if (!version_compare($this->gwdmVersion, '2.0', '=')) {
-                return; // Not the correct version for processing
-            }
-
-            // Process dataset and publication linkages
-            $this->processDatasetLinkages();
-            $this->processPublicationLinkages($this->publicationAboutDatasetLinkages, 'ABOUT');
-            $this->processPublicationLinkages($this->publicationUsingDatasetLinkages, 'USING');
-
+            match (true) {
+                in_array($this->gwdmVersion, ['2.0', '2.1'], true) => $this->handleGwdm2x(),
+                // '3.0' => $this->handleGwdm30(),  // add when 3.0 linkage schema is finalised
+                default => null,
+            };
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -105,6 +103,23 @@ class LinkageExtraction implements ShouldQueue
             throw new Exception('Error handling LinkageExtraction job: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Linkage extraction for GWDM 2.x (2.0 and 2.1).
+     * Writes to the dataset_version_has_dataset_version junction table.
+     */
+    private function handleGwdm2x(): void
+    {
+        $this->processDatasetLinkages();
+        $this->processPublicationLinkages($this->publicationAboutDatasetLinkages, 'ABOUT');
+        $this->processPublicationLinkages($this->publicationUsingDatasetLinkages, 'USING');
+    }
+
+    // private function handleGwdm30(): void
+    // {
+    //     // Write to dataset_version_gwdm30_linkages instead of the junction table.
+    //     // Implementation pending GWDM 3.0 schema finalisation.
+    // }
 
     /**
      * Process dataset linkages.
