@@ -44,6 +44,10 @@ class SendEmailCustomIntegration implements ShouldQueue
             ? $this->getFederationHistory()
             : ['integration_success' => '<ul></ul>', 'integration_errors' => '<ul></ul>', 'success_count' => 0];
 
+        if ($this->outcome === 'success' && $history['success_count'] === 0) {
+            return;
+        }
+
         foreach ($notifications as $notification) {
             $userId = $notification['user_notification']['id'] ?? null;
 

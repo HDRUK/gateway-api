@@ -26,7 +26,8 @@ class SendEmailCustomIntegrationTest extends TestCase
     private function makeJob(
         string $outcome,
         ?string $jobUuid = self::JOB_UUID,
-        ?string $errorMessage = null
+        ?string $errorMessage = null,
+        int $historyCount = 3
     ): SendEmailCustomIntegration {
         $mock = $this->getMockBuilder(SendEmailCustomIntegration::class)
             ->onlyMethods(['getDetails', 'getFederationHistory', 'checkUserPerms', 'getListOfUsers'])
@@ -34,7 +35,7 @@ class SendEmailCustomIntegrationTest extends TestCase
             ->getMock();
 
         $mock->method('getDetails')->willReturn($this->federationDetails());
-        $mock->method('getFederationHistory')->willReturn($this->historyStub());
+        $mock->method('getFederationHistory')->willReturn($this->historyStub($historyCount));
         $mock->method('checkUserPerms')->willReturn(true);
         $mock->method('getListOfUsers')->willReturn('<ul><li>Admin User</li></ul>');
 
@@ -179,6 +180,26 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job->handle();
 
         Queue::assertNothingPushed();
+    }
+
+    public function test_skips_success_email_when_no_datasets_were_ingested(): void
+    {
+        $this->seedTemplate('integration.job.success.teamadmin_developer');
+        $job = $this->makeJob('success', historyCount: 0);
+
+        $job->handle();
+
+        Queue::assertNothingPushed();
+    }
+
+    public function test_dispatches_success_email_when_datasets_were_ingested(): void
+    {
+        $this->seedTemplate('integration.job.success.teamadmin_developer');
+        $job = $this->makeJob('success', historyCount: 1);
+
+        $job->handle();
+
+        Queue::assertPushed(SendEmailJob::class, 1);
     }
 
     public function test_logs_warning_and_skips_when_template_not_found(): void
