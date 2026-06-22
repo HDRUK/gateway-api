@@ -19,7 +19,9 @@ namespace App\Context;
  */
 class OutputSchemaContext
 {
-    public function __construct(private PartnerContext $partnerContext) {}
+    public function __construct(private PartnerContext $partnerContext)
+    {
+    }
 
     public function schemaModel(): ?string
     {

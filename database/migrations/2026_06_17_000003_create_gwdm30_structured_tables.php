@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\Schema;
  * except observations which is one-to-many). Dataset and publication linkages
  * continue to use the existing junction tables — see 2026_06_18_000001.
  */
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::create('gwdm30_accessibility', function (Blueprint $table) {

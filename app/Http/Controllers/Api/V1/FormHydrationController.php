@@ -85,10 +85,12 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $model   = $request->input('model',
+        $model   = $request->input(
+            'model',
             $this->outputSchemaContext->schemaModel() ?? Config::get('form_hydration.schema.model')
         );
-        $version = $request->input('version',
+        $version = $request->input(
+            'version',
             $this->outputSchemaContext->schemaVersion() ?? Config::get('form_hydration.schema.latest_version')
         );
 
@@ -159,10 +161,12 @@ class FormHydrationController extends Controller
      */
     public function onboardingFormHydration(Request $request): JsonResponse
     {
-        $model   = $request->input('model',
+        $model   = $request->input(
+            'model',
             $this->outputSchemaContext->schemaModel() ?? Config::get('form_hydration.schema.model')
         );
-        $version = $request->input('version',
+        $version = $request->input(
+            'version',
             $this->outputSchemaContext->schemaVersion() ?? Config::get('form_hydration.schema.latest_version')
         );
         $dataTypes = $request->input('dataTypes', '');

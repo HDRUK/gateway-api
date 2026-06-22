@@ -18,8 +18,7 @@ use Illuminate\Support\Facades\Schema;
  *     (e.g. "give me the most recent GWDM 2.1 row for dataset 42")
  *   - Future GWDM 3.0 rows that use structured SQL columns instead of JSON
  */
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         Schema::table('dataset_versions', function (Blueprint $table) {

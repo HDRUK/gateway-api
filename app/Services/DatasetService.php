@@ -15,7 +15,6 @@ use App\Jobs\LinkageExtraction;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MetadataManagementController as MMC;
 use Swaggest\JsonDiff\JsonDiff;
@@ -678,6 +677,17 @@ class DatasetService
         $supplementary = $handler->afterRead($row);
         if (!empty($supplementary)) {
             $gwdm = array_merge($gwdm, $supplementary);
+        }
+
+        // Validate the final reconstructed metadata against its declared GWDM schema version.
+        $metadataJson = json_encode($gwdm);
+        $isValid      = MMC::validateDataModelType($metadataJson, Config::get('metadata.GWDM.name'), $storedVersion);
+        if (!$isValid) {
+            \Log::warning('GWDM read validation failed', [
+                'dataset_id'   => $datasetId,
+                'version'      => $targetVersion,
+                'gwdm_version' => $storedVersion,
+            ]);
         }
 
         return [

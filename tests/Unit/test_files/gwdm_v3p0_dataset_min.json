@@ -33,8 +33,9 @@
         "coverage": {
             "pathway": "NOT APPLICABLE",
             "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
-            "followup": "UNKNOWN",
-            "typicalAgeRange": "0-150"
+            "followUp": "UNKNOWN",
+            "minTypicalAge": 0,
+            "maxTypicalAge": 150
         },
         "provenance": {
             "origin": {

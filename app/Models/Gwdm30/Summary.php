@@ -6,7 +6,7 @@ use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DatasetVersionSummary extends Model
+class Summary extends Model
 {
     protected $table = 'gwdm30_summary';
 
@@ -17,16 +17,28 @@ class DatasetVersionSummary extends Model
         'keywords',
         'controlled_keywords',
         'dataset_type',
+        'dataset_sub_type',
+        'in_pipeline',
+        'funders',
         'description',
         'doi_name',
+        'license_url',
+        'landing_page',
+        'creator_name',
+        'creator_ror_id',
+        'creator_orcid_id',
+        'creator_gateway_id',
+        'theme',
         'publisher_name',
         'publisher_gateway_id',
+        'publisher_ror_id',
         'population_size',
     ];
 
     protected $casts = [
         'controlled_keywords' => 'array',
-        'population_size'     => 'integer',
+        'theme' => 'array',
+        'population_size' => 'integer',
     ];
 
     public function datasetVersion(): BelongsTo

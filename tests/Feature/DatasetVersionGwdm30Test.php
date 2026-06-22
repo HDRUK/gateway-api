@@ -2,23 +2,24 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
+use App\Models\Application;
+use App\Models\ApplicationHasPermission;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
-use App\Models\Gwdm30\DatasetVersionAccessibility;
-use App\Models\Gwdm30\DatasetVersionCoverage;
-use App\Models\Gwdm30\DatasetVersionObservation;
-use App\Models\Gwdm30\DatasetVersionProvenance;
-use App\Models\Gwdm30\DatasetVersionSummary;
-use App\Models\Application;
-use App\Models\ApplicationHasPermission;
+use App\Models\Gwdm30\Accessibility;
+use App\Models\Gwdm30\Coverage;
+use App\Models\Gwdm30\Distribution;
+use App\Models\Gwdm30\Observation;
+use App\Models\Gwdm30\Provenance;
+use App\Models\Gwdm30\QualityAnnotation;
+use App\Models\Gwdm30\Summary;
 use App\Models\Permission;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Gwdm\Gwdm2xHandler;
 use App\Services\Gwdm\GwdmHandlerFactory;
-use App\Services\Gwdm\Gwdm30PersistenceService;
+use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
@@ -32,9 +33,10 @@ class DatasetVersionGwdm30Test extends TestCase
     public const TEST_URL_DATASET = '/api/v1/datasets';
 
     private Application $integration;
+
     protected $header30 = [];
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->commonSetUp();
 
@@ -50,14 +52,14 @@ class DatasetVersionGwdm30Test extends TestCase
         foreach ($perms as $perm) {
             ApplicationHasPermission::firstOrCreate([
                 'application_id' => $this->integration->id,
-                'permission_id'  => $perm->id,
+                'permission_id' => $perm->id,
             ]);
         }
 
         $this->header = [
-            'Accept'           => 'application/json',
+            'Accept' => 'application/json',
             'x-application-id' => $this->integration->app_id,
-            'x-client-id'      => $this->integration->client_id,
+            'x-client-id' => $this->integration->client_id,
         ];
 
         $this->header30 = array_merge($this->header, ['x-gwdm-version' => '3.0']);
@@ -68,14 +70,14 @@ class DatasetVersionGwdm30Test extends TestCase
     public function test_persist_populates_all_sql_tables(): void
     {
         $gwdm = $this->getGwdm30Metadata()['metadata'];
-        $dv   = $this->makeDatasetVersion30([]);
+        $dv = $this->makeDatasetVersion30([]);
 
-        app(Gwdm30PersistenceService::class)->persist($dv, $gwdm);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
 
         $this->assertEquals('3.0', $dv->gwdm_version);
 
         // Accessibility
-        $acc = DatasetVersionAccessibility::where('dataset_version_id', $dv->id)->first();
+        $acc = Accessibility::where('dataset_version_id', $dv->id)->first();
         $this->assertNotNull($acc, 'gwdm30_accessibility row should be created');
         $this->assertEquals('https://example.com/licence', $acc->access_rights);
         $this->assertEquals('https://example.com/access', $acc->access_service);
@@ -89,7 +91,7 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertEquals('en', $acc->languages);
 
         // Summary
-        $sum = DatasetVersionSummary::where('dataset_version_id', $dv->id)->first();
+        $sum = Summary::where('dataset_version_id', $dv->id)->first();
         $this->assertNotNull($sum, 'gwdm30_summary row should be created');
         $this->assertEquals('Test dataset for GWDM 3.0 feature tests', $sum->abstract);
         $this->assertEquals('test@example.com', $sum->contact_point);
@@ -99,14 +101,15 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertEquals(0, $sum->population_size);
 
         // Coverage
-        $cov = DatasetVersionCoverage::where('dataset_version_id', $dv->id)->first();
+        $cov = Coverage::where('dataset_version_id', $dv->id)->first();
         $this->assertNotNull($cov, 'gwdm30_coverage row should be created');
         $this->assertEquals('NOT APPLICABLE', $cov->pathway);
         $this->assertEquals('UNKNOWN', $cov->followup);
-        $this->assertEquals('0-150', $cov->typical_age_range);
+        $this->assertEquals(0, $cov->min_typical_age);
+        $this->assertEquals(150, $cov->max_typical_age);
 
         // Provenance
-        $prov = DatasetVersionProvenance::where('dataset_version_id', $dv->id)->first();
+        $prov = Provenance::where('dataset_version_id', $dv->id)->first();
         $this->assertNotNull($prov, 'gwdm30_provenance row should be created');
         $this->assertEquals('OTHER', $prov->origin_purpose);
         $this->assertEquals('MACHINE GENERATED', $prov->origin_source);
@@ -115,7 +118,7 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertEquals('Annual', $prov->temporal_accrual_periodicity);
 
         // Observations
-        $obs = DatasetVersionObservation::where('dataset_version_id', $dv->id)->get();
+        $obs = Observation::where('dataset_version_id', $dv->id)->get();
         $this->assertCount(1, $obs);
         $this->assertEquals('Findings', $obs[0]->observed_node);
         $this->assertEquals(100, $obs[0]->measured_value);
@@ -129,28 +132,28 @@ class DatasetVersionGwdm30Test extends TestCase
         $dv = $this->makeDatasetVersion30([]);
 
         $gwdm = [
-            'summary'     => ['shortTitle' => 'Test', 'title' => 'Test'],
-            'coverage'    => [],
-            'provenance'  => [],
+            'summary' => ['shortTitle' => 'Test', 'title' => 'Test'],
+            'coverage' => [],
+            'provenance' => [],
             'observations' => [],
             'accessibility' => [
                 'access' => [
-                    'accessRights'      => 'https://example.com/rights',
-                    'accessService'     => null,
+                    'accessRights' => 'https://example.com/rights',
+                    'accessService' => null,
                     'accessRequestCost' => null,
-                    'deliveryLeadTime'  => null,
+                    'deliveryLeadTime' => null,
                 ],
                 'usage' => [
-                    'dataUseLimitation'   => ['GENERAL RESEARCH USE'],
+                    'dataUseLimitation' => ['GENERAL RESEARCH USE'],
                     'dataUseRequirements' => ['RETURN TO DATABASE OR RESOURCE'],
                 ],
                 'formatAndStandards' => ['formats' => null],
             ],
         ];
 
-        app(Gwdm30PersistenceService::class)->persist($dv, $gwdm);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
 
-        $row = DatasetVersionAccessibility::where('dataset_version_id', $dv->id)->first();
+        $row = Accessibility::where('dataset_version_id', $dv->id)->first();
         $this->assertNotNull($row);
         $this->assertEquals(['GENERAL RESEARCH USE'], $row->data_use_limitation);
         $this->assertEquals(['RETURN TO DATABASE OR RESOURCE'], $row->data_use_requirements);
@@ -159,20 +162,20 @@ class DatasetVersionGwdm30Test extends TestCase
     public function test_persist_replaces_rows_on_rewrite(): void
     {
         $gwdm = $this->getGwdm30Metadata()['metadata'];
-        $dv   = $this->makeDatasetVersion30([]);
-        $service = app(Gwdm30PersistenceService::class);
+        $dv = $this->makeDatasetVersion30([]);
+        $handler = app(GwdmHandlerFactory::class)->resolve('3.0');
 
-        $service->persist($dv, $gwdm);
-        $this->assertCount(1, DatasetVersionObservation::where('dataset_version_id', $dv->id)->get());
+        $handler->afterStore($dv->dataset, $dv, $gwdm);
+        $this->assertCount(1, Observation::where('dataset_version_id', $dv->id)->get());
 
         // Re-persist with two observations — old rows must be replaced
         $gwdm['observations'] = [
             ['observedNode' => 'Persons', 'measuredValue' => 50, 'observationDate' => '2024-01-01', 'measuredProperty' => 'Count', 'disambiguatingDescription' => null],
             ['observedNode' => 'Events',  'measuredValue' => 200, 'observationDate' => '2024-06-01', 'measuredProperty' => 'Count', 'disambiguatingDescription' => null],
         ];
-        $service->persist($dv, $gwdm);
+        $handler->afterStore($dv->dataset, $dv, $gwdm);
 
-        $this->assertCount(2, DatasetVersionObservation::where('dataset_version_id', $dv->id)->get());
+        $this->assertCount(2, Observation::where('dataset_version_id', $dv->id)->get());
     }
 
     // ─── LinkageExtraction ────────────────────────────────────────────────────
@@ -214,8 +217,8 @@ class DatasetVersionGwdm30Test extends TestCase
                 'datasetLinkage' => [
                     'linkedDatasets' => [
                         [
-                            'url'   => config('gateway.gateway_url') . '/en/dataset/' . $targetDv->dataset_id,
-                            'pid'   => null,
+                            'url' => config('gateway.gateway_url').'/en/dataset/'.$targetDv->dataset_id,
+                            'pid' => null,
                             'title' => null,
                         ],
                     ],
@@ -285,19 +288,19 @@ class DatasetVersionGwdm30Test extends TestCase
     {
         $dv = $this->makeDatasetVersion30([]);
 
-        DatasetVersionAccessibility::create([
-            'dataset_version_id'  => $dv->id,
-            'access_rights'       => 'https://example.com/rights',
-            'access_service'      => 'https://example.com/service',
+        Accessibility::create([
+            'dataset_version_id' => $dv->id,
+            'access_rights' => 'https://example.com/rights',
+            'access_service' => 'https://example.com/service',
             'access_request_cost' => 'Free',
-            'delivery_lead_time'  => '1-2 WEEKS',
-            'jurisdiction'        => 'GB-ENG',
-            'data_use_limitation'   => ['GENERAL RESEARCH USE'],
+            'delivery_lead_time' => '1-2 WEEKS',
+            'jurisdiction' => 'GB-ENG',
+            'data_use_limitation' => ['GENERAL RESEARCH USE'],
             'data_use_requirements' => ['RETURN TO DATABASE OR RESOURCE'],
-            'formats'               => ['CSV'],
+            'formats' => ['CSV'],
         ]);
 
-        $result = app(Gwdm30PersistenceService::class)->read($dv);
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
 
         $this->assertArrayHasKey('accessibility', $result);
         $this->assertArrayHasKey('access', $result['accessibility']);
@@ -313,16 +316,16 @@ class DatasetVersionGwdm30Test extends TestCase
     {
         $dv = $this->makeDatasetVersion30([]);
 
-        DatasetVersionSummary::create([
+        Summary::create([
             'dataset_version_id' => $dv->id,
-            'abstract'           => 'A test abstract',
-            'contact_point'      => 'contact@example.com',
-            'keywords'           => 'health,data',
-            'publisher_name'     => 'NHS England',
-            'population_size'    => 5000,
+            'abstract' => 'A test abstract',
+            'contact_point' => 'contact@example.com',
+            'keywords' => 'health,data',
+            'publisher_name' => 'NHS England',
+            'population_size' => 5000,
         ]);
 
-        $result = app(Gwdm30PersistenceService::class)->read($dv);
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
 
         $this->assertArrayHasKey('summary', $result);
         $this->assertEquals('A test abstract', $result['summary']['abstract']);
@@ -337,38 +340,40 @@ class DatasetVersionGwdm30Test extends TestCase
     {
         $dv = $this->makeDatasetVersion30([]);
 
-        DatasetVersionCoverage::create([
+        Coverage::create([
             'dataset_version_id' => $dv->id,
-            'spatial'            => 'https://www.geonames.org/countries/GB/united-kingdom.html',
-            'typical_age_range'  => '18-65',
-            'pathway'            => 'PRIMARY CARE',
-            'followup'           => '5 YEARS',
+            'spatial' => 'https://www.geonames.org/countries/GB/united-kingdom.html',
+            'min_typical_age' => 18,
+            'max_typical_age' => 65,
+            'pathway' => 'PRIMARY CARE',
+            'followup' => '5 YEARS',
         ]);
 
-        $result = app(Gwdm30PersistenceService::class)->read($dv);
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
 
         $this->assertArrayHasKey('coverage', $result);
-        $this->assertEquals('18-65', $result['coverage']['typicalAgeRange']);
+        $this->assertEquals(18, $result['coverage']['minTypicalAge']);
+        $this->assertEquals(65, $result['coverage']['maxTypicalAge']);
         $this->assertEquals('PRIMARY CARE', $result['coverage']['pathway']);
-        $this->assertEquals('5 YEARS', $result['coverage']['followup']);
+        $this->assertEquals('5 YEARS', $result['coverage']['followUp']);
     }
 
     public function test_read_reconstructs_provenance(): void
     {
         $dv = $this->makeDatasetVersion30([]);
 
-        DatasetVersionProvenance::create([
-            'dataset_version_id'           => $dv->id,
-            'origin_purpose'               => 'ADMINISTRATIVE',
-            'origin_source'                => 'EPR',
-            'origin_collection_situation'  => 'PRIMARY CARE',
-            'temporal_start_date'          => '2010-01-01',
-            'temporal_end_date'            => '2023-12-31',
-            'temporal_time_lag'            => '1-2 MONTHS',
+        Provenance::create([
+            'dataset_version_id' => $dv->id,
+            'origin_purpose' => 'ADMINISTRATIVE',
+            'origin_source' => 'EPR',
+            'origin_collection_situation' => 'PRIMARY CARE',
+            'temporal_start_date' => '2010-01-01',
+            'temporal_end_date' => '2023-12-31',
+            'temporal_time_lag' => '1-2 MONTHS',
             'temporal_accrual_periodicity' => 'Monthly',
         ]);
 
-        $result = app(Gwdm30PersistenceService::class)->read($dv);
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
 
         $this->assertArrayHasKey('provenance', $result);
         $this->assertEquals('ADMINISTRATIVE', $result['provenance']['origin']['purpose']);
@@ -382,24 +387,24 @@ class DatasetVersionGwdm30Test extends TestCase
     {
         $dv = $this->makeDatasetVersion30([]);
 
-        DatasetVersionObservation::create([
-            'dataset_version_id'          => $dv->id,
-            'observed_node'               => 'Persons',
-            'measured_value'              => 12500,
-            'observation_date'            => '2023-01-01',
-            'measured_property'           => 'Count',
-            'disambiguating_description'  => 'Total unique patients',
+        Observation::create([
+            'dataset_version_id' => $dv->id,
+            'observed_node' => 'Persons',
+            'measured_value' => 12500,
+            'observation_date' => '2023-01-01',
+            'measured_property' => 'Count',
+            'disambiguating_description' => 'Total unique patients',
         ]);
-        DatasetVersionObservation::create([
-            'dataset_version_id'          => $dv->id,
-            'observed_node'               => 'Events',
-            'measured_value'              => 45000,
-            'observation_date'            => '2023-01-01',
-            'measured_property'           => 'Count',
-            'disambiguating_description'  => null,
+        Observation::create([
+            'dataset_version_id' => $dv->id,
+            'observed_node' => 'Events',
+            'measured_value' => 45000,
+            'observation_date' => '2023-01-01',
+            'measured_property' => 'Count',
+            'disambiguating_description' => null,
         ]);
 
-        $result = app(Gwdm30PersistenceService::class)->read($dv);
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
 
         $this->assertArrayHasKey('observations', $result);
         $this->assertCount(2, $result['observations']);
@@ -416,15 +421,15 @@ class DatasetVersionGwdm30Test extends TestCase
         DatasetVersionHasDatasetVersion::create([
             'dataset_version_source_id' => $dv->id,
             'dataset_version_target_id' => null,
-            'linkage_type'              => 'isDerivedFrom',
-            'direct_linkage'            => 1,
-            'description'               => Gwdm2xHandler::LINKAGE_DESCRIPTION,
-            'raw_url'                   => 'https://external.example.com/dataset/1',
-            'raw_pid'                   => null,
-            'raw_title'                 => 'External Dataset',
+            'linkage_type' => 'isDerivedFrom',
+            'direct_linkage' => 1,
+            'description' => Gwdm2xHandler::LINKAGE_DESCRIPTION,
+            'raw_url' => 'https://external.example.com/dataset/1',
+            'raw_pid' => null,
+            'raw_title' => 'External Dataset',
         ]);
 
-        $result = app(Gwdm30PersistenceService::class)->read($dv);
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
 
         $this->assertArrayHasKey('linkage', $result);
         $this->assertArrayHasKey('isDerivedFrom', $result['linkage']['datasetLinkage']);
@@ -438,7 +443,7 @@ class DatasetVersionGwdm30Test extends TestCase
     {
         $dv = $this->makeDatasetVersion30([]);
 
-        $result = app(Gwdm30PersistenceService::class)->read($dv);
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
 
         $this->assertSame([], $result);
     }
@@ -451,20 +456,20 @@ class DatasetVersionGwdm30Test extends TestCase
         $user = User::first();
 
         $dataset20 = Dataset::create([
-            'user_id'       => $user->id,
-            'team_id'       => $team->id,
-            'pid'           => 'rollback-test-2x-' . fake()->uuid(),
+            'user_id' => $user->id,
+            'team_id' => $team->id,
+            'pid' => 'rollback-test-2x-'.fake()->uuid(),
             'create_origin' => Dataset::ORIGIN_MANUAL,
-            'status'        => Dataset::STATUS_ACTIVE,
+            'status' => Dataset::STATUS_ACTIVE,
         ]);
         $version20 = DatasetVersion::create([
-            'dataset_id'   => $dataset20->id,
-            'version'      => 1,
+            'dataset_id' => $dataset20->id,
+            'version' => 1,
             'gwdm_version' => '2.0',
-            'short_title'  => 'Rollback Test 2.0',
-            'metadata'     => [
-                'gwdmVersion'       => '2.0',
-                'metadata'          => $this->getMetadataV2p0()['metadata'],
+            'short_title' => 'Rollback Test 2.0',
+            'metadata' => [
+                'gwdmVersion' => '2.0',
+                'metadata' => $this->getMetadataV2p0()['metadata'],
                 'original_metadata' => [],
             ],
         ]);
@@ -472,31 +477,271 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertEquals('2.0', $version20->gwdm_version);
 
         // No GWDM 3.0 SQL rows for a 2.0 version
-        $this->assertNull(DatasetVersionAccessibility::where('dataset_version_id', $version20->id)->first());
-        $this->assertNull(DatasetVersionSummary::where('dataset_version_id', $version20->id)->first());
-        $this->assertNull(DatasetVersionCoverage::where('dataset_version_id', $version20->id)->first());
-        $this->assertNull(DatasetVersionProvenance::where('dataset_version_id', $version20->id)->first());
-        $this->assertCount(0, DatasetVersionObservation::where('dataset_version_id', $version20->id)->get());
+        $this->assertNull(Accessibility::where('dataset_version_id', $version20->id)->first());
+        $this->assertNull(Summary::where('dataset_version_id', $version20->id)->first());
+        $this->assertNull(Coverage::where('dataset_version_id', $version20->id)->first());
+        $this->assertNull(Provenance::where('dataset_version_id', $version20->id)->first());
+        $this->assertCount(0, Observation::where('dataset_version_id', $version20->id)->get());
 
         // Create and persist a 3.0 version
-        $gwdm      = $this->getGwdm30Metadata()['metadata'];
+        $gwdm = $this->getGwdm30Metadata()['metadata'];
         $version30 = $this->makeDatasetVersion30([]);
-        app(Gwdm30PersistenceService::class)->persist($version30, $gwdm);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($version30->dataset, $version30, $gwdm);
 
         $this->assertEquals('3.0', $version30->gwdm_version);
-        $this->assertNotNull(DatasetVersionAccessibility::where('dataset_version_id', $version30->id)->first());
-        $this->assertNotNull(DatasetVersionSummary::where('dataset_version_id', $version30->id)->first());
+        $this->assertNotNull(Accessibility::where('dataset_version_id', $version30->id)->first());
+        $this->assertNotNull(Summary::where('dataset_version_id', $version30->id)->first());
 
         // 2.0 version is still untouched
-        $this->assertNull(DatasetVersionAccessibility::where('dataset_version_id', $version20->id)->first());
-        $this->assertNull(DatasetVersionSummary::where('dataset_version_id', $version20->id)->first());
+        $this->assertNull(Accessibility::where('dataset_version_id', $version20->id)->first());
+        $this->assertNull(Summary::where('dataset_version_id', $version20->id)->first());
+    }
+
+    // ─── DCAT / HealthDCAT-AP alignment ──────────────────────────────────────
+
+    public function test_persist_stores_dcat_summary_fields(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        $gwdm = array_merge($this->getGwdm30Metadata()['metadata'], [
+            'summary' => array_merge($this->getGwdm30Metadata()['metadata']['summary'], [
+                'licenseUrl' => 'https://creativecommons.org/licenses/by/4.0/',
+                'landingPage' => 'https://gateway.hdruk.ac.uk/datasets/abc123',
+                'creator' => [
+                    'name' => 'NHS England',
+                    'rorId' => 'https://ror.org/052gg0110',
+                    'orcidId' => null,
+                    'gatewayId' => '42',
+                ],
+                'theme' => ['https://health-ri.eu/themes/EHR', 'https://health-ri.eu/themes/Registry'],
+            ]),
+        ]);
+
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
+
+        $sum = Summary::where('dataset_version_id', $dv->id)->first();
+        $this->assertEquals('https://creativecommons.org/licenses/by/4.0/', $sum->license_url);
+        $this->assertEquals('https://gateway.hdruk.ac.uk/datasets/abc123', $sum->landing_page);
+        $this->assertEquals('NHS England', $sum->creator_name);
+        $this->assertEquals('https://ror.org/052gg0110', $sum->creator_ror_id);
+        $this->assertEquals('42', $sum->creator_gateway_id);
+        $this->assertEquals(['https://health-ri.eu/themes/EHR', 'https://health-ri.eu/themes/Registry'], $sum->theme);
+    }
+
+    public function test_persist_stores_healthdcatap_coverage_fields(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        $gwdm = array_merge($this->getGwdm30Metadata()['metadata'], [
+            'coverage' => [
+                'spatial' => 'GB',
+                'minTypicalAge' => 18,
+                'maxTypicalAge' => 65,
+                'populationCoverage' => 'Adults registered with a GP in England',
+                'numberOfUniqueIndividuals' => 58000000,
+                'numberOfRecords' => 250000000,
+                'pathway' => 'PRIMARY CARE',
+                'followUp' => '10 YEARS',
+            ],
+        ]);
+
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
+
+        $cov = Coverage::where('dataset_version_id', $dv->id)->first();
+        $this->assertEquals(18, $cov->min_typical_age);
+        $this->assertEquals(65, $cov->max_typical_age);
+        $this->assertEquals('Adults registered with a GP in England', $cov->population_coverage);
+        $this->assertEquals(58000000, $cov->number_of_unique_individuals);
+        $this->assertEquals(250000000, $cov->number_of_records);
+    }
+
+    public function test_persist_stores_retention_period(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        $gwdm = array_merge($this->getGwdm30Metadata()['metadata'], [
+            'provenance' => array_merge($this->getGwdm30Metadata()['metadata']['provenance'], [
+                'retentionPeriod' => [
+                    'startDate' => '2019-04-01',
+                    'endDate' => '2030-03-31',
+                ],
+            ]),
+        ]);
+
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
+
+        $prov = Provenance::where('dataset_version_id', $dv->id)->first();
+        $this->assertEquals('2019-04-01', $prov->retention_period_start->toDateString());
+        $this->assertEquals('2030-03-31', $prov->retention_period_end->toDateString());
+    }
+
+    public function test_persist_stores_gdpr_accessibility_fields(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        $gwdm = $this->getGwdm30Metadata()['metadata'];
+        $gwdm['accessibility']['access']['legalBasis'] = 'GDPR Article 6(1)(e) — public task';
+        $gwdm['accessibility']['access']['personalData'] = 'pseudonymised';
+        $gwdm['accessibility']['access']['applicableLegislation'] = 'Data Protection Act 2018';
+
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
+
+        $acc = Accessibility::where('dataset_version_id', $dv->id)->first();
+        $this->assertEquals('GDPR Article 6(1)(e) — public task', $acc->legal_basis);
+        $this->assertEquals('pseudonymised', $acc->personal_data);
+        $this->assertEquals('Data Protection Act 2018', $acc->applicable_legislation);
+    }
+
+    public function test_persist_and_read_distributions(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        $gwdm = array_merge($this->getGwdm30Metadata()['metadata'], [
+            'distributions' => [
+                [
+                    'title' => 'CSV export',
+                    'accessUrl' => 'https://example.com/access',
+                    'downloadUrl' => 'https://example.com/download.csv',
+                    'mediaType' => 'text/csv',
+                    'format' => 'CSV',
+                    'byteSize' => 1048576,
+                    'licenseUrl' => 'https://creativecommons.org/licenses/by/4.0/',
+                    'accessService' => 'https://example.com/api',
+                ],
+                [
+                    'title' => 'FHIR API',
+                    'accessUrl' => 'https://example.com/fhir',
+                    'mediaType' => 'application/fhir+json',
+                ],
+            ],
+        ]);
+
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
+
+        $rows = Distribution::where('dataset_version_id', $dv->id)->orderBy('id')->get();
+        $this->assertCount(2, $rows);
+        $this->assertEquals('CSV export', $rows[0]->title);
+        $this->assertEquals('https://example.com/access', $rows[0]->access_url);
+        $this->assertEquals('https://example.com/download.csv', $rows[0]->download_url);
+        $this->assertEquals('text/csv', $rows[0]->media_type);
+        $this->assertEquals(1048576, $rows[0]->byte_size);
+        $this->assertEquals('https://creativecommons.org/licenses/by/4.0/', $rows[0]->license_url);
+        $this->assertEquals('FHIR API', $rows[1]->title);
+        $this->assertEquals('https://example.com/fhir', $rows[1]->access_url);
+
+        // Read path round-trip
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
+        $this->assertArrayHasKey('distributions', $result);
+        $this->assertCount(2, $result['distributions']);
+        $this->assertEquals('CSV export', $result['distributions'][0]['title']);
+        $this->assertEquals('text/csv', $result['distributions'][0]['mediaType']);
+        $this->assertEquals('https://example.com/fhir', $result['distributions'][1]['accessUrl']);
+    }
+
+    public function test_persist_and_read_quality_annotations(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        $gwdm = array_merge($this->getGwdm30Metadata()['metadata'], [
+            'qualityAnnotations' => [
+                [
+                    'annotationType' => 'duf_score',
+                    'qualityDimension' => 'completeness',
+                    'qualityValue' => '4',
+                    'qualityDescription' => 'Data completeness rated 4/5 by HDR UK DUF review',
+                    'annotationDate' => '2024-03-01',
+                ],
+                [
+                    'annotationType' => 'certification',
+                    'certificationUrl' => 'https://example.com/iso27001-cert.pdf',
+                    'qualityDescription' => 'ISO 27001 certified data custodian',
+                    'annotationDate' => '2023-09-15',
+                ],
+            ],
+        ]);
+
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $gwdm);
+
+        $rows = QualityAnnotation::where('dataset_version_id', $dv->id)->orderBy('id')->get();
+        $this->assertCount(2, $rows);
+        $this->assertEquals('duf_score', $rows[0]->annotation_type);
+        $this->assertEquals('completeness', $rows[0]->quality_dimension);
+        $this->assertEquals('4', $rows[0]->quality_value);
+        $this->assertEquals('2024-03-01', $rows[0]->annotation_date->toDateString());
+        $this->assertEquals('certification', $rows[1]->annotation_type);
+        $this->assertEquals('https://example.com/iso27001-cert.pdf', $rows[1]->certification_url);
+
+        // Read path round-trip
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
+        $this->assertArrayHasKey('qualityAnnotations', $result);
+        $this->assertCount(2, $result['qualityAnnotations']);
+        $this->assertEquals('duf_score', $result['qualityAnnotations'][0]['annotationType']);
+        $this->assertEquals('completeness', $result['qualityAnnotations'][0]['qualityDimension']);
+        $this->assertEquals('certification', $result['qualityAnnotations'][1]['annotationType']);
+        $this->assertEquals('https://example.com/iso27001-cert.pdf', $result['qualityAnnotations'][1]['certificationUrl']);
+    }
+
+    public function test_read_returns_dcat_summary_fields(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+
+        Summary::create([
+            'dataset_version_id' => $dv->id,
+            'abstract' => 'Test abstract',
+            'license_url' => 'https://creativecommons.org/licenses/by/4.0/',
+            'landing_page' => 'https://gateway.hdruk.ac.uk/datasets/abc',
+            'creator_name' => 'NHS England',
+            'creator_ror_id' => 'https://ror.org/052gg0110',
+            'theme' => ['https://health-ri.eu/themes/EHR'],
+            'publisher_name' => 'NHS England',
+        ]);
+
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
+
+        $this->assertEquals('https://creativecommons.org/licenses/by/4.0/', $result['summary']['licenseUrl']);
+        $this->assertEquals('https://gateway.hdruk.ac.uk/datasets/abc', $result['summary']['landingPage']);
+        $this->assertEquals('NHS England', $result['summary']['creator']['name']);
+        $this->assertEquals('https://ror.org/052gg0110', $result['summary']['creator']['rorId']);
+        $this->assertEquals(['https://health-ri.eu/themes/EHR'], $result['summary']['theme']);
+    }
+
+    public function test_read_returns_gdpr_accessibility_fields(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+
+        Accessibility::create([
+            'dataset_version_id' => $dv->id,
+            'access_rights' => 'https://example.com/rights',
+            'legal_basis' => 'GDPR Article 6(1)(e)',
+            'personal_data' => 'pseudonymised',
+            'applicable_legislation' => 'Data Protection Act 2018',
+        ]);
+
+        $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
+
+        $this->assertEquals('GDPR Article 6(1)(e)', $result['accessibility']['access']['legalBasis']);
+        $this->assertEquals('pseudonymised', $result['accessibility']['access']['personalData']);
+        $this->assertEquals('Data Protection Act 2018', $result['accessibility']['access']['applicableLegislation']);
+    }
+
+    public function test_distributions_replaced_on_rewrite(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        $handler = app(GwdmHandlerFactory::class)->resolve('3.0');
+        $gwdm = $this->getGwdm30Metadata()['metadata'];
+
+        $gwdm['distributions'] = [['accessUrl' => 'https://example.com/v1']];
+        $handler->afterStore($dv->dataset, $dv, $gwdm);
+        $this->assertCount(1, Distribution::where('dataset_version_id', $dv->id)->get());
+
+        $gwdm['distributions'] = [
+            ['accessUrl' => 'https://example.com/v2a'],
+            ['accessUrl' => 'https://example.com/v2b'],
+        ];
+        $handler->afterStore($dv->dataset, $dv, $gwdm);
+        $this->assertCount(2, Distribution::where('dataset_version_id', $dv->id)->get());
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private function getGwdm30Metadata(): array
     {
-        $json = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v3p0_dataset_min.json');
+        $json = file_get_contents(getcwd().'/tests/Unit/test_files/gwdm_v3p0_dataset_min.json');
+
         return json_decode($json, true);
     }
 
@@ -510,24 +755,24 @@ class DatasetVersionGwdm30Test extends TestCase
         $user = User::first();
 
         $dataset = Dataset::create([
-            'user_id'       => $user->id,
-            'team_id'       => $team->id,
-            'pid'           => 'test-' . fake()->uuid(),
+            'user_id' => $user->id,
+            'team_id' => $team->id,
+            'pid' => 'test-'.fake()->uuid(),
             'create_origin' => Dataset::ORIGIN_MANUAL,
-            'status'        => Dataset::STATUS_ACTIVE,
+            'status' => Dataset::STATUS_ACTIVE,
         ]);
 
-        $baseMetadata   = $this->getGwdm30Metadata()['metadata'];
+        $baseMetadata = $this->getGwdm30Metadata()['metadata'];
         $mergedMetadata = array_replace_recursive($baseMetadata, $metadataOverrides);
 
         return DatasetVersion::create([
-            'dataset_id'   => $dataset->id,
-            'version'      => 1,
+            'dataset_id' => $dataset->id,
+            'version' => 1,
             'gwdm_version' => '3.0',
-            'short_title'  => $mergedMetadata['summary']['shortTitle'] ?? 'GWDM 3.0 Test',
-            'metadata'     => [
-                'gwdmVersion'       => '3.0',
-                'metadata'          => $mergedMetadata,
+            'short_title' => $mergedMetadata['summary']['shortTitle'] ?? 'GWDM 3.0 Test',
+            'metadata' => [
+                'gwdmVersion' => '3.0',
+                'metadata' => $mergedMetadata,
                 'original_metadata' => [],
             ],
         ]);

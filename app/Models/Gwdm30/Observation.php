@@ -6,16 +6,22 @@ use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DatasetVersionCoverage extends Model
+class Observation extends Model
 {
-    protected $table = 'gwdm30_coverage';
+    protected $table = 'gwdm30_observations';
 
     protected $fillable = [
         'dataset_version_id',
-        'spatial',
-        'typical_age_range',
-        'pathway',
-        'followup',
+        'observed_node',
+        'measured_value',
+        'observation_date',
+        'measured_property',
+        'disambiguating_description',
+    ];
+
+    protected $casts = [
+        'measured_value'   => 'float',
+        'observation_date' => 'date',
     ];
 
     public function datasetVersion(): BelongsTo
