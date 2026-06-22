@@ -387,6 +387,74 @@ class SendEmailCustomIntegrationTest extends TestCase
         $this->assertSame('<ul></ul>', $result['integration_errors']);
     }
 
+    public function test_history_preserves_full_multi_schema_translation_errors(): void
+    {
+        FederationJobRun::create([
+            'team_id'       => self::TEAM_ID,
+            'federation_id' => self::FEDERATION_ID,
+            'job_uuid'      => self::JOB_UUID,
+            'pid'           => '276ef9ca-0000-0001',
+            'status'        => 0,
+            'details'       => [
+                'message' => [
+                    ['name' => 'HDRUK',     'version' => '2.0.2', 'errors' => [['message' => "must NOT have additional properties"]]],
+                    ['name' => 'HDRUK',     'version' => '2.1.0', 'errors' => [['message' => "must have required property 'publisher'"]]],
+                    ['name' => 'HDRUK',     'version' => '3.0.0', 'errors' => [['message' => "must have required property 'populationSize'"]]],
+                    ['name' => 'GWDM',      'version' => '1.0',   'errors' => [['message' => "must have required property 'required'"]]],
+                    ['name' => 'GWDM',      'version' => '2.1',   'errors' => [['message' => "must have required property 'required'"]]],
+                    ['name' => 'SchemaOrg', 'version' => 'BioSchema', 'errors' => [['message' => "must have required property 'name'"]]],
+                ],
+            ],
+            'job_attempts'  => 1,
+        ]);
+
+        $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
+        $result = $job->getFederationHistory();
+
+        $errors = $result['integration_errors'];
+
+        $this->assertStringContainsString('PID - 276ef9ca-0000-0001', $errors);
+        $this->assertStringContainsString("HDRUK/2.0.2  - must NOT have additional properties", $errors);
+        $this->assertStringContainsString("HDRUK/2.1.0  - must have required property 'publisher'", $errors);
+        $this->assertStringContainsString("HDRUK/3.0.0  - must have required property 'populationSize'", $errors);
+        $this->assertStringContainsString("GWDM/1.0  - must have required property 'required'", $errors);
+        $this->assertStringContainsString("GWDM/2.1  - must have required property 'required'", $errors);
+        $this->assertStringContainsString("SchemaOrg/BioSchema  - must have required property 'name'", $errors);
+    }
+
+    public function test_history_does_not_leak_sensitive_data_from_redacted_exception_messages(): void
+    {
+        // Simulates what the catch blocks in GatewayMetadataIngestionTrait now store —
+        // a safe generic string with a job reference, not the raw exception.
+        FederationJobRun::create([
+            'team_id'       => self::TEAM_ID,
+            'federation_id' => self::FEDERATION_ID,
+            'job_uuid'      => self::JOB_UUID,
+            'pid'           => 'redacted-pid',
+            'status'        => 0,
+            'details'       => [
+                'message' => 'An unexpected error occurred while creating dataset redacted-pid. Please contact support and reference job: ' . self::JOB_UUID,
+            ],
+            'job_attempts'  => 1,
+        ]);
+
+        $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
+        $result = $job->getFederationHistory();
+
+        $errors = $result['integration_errors'];
+
+        $this->assertStringContainsString('PID - redacted-pid', $errors);
+        $this->assertStringContainsString('unexpected error', $errors);
+        $this->assertStringContainsString(self::JOB_UUID, $errors);
+
+        // None of these patterns — typical of leaked internal exceptions — should appear.
+        $this->assertStringNotContainsString('projects/', $errors);
+        $this->assertStringNotContainsString('secrets/', $errors);
+        $this->assertStringNotContainsString('Exception', $errors);
+        $this->assertStringNotContainsString('Stack trace', $errors);
+        $this->assertStringNotContainsString('/var/www', $errors);
+    }
+
     public function test_history_ignores_runs_from_other_job_uuids(): void
     {
         FederationJobRun::create([
