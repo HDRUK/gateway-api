@@ -60,7 +60,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
 
     // ── Linkage extraction ────────────────────────────────────────────────────
 
-    private const LINKAGE_DESCRIPTION = 'Extracted from GWDM';
+    public const LINKAGE_DESCRIPTION = 'Extracted from GWDM';
 
     public function extractLinkages(DatasetVersion $dv): void
     {

@@ -72,6 +72,16 @@ class PartnerContext
         return $this->defaultIndexResourceFor($modelClass);
     }
 
+    public function defaultSchemaModel(): ?string
+    {
+        return config('partners.schema.' . $this->getPartner() . '.model') ?: null;
+    }
+
+    public function defaultSchemaVersion(): ?string
+    {
+        return config('partners.schema.' . $this->getPartner() . '.version') ?: null;
+    }
+
     private function defaultResourceFor(string $modelClass): string
     {
         return config('partners.resources.HDRUK', [])[$modelClass] ?? $modelClass;

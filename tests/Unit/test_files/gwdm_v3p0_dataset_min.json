@@ -1,0 +1,96 @@
+{
+    "gwdmVersion": "3.0",
+    "metadata": {
+        "required": {
+            "gatewayId": "1234",
+            "gatewayPid": "5124f2",
+            "issued": "2020-08-05T14:35:59Z",
+            "modified": "2021-01-28T14:15:46Z",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
+                }
+            ],
+            "version": "1.0.0"
+        },
+        "summary": {
+            "abstract": "Test dataset for GWDM 3.0 feature tests",
+            "contactPoint": "test@example.com",
+            "keywords": "Test,GWDM30",
+            "controlledKeywords": null,
+            "datasetType": "test",
+            "description": "A minimal GWDM 3.0 dataset for automated testing",
+            "doiName": null,
+            "shortTitle": "GWDM 3.0 Test Dataset",
+            "title": "GWDM 3.0 Test Dataset - Full Title",
+            "publisher": {
+                "name": "Test Publisher",
+                "gatewayId": null
+            },
+            "populationSize": 0
+        },
+        "coverage": {
+            "pathway": "NOT APPLICABLE",
+            "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
+            "followup": "UNKNOWN",
+            "typicalAgeRange": "0-150"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "OTHER",
+                "source": "MACHINE GENERATED",
+                "collectionSituation": "OTHER"
+            },
+            "temporal": {
+                "endDate": "2024-12-31",
+                "startDate": "2020-01-01",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Annual"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "1-2 WEEKS",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Test Organisation",
+                "dataProcessor": "Test Organisation",
+                "accessRights": "https://example.com/licence",
+                "accessService": "https://example.com/access",
+                "accessRequestCost": "Free at point of access"
+            },
+            "usage": {
+                "dataUseLimitation": ["GENERAL RESEARCH USE"],
+                "dataUseRequirements": ["RETURN TO DATABASE OR RESOURCE", "USER SPECIFIC RESTRICTION"],
+                "resourceCreator": {
+                    "name": "Test Organisation"
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": ["CSV", "JSON"]
+            }
+        },
+        "linkage": {
+            "datasetLinkage": {
+                "isDerivedFrom": [],
+                "isPartOf": [],
+                "isMemberOf": [],
+                "linkedDatasets": []
+            },
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
+        },
+        "observations": [
+            {
+                "observedNode": "Findings",
+                "measuredValue": 100,
+                "observationDate": "2024-01-01",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Test observation"
+            }
+        ]
+    }
+}

@@ -142,7 +142,7 @@ abstract class GwdmMetadataHandler
      *
      * No-op for the base class. Gwdm2xHandler writes to the
      * dataset_version_has_dataset_version and publication_has_dataset_version
-     * junction tables. Gwdm30Handler will write to dataset_version_gwdm30_linkages.
+     * junction tables. Gwdm30Handler inherits this method unchanged.
      */
     public function extractLinkages(DatasetVersion $dv): void
     {

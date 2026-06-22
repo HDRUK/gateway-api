@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -25,9 +26,13 @@ use Illuminate\Support\Facades\Schema;
 return new class () extends Migration {
     public function up(): void
     {
-        Schema::table('dataset_version_has_dataset_version', function (Blueprint $table) {
-            // Must drop the FK before modifying the column.
-            $table->dropForeign('ld_dataset_version_target_id_fk');
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        Schema::table('dataset_version_has_dataset_version', function (Blueprint $table) use ($isSqlite) {
+            // SQLite rebuilds the whole table on ALTER — named FK drop is not supported.
+            if (!$isSqlite) {
+                $table->dropForeign('ld_dataset_version_target_id_fk');
+            }
 
             $table->unsignedBigInteger('dataset_version_target_id')->nullable()->change();
 
@@ -37,9 +42,11 @@ return new class () extends Migration {
             $table->string('raw_title', 1000)->nullable()->after('raw_pid');
 
             // Re-add FK as nullable (NULL = unresolved, non-NULL = resolved).
-            $table->foreign('dataset_version_target_id', 'ld_dataset_version_target_id_fk')
-                ->references('id')->on('dataset_versions')
-                ->onDelete('cascade');
+            if (!$isSqlite) {
+                $table->foreign('dataset_version_target_id', 'ld_dataset_version_target_id_fk')
+                    ->references('id')->on('dataset_versions')
+                    ->onDelete('cascade');
+            }
         });
 
         Schema::table('publication_has_dataset_version', function (Blueprint $table) {
@@ -57,17 +64,22 @@ return new class () extends Migration {
 
     public function down(): void
     {
-        Schema::table('dataset_version_has_dataset_version', function (Blueprint $table) {
-            $table->dropForeign('ld_dataset_version_target_id_fk');
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        Schema::table('dataset_version_has_dataset_version', function (Blueprint $table) use ($isSqlite) {
+            if (!$isSqlite) {
+                $table->dropForeign('ld_dataset_version_target_id_fk');
+            }
             $table->dropColumn(['raw_url', 'raw_pid', 'raw_title']);
-            // Delete null-target rows so the NOT NULL constraint can be restored.
-            \DB::table('dataset_version_has_dataset_version')
+            DB::table('dataset_version_has_dataset_version')
                 ->whereNull('dataset_version_target_id')
                 ->delete();
             $table->unsignedBigInteger('dataset_version_target_id')->nullable(false)->change();
-            $table->foreign('dataset_version_target_id', 'ld_dataset_version_target_id_fk')
-                ->references('id')->on('dataset_versions')
-                ->onDelete('cascade');
+            if (!$isSqlite) {
+                $table->foreign('dataset_version_target_id', 'ld_dataset_version_target_id_fk')
+                    ->references('id')->on('dataset_versions')
+                    ->onDelete('cascade');
+            }
         });
 
         Schema::table('publication_has_dataset_version', function (Blueprint $table) {
