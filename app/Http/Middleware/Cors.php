@@ -22,7 +22,7 @@ class Cors
         $headers = [
             'Access-Control-Allow-Credentials' => 'true',
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization, x-request-session-id',
+            'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization, x-request-session-id, x-partner-context',
             'Vary' => 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
         ];
 
