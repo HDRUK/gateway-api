@@ -18,7 +18,7 @@ class TestDevUsersSeeder extends Seeder
         $teamId = 21;
 
         $users = [
-             ['name' => 'TeamAdmin', 'role_ids' => [7], 'email' => 'CypressTeamAdmin@hdruk.ac.uk'],
+             ['name' => 'TeamAdmin', 'role_ids' => [7], 'email' => 'CypressTeamAdmin@hdruk.ac.uk', 'is_admin' => true],
              ['name' => 'Developers', 'role_ids' => [8], 'email' => 'CypressDevelopers@hdruk.ac.uk'],
              ['name' => 'DarManager', 'role_ids' => [11], 'email' => 'CypressDarManager@hdruk.ac.uk'],
              ['name' => 'Reviewer', 'role_ids' => [12], 'email' => 'CypressReviewer@hdruk.ac.uk'],
@@ -35,6 +35,7 @@ class TestDevUsersSeeder extends Seeder
                     'name' => $data['name'],
                     'provider' => 'service',
                     'password' => Hash::make(config('gateway.test_user_password')),
+                    'is_admin' => $data['is_admin'] ?? false,
                 ]
             );
             $teamUser = TeamHasUser::create(
