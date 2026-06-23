@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Base class for deployment steps.
  *
  * CONSTRAINTS (by design):
- *   - Run-once: a step that has been recorded in deployment_steps will never run again,
+ *   - Run-once: a step that has been recorded in deployment_steps will and should never run again,
  *     even if its handle() method is changed. To re-run logic, create a new step file.
  *   - Forward-only: there is no rollback mechanism. Steps are intended for data fixes,
  *     seeding, and one-time operations where reversal is impractical or meaningless.
