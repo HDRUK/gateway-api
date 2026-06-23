@@ -3,6 +3,7 @@
 namespace App\DeploymentSteps;
 
 use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -16,7 +17,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class DeploymentStep
 {
-    public function __construct(protected OutputInterface $output) {}
+    protected OutputInterface $output;
+
+    public function __construct()
+    {
+        $this->output = new NullOutput();
+    }
+
+    final public function setOutput(OutputInterface $output): void
+    {
+        $this->output = $output;
+    }
 
     abstract public function handle(): void;
 

@@ -29,7 +29,7 @@ class DeployRun extends Command
         ]);
 
         $ran = $this->getRanSteps();
-        $pending = array_filter($files, fn($key) => !in_array($key, $ran), ARRAY_FILTER_USE_KEY);
+        $pending = array_filter($files, fn ($key) => !isset($ran[$key]), ARRAY_FILTER_USE_KEY);
 
         if (empty($pending)) {
             $this->info('Nothing to run. All deployment steps are up to date.');
@@ -51,6 +51,7 @@ class DeployRun extends Command
                     return self::FAILURE;
                 }
 
+                $step->setOutput($this->output);
                 $step->handle();
 
                 DB::table('deployment_steps')->insert([
@@ -94,7 +95,7 @@ class DeployRun extends Command
 
         $this->table(['Step', 'Status', 'Ran At'], $rows);
 
-        $pendingCount = count(array_filter($rows, fn($r) => str_contains($r[1], 'pending')));
+        $pendingCount = count(array_filter($rows, fn ($r) => str_contains($r[1], 'pending')));
         $this->line('');
         $this->line(sprintf('%d step(s) total, %d pending.', count($rows), $pendingCount));
 
@@ -107,7 +108,7 @@ class DeployRun extends Command
      */
     private function discoverSteps(): array
     {
-        $dir = database_path('deployment-steps');
+        $dir = config('deployment.steps_path', database_path('deployment-steps'));
         $files = glob("{$dir}/*.php") ?: [];
         sort($files);
 
