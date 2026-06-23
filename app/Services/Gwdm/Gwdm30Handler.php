@@ -281,6 +281,8 @@ class Gwdm30Handler extends Gwdm2xHandler
 
         return [
             'summary' => [
+                'title' => $dv->title,
+                'shortTitle' => $dv->short_title,
                 'abstract' => $row->abstract,
                 'contactPoint' => $row->contact_point,
                 'keywords' => $row->keywords,
