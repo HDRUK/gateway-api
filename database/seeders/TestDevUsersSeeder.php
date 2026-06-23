@@ -18,6 +18,7 @@ class TestDevUsersSeeder extends Seeder
         $teamId = 21;
 
         $users = [
+             ['name' => 'SuperUser', 'role_ids' => [], 'email' => 'CypressSuperUser@hdruk.ac.uk', 'is_admin' => true],
              ['name' => 'TeamAdmin', 'role_ids' => [7], 'email' => 'CypressTeamAdmin@hdruk.ac.uk'],
              ['name' => 'Developers', 'role_ids' => [8], 'email' => 'CypressDevelopers@hdruk.ac.uk'],
              ['name' => 'DarManager', 'role_ids' => [11], 'email' => 'CypressDarManager@hdruk.ac.uk'],
@@ -35,19 +36,22 @@ class TestDevUsersSeeder extends Seeder
                     'name' => $data['name'],
                     'provider' => 'service',
                     'password' => Hash::make(config('gateway.test_user_password')),
+                    'is_admin' => $data['is_admin'] ?? false,
                 ]
             );
-            $teamUser = TeamHasUser::create(
-                [
-                    'team_id' => $teamId,
-                    'user_id' => $user->id,
-                ]
-            );
-            foreach ($data['role_ids'] as $role_id) {
-                TeamUserHasRole::firstOrCreate([
-                    'team_has_user_id' => $teamUser->id,
-                    'role_id' => $role_id,
-                ]);
+            if (!empty($data['role_ids'])) {
+                $teamUser = TeamHasUser::create(
+                    [
+                        'team_id' => $teamId,
+                        'user_id' => $user->id,
+                    ]
+                );
+                foreach ($data['role_ids'] as $role_id) {
+                    TeamUserHasRole::firstOrCreate([
+                        'team_has_user_id' => $teamUser->id,
+                        'role_id' => $role_id,
+                    ]);
+                }
             }
         }
     }

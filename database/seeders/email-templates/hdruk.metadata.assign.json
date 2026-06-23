@@ -1,0 +1,7 @@
+{
+    "identifier": "hdruk.metadata.assign",
+    "layout": "standard",
+    "header_text": "hdruk.metadata.assign role has been assigned.",
+    "subject": "[[ASSIGNER_NAME]] - hdruk.metadata.assign",
+    "body": "\n"
+}

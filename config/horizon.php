@@ -84,9 +84,10 @@ return [
     */
 
     'waits' => [
-        'redis:high'       => 30,
-        'redis:default'    => 60,
-        'redis:enrichment' => 300,
+        'redis:high'        => 30,
+        'redis:default'     => 60,
+        'redis:enrichment'  => 300,
+        'redis:federation'  => 60,
     ],
 
     /*
@@ -168,7 +169,7 @@ return [
     |
     */
 
-    'memory_limit' => 64,
+    'memory_limit' => 128,
 
     /*
     |--------------------------------------------------------------------------
@@ -262,7 +263,7 @@ return [
 
         'preprod' => [
             'supervisor-high' => [
-                'maxProcesses' => 3,
+                'maxProcesses' => 5,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
@@ -285,7 +286,7 @@ return [
 
         'dev' => [
             'supervisor-high' => [
-                'maxProcesses' => 2,
+                'maxProcesses' => 5,
             ],
             'supervisor-1' => [
                 'maxProcesses' => 3,
@@ -300,7 +301,7 @@ return [
 
         'local' => [
             'supervisor-high' => [
-                'maxProcesses' => 2,
+                'maxProcesses' => 5,
             ],
             'supervisor-1' => [
                 'maxProcesses' => 3,

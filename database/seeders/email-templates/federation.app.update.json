@@ -1,0 +1,15 @@
+{
+    "identifier": "federation.app.update",
+    "layout": "standard",
+    "header_text": "Gateway App has been updated for [[TEAM_NAME]].",
+    "subject": "Gateway App has been updated.",
+    "body": "\n                        <mj-section>\n                            <mj-column width=\"100%\">\n                                <mj-text line-height=\"20px\">\n                                    Dear [[USER_FIRSTNAME]],\n                                </mj-text>\n                                <mj-text line-height=\"20px\">\n                                    <b>[[FEDERATION_NAME]]</b> has been updated on the Gateway:\n                                </mj-text>\n                                <mj-text>\n                                    Date: [[FEDERATION_UPDATED_AT_DATE]]\n                                </mj-text>\n                                <mj-text>\n                                    Status: [[FEDERATION_STATUS]]\n                                </mj-text>\n                            </mj-column>\n                        </mj-section>\n\n                        <mj-section>\n                            <mj-column width=\"100%\">\n                                <mj-text line-height=\"20px\">\n                                    To review or edit the integration, click the link below or visit your account on the Gateway.\n                                </mj-text>\n                            </mj-column>\n                        </mj-section>\n\n                        <mj-section>\n                            <mj-column>\n                                <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View app integrations</mj-button>\n                            </mj-column>\n                        </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+            }
+        ]
+    }
+}

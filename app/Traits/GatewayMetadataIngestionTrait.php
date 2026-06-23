@@ -202,7 +202,7 @@ trait GatewayMetadataIngestionTrait
                 }
             } catch (\Throwable $e) {
                 $this->log('error', "encountered internal error while CREATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "encountered internal error while CREATING dataset {$pid} from remote source: " . $e->getMessage(), 0, $attempts);
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while creating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
             }
 
         }
@@ -296,7 +296,7 @@ trait GatewayMetadataIngestionTrait
                 } catch (\Throwable $e) {
                     $this->log('error', "encountered internal error while UPDATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
 
-                    $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "encountered internal error while UPDATING dataset {$pid} from remote source: " . $e->getMessage(), 0, $attempts);
+                    $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while updating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
                 }
             }
         }

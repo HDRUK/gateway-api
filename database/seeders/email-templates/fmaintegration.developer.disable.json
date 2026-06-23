@@ -1,0 +1,15 @@
+{
+    "identifier": "fmaintegration.developer.disable",
+    "layout": "standard",
+    "header_text": "An integration was disabled on the Gateway for<br> [[TEAM_NAME]].",
+    "subject": "An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.",
+    "body": "\n        \t\n            <mj-section>\n                <mj-column>\n                <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\">\n                    Dear [[USER_FIRST_NAME]],<br></br>\n                    This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>\n                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>\n                </mj-text>\n                <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View integrations</mj-button>\n                </mj-column>\n            </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/integration"
+            }
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "identifier": "integration.other.delete",
+    "layout": "standard",
+    "header_text": "An integration was deleted on the Gateway for<br> [[TEAM_NAME]].",
+    "subject": "An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.",
+    "body": "\n                        <mj-section>\n                        <mj-column>\n                            <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\">\n                                Dear [[USER_FIRST_NAME]],<br></br>\n                                This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>\n                                To review or edit integrations, contact your Team Administrator(s) or Developer(s):\n                    [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]\n                            </mj-text>\n                        </mj-column>\n                        </mj-section>\n"
+}

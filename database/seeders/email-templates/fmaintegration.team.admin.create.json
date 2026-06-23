@@ -1,0 +1,7 @@
+{
+    "identifier": "fmaintegration.team.admin.create",
+    "layout": "standard",
+    "header_text": "Congratulations! A new integration has been created for<br> [[TEAM_NAME]].",
+    "subject": "[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.",
+    "body": "\n            <mj-section>\n                <mj-column>\n                    <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\">\n                        Dear [[USER_FIRST_NAME]],<br></br>\n                        An integration for [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>\n                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>\n                    </mj-text>\n                    <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"#\">View federated integrations</mj-button>\n                </mj-column>\n            </mj-section>\n"
+}

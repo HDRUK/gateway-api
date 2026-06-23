@@ -1,0 +1,15 @@
+{
+    "identifier": "private.app.update.clientid",
+    "layout": "standard",
+    "header_text": "The Client ID for a Private App on the Gateway has been changed",
+    "subject": "Private App has been updated.",
+    "body": "\n                            <mj-section>\n                                <mj-column width=\"100%\">\n                                    <mj-text line-height=\"20px\">\n                                        Dear [[USER_FIRSTNAME]],\n                                    </mj-text>\n                                    <mj-text line-height=\"20px\">\n                                        A member of your team has initiated the generation of a new <b>Client ID</b> for <b>[[APP_NAME]]</b> on the HDR Innovation Gateway. We strongly recommend you update your software as soon as possible to avoid any disruption with your integration with the Gateway.\n                                    </mj-text>\n                                    <mj-text>\n                                        Date: [[APP_UPDATED_AT_DATE]]\n                                    </mj-text>\n                                    <mj-text>\n                                        Status: [[APP_STATUS]]\n                                    </mj-text>\n                                    <mj-text line-height=\"20px\">\n                                        [[OTHER_USER_MESSAGE]] \n                                    </mj-text>\n                                </mj-column>\n                            </mj-section>\n\n\n                            <mj-section>\n                                <mj-column>\n                                    <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View app integrations</mj-button>\n                                </mj-column>\n                            </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+            }
+        ]
+    }
+}

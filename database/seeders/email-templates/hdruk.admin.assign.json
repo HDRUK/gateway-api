@@ -1,0 +1,7 @@
+{
+    "identifier": "hdruk.admin.assign",
+    "layout": "standard",
+    "header_text": "hdruk.admin.assign role has been assigned.",
+    "subject": "[[ASSIGNER_NAME]] - hdruk.admin.assign",
+    "body": "\n"
+}

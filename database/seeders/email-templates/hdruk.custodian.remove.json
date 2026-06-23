@@ -1,0 +1,7 @@
+{
+    "identifier": "hdruk.custodian.remove",
+    "layout": "standard",
+    "header_text": "hdruk.custodian.assign role has been removed.",
+    "subject": "[[ASSIGNER_NAME]] - hdruk.custodian.remove",
+    "body": "\n"
+}
