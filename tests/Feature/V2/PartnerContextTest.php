@@ -9,6 +9,7 @@ use App\Models\DatasetVersion;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Tests for partner_context isolation (GAT-8924).
@@ -30,6 +31,7 @@ class PartnerContextTest extends TestCase
     }
 
     public const DATASETS_URL      = '/api/v2/datasets';
+    public const SEARCH_DATASETS_URL = '/api/v1/search/datasets';
     public const TEAMS_URL         = '/api/v1/teams';
     public const NOTIFICATIONS_URL = '/api/v1/notifications';
     public const USERS_URL         = '/api/v1/users';
@@ -204,6 +206,53 @@ class PartnerContextTest extends TestCase
         $this->assertCount($initialCrukCount + 2, $response->json('data'));
     }
 
+    public function test_cruk_context_search_returns_only_cruk_datasets(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+
+        $hdrukDatasetId = $this->createDataset($teamId, $userId, 'HDRUK');
+        $crukDatasetId = $this->createDataset($teamId, $userId, 'CRUK');
+
+        $this->mockSearchHitsForDatasetIds([$hdrukDatasetId, $crukDatasetId]);
+
+        $response = $this->json(
+            'POST',
+            self::SEARCH_DATASETS_URL,
+            ['query' => null],
+            array_merge($this->header, ['x-partner-context' => 'CRUK']),
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $returnedIds = array_map('intval', array_column($response->json('data'), '_id'));
+        $this->assertSame([$crukDatasetId], $returnedIds);
+        $this->assertSame(1, $response->json('total'));
+        $this->assertSame(1, $response->json('elastic_total'));
+    }
+
+    public function test_hdruk_context_search_returns_all_partner_datasets(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+
+        $hdrukDatasetId = $this->createDataset($teamId, $userId, 'HDRUK');
+        $crukDatasetId = $this->createDataset($teamId, $userId, 'CRUK');
+
+        $this->mockSearchHitsForDatasetIds([$hdrukDatasetId, $crukDatasetId]);
+
+        $response = $this->json(
+            'POST',
+            self::SEARCH_DATASETS_URL,
+            ['query' => null],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $returnedIds = array_map('intval', array_column($response->json('data'), '_id'));
+        $this->assertEqualsCanonicalizing([$hdrukDatasetId, $crukDatasetId], $returnedIds);
+        $this->assertSame(2, $response->json('total'));
+    }
+
     // -------------------------------------------------------------------------
     // Read path — single-dataset show isolation
     // -------------------------------------------------------------------------
@@ -308,6 +357,55 @@ class PartnerContextTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
 
         return $response->json('data');
+    }
+
+    /**
+     * Stub the external search service to return hits for the given dataset IDs.
+     *
+     * @param  array<int>  $datasetIds
+     */
+    private function mockSearchHitsForDatasetIds(array $datasetIds): void
+    {
+        $hits = array_map(fn (int $id) => [
+            '_id' => (string) $id,
+            '_source' => [
+                'abstract' => '',
+                'description' => '',
+                'keywords' => '',
+                'named_entities' => [],
+                'publisherName' => '',
+                'shortTitle' => 'Dataset ' . $id,
+                'title' => 'Dataset ' . $id,
+                'dataUseTitles' => [],
+                'populationSize' => 1000,
+            ],
+            'highlight' => [
+                'abstract' => [],
+                'description' => [],
+            ],
+        ], $datasetIds);
+
+        $searchUrl = config('gateway.search_service_url') . '/search/datasets*';
+
+        // Replace setUp search stubs so this test controls returned hit IDs.
+        $factory = Http::getFacadeRoot();
+        $reflection = new \ReflectionClass($factory);
+        $property = $reflection->getProperty('stubCallbacks');
+        $property->setAccessible(true);
+        $property->setValue($factory, collect());
+
+        Http::fake([
+            $searchUrl => Http::response([
+                'took' => 1,
+                'timed_out' => false,
+                '_shards' => [],
+                'hits' => [
+                    'total' => ['value' => count($hits)],
+                    'hits' => $hits,
+                ],
+                'aggregations' => [],
+            ], 200),
+        ]);
     }
 
     /**
