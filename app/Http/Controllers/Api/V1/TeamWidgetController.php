@@ -389,12 +389,10 @@ class TeamWidgetController extends Controller
                 }
             }
 
-
             $datasetIds     = is_string($widget->included_datasets) ? array_filter(explode(',', $widget->included_datasets)) : ($widget->included_datasets ?? []);
             $dataUseIds     = is_string($widget->included_data_uses) ? array_filter(explode(',', $widget->included_data_uses)) : ($widget->included_data_uses ?? []);
             $scriptIds      = is_string($widget->included_scripts) ? array_filter(explode(',', $widget->included_scripts)) : ($widget->included_scripts ?? []);
             $collectionIds  = is_string($widget->included_collections) ? array_filter(explode(',', $widget->included_collections)) : ($widget->included_collections ?? []);
-
 
             $datasetIds     = array_map('intval', $datasetIds);
             $dataUseIds     = array_map('intval', $dataUseIds);
@@ -512,6 +510,12 @@ class TeamWidgetController extends Controller
                 $collections = [];
             }
 
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => "Retrieve data related to team {$teamId}, widget {$id} and domain origin {$domainOrigin}",
+            ]);
 
             return response()->json(['data' => [
                 'datasets' => $datasets,
@@ -533,6 +537,13 @@ class TeamWidgetController extends Controller
             ]], Config::get('statuscodes.STATUS_OK.code'));
 
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             \Log::error('Error retrieving widget data', [
                 'team_id' => $teamId,
                 'widget_id' => $id,

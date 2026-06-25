@@ -57,11 +57,11 @@ trait Responses
         ], Response::HTTP_FORBIDDEN);
     }
 
-    public function notFoundResponse(): JsonResponse
+    public function notFoundResponse(mixed $data = null): JsonResponse
     {
         return response()->json([
             'message' => 'not found',
-            'data' => null,
+            'data' => $data,
         ], Response::HTTP_NOT_FOUND);
     }
 

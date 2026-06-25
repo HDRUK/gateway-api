@@ -750,6 +750,18 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_id'] === '1');
     }
 
+    public function test_publications_search_returns_400_for_sql_injection_payload(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_SEARCH . '/publications',
+            ['query' => "55224RsYHR%27::char(10)::integer--"],
+            ['Accept' => 'application/json']
+        );
+
+        $response->assertStatus(400);
+    }
+
     /**
      * Search using a query with success
      *
@@ -1000,6 +1012,7 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
+
         $this->assertTrue($response['data'][0]['paper_title'] === 'DOI test publication');
     }
 
@@ -1275,7 +1288,7 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
 
-        // Test sorting by updated_at desc
+        // Test sorting by updated_at desc (updated_at comes from Team rows via DataCustodianHydrator)
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_custodians" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -1303,6 +1316,11 @@ class SearchTest extends TestCase
             'to',
             'total',
         ]);
-        $this->assertTrue($response['data'][0]['_id'] === '1');
+        $data = $response->decodeResponseJson()['data'];
+        $this->assertNotEmpty($data);
+        $expectedFirstId = collect($data)
+            ->sortByDesc(fn (array $row) => strtotime((string) $row['_source']['updated_at']))
+            ->first()['_id'];
+        $this->assertSame($expectedFirstId, $data[0]['_id']);
     }
 }

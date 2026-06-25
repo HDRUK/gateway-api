@@ -304,7 +304,9 @@ class ProcessFederationJobTest extends TestCase
             collect(['new-pid' => ['persistentId' => 'new-pid', 'version' => '1.0']]),
             $federation,
             $mockGsms,
-            $mockGmi
+            $mockGmi,
+            'job_uuid',
+            1
         );
 
         Log::shouldHaveReceived('error')
@@ -313,6 +315,93 @@ class ProcessFederationJobTest extends TestCase
                 fn (string $msg) =>
                 str_contains($msg, 'meaningful error from storeMetadata')
             );
+    }
+
+    public function test_create_exception_stores_safe_message_not_raw_exception(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        $sensitiveMessage = 'projects/987760029877/secrets/prod-mfs-17: binding failed for segment {project=*}';
+
+        $mockGsms = $this->createMock(GoogleSecretManagerService::class);
+        $mockGmi  = $this->createMock(GatewayMetadataIngestionService::class);
+        $mockGmi->method('getTeam')->willReturn($team->id);
+        $mockGmi->method('storeMetadata')
+            ->willThrowException(new \Exception($sensitiveMessage));
+
+        Http::fake([
+            $this->datasetUrlPattern('new-pid') => Http::response(['metadata' => []], 200),
+        ]);
+
+        $trait = new class () {
+            use \App\Traits\GatewayMetadataIngestionTrait;
+        };
+
+        $trait->createLocalDatasetsMissingFromRemoteCatalogue(
+            collect([]),
+            collect(['new-pid' => ['persistentId' => 'new-pid', 'version' => '1.0']]),
+            $federation,
+            $mockGsms,
+            $mockGmi,
+            'test-job-uuid',
+            1
+        );
+
+        $record = \App\Models\FederationJobRun::where('pid', 'new-pid')->first();
+        $this->assertNotNull($record);
+        $this->assertSame(0, $record->status);
+        $this->assertStringNotContainsString($sensitiveMessage, $record->details['message']);
+        $this->assertStringContainsString('unexpected error', $record->details['message']);
+        $this->assertStringContainsString('test-job-uuid', $record->details['message']);
+    }
+
+    public function test_update_exception_stores_safe_message_not_raw_exception(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        $sensitiveMessage = 'projects/987760029877/secrets/prod-mfs-17: binding failed for segment {project=*}';
+
+        $dataset = $this->makeGmiDataset($team->id, 'existing-pid');
+
+        $mockGsms = $this->createMock(GoogleSecretManagerService::class);
+        $mockGmi  = $this->createMock(GatewayMetadataIngestionService::class);
+        $mockGmi->method('getTeam')->willReturn($team->id);
+
+        // Override makeDatasetUrl to throw with the sensitive message — this fires inside
+        // the try block, reliably triggering the catch without needing an Http fake.
+        $sensitiveMessageCopy = $sensitiveMessage;
+        $trait = new class ($sensitiveMessageCopy) {
+            use \App\Traits\GatewayMetadataIngestionTrait;
+
+            private string $boom;
+
+            public function __construct(string $boom)
+            {
+                $this->boom = $boom;
+            }
+
+            public function makeDatasetUrl(\App\Models\Federation $federation, array $data): string
+            {
+                throw new \RuntimeException($this->boom);
+            }
+        };
+
+        $trait->updateLocalDatasetsChangedInRemoteCatalogue(
+            collect([$dataset->pid => $dataset]),
+            collect(['existing-pid' => ['persistentId' => 'existing-pid', 'version' => '2.0']]),
+            $federation,
+            $mockGsms,
+            $mockGmi,
+            'test-job-uuid',
+            1
+        );
+
+        $record = \App\Models\FederationJobRun::where('pid', 'existing-pid')->first();
+        $this->assertNotNull($record);
+        $this->assertSame(0, $record->status);
+        $this->assertStringNotContainsString($sensitiveMessage, $record->details['message']);
+        $this->assertStringContainsString('unexpected error', $record->details['message']);
+        $this->assertStringContainsString('test-job-uuid', $record->details['message']);
     }
 
     public function test_gmi_dataset_from_another_team_is_never_archived(): void

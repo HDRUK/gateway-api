@@ -1,0 +1,7 @@
+{
+    "identifier": "developer.remove",
+    "layout": "standard",
+    "header_text": "Your Developer permissions for [[TEAM_NAME]] have been removed.",
+    "subject": "You have been removed as a Developer for the [[TEAM_NAME]] team on the Gateway.",
+    "body": "\n            <mj-section>\n                <mj-column width=\"100%\">\n                    <mj-text line-height=\"20px\">\n                        Dear [[USER_FIRSTNAME]],\n                    </mj-text>\n                    <mj-text>\n                        You have been removed as Developer for [[TEAM_NAME]] on the Gateway.\n                    </mj-text>\n                    <mj-text>\n                        You can no longer:\n                        <ul>\n                            <li style=\"line-height:20px;height:auto;\">\n                                Perform technical functions such as creating and managing api-keys and automated integrations.\n                            </li>\n                        </ul>\n                    </mj-text>\n                    <mj-text line-height=\"20px\">\n                        For more information, please contact a Team Admin for your team:<br>\n                        [[LIST_TEAM_ADMINS]]\n                    </mj-text>\n                </mj-column>\n            </mj-section>\n"
+}

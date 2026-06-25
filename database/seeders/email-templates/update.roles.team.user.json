@@ -1,0 +1,15 @@
+{
+    "identifier": "update.roles.team.user",
+    "layout": "standard",
+    "header_text": "Congratulations! Your permissions have changed for [[TEAM_NAME]]",
+    "subject": "Congratulations! Your permissions have changed.",
+    "body": "\n                            <mj-section>\n                                <mj-column width=\"100%\">\n                                    <mj-text  line-height=\"20px\">\n                                        Dear [[USER_FIRSTNAME]],\n                                    </mj-text>\n                                    <mj-text line-height=\"20px\">\n                                        Your roles within [[TEAM_NAME]] have been updated:\n                                    </mj-text>\n                                    <mj-text>\n                                        Current Roles:<br/>\n                                        [[CURRENT_ROLES]]\n                                    </mj-text>\n                                    <mj-text>\n                                        Added Roles:<br/>\n                                        [[ADDED_ROLES]]\n                                    </mj-text>\n                                    <mj-text>\n                                        Removed Roles:<br/>\n                                        [[REMOVED_ROLES]]\n                                    </mj-text>\n                                </mj-column>\n                            </mj-section>\n                          \n                              <mj-section>\n                                <mj-column>\n                                    <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View your Team</mj-button>\n                                </mj-column>\n                            </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
+            }
+        ]
+    }
+}

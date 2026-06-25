@@ -1,0 +1,239 @@
+{
+    "gwdmVersion": "2.1",
+    "metadata": {
+        "required": {
+            "gatewayId": "087654b3-2c0a-4b32-9c2e-1234567890bc",
+            "gatewayPid": "087654b3-2c0a-4b32-9c2e-1234567890bc",
+            "issued": "2018-01-01T00:00:00Z",
+            "modified": "2024-06-01T00:00:00Z",
+            "version": "1.0.0",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://hnoc.org/datasets/087654b3-2c0a-4b32-9c2e-1234567890bc"
+                }
+            ]
+        },
+        "summary": {
+            "title": "Head and Neck Squamous Cell Carcinoma Radiotherapy Registry",
+            "abstract": "Registry data analyzing swallowing preservation and toxicity in patients receiving intensity-modulated radiotherapy for HNSCC.",
+            "dataCustodian": {
+                "identifier": "https://ror.org/06hnscc",
+                "name": "Head & Neck Oncology Collaborative",
+                "logo": "https://hnoc.org/logo.png",
+                "contactPoint": [
+                    "registry@hnoc.org"
+                ],
+                "description": "https://hnoc.org/about"
+            },
+            "funders": "National Institutes of Health",
+            "populationSize": 1800,
+            "keywords": [
+                "HNSCC",
+                "Cancer",
+                "Radiotherapy",
+                "Toxicity",
+                "Dysphagia"
+            ],
+            "doiName": "10.2001/data.06",
+            "contactPoint": "registry@hnoc.org",
+            "datasetAliases": [
+                "HNSCC IMRT Toxicity"
+            ]
+        },
+        "documentation": {
+            "description": "Registry data analyzing swallowing preservation and toxicity in patients receiving intensity-modulated radiotherapy for HNSCC. This is a synthetic description generated for testing purposes.",
+            "inPipeline": "Available",
+            "associatedMedia": [
+                "https://hnoc.org/rt_protocol.pdf"
+            ]
+        },
+        "coverage": {
+            "typicalAgeRangeMin": 45,
+            "typicalAgeRangeMax": 80,
+            "datasetCompleteness": "https://hnoc.org/completeness"
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Annual",
+                "startDate": "2018-01-01",
+                "timeLag": "6 months",
+                "endDate": "2023-12-31",
+                "distributionReleaseDate": "2024-06-01"
+            }
+        },
+        "observations": [
+            {
+                "observedNode": "Radiotherapy Fractions",
+                "measuredValue": 63000,
+                "observationDate": "2023-12-31",
+                "measuredProperty": "Count"
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 50
+                },
+                {
+                    "bin": "Asian or Asian British",
+                    "count": 25
+                },
+                {
+                    "bin": "Black or Black British",
+                    "count": 15
+                },
+                {
+                    "bin": "Mixed",
+                    "count": 5
+                },
+                {
+                    "bin": "Not stated",
+                    "count": 5
+                }
+            ]
+        },
+        "projectGrants": [
+            {
+                "pid": "17_000",
+                "projectGrantName": "Functional Outcomes Post-IMRT",
+                "leadResearcher": "Dr. T. Davies",
+                "leadResearchInstitute": "Radiation Oncology Institute",
+                "grantNumber": "NIH-666",
+                "projectGrantStartDate": "2019-01-01",
+                "projectGrantEndDate": "2024-12-31",
+                "projectGrantScope": "RT dose distributions and swallowing assessments"
+            }
+        ],
+        "erd": "https://github.com/hnoc/schema.png",
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Toxicity_Assessments",
+                    "description": "Longitudinal dysphagia and xerostomia scores",
+                    "columns": [
+                        {
+                            "name": "dysphagia_grade",
+                            "dataType": "list",
+                            "description": "list of CTCAE dysphagia grades",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "[Grade_2]",
+                                    "description": "Symptomatic, altered eating habits",
+                                    "frequency": 650
+                                }
+                            ]
+                        }
+                    ],
+                    "size": 1800
+                }
+            ],
+            "syntheticDataWebLink": [
+                "https://hnoc.org/synthetic"
+            ]
+        },
+        "otherDataTypes": [
+            {
+                "title": "RT Dose Volumes",
+                "description": "Radiation dose distributions",
+                "format": "DICOM-RT"
+            }
+        ],
+        "enrichmentAndLinkage": {
+            "derivedFrom": [
+                {
+                    "title": "National Radiation Oncology Audit",
+                    "pid": "NROA-06",
+                    "url": "https://hdg.org/dataset/06"
+                }
+            ],
+            "publicationUsingDataset": [
+                "10.1016/hnscc.2023.01"
+            ],
+            "publicationAboutDataset": [
+                "10.1016/hnscc.2023.02"
+            ],
+            "tools": [
+                "https://github.com/topics/radiomics"
+            ],
+            "investigations": [
+                "HNOC-601-A"
+            ],
+            "similarToDatasets": [
+                {
+                    "url": "10.1016/hnscc.2022",
+                    "title": "Thyroid Cancer Radiotherapy Data",
+                    "pid": "TCRD-06"
+                }
+            ]
+        },
+        "omics": {
+            "assay": "Not Applicable",
+            "platform": "Clinical Data"
+        },
+        "icons": [
+            "Radiotherapy",
+            "Clinical Data"
+        ],
+        "datasetFilters": [
+            {
+                "id": "0_0_0_0",
+                "label": "C00-C14 Lip, oral cavity and pharynx",
+                "category": "icdOTopography",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_0_1_2_14",
+                "label": "8070/3 Squamous cell carcinoma, NOS",
+                "category": "805-808 Squamous cell neoplasms",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_1_2",
+                "label": "collaboration required",
+                "category": "accessType",
+                "primaryGroup": "access-type",
+                "description": "Requestor must agree to collaboration with the primary study investigator(s).(DUO_0000020)"
+            },
+            {
+                "id": "0_2_4_1",
+                "label": "Crystallography",
+                "category": "Techniques",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_2_0_2",
+                "label": "Fruit fly",
+                "category": "Organism",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_1_1_1",
+                "label": "Patient derived",
+                "category": "Cell Source",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_3_0",
+                "label": "Background",
+                "category": "Patient study",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_2_3_1",
+                "label": "Clinical observations",
+                "category": "Longitudinal Follow up",
+                "primaryGroup": "data-type",
+                "description": ""
+            }
+        ]
+    }
+}

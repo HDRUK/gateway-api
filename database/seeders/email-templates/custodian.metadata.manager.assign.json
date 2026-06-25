@@ -1,0 +1,15 @@
+{
+    "identifier": "custodian.metadata.manager.assign",
+    "layout": "standard",
+    "header_text": "Congratulations! You’ve been granted the Metadata Manager permissions for [[TEAM_NAME]].",
+    "subject": "[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Manager",
+    "body": "\n            <mj-section>\n                <mj-column width=\"100%\">\n                    <mj-text line-height=\"20px\">\n                        Dear [[USER_FIRSTNAME]],\n                    </mj-text>\n                    <mj-text>\n                        [[ASSIGNER_NAME]] has granted you Metadata Manager permissions for [[TEAM_NAME]] on the Gateway.\n                    </mj-text>\n                    <mj-text>\n                        You can now:\n                        <ul>\n                            <li style=\"line-height:20px;height:auto;\">\n                                Manually on-board and manage information about [[TEAM_NAME]] datasets.\n                            </li>\n                            <li style=\"line-height:20px;height:auto;\">\n                                Add and remove other team members with metadata editor permissions.\n                            </li>\n                        </ul>\n                    </mj-text>\n                    <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View datasets</mj-button>\n                </mj-column>\n            </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/datasets"
+            }
+        ]
+    }
+}

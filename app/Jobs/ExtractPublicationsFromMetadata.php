@@ -26,6 +26,9 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     use LoggingContext;
     use IndexElastic;
 
+    public $tries   = 3;
+    public $backoff = 30;
+
     private int $datasetVersionId = 0;
     private ?array $loggingContext = null;
 
@@ -34,6 +37,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
      */
     public function __construct(int $datasetVersionId)
     {
+        $this->onQueue('enrichment');
         $this->datasetVersionId = $datasetVersionId;
 
         $this->loggingContext = $this->getLoggingContext(\request());

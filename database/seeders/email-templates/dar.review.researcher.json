@@ -1,0 +1,15 @@
+{
+    "identifier": "dar.review.researcher",
+    "layout": "standard",
+    "header_text": "New comment on the Data Access Request for [[PROJECT_TITLE]].",
+    "subject": "New comment on DAR: [[PROJECT_TITLE]]",
+    "body": "\n                        <mj-section background-repeat=\"repeat\" background-size=\"auto\" background-position=\"top center\" border=\"none\" direction=\"ltr\" text-align=\"center\" padding=\"20px 0px 20px 0px\" >\n                            <mj-column border=\"none\" vertical-align=\"top\" padding=\"0px 0px 0px 0px\" >\n                                <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\" padding=\"10px 25px 10px 25px\" >Dear [[USER_FIRST_NAME]],<br><br>\n                                    You have received a comment from [[CUSTODIAN_NAME]] on your data access request for [[PROJECT_TITLE]], a preview of which can be found in the thread below. \n                                    You can respond via the Gateway by opening the data access request for the project. \n                                    Use the button below to navigate to the Data Access Request management page.<br><br>\n                                    [[THREAD]]\n                                </mj-text>\n                            </mj-column>\n                        </mj-section>\n                        <mj-section background-repeat=\"repeat\" background-size=\"auto\" background-position=\"top center\" border=\"none\" direction=\"ltr\" text-align=\"center\" padding=\"20px 0px 20px 0px\" >\n                            <mj-column border=\"none\" vertical-align=\"top\" padding=\"0px 0px 0px 0px\" >\n                                <mj-button align=\"center\" background-color=\"#00ACCA\" color=\"#ffffff\" font-weight=\"normal\" border-radius=\"4px\" padding=\"10px 25px 10px 25px\" inner-padding=\"10px 25px 10px 25px\" line-height=\"120%\" target=\"_blank\" vertical-align=\"middle\" border=\"none\" text-align=\"center\" href=\"[[BUTTON_1_URL]]\">View Data Access Request Management Page</mj-button>\n                                <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\" padding=\"10px 25px 10px 25px\" ><br><br>\n                                </mj-text>\n                            </mj-column>\n                        </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/data-access-requests"
+            }
+        ]
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "identifier": "dar.submission.researcher",
+    "layout": "standard",
+    "header_text": "Your Data Access Request has been submitted.",
+    "subject": "DAR Submitted: [[USER_FIRST_NAME]]",
+    "body": "\n                        <mj-section background-repeat=\"repeat\" background-size=\"auto\" background-position=\"top center\" border=\"none\" direction=\"ltr\" text-align=\"center\" padding=\"20px 0px 20px 0px\" >\n                            <mj-column border=\"none\" vertical-align=\"top\" padding=\"0px 0px 0px 0px\" >\n                                <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\" padding=\"10px 25px 10px 25px\" >Dear [[USER_FIRST_NAME]],<br><br>\n                                    Your Data Access Request for [[PROJECT_TITLE]] has been submitted to the following Data Custodian(s):<br><br>\n                                    <div>[[CUSTODIANS]]</div>\n                                    You will be automatically notified via email of any comments or status changes regarding your data access request.<br><br>\n                                    Visit the Gateway to check the status of your Data Access Request.\n                                </mj-text>\n                            </mj-column>\n                        </mj-section>\n                        <mj-section background-repeat=\"repeat\" background-size=\"auto\" background-position=\"top center\" border=\"none\" direction=\"ltr\" text-align=\"center\" padding=\"20px 0px 20px 0px\" >\n                            <mj-column border=\"none\" vertical-align=\"top\" padding=\"0px 0px 0px 0px\" >\n                                <mj-button align=\"center\" background-color=\"#00ACCA\" color=\"#ffffff\" font-weight=\"normal\" border-radius=\"4px\" padding=\"10px 25px 10px 25px\" inner-padding=\"10px 25px 10px 25px\" line-height=\"120%\" target=\"_blank\" vertical-align=\"middle\" border=\"none\" text-align=\"center\" href=\"[[BUTTON_1_URL]]\">View Data Access Request Status Page</mj-button>\n                                <mj-text align=\"left\" color=\"#3C3C3B\" font-family=\"Museo Sans Rounded,sans-serif\" padding=\"10px 25px 10px 25px\" ><br><br>\n                                </mj-text>\n                            </mj-column>\n                        </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/data-access-requests/application/[[APPLICATION_ID]]"
+            }
+        ]
+    }
+}

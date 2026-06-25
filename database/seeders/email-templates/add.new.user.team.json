@@ -1,0 +1,15 @@
+{
+    "identifier": "add.new.user.team",
+    "layout": "standard",
+    "header_text": "Congratulations! You have been added to [[TEAM_NAME]]",
+    "subject": "Congratulations! Your have been added to a team.",
+    "body": "\n                            <mj-section>\n                                <mj-column width=\"100%\">\n                                    <mj-text  line-height=\"20px\">\n                                        Dear [[USER_FIRSTNAME]],\n                                    </mj-text>\n                                    <mj-text line-height=\"20px\">\n                                        Your role(s) within [[TEAM_NAME]]:\n                                    </mj-text>\n                                    <mj-text>\n                                        Role(s):<br/>\n                                        [[CURRENT_ROLES]]\n                                    </mj-text>\n                                </mj-column>\n                            </mj-section>\n                          \n                              <mj-section>\n                                <mj-column>\n                                    <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View your Team</mj-button>\n                                </mj-column>\n                            </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/team-management"
+            }
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "identifier": "hdruk.dar.assign",
+    "layout": "standard",
+    "header_text": "hdruk.dar.assign role has been assigned.",
+    "subject": "[[ASSIGNER_NAME]] - hdruk.dar.assign",
+    "body": "\n"
+}

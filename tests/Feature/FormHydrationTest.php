@@ -35,9 +35,7 @@ class FormHydrationTest extends TestCase
 
         DatasetVersion::flushEventListeners();
 
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
-        $json = json_decode($jsonFile, true);
-        $this->metadata = $json;
+        $this->metadata = $this->getMetadata();
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();

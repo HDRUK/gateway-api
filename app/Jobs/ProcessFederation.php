@@ -53,6 +53,9 @@ class ProcessFederation implements ShouldQueue
      */
     public function handle(): void
     {
+        $jobUuid = $this->job?->getJobId() ?? null;
+        $attempts = $this->attempts();
+
         $this->federation->update(['is_running' => true]);
 
         try {
@@ -79,7 +82,9 @@ class ProcessFederation implements ShouldQueue
                 $remoteItems,
                 $this->federation,
                 $this->gsms,
-                $this->gmi
+                $this->gmi,
+                $jobUuid,
+                $attempts
             );
 
             // Refresh our potentially mutated list of local items
@@ -90,17 +95,19 @@ class ProcessFederation implements ShouldQueue
                 $remoteItems,
                 $this->federation,
                 $this->gsms,
-                $this->gmi
+                $this->gmi,
+                $jobUuid,
+                $attempts
             );
 
             // Refresh our potentially mutated list of local items
             $localItems = $this->getLocalDatasetsForFederatedTeam($this->gmi);
 
-            $archived = $this->archiveLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems, $this->gmi);
+            $archived = $this->archiveLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems, $this->gmi, $this->federation, $jobUuid, $attempts);
 
             $this->log('info', "metadata ingestion completed for team {$this->gmi->getTeam()} - created: {$created}, updated: {$updated}, archived: {$archived}");
 
-            FederationProcessed::dispatch($this->federation);
+            FederationProcessed::dispatch($this->federation, $jobUuid);
         } finally {
             $this->federation->update(['is_running' => false]);
         }
@@ -115,7 +122,7 @@ class ProcessFederation implements ShouldQueue
         ]);
 
         if ($this->attempts() >= $this->tries) {
-            FederationProcessingFailed::dispatch($this->federation, $exception);
+            FederationProcessingFailed::dispatch($this->federation, $exception, $this->job->uuid());
         }
     }
 }

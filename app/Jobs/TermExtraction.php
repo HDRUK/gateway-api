@@ -44,6 +44,7 @@ class TermExtraction implements ShouldQueue
      */
     public function __construct(string $datasetId, string $datasetVersionId, int $version, string $data, ?bool $elasticIndex = true, ?bool $usePartialExtraction = true)
     {
+        $this->onQueue('enrichment');
         $this->timeout = config('jobs.default_timeout', 600);
         $this->tries = config('jobs.ntries', 2);
         $this->usePartialExtraction = is_null($usePartialExtraction) ? config('ted.use_partial', true) : $usePartialExtraction;

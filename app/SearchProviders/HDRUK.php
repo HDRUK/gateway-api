@@ -4,15 +4,41 @@ namespace App\SearchProviders;
 
 use Auditor;
 use Http;
-use App\Models\Filter;
-use App\Models\Dataset;
 use App\Contracts\SearchProvider;
+use App\Services\Search\FilterCache;
+use App\Services\Search\CollectionHydrator;
+use App\Services\Search\DataCustodianHydrator;
+use App\Services\Search\DataCustodianNetworkHydrator;
+use App\Services\Search\DatasetHydrator;
+use App\Services\Search\DataUseHydrator;
+use App\Services\Search\PublicationHydrator;
+use App\Services\Search\ToolHydrator;
 
 class HDRUK implements SearchProvider
 {
-    private function getDefaultSearchType(): string
+    private const SERVICE_PATH_MAP = [
+        'datasets'                => 'datasets',
+        'tools'                   => 'tools',
+        'collections'             => 'collections',
+        'dur'                     => 'dur',
+        'publications'            => 'publications',
+        'data_custodian_networks' => 'data_custodian_networks',
+        'data_custodians'         => 'data_providers',
+    ];
+
+    private const FILTER_TYPE_MAP = [
+        'datasets'                => ['type' => 'dataset',          'enabledOnly' => true],
+        'tools'                   => ['type' => 'tool',             'enabledOnly' => false],
+        'collections'             => ['type' => 'collection',       'enabledOnly' => false],
+        'dur'                     => ['type' => 'dataUseRegister',  'enabledOnly' => false],
+        'publications'            => ['type' => 'paper',            'enabledOnly' => false],
+        'data_custodian_networks' => ['type' => 'dataProviderColl', 'enabledOnly' => false],
+        'data_custodians'         => ['type' => 'dataProvider',     'enabledOnly' => false],
+    ];
+
+    public function isDeferred(): bool
     {
-        return 'datasets';
+        return false;
     }
 
     public function getFullName(): string
@@ -35,75 +61,112 @@ class HDRUK implements SearchProvider
         return null;
     }
 
-    public function getSearchURI(): string
+    public function getSearchURI(string $type): string
     {
-        return config('gateway.search_service_url') . "/search/{$this->getDefaultSearchType()}";
+        $path = self::SERVICE_PATH_MAP[$type] ?? $type;
+        return config('gateway.search_service_url') . "/search/{$path}";
     }
 
-    public function search(string $query): array
+    public function getSupportedTypes(): array
+    {
+        return array_keys(self::SERVICE_PATH_MAP);
+    }
+
+    public function search(string $query, string $type, array $params = []): array
     {
         try {
-            $aggs = Filter::where('type', 'dataset')->where('enabled', 1)->get()->toArray();
-            $input['aggs'] = $aggs;
+            $filterConfig = self::FILTER_TYPE_MAP[$type] ?? ['type' => $type, 'enabledOnly' => false];
 
-            $response = Http::post($this->getSearchURI(), $input);
+            $input         = $params;
+            $input['aggs'] = FilterCache::get($filterConfig['type'], $filterConfig['enabledOnly']);
+
+            if ($query !== '') {
+                $input['query'] = $query;
+            }
+
+            $response = Http::post($this->getSearchURI($type), $input);
 
             if (!$response->successful()) {
-                return [];
+                return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
             }
 
-            $response = $response->json();
+            $body = $response->json();
 
             if (
-                !isset($response['hits']) || !is_array($response['hits']) ||
-                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) ||
-                !isset($response['hits']['total']['value'])
+                !isset($body['hits']) || !is_array($body['hits']) ||
+                !isset($body['hits']['hits']) || !is_array($body['hits']['hits']) ||
+                !isset($body['hits']['total']['value'])
             ) {
-                return [];
+                return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
             }
 
-            $datasetsArray = $response['hits']['hits'];
-            $totalResults = $response['hits']['total']['value'];
-            $matchedIds = [];
+            $rawHits = $body['hits']['hits'];
+            $total   = $body['hits']['total']['value'];
+            $ids     = array_column($rawHits, '_id');
+            $aggs    = $body['aggregations'] ?? [];
 
-            foreach (array_values($datasetsArray) as $i => $d) {
-                $matchedIds[] = $d['_id'];
-            }
+            $hydrated = $this->hydrate($rawHits, $type, $params['view_type'] ?? 'full');
+            $sorted   = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
 
-            foreach ($matchedIds as $i => $matchedId) {
-                $model = Dataset::with('team')->where('id', $matchedId)->first();
-
-                if (!$model) {
-                    continue;
-                }
-
-                $latestVersion = $model->latestVersion();
-                if (is_null($latestVersion)) {
-                    continue;
-                }
-
-                $model = $model->toArray();
-                $datasetsArray[$i]['_source']['created_at'] = $model['created_at'];
-                $datasetsArray[$i]['_source']['updated_at'] = $model['updated_at'];
-            }
-
-            $newArr = [];
-
-            foreach ($datasetsArray as $arr) {
-                $newArr[] = $arr['_source'];
-            }
-
-            return $newArr;
-
+            return [
+                'hits'         => $sorted,
+                'total'        => $total,
+                'aggregations' => $aggs,
+                'ids'          => $ids,
+            ];
         } catch (\Throwable $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
-            \Log::info($e->getMessage());
+            \Log::error($e->getMessage());
         }
 
-        return [];
+        return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
+    }
+
+    private function sort(array $hits, string $type, string $sortParam): array
+    {
+        $parts     = explode(':', $sortParam, 2);
+        $rawField  = $parts[0];
+        $direction = $parts[1] ?? 'desc';
+
+        $field = ($type === 'datasets' && $rawField === 'title') ? 'shortTitle' : $rawField;
+
+        if ($field === 'score') {
+            return $direction === 'desc' ? $hits : array_reverse($hits);
+        }
+
+        usort($hits, function ($a, $b) use ($field, $direction) {
+            $aVal = $a['_source'][$field] ?? null;
+            $bVal = $b['_source'][$field] ?? null;
+
+            if (is_string($aVal) && strtotime($aVal) !== false) {
+                $cmp = strtotime((string)$aVal) <=> strtotime((string)$bVal);
+            } elseif (is_string($aVal)) {
+                $cmp = strtoupper((string)$aVal) <=> strtoupper((string)$bVal);
+            } else {
+                $cmp = $aVal <=> $bVal;
+            }
+
+            return $direction === 'asc' ? $cmp : -$cmp;
+        });
+
+        return $hits;
+    }
+
+    private function hydrate(array $hits, string $type, string $viewType = 'full'): array
+    {
+        return match ($type) {
+            'datasets'                => (new DatasetHydrator())->hydrate($hits, $viewType),
+            'tools'                   => (new ToolHydrator())->hydrate($hits),
+            'collections'             => (new CollectionHydrator())->hydrate($hits),
+            'dur'                     => (new DataUseHydrator())->hydrate($hits),
+            'publications'            => (new PublicationHydrator())->hydrate($hits),
+            'data_custodian_networks' => (new DataCustodianNetworkHydrator())->hydrate($hits),
+            'data_custodians'         => (new DataCustodianHydrator())->hydrate($hits),
+            default                   => $hits,
+        };
     }
 }

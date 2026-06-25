@@ -1,0 +1,232 @@
+{
+    "gwdmVersion": "2.1",
+    "metadata": {
+        "required": {
+            "gatewayId": "087654b3-2c0a-4b32-9c2e-1234567890b9",
+            "gatewayPid": "087654b3-2c0a-4b32-9c2e-1234567890b9",
+            "issued": "2018-01-01T00:00:00Z",
+            "modified": "2024-06-01T00:00:00Z",
+            "version": "1.0.0",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://mho.org/datasets/087654b3-2c0a-4b32-9c2e-1234567890b9"
+                }
+            ]
+        },
+        "summary": {
+            "title": "Testicular Germ Cell Tumor Survivorship Database",
+            "abstract": "Registry data evaluating long-term cardiovascular and metabolic toxicities in survivors of platinum-treated testicular cancer.",
+            "dataCustodian": {
+                "identifier": "https://ror.org/03testicular",
+                "name": "Men's Health Oncology",
+                "logo": "https://mho.org/logo.png",
+                "contactPoint": [
+                    "data@mho.org"
+                ],
+                "description": "https://mho.org/about"
+            },
+            "funders": "Movember Foundation",
+            "populationSize": 3100,
+            "keywords": [
+                "Testicular",
+                "Cancer",
+                "Survivorship",
+                "Toxicity",
+                "Platinum"
+            ],
+            "doiName": "10.2001/data.03",
+            "contactPoint": "data@mho.org",
+            "datasetAliases": [
+                "TGCT Survivor Cohort"
+            ]
+        },
+        "documentation": {
+            "description": "Registry data evaluating long-term cardiovascular and metabolic toxicities in survivors of platinum-treated testicular cancer. This is a synthetic description generated for testing purposes.",
+            "inPipeline": "Available",
+            "associatedMedia": [
+                "https://mho.org/survivor_protocol.pdf"
+            ]
+        },
+        "coverage": {
+            "typicalAgeRangeMin": 18,
+            "typicalAgeRangeMax": 55,
+            "datasetCompleteness": "https://mho.org/completeness"
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Annual",
+                "startDate": "2018-01-01",
+                "timeLag": "6 months",
+                "endDate": "2023-12-31",
+                "distributionReleaseDate": "2024-06-01"
+            }
+        },
+        "observations": [
+            {
+                "observedNode": "Follow-up Visits",
+                "measuredValue": 15500,
+                "observationDate": "2023-12-31",
+                "measuredProperty": "Count"
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 50
+                },
+                {
+                    "bin": "Asian or Asian British",
+                    "count": 25
+                },
+                {
+                    "bin": "Black or Black British",
+                    "count": 15
+                },
+                {
+                    "bin": "Mixed",
+                    "count": 5
+                },
+                {
+                    "bin": "Not stated",
+                    "count": 5
+                }
+            ]
+        },
+        "projectGrants": [
+            {
+                "pid": "14_000",
+                "projectGrantName": "Platinum Toxicity Tracking",
+                "leadResearcher": "Dr. S. Wright",
+                "leadResearchInstitute": "Andrology Research Unit",
+                "grantNumber": "MOV-333",
+                "projectGrantStartDate": "2019-01-01",
+                "projectGrantEndDate": "2024-12-31",
+                "projectGrantScope": "Audiometry, lipid panels, and treatment records"
+            }
+        ],
+        "erd": "https://github.com/mho/schema.png",
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Metabolic_Profiles",
+                    "description": "Longitudinal lipid and glucose measurements",
+                    "columns": [
+                        {
+                            "name": "metabolic_syndrome",
+                            "dataType": "list",
+                            "description": "list of diagnostic criteria met",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "[Hypertension]",
+                                    "description": "Elevated blood pressure post-therapy",
+                                    "frequency": 850
+                                }
+                            ]
+                        }
+                    ],
+                    "size": 3100
+                }
+            ],
+            "syntheticDataWebLink": [
+                "https://mho.org/synthetic"
+            ]
+        },
+        "otherDataTypes": [
+            {
+                "title": "Echocardiograms",
+                "description": "Cardiac function assessments",
+                "format": "DICOM"
+            }
+        ],
+        "enrichmentAndLinkage": {
+            "derivedFrom": [
+                {
+                    "title": "National Survivorship Registry",
+                    "pid": "NSR-03",
+                    "url": "https://hdg.org/dataset/03"
+                }
+            ],
+            "publicationUsingDataset": [
+                "10.1016/tgct.2023.01"
+            ],
+            "publicationAboutDataset": [
+                "10.1016/tgct.2023.02"
+            ],
+            "tools": [
+                "https://github.com/topics/survivorship"
+            ],
+            "investigations": [
+                "MHO-301-A"
+            ],
+            "similarToDatasets": [
+                {
+                    "url": "10.1016/tgct.2022",
+                    "title": "Prostate Cancer Toxicity Cohort",
+                    "pid": "PCTC-03"
+                }
+            ]
+        },
+        "omics": {
+            "assay": "Targeted Gene Panel",
+            "platform": "Ion Torrent"
+        },
+        "icons": [
+            "Survivorship",
+            "Cardiology"
+        ],
+        "datasetFilters": [
+            {
+                "id": "0_0_0_11_2",
+                "label": "C62 Testis",
+                "category": "C60-C63 Male genital organs",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_0_1_25_1",
+                "label": "9061/3 Seminoma, NOS",
+                "category": "906-909 Germ cell neoplasms",
+                "primaryGroup": "cancer-type",
+                "description": ""
+            },
+            {
+                "id": "0_1_1",
+                "label": "research specific restrictions",
+                "category": "accessType",
+                "primaryGroup": "access-type",
+                "description": "Limited to studies of a certain research type (DUO_0000012)"
+            },
+            {
+                "id": "0_2_2_0_6",
+                "label": "Saccharomyces cerevisiae",
+                "category": "Organism",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_3",
+                "label": "Patient study",
+                "category": "dataType",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_3_3",
+                "label": "Treatments",
+                "category": "Patient study",
+                "primaryGroup": "data-type",
+                "description": ""
+            },
+            {
+                "id": "0_2_4_4_0_0",
+                "label": "Epigenomics",
+                "category": "Biological molecules (eg DNA)",
+                "primaryGroup": "Multi-omic Data",
+                "description": "chemical modifications to DNA/histones"
+            }
+        ]
+    }
+}

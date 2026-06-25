@@ -21,6 +21,9 @@ class ExtractDatasetFromDur implements ShouldQueue
     use SerializesModels;
     use LoggingContext;
 
+    public $tries   = 3;
+    public $backoff = 30;
+
     private int $durId = 0;
     private ?array $loggingContext = null;
 
@@ -29,6 +32,7 @@ class ExtractDatasetFromDur implements ShouldQueue
      */
     public function __construct(int $durId)
     {
+        $this->onQueue('enrichment');
         $this->durId = $durId;
 
         $this->loggingContext = $this->getLoggingContext(\request());

@@ -20,6 +20,7 @@ class FederationProcessingFailed
     public function __construct(
         public readonly Federation $federation,
         public readonly Throwable $exception,
+        public readonly ?string $jobUuid = null,
     ) {
     }
 }

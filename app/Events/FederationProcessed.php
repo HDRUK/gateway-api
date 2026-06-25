@@ -16,7 +16,9 @@ class FederationProcessed
     /**
      * Create a new event instance.
      */
-    public function __construct(public readonly Federation $federation)
-    {
+    public function __construct(
+        public readonly Federation $federation,
+        public readonly ?string $jobUuid,
+    ) {
     }
 }

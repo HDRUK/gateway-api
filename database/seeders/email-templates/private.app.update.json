@@ -1,0 +1,15 @@
+{
+    "identifier": "private.app.update",
+    "layout": "standard",
+    "header_text": "Private App has been updated for [[TEAM_NAME]]",
+    "subject": "Private App has been updated.",
+    "body": "\n                            <mj-section>\n                                <mj-column width=\"100%\">\n                                    <mj-text line-height=\"20px\">\n                                        Dear [[USER_FIRSTNAME]],\n                                    </mj-text>\n                                    <mj-text line-height=\"20px\">\n                                        A member of your team has updated permissions for <b>[[APP_NAME]]</b> on the HDR Innovation Gateway. If you have not already done so, we strongly recommend you generate a new <b>Client ID</b> and update your software to maintain integrity of your integration with the Gateway.\n                                    </mj-text>\n                                    <mj-text>\n                                        Date: [[APP_UPDATED_AT_DATE]]\n                                    </mj-text>\n                                    <mj-text>\n                                        Status: [[APP_STATUS]]\n                                    </mj-text>\n                                    <mj-text line-height=\"20px\">\n                                        The permissions for <b>[[APP_NAME]]</b> are now as follows:<br>\n                                        [[APP_PERMISSIONS_LIST]]\n                                    </mj-text>\n                                    <mj-text line-height=\"20px\">\n                                        [[OTHER_USER_MESSAGE]] \n                                    </mj-text>\n                                </mj-column>\n                            </mj-section>\n\n                            <mj-section>\n                                <mj-column>\n                                    <mj-button css-class=\"main-section\" background-color=\"#00ACCA\" href=\"[[BUTTON_1_URL]]\">View app integrations</mj-button>\n                                </mj-column>\n                            </mj-section>\n",
+    "buttons": {
+        "replacements": [
+            {
+                "placeholder": "[[BUTTON_1_URL]]",
+                "actual": "config(gateway.gateway_url)/en/account/team/[[TEAM_ID]]/integrations/api-management/list"
+            }
+        ]
+    }
+}

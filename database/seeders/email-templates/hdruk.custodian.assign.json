@@ -1,0 +1,7 @@
+{
+    "identifier": "hdruk.custodian.assign",
+    "layout": "standard",
+    "header_text": "hdruk.custodian.assign role has been assigned.",
+    "subject": "[[ASSIGNER_NAME]] - hdruk.custodian.assign",
+    "body": "\n"
+}

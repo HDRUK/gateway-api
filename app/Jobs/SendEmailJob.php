@@ -18,6 +18,9 @@ class SendEmailJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
+    public $tries   = 3;
+    public $backoff = [10, 30, 60];
+
     public $to = [];
     private $template = null;
     private $replacements = [];
@@ -28,6 +31,7 @@ class SendEmailJob implements ShouldQueue
      */
     public function __construct(array $to, EmailTemplate $template, array $replacements, $fromAddress = null)
     {
+        $this->onQueue('high');
         $this->to = $to;
         $this->template = $template;
         $this->replacements = $replacements;
