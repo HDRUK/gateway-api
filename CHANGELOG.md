@@ -1,3 +1,30 @@
+## [2.43.0](https://github.com/HDRUK/gateway-api/compare/v2.42.0...v2.43.0) (2026-06-25)
+
+### ✨ Features
+
+* **GAT-0000:** add CRUK project grants with dataset linkage (#1656) ([8426b9f](https://github.com/HDRUK/gateway-api/commit/8426b9f862d5313a3b138f7a8d2a7992a3f865df)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-0000:** seed 20 CRUK datasets from cruk_dummy_data fixtures (#1666) ([0f738f5](https://github.com/HDRUK/gateway-api/commit/0f738f5b4e612cb2e28e5f704d526bbc843d9e57)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-8501:** Make TeamAdmin an actual admin (#1674) ([6eba7a1](https://github.com/HDRUK/gateway-api/commit/6eba7a17e266ed5f97e583a3cf75b5e101d09255)), closes [GAT-8501](undefinedGAT-8501)
+* **GAT-8796:** Add dataSource to filter seeder (#1662) ([ea3b63e](https://github.com/HDRUK/gateway-api/commit/ea3b63edc935bcc53e1ce0c455679f32416c441e)), closes [GAT-8796](undefinedGAT-8796)
+* **GAT-8796:** allows deferred search providers. allows overriding of provider to search (#1663) ([5045ee0](https://github.com/HDRUK/gateway-api/commit/5045ee03b91533b02c6cad64e3b9a71c450b2685)), closes [GAT-8796](undefinedGAT-8796)
+* **GAT-8895:** Add email into workflow when Integration job fails (#1653) ([988b847](https://github.com/HDRUK/gateway-api/commit/988b8476f6f274151d203112b2e1b5514e6393b4)), closes [GAT-8895](undefinedGAT-8895)
+* **GAT-8977:** Investigate logging when the widget starts running on third-party websites (#1654) ([d5d1fec](https://github.com/HDRUK/gateway-api/commit/d5d1fec8e90a09570c6912ee1eb8cc462efc9192)), closes [GAT-8977](undefinedGAT-8977) [Investigate](undefinedgate)
+* **GAT-8978:** brings search aggregator more inline with production than PoC. (#1657) ([db273d4](https://github.com/HDRUK/gateway-api/commit/db273d488ca7d88f66cdbace8106414c0272d2ec)), closes [GAT-8978](undefinedGAT-8978) [aggregator](undefinedgator)
+* **GAT-9012:** 3 - tweaks redis config and job firing (#1669) ([8034869](https://github.com/HDRUK/gateway-api/commit/8034869202f300d0a44d3f47fb0b2a84e6d91186)), closes [GAT-9012](undefinedGAT-9012)
+* **GAT-9012:** First round of template work - refactor the seeder fi… (#1667) ([da978e0](https://github.com/HDRUK/gateway-api/commit/da978e0bba278ffce3c6ea62b3284b94a8b561f9)), closes [GAT-9012](undefinedGAT-9012)
+* **GAT-9012:** Fixes a small edge case where some integration errors… (#1668) ([9a526ec](https://github.com/HDRUK/gateway-api/commit/9a526ec6fbc5e058f7bbd84274815bc69764c3a8))
+* **GAT-9027:** Do not send success email when no changes have been r… (#1671) ([db0fa09](https://github.com/HDRUK/gateway-api/commit/db0fa09c70ed102fca3c24eb38181771bc6e84e9)), closes [GAT-9027](undefinedGAT-9027)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** add x-partner-context header (#1673) ([5d298d9](https://github.com/HDRUK/gateway-api/commit/5d298d9cdca13f490d59323834e4eff08123ec6b)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-8796:** Fixes sorting missing from refactor. Fixes naming of n… (#1664) ([c481cac](https://github.com/HDRUK/gateway-api/commit/c481cacb9be8905b583843bebd8a3a7fba05ffe3))
+* **GAT-8812:** updated semantic pipeline (#1655) ([c0215dc](https://github.com/HDRUK/gateway-api/commit/c0215dccef8e9ba251755a8238d80a394ce7075c)), closes [GAT-8812](undefinedGAT-8812)
+* **GAT-8872:** Content Variance SQL Injection: Database Server (#1651) ([572b06c](https://github.com/HDRUK/gateway-api/commit/572b06c44986478ecf7d3758361d2cb2e69fbe55)), closes [GAT-8872](undefinedGAT-8872)
+* **GAT-8925:** Properly handles SDE expiry isolated from general cohort expiry (#1658) ([def0e82](https://github.com/HDRUK/gateway-api/commit/def0e8229f445776e0a374de815386e2d8c0c4c6)), closes [GAT-8925](undefinedGAT-8925)
+* **GAT-8926:** fix collection has datasets (#1652) ([74311ac](https://github.com/HDRUK/gateway-api/commit/74311acf26829676a6f12dfae67e528f1629884f))
+* **GAT-9031:** Ensures we don\'t leak any sensitive infrastructure in… (#1672) ([0aad073](https://github.com/HDRUK/gateway-api/commit/0aad073956a7f2602053cd334918406f91a76bfd)), closes [GAT-9031](undefinedGAT-9031)
+
 ## [2.42.0](https://github.com/HDRUK/gateway-api/compare/v2.41.0...v2.42.0) (2026-05-21)
 
 ### ✨ Features
