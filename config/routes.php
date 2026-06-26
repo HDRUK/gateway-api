@@ -289,6 +289,32 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'track_widget_event',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/widgets/{id}/track',
+        'methodController' => 'TeamWidgetController@track',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'widget_analytics',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/widgets/analytics',
+        'methodController' => 'TeamWidgetController@analytics',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,widgets.read',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
 
     // features
     [
