@@ -74,6 +74,8 @@ class DatabaseSeeder extends Seeder
             LibrarySeeder::class,
             EnquiryThreadHasDatasetVersionSeeder::class,
             DatasetVersionHasSpatialCoverageSeeder::class,
+            WidgetSeeder::class,
+            WidgetAnalyticSeeder::class,
         ]);
     }
 }
