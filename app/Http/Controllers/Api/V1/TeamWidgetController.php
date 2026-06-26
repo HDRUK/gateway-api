@@ -715,6 +715,11 @@ class TeamWidgetController extends Controller
                  'data' => $widget->id,
              ], Config::get('statuscodes.STATUS_CREATED.code'));
 
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1030,6 +1035,11 @@ class TeamWidgetController extends Controller
 
             return response()->json(null, Config::get('statuscodes.STATUS_NO_CONTENT.code', 204));
 
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
         } catch (Exception $e) {
             \Log::error('Error recording widget analytics event', [
                 'team_id'   => $teamId,
@@ -1085,12 +1095,6 @@ class TeamWidgetController extends Controller
             $to      = isset($validated['to']) ? $validated['to'] . ' 23:59:59' : null;
             $groupBy = $validated['group_by'] ?? 'day';
 
-            $dateFormat = match ($groupBy) {
-                'week'  => '%Y-%u',
-                'month' => '%Y-%m',
-                default => '%Y-%m-%d',
-            };
-
             $byEvent = DB::select("
                 SELECT event_type, COUNT(*) as count
                 FROM widget_analytics
@@ -1115,18 +1119,38 @@ class TeamWidgetController extends Controller
                 ORDER BY wa.widget_id, wa.event_type
             ", [$teamId, $from, $from, $to, $to]);
 
-            $overTime = DB::select("
+            // DATE() returns YYYY-MM-DD and is supported by both MySQL and SQLite.
+            // Week/month bucketing is done in PHP to avoid DB-specific date functions.
+            $dailyRows = DB::select("
                 SELECT
-                    DATE_FORMAT(created_at, ?) as period,
+                    DATE(created_at) as day,
                     event_type,
                     COUNT(*) as count
                 FROM widget_analytics
                 WHERE team_id = ?
                   AND (? IS NULL OR created_at >= ?)
                   AND (? IS NULL OR created_at <= ?)
-                GROUP BY period, event_type
-                ORDER BY period
-            ", [$dateFormat, $teamId, $from, $from, $to, $to]);
+                GROUP BY day, event_type
+                ORDER BY day
+            ", [$teamId, $from, $from, $to, $to]);
+
+            $overTime = collect($dailyRows)
+                ->groupBy(fn ($r) => match ($groupBy) {
+                    'month' => substr($r->day, 0, 7),
+                    'week'  => date('Y-W', strtotime($r->day)),
+                    default => $r->day,
+                })
+                ->flatMap(fn ($rows, $period) =>
+                    collect($rows)
+                        ->groupBy('event_type')
+                        ->map(fn ($events, $eventType) => [
+                            'period'     => $period,
+                            'event_type' => $eventType,
+                            'count'      => collect($events)->sum('count'),
+                        ])
+                        ->values()
+                )
+                ->values();
 
             return response()->json([
                 'data' => [
