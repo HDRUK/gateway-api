@@ -290,6 +290,18 @@ class Dataset extends Model
     }
 
     /**
+     * Restrict to datasets visible in the given partner context.
+     * HDRUK with cross-context read enabled sees all partners; other contexts are isolated.
+     */
+    public function scopeForPartnerContext(Builder $query, ?string $partnerContext): Builder
+    {
+        return $query->when(
+            $partnerContext && ($partnerContext !== 'HDRUK' || !config('partners.allow_cross_context_read', true)),
+            fn ($q) => $q->where('partner_context', $partnerContext)
+        );
+    }
+
+    /**
      * Order by raw metadata extract
      */
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder

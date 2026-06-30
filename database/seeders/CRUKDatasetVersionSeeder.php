@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Jobs\IndexDataset;
 use Illuminate\Database\Seeder;
 
 class CRUKDatasetVersionSeeder extends Seeder
@@ -40,6 +41,8 @@ class CRUKDatasetVersionSeeder extends Seeder
                 'short_title' => $summary['shortTitle'] ?? $summary['title'] ?? null,
                 'provider_team_id' => $dataset->team_id,
             ]);
+
+            IndexDataset::dispatchSync($dataset->id);
         }
     }
 }

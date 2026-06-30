@@ -52,6 +52,8 @@ class ARDC implements SearchProvider
                 'filters' => [
                     'q'    => empty($query) ? false : $query,
                     'type' => 'health.dataset',
+                    'start' => 0,
+                    'rows' => 25,
                 ],
             ]);
 
@@ -69,7 +71,7 @@ class ARDC implements SearchProvider
 
             return [
                 'hits'         => $hits,
-                'total'        => count($hits),
+                'total'        => $incoming['result']['numFound'],
                 'aggregations' => [],
                 'ids'          => [],
             ];

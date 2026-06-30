@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Context\PartnerContext;
 use App\Exports\DataProviderCollExport;
 use App\Exports\DataProviderExport;
 use App\Exports\DatasetListExport;
@@ -43,6 +44,11 @@ class SearchController extends Controller
 {
     use PaginateFromArray;
     use LoggingContext;
+
+    public function __construct(
+        private readonly PartnerContext $partnerContext,
+    ) {
+    }
 
     /**
      * @OA\Examples(
@@ -167,8 +173,11 @@ class SearchController extends Controller
                 ], 404);
             }
 
-            $datasetsArray = $response['hits']['hits'];
-            $totalResults = $response['hits']['total']['value'];
+            $datasetsArray = $this->filterDatasetHitsForPartner(
+                $response['hits']['hits'],
+                $this->partnerContext->getPartner(),
+            );
+            $totalResults = count($datasetsArray);
             $matchedIds = array_column($datasetsArray, '_id');
 
             $datasetsArray = (new DatasetHydrator())->hydrate($datasetsArray, $viewType);
@@ -1455,6 +1464,38 @@ class SearchController extends Controller
         }
 
         return $resultArray;
+    }
+
+    /**
+     * Keep only Elasticsearch hits whose dataset is visible in the active partner context.
+     * Only ACTIVE datasets are indexed in search, so we align with that here.
+     *
+     * @param  array<int, array<string, mixed>>  $hits
+     * @return array<int, array<string, mixed>>
+     */
+    private function filterDatasetHitsForPartner(array $hits, string $partnerContext): array
+    {
+        if ($hits === []) {
+            return $hits;
+        }
+
+        $shouldFilter = $partnerContext !== 'HDRUK'
+            || !config('partners.allow_cross_context_read', true);
+
+        if (!$shouldFilter) {
+            return $hits;
+        }
+
+        $allowedIds = Dataset::query()
+            ->forPartnerContext($partnerContext)
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->pluck('id')
+            ->flip();
+
+        return array_values(array_filter(
+            $hits,
+            fn (array $hit) => isset($allowedIds[(int) $hit['_id']])
+        ));
     }
 
     private function isDoi(string $query): bool

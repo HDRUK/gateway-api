@@ -80,7 +80,7 @@ trait IndexElastic
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
-                'keywords' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], '')),
+                'keywords' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], '')),
                 'description' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.description'], ''),
                 'shortTitle' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], ''),
                 'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''),
@@ -88,11 +88,11 @@ trait IndexElastic
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
-                'dataType' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
-                'dataSubType' => array_filter(explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], ''))),
+                'dataType' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
+                'dataSubType' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], '')),
                 'containsBioSamples' => $containsBioSamples,
                 'sampleAvailability' => $materialTypes,
-                'conformsTo' => explode(';,;', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
+                'conformsTo' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
                 'named_entities' =>  array_map(fn ($entity) => $entity['name'], $datasetMatch->allNamedEntities),
                 'collectionName' => array_map(fn ($collection) => $collection['name'], $datasetMatch->allCollections),
@@ -143,12 +143,30 @@ trait IndexElastic
         }
     }
 
-    private function formatAndStandard($value)
+    private function formatAndStandard(string|array|null $value): ?array
     {
-        if ($value === '') {
-            return null;
+        $items = $this->normalizeDelimitedList($value);
+
+        return $items === [] ? null : $items;
+    }
+
+    /**
+     * Normalise GWDM delimited strings (;,;) or arrays into a flat list for indexing.
+     *
+     * @param  string|array<int, string>|null  $value
+     * @return array<int, string>
+     */
+    private function normalizeDelimitedList(string|array|null $value): array
+    {
+        if (is_array($value)) {
+            return array_values(array_filter($value, fn ($item) => $item !== '' && $item !== null));
         }
-        return array_filter(explode(';,;', $value));
+
+        if ($value === '' || $value === null) {
+            return [];
+        }
+
+        return array_values(array_filter(explode(';,;', (string) $value)));
     }
 
     /**

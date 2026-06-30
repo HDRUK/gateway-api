@@ -14,6 +14,7 @@ class CRUKDatasetSeeder extends Seeder
     {
         Dataset::factory()->count(20)->create([
             'partner_context' => 'CRUK',
+            'status' => Dataset::STATUS_ACTIVE,
         ]);
     }
 }
