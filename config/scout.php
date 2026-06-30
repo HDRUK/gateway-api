@@ -181,7 +181,7 @@ return [
         ],
         // 'max_total_results' => env('TYPESENSE_MAX_TOTAL_RESULTS', 1000),
         'model-settings' => [
-            // LS: 
+            // LS:
             // Removing this, but leaving in as an example going forward. We opt
             // for defining collection schema's within model definitions
             // themselves, rather than config
