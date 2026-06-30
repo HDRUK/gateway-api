@@ -15,172 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Melanoma Immunotherapy Response and Single-Cell Profiling Cohort",
             "abstract": "Registry data evaluating the tumor microenvironment changes in patients with advanced melanoma undergoing immune checkpoint blockade therapy.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/022333f66",
-                "name": "Institute of Skin Cancer Research",
-                "logo": "https://www.skincancerinstitute.org/images/logo.png",
-                "contactPoint": [
-                    "data-access@skincancerinstitute.org"
-                ],
-                "description": "https://www.skincancerinstitute.org/about"
-            },
-            "funders": "Melanoma Research Alliance\nCancer Research Institute",
-            "populationSize": 980,
-            "keywords": [
-                "Melanoma",
-                "Immunotherapy",
-                "Single-cell",
-                "Tumor Microenvironment",
-                "Response"
-            ],
-            "doiName": "10.7000/data.66",
             "contactPoint": "registry@skincancerinstitute.org",
-            "datasetAliases": [
-                "Melanoma Immune Response Registry"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data evaluating the tumor microenvironment changes in patients with advanced melanoma undergoing immune checkpoint blockade therapy. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://skincancerinstitute.org/documents/scRNAseq_protocol.pdf"
-            ]
+            "keywords": "Melanoma;,;Immunotherapy;,;Single-cell;,;Tumor Microenvironment;,;Response",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 980,
+            "description": "Other data types:\n- Multiplex Immunofluorescence (application/ome-tiff): Spatial imaging of T-cell infiltration in tumor sections",
+            "doiName": "10.7000/data.66",
+            "shortTitle": "Melanoma Immunotherapy Response and Single-Cell Profiling Cohort",
+            "title": "Melanoma Immunotherapy Response and Single-Cell Profiling Cohort",
+            "leadResearcher": "Dr. Clara Lin",
+            "leadResearchInstitute": "Institute of Skin Cancer Research",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Institute of Skin Cancer Research",
+                "gatewayId": "https://ror.org/022333f66",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 25,
-            "typicalAgeRangeMax": 95,
-            "datasetCompleteness": "https://skincancerinstitute.org/melanoma/data-metrics"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2020-03-01",
-                "timeLag": "6 months",
-                "endDate": "2024-03-01",
-                "distributionReleaseDate": "2024-09-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Institute of Skin Cancer Research",
+                "dataProcessor": "Institute of Skin Cancer Research",
+                "accessRights": "https://www.skincancerinstitute.org/terms",
+                "accessService": "https://www.skincancerinstitute.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Institute of Skin Cancer Research",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Tissue Biopsies",
                 "measuredValue": 2940,
                 "observationDate": "2024-03-01",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 76
-                },
-                {
-                    "bin": "White - Any other White background",
-                    "count": 12
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 6
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 3
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 1
-                },
-                {
-                    "bin": "Not stated",
-                    "count": 1
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "05_000",
-                "projectGrantName": "Single-Cell Mapping of Immune Checkpoint Resistance",
-                "leadResearcher": "Dr. Clara Lin",
-                "leadResearchInstitute": "Institute of Skin Cancer Research",
-                "grantNumber": "MRA-112, CRI-445",
-                "projectGrantStartDate": "2020-05-01",
-                "projectGrantEndDate": "2025-04-30",
-                "projectGrantScope": "scRNA-seq data, pre- and post-treatment imaging, and clinical progression logs"
-            }
-        ],
-        "erd": "https://github.com/SkinCancerInstitute/melanoma_registry/blob/main/schema/erd.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Treatment_Toxicity",
-                    "description": "Records of immune-related adverse events during therapy",
-                    "columns": [
-                        {
-                            "name": "adverse_events",
-                            "dataType": "list",
-                            "description": "list of CTCAE graded immune-related adverse events",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[Colitis_Grade_3]",
-                                    "description": "Severe immune-mediated colitis",
-                                    "frequency": 85
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 980
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://skincancerinstitute.org/datasets/synthetic_melanoma"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "Multiplex Immunofluorescence",
-                "description": "Spatial imaging of T-cell infiltration in tumor sections",
-                "format": "OME-TIFF"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National Skin Cancer Database",
-                    "pid": "NSCD-05",
-                    "url": "https://healthdatagateway.org/en/dataset/552"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1038/s41591-022-01992-w"
-            ],
-            "publicationAboutDataset": [
-                "10.1038/s41591-022-01993-x"
-            ],
-            "tools": [
-                "https://github.com/topics/scrnaseq-tumor-microenvironment"
-            ],
-            "investigations": [
-                "ISCR-402-Spatial"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1038/s41591-021-01324-y",
-                    "title": "Advanced Melanoma Genomics",
-                    "pid": "AMG-33"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Single-cell RNA sequencing",
-            "platform": "10x Genomics Chromium"
-        },
-        "icons": [
-            "Immunology",
-            "Transcriptomics"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_5",
@@ -231,6 +155,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "05_000",
+                "projectGrantName": "Single-Cell Mapping of Immune Checkpoint Resistance",
+                "leadResearcher": "Dr. Clara Lin",
+                "leadResearchInstitute": "Institute of Skin Cancer Research",
+                "grantNumber": "MRA-112, CRI-445",
+                "projectGrantStartDate": "2020-05-01",
+                "projectGrantEndDate": "2025-04-30",
+                "projectGrantScope": "scRNA-seq data, pre- and post-treatment imaging, and clinical progression logs"
+            }
+        ],
+        "icons": [
+            "Immunology",
+            "Transcriptomics"
+        ],
+        "erd": {
+            "image": "https://github.com/SkinCancerInstitute/melanoma_registry/blob/main/schema/erd.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

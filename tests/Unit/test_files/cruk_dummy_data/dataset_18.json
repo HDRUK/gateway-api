@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Neuroblastoma MYCN Amplification and Differentiation Cohort",
             "abstract": "Registry data correlating MYCN amplification status with tumor differentiation and response to retinoid therapy in high-risk pediatric neuroblastoma.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/07neuro",
-                "name": "Pediatric Solid Tumor Network",
-                "logo": "https://pstn.org/logo.png",
-                "contactPoint": [
-                    "data@pstn.org"
-                ],
-                "description": "https://pstn.org/about"
-            },
-            "funders": "Children's Cancer Research Fund",
-            "populationSize": 850,
-            "keywords": [
-                "Neuroblastoma",
-                "Pediatric",
-                "Cancer",
-                "MYCN",
-                "Retinoids"
-            ],
-            "doiName": "10.2001/data.07",
             "contactPoint": "data@pstn.org",
-            "datasetAliases": [
-                "High-Risk Neuroblastoma Data"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data correlating MYCN amplification status with tumor differentiation and response to retinoid therapy in high-risk pediatric neuroblastoma. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://pstn.org/mycn_protocol.pdf"
-            ]
+            "keywords": "Neuroblastoma;,;Pediatric;,;Cancer;,;MYCN;,;Retinoids",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 850,
+            "description": "Other data types:\n- MIBG Scans (application/dicom): Functional imaging for metastatic spread",
+            "doiName": "10.2001/data.07",
+            "shortTitle": "Neuroblastoma MYCN Amplification and Differentiation Cohort",
+            "title": "Neuroblastoma MYCN Amplification and Differentiation Cohort",
+            "leadResearcher": "Dr. K. Jones",
+            "leadResearchInstitute": "Children's Hospital Oncology",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Pediatric Solid Tumor Network",
+                "gatewayId": "https://ror.org/07neuro",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 0,
-            "typicalAgeRangeMax": 10,
-            "datasetCompleteness": "https://pstn.org/completeness"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-01-01",
-                "timeLag": "6 months",
-                "endDate": "2023-12-31",
-                "distributionReleaseDate": "2024-06-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Pediatric Solid Tumor Network",
+                "dataProcessor": "Pediatric Solid Tumor Network",
+                "accessRights": "https://www.pstn.org/terms",
+                "accessService": "https://www.pstn.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Pediatric Solid Tumor Network",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Biopsies",
                 "measuredValue": 1700,
                 "observationDate": "2023-12-31",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 50
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 25
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 14
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 4
-                },
-                {
-                    "bin": "Not stated",
-                    "count": 4
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "18_000",
-                "projectGrantName": "Targeting MYCN in Neuroblastoma",
-                "leadResearcher": "Dr. K. Jones",
-                "leadResearchInstitute": "Children's Hospital Oncology",
-                "grantNumber": "CCRF-777",
-                "projectGrantStartDate": "2019-01-01",
-                "projectGrantEndDate": "2024-12-31",
-                "projectGrantScope": "FISH results, histology, and therapy logs"
-            }
-        ],
-        "erd": "https://github.com/pstn/schema.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Cytogenetics",
-                    "description": "FISH and microarray results for MYCN",
-                    "columns": [
-                        {
-                            "name": "mycn_status",
-                            "dataType": "list",
-                            "description": "list of MYCN amplification results",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[Amplified]",
-                                    "description": "Greater than 10 copies of MYCN",
-                                    "frequency": 320
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 850
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://pstn.org/synthetic"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "MIBG Scans",
-                "description": "Functional imaging for metastatic spread",
-                "format": "DICOM"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "Pediatric Oncology Database",
-                    "pid": "POD-07",
-                    "url": "https://hdg.org/dataset/07"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/neuro.2023.01"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/neuro.2023.02"
-            ],
-            "tools": [
-                "https://github.com/topics/pediatric-oncology"
-            ],
-            "investigations": [
-                "PSTN-701-A"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/neuro.2022",
-                    "title": "Wilms Tumor Genomic Data",
-                    "pid": "WTGD-07"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Fluorescence In Situ Hybridization",
-            "platform": "Microscopy"
-        },
-        "icons": [
-            "Pediatrics",
-            "Genetics"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_6",
@@ -234,6 +162,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "18_000",
+                "projectGrantName": "Targeting MYCN in Neuroblastoma",
+                "leadResearcher": "Dr. K. Jones",
+                "leadResearchInstitute": "Children's Hospital Oncology",
+                "grantNumber": "CCRF-777",
+                "projectGrantStartDate": "2019-01-01",
+                "projectGrantEndDate": "2024-12-31",
+                "projectGrantScope": "FISH results, histology, and therapy logs"
+            }
+        ],
+        "icons": [
+            "Pediatrics",
+            "Genetics"
+        ],
+        "erd": {
+            "image": "https://github.com/pstn/schema.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

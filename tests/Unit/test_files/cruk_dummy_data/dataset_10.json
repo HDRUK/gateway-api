@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Renal Cell Carcinoma Immunotherapy Efficacy Cohort",
             "abstract": "Registry data analyzing the durable response rates of combination immune checkpoint inhibitors in metastatic clear cell renal cell carcinoma.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/034876a12",
-                "name": "Kidney Oncology Network",
-                "logo": "https://www.kidneyoncology.org/assets/logo.png",
-                "contactPoint": [
-                    "data-hub@kidneyoncology.org"
-                ],
-                "description": "https://www.kidneyoncology.org/about-us"
-            },
-            "funders": "Kidney Cancer Association\nNational Institutes of Health",
-            "populationSize": 1890,
-            "keywords": [
-                "Kidney",
-                "Cancer",
-                "RCC",
-                "Immunotherapy",
-                "Metastatic"
-            ],
-            "doiName": "10.1400/data.51",
             "contactPoint": "registry@kidneyoncology.org",
-            "datasetAliases": [
-                "Metastatic ccRCC IO Cohort"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data analyzing the durable response rates of combination immune checkpoint inhibitors in metastatic clear cell renal cell carcinoma. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://kidneyoncology.org/protocols/io_efficacy_registry.pdf"
-            ]
+            "keywords": "Kidney;,;Cancer;,;RCC;,;Immunotherapy;,;Metastatic",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 1890,
+            "description": "Other data types:\n- Abdominal MRI Scans (application/dicom): Baseline and longitudinal multiparametric MRI of renal masses",
+            "doiName": "10.1400/data.51",
+            "shortTitle": "Renal Cell Carcinoma Immunotherapy Efficacy Cohort",
+            "title": "Renal Cell Carcinoma Immunotherapy Efficacy Cohort",
+            "leadResearcher": "Dr. Martin Fischer",
+            "leadResearchInstitute": "Institute of Urologic Oncology",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Kidney Oncology Network",
+                "gatewayId": "https://ror.org/034876a12",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 40,
-            "typicalAgeRangeMax": 85,
-            "datasetCompleteness": "https://kidneyoncology.org/rcc/completeness-metrics"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-08-01",
-                "timeLag": "6 months",
-                "endDate": "2023-08-01",
-                "distributionReleaseDate": "2024-02-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Kidney Oncology Network",
+                "dataProcessor": "Kidney Oncology Network",
+                "accessRights": "https://www.kidneyoncology.org/terms",
+                "accessService": "https://www.kidneyoncology.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Kidney Oncology Network",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Patients",
                 "measuredValue": 1890,
                 "observationDate": "2023-08-01",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 63
-                },
-                {
-                    "bin": "White - Any other White background",
-                    "count": 15
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 10
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 7
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 2
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "10_000",
-                "projectGrantName": "Biomarkers of Response in IO-Treated ccRCC",
-                "leadResearcher": "Dr. Martin Fischer",
-                "leadResearchInstitute": "Institute of Urologic Oncology",
-                "grantNumber": "KCA-291, NIH-R01-884",
-                "projectGrantStartDate": "2019-02-01",
-                "projectGrantEndDate": "2024-01-31",
-                "projectGrantScope": "Treatment timelines, baseline tumor mutational burden, and survival logs"
-            }
-        ],
-        "erd": "https://github.com/KidneyOncology/ccrcc_db/blob/main/schema.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Adverse_Events",
-                    "description": "Records of immune-related adverse events requiring systemic steroids",
-                    "columns": [
-                        {
-                            "name": "iraes",
-                            "dataType": "list",
-                            "description": "list of CTCAE graded autoimmune toxicities",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[Pneumonitis_Grade_2]",
-                                    "description": "Symptomatic pulmonary inflammation",
-                                    "frequency": 115
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 1890
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://kidneyoncology.org/datasets/synthetic_ccrcc"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "Abdominal MRI Scans",
-                "description": "Baseline and longitudinal multiparametric MRI of renal masses",
-                "format": "DICOM"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National Urologic Cancer Registry",
-                    "pid": "NUCR-09",
-                    "url": "https://healthdatagateway.org/en/dataset/881"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/j.eururo.2023.04.011"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/j.eururo.2023.04.012"
-            ],
-            "tools": [
-                "https://github.com/topics/ccrcc-response-prediction"
-            ],
-            "investigations": [
-                "KON-771-SubA"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/j.eururo.2022.02.015",
-                    "title": "Advanced Renal Cell Carcinoma TKI Registry",
-                    "pid": "ARCC-TKI"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Whole Exome Sequencing",
-            "platform": "Illumina NovaSeq 6000"
-        },
-        "icons": [
-            "Immunology",
-            "Clinical Trials"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_12",
@@ -234,6 +162,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "10_000",
+                "projectGrantName": "Biomarkers of Response in IO-Treated ccRCC",
+                "leadResearcher": "Dr. Martin Fischer",
+                "leadResearchInstitute": "Institute of Urologic Oncology",
+                "grantNumber": "KCA-291, NIH-R01-884",
+                "projectGrantStartDate": "2019-02-01",
+                "projectGrantEndDate": "2024-01-31",
+                "projectGrantScope": "Treatment timelines, baseline tumor mutational burden, and survival logs"
+            }
+        ],
+        "icons": [
+            "Immunology",
+            "Clinical Trials"
+        ],
+        "erd": {
+            "image": "https://github.com/KidneyOncology/ccrcc_db/blob/main/schema.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }
