@@ -1,3 +1,11 @@
+## [2.44.0](https://github.com/HDRUK/gateway-api/compare/v2.43.0...v2.44.0) (2026-06-30)
+
+### ✨ Features
+
+* **GAT-0000:** filter dataset search by partner context (#1678) ([961b2c1](https://github.com/HDRUK/gateway-api/commit/961b2c18227235c3839aa593ae9c41f3ce448b4d)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-9036:** Make ARDC results mirror our own per page (#1676) ([215385c](https://github.com/HDRUK/gateway-api/commit/215385c220d3e78864399c4725d7c1ce92a9be15)), closes [GAT-9036](undefinedGAT-9036)
+* **GAT-9037:** Implementation of migration-esq command system (#1677) ([9db6f24](https://github.com/HDRUK/gateway-api/commit/9db6f249f78ae96241409c2dd1a3b407810c8acd)), closes [GAT-9037](undefinedGAT-9037)
+
 ## [2.43.0](https://github.com/HDRUK/gateway-api/compare/v2.42.0...v2.43.0) (2026-06-25)
 
 ### ✨ Features
