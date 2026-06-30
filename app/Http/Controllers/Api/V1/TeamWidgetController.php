@@ -1140,7 +1140,8 @@ class TeamWidgetController extends Controller
                     'week'  => date('Y-W', strtotime($r->day)),
                     default => $r->day,
                 })
-                ->flatMap(fn ($rows, $period) =>
+                ->flatMap(
+                    fn ($rows, $period) =>
                     collect($rows)
                         ->groupBy('event_type')
                         ->map(fn ($events, $eventType) => [
