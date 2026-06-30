@@ -31,6 +31,7 @@
         "laravel/passport": "^12.2",
         "laravel/pennant": "^1.16",
         "laravel/sanctum": "^4.0",
+        "laravel/scout": "^11.3",
         "laravel/socialite": "^5.9",
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.2",
