@@ -43,6 +43,7 @@
         "staudenmeir/belongs-to-through": "^2.5",
         "staudenmeir/eloquent-has-many-deep": "^1.7",
         "swaggest/json-diff": "^3.12",
+        "typesense/typesense-php": "^4.9",
         "webklex/laravel-imap": "^6.0"
     },
     "require-dev": {
