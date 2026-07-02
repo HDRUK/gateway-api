@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\DatasetVersionObserver;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * )
  */
 #[ObservedBy(DatasetVersionObserver::class)]
-class DatasetVersion extends Model
+class DatasetVersion extends BaseTypesenseModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -248,5 +249,24 @@ class DatasetVersion extends Model
         return $this->belongsTo(Dataset::class, 'dataset_id', 'id')
             ->where('status', 'ACTIVE')
             ->select(['id', 'status']);
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by' => '', // TODO
+            'query_by_weights' => '', // TODO
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                // TODO
+                [ 'name' => '', 'type' => '' ],
+            ],
+        ];
     }
 }

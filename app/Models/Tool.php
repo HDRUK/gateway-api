@@ -6,6 +6,7 @@ use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\EntityCounter;
 use App\Models\Traits\SortManager;
 use App\Observers\ToolObserver;
+use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,7 +45,7 @@ use Illuminate\Notifications\Notifiable;
  * )
  */
 #[ObservedBy([ToolObserver::class])]
-class Tool extends Model
+class Tool extends BaseTypesenseModel
 {
     use HasFactory;
     use Notifiable;
@@ -225,5 +226,24 @@ class Tool extends Model
             'dataset_versions.dataset_id',
             Dataset::where('status', 'ACTIVE')->select('id')
         );
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by' => '', // TODO
+            'query_by_weights' => '', // TODO
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                // TODO
+                [ 'name' => '', 'type' => '' ],
+            ],
+        ];
     }
 }

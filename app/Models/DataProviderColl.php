@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class DataProviderColl extends Model
+class DataProviderColl extends BaseTypesenseModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -69,5 +70,24 @@ class DataProviderColl extends Model
             Team::class,
             'data_provider_coll_has_teams'
         );
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by' => '', // TODO
+            'query_by_weights' => '', // TODO
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                // TODO
+                [ 'name' => '', 'type' => '' ],
+            ],
+        ];
     }
 }
