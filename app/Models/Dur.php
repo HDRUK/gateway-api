@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use Laravel\Scout\Searchable;
+
 /**
  * @OA\Schema(
  *   schema="Dur",
@@ -81,6 +83,7 @@ class Dur extends Model
     use DatasetFetch;
     use SortManager;
     use EntityCounter;
+    use Searchable;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';

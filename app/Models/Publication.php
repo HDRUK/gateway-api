@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use Laravel\Scout\Searchable;
+
 /**
  * @OA\Schema(
  *   schema="Publication",
@@ -48,6 +50,7 @@ class Publication extends Model
     use DatasetFetch;
     use SortManager;
     use EntityCounter;
+    use Searchable;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';

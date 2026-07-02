@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use Laravel\Scout\Searchable;
+
 /**
  * @OA\Schema(
  *   schema="DatasetVersion",
@@ -46,6 +48,7 @@ class DatasetVersion extends Model
     use HasFactory;
     use SoftDeletes;
     use Prunable;
+    use Searchable;
 
     /**
      * Table associated with this model
