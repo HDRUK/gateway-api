@@ -302,8 +302,11 @@ class DatasetVersion extends BaseTypesenseModel
             'abstract'                      => data_get($meta, 'metadata.summary.abstract', ''),
             'description'                   => data_get($meta, 'metadata.summary.description', ''),
             'keywords'                      => array_values(array_filter(explode(';,;', $keywords))),
-            'publisherName'                 => data_get($meta, 'metadata.summary.publisher.name',
-                                                data_get($meta, 'metadata.summary.publisher.publisherName', '')),
+            'publisherName'                 => data_get(
+                $meta,
+                'metadata.summary.publisher.name',
+                data_get($meta, 'metadata.summary.publisher.publisherName', '')
+            ),
             'dataType'                      => array_values(array_filter(explode(';,;', $dataType))),
             'populationSize'                => (int) data_get($meta, 'metadata.summary.populationSize', -1),
             'geographicLocation'            => $this->spatialCoverage->pluck('region')->all(),
