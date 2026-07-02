@@ -10,6 +10,7 @@ use App\Models\User;
 //use App\Models\UserHasWorkgroup;
 //use App\Models\Workgroup;
 use Config;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -208,6 +209,58 @@ class CohortRequestTest extends TestCase
         ]);
 
         $responseGetOne->assertStatus(200);
+    }
+
+    /**
+     * NHSE SDE request approval should set nhse_sde_request_expire_at to 5 years
+     * (1825 days, per COHORT_NHSE_SDE_ACCESS_EXPIRY_TIME_IN_DAYS in .env) from now.
+     *
+     */
+    public function test_update_cohort_request_nhse_sde_approval_sets_five_year_expiry(): void
+    {
+        Mail::fake();
+
+        Config::set('cohort.cohort_nhse_sde_access_expiry_time_in_days', 1825);
+
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'details' => 'Test cohort request',
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        $id = $responseCreate->decodeResponseJson()['data'];
+
+        $now = Carbon::now();
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL.'/'.$id,
+            [
+                'request_status' => 'PENDING',
+                'nhse_sde_request_status' => 'APPROVED',
+                'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - nhse sde approved.',
+            ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequest = CohortRequest::where('id', $id)->first();
+
+        $this->assertNotNull($cohortRequest->nhse_sde_request_expire_at);
+
+        $expectedExpiry = $now->copy()->addDays(1825);
+        $this->assertEqualsWithDelta(
+            $expectedExpiry->timestamp,
+            $cohortRequest->nhse_sde_request_expire_at->timestamp,
+            5,
+            'nhse_sde_request_expire_at should be exactly 1825 days (5 years) from the time of approval.'
+        );
     }
 
     public function test_update_cohort_request_with_cds_enabled_success(): void

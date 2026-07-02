@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Config;
 use Tests\TestCase;
 use App\Jobs\SendEmailJob;
 use App\Jobs\TermExtraction;
@@ -124,18 +125,21 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_can_expire_nhse_sde_requests(): void
     {
+        Config::set('cohort.cohort_access_expiry_time_in_days', 50);
+        Config::set('cohort.cohort_nhse_sde_access_expiry_time_in_days', 400);
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
             'nhse_sde_request_status' => 'APPROVED',
             'request_expire_at' => null,
             'nhse_sde_request_expire_at' => null,
-            'created_at' => Carbon::now()->subDays(181),
+            'created_at' => Carbon::now()->subDays(401),
         ]);
 
         $cr = CohortRequest::find($req->id);
-        $cr->updated_at = Carbon::now()->subDays(100); // standard access not yet expired
-        $cr->nhse_sde_updated_at = Carbon::now()->subDays(181); // NHSE SDE access expired
+        $cr->updated_at = Carbon::now()->subDays(10); // standard: well within its own 50-day window
+        $cr->nhse_sde_updated_at = Carbon::now()->subDays(401); // NHSE SDE access expired (past its own 400-day window)
         $cr->save();
 
         $perms = Permission::where([
@@ -173,18 +177,21 @@ class CohortUserExpiryTest extends TestCase
     {
         Mail::fake();
 
+        Config::set('cohort.cohort_access_expiry_time_in_days', 50);
+        Config::set('cohort.cohort_nhse_sde_access_expiry_time_in_days', 400);
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
             'nhse_sde_request_status' => 'APPROVED',
             'request_expire_at' => null,
             'nhse_sde_request_expire_at' => null,
-            'created_at' => Carbon::now()->subDays(181),
+            'created_at' => Carbon::now()->subDays(100),
         ]);
 
         $cr = CohortRequest::find($req->id);
-        $cr->updated_at = Carbon::now()->subDays(100);
-        $cr->nhse_sde_updated_at = Carbon::now()->subDays(100); // still within the window
+        $cr->updated_at = Carbon::now()->subDays(10);
+        $cr->nhse_sde_updated_at = Carbon::now()->subDays(100);
         $cr->save();
 
         $perms = Permission::where([
@@ -213,18 +220,21 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_nhse_sde_expiry_does_not_affect_standard_request(): void
     {
+        Config::set('cohort.cohort_access_expiry_time_in_days', 50);
+        Config::set('cohort.cohort_nhse_sde_access_expiry_time_in_days', 400);
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
             'nhse_sde_request_status' => 'APPROVED',
             'request_expire_at' => null,
             'nhse_sde_request_expire_at' => null,
-            'created_at' => Carbon::now()->subDays(181),
+            'created_at' => Carbon::now()->subDays(401),
         ]);
 
         $cr = CohortRequest::find($req->id);
-        $cr->updated_at = Carbon::now()->subDays(100); // standard NOT expired
-        $cr->nhse_sde_updated_at = Carbon::now()->subDays(181); // NHSE SDE expired
+        $cr->updated_at = Carbon::now()->subDays(10); // standard NOT expired (within its own 50-day window)
+        $cr->nhse_sde_updated_at = Carbon::now()->subDays(401); // NHSE SDE expired (past its own 400-day window)
         $cr->save();
 
         $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
@@ -292,20 +302,23 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_sends_warning_email_when_nhse_sde_request_nearing_expiry(): void
     {
+        Config::set('cohort.cohort_access_expiry_time_in_days', 50);
+        Config::set('cohort.cohort_nhse_sde_access_expiry_time_in_days', 400);
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
             'nhse_sde_request_status' => 'APPROVED',
             'request_expire_at' => null,
             'nhse_sde_request_expire_at' => null,
-            'created_at' => Carbon::now()->subDays(179),
+            'created_at' => Carbon::now()->subDays(399),
         ]);
 
-        // Both within warning window (1 day left each), but let's make standard not in window
-        // and NHSE SDE in window to isolate the test.
+        // Make standard not in window and NHSE SDE in window (1 day left of its
+        // own 400-day window) to isolate the test.
         $cr = CohortRequest::find($req->id);
-        $cr->updated_at = Carbon::now()->subDays(100); // standard: 80 days left, not in warning
-        $cr->nhse_sde_updated_at = Carbon::now()->subDays(179); // NHSE SDE: 1 day left, in warning
+        $cr->updated_at = Carbon::now()->subDays(10); // standard: 40 days left, not in warning
+        $cr->nhse_sde_updated_at = Carbon::now()->subDays(399); // NHSE SDE: 1 day left, in warning
         $cr->save();
 
         $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
@@ -349,6 +362,8 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_explicit_nhse_sde_expire_at_date_triggers_expiry(): void
     {
+        Config::set('cohort.cohort_nhse_sde_access_expiry_time_in_days', 400);
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
@@ -360,7 +375,7 @@ class CohortUserExpiryTest extends TestCase
 
         $cr = CohortRequest::find($req->id);
         $cr->updated_at = Carbon::now()->subDays(10);
-        $cr->nhse_sde_updated_at = Carbon::now()->subDays(10); // time-based expiry is 170 days away
+        $cr->nhse_sde_updated_at = Carbon::now()->subDays(10); // time-based expiry is ~390 days away
         $cr->save();
 
         $perms = Permission::where([
@@ -376,7 +391,7 @@ class CohortUserExpiryTest extends TestCase
         $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
 
         // Explicit nhse_sde_request_expire_at was yesterday → must expire even though
-        // nhse_sde_updated_at + 180 days is still far in the future.
+        // nhse_sde_updated_at + 400 days is still far in the future.
         $this->assertDatabaseHas('cohort_requests', [
             'id' => $req->id,
             'nhse_sde_request_status' => 'EXPIRED',
