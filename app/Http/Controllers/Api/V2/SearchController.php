@@ -117,10 +117,11 @@ class SearchController extends Controller
 
     public function searchTypesense(Search $request): JsonResponse
     {
+        // TODO: Stub only for now
         if (!Feature::active(self::TYPESENSE_FEATURE_FLAG)) {
             return response()->json(['message' => 'Resource not found'], 404);
         }
 
-        // TODO
+        return response()->json(['message' => 'OK'], 200);
     }
 }
