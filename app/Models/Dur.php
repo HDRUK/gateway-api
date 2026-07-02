@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Base\BaseTypesenseModel;
 use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\EntityCounter;
 use App\Models\Traits\SortManager;
@@ -15,8 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-use Laravel\Scout\Searchable;
 
 /**
  * @OA\Schema(
@@ -75,7 +74,7 @@ use Laravel\Scout\Searchable;
  * )
  */
 #[ObservedBy([DurObserver::class])]
-class Dur extends Model
+class Dur extends BaseTypesenseModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -83,7 +82,6 @@ class Dur extends Model
     use DatasetFetch;
     use SortManager;
     use EntityCounter;
-    use Searchable;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
@@ -371,4 +369,22 @@ class Dur extends Model
         ->where('collections.status', 'ACTIVE');
     }
 
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by' => '', // TODO
+            'query_by_weights' => '', // TODO
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                // TODO
+                [ 'name' => '', 'type' => '' ],
+            ],
+        ];
+    }
 }

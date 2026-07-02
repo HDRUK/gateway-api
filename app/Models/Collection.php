@@ -7,6 +7,7 @@ use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\SortManager;
 use App\Models\Traits\EntityCounter;
 use App\Observers\CollectionObserver;
+use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
@@ -18,7 +19,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-
 use Laravel\Scout\Searchable;
 
 /**
@@ -45,7 +45,7 @@ use Laravel\Scout\Searchable;
  * )
  */
 #[ObservedBy([CollectionObserver::class])]
-class Collection extends Model
+class Collection extends BaseTypesenseModel
 {
     use HasFactory;
     use Notifiable;
@@ -279,4 +279,22 @@ class Collection extends Model
         )->withPivot('role');
     }
 
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by' => '', // TODO
+            'query_by_weights' => '', // TODO
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                // TODO
+                [ 'name' => '', 'type' => '' ],
+            ],
+        ];
+    }
 }

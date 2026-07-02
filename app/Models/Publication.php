@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\DatasetFetch;
+use App\Models\Base\BaseTypesenseModel;
 use App\Models\Traits\SortManager;
 use App\Models\Traits\EntityCounter;
 use App\Observers\PublicationObserver;
@@ -12,7 +13,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
 use Laravel\Scout\Searchable;
 
 /**
@@ -42,7 +42,7 @@ use Laravel\Scout\Searchable;
  * )
  */
 #[ObservedBy([PublicationObserver::class])]
-class Publication extends Model
+class Publication extends BaseTypesenseModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -167,5 +167,24 @@ class Publication extends Model
             Keyword::class,
             'publication_has_keywords'
         );
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by' => '', // TODO
+            'query_by_weights' => '', // TODO
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                // TODO
+                [ 'name' => '', 'type' => '' ],
+            ],
+        ];
     }
 }
