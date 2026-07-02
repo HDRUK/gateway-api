@@ -17,6 +17,7 @@ class FeatureSeeder extends Seeder
         'CohortDiscoveryService' => false,
         'V2_SearchAggregation' => false,
         'V3_CustodianDashboard' => false,
+        'TypesenseSearch' => false,
     ];
 
     public function run(): void
