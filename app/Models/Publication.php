@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Laravel\Scout\Searchable;
 
 /**
  * @OA\Schema(
@@ -50,8 +49,6 @@ class Publication extends BaseTypesenseModel
     use DatasetFetch;
     use SortManager;
     use EntityCounter;
-    use Searchable;
-
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
@@ -169,11 +166,29 @@ class Publication extends BaseTypesenseModel
         );
     }
 
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'               => (string) $this->id,
+            'paper_title'      => $this->paper_title ?? '',
+            'authors'          => $this->authors ?? '',
+            'paper_doi'        => $this->paper_doi ?? '',
+            'publication_type' => $this->publication_type ?? '',
+            'journal_name'     => $this->journal_name ?? '',
+            'abstract'         => $this->abstract ?? '',
+        ];
+    }
+
     public function typesenseSearchParameters(): array
     {
         return [
-            'query_by' => '', // TODO
-            'query_by_weights' => '', // TODO
+            'query_by'         => 'paper_title,authors,paper_doi,publication_type,journal_name,abstract',
+            'query_by_weights' => '5,1,4,1,3,2',
         ];
     }
 
@@ -182,8 +197,13 @@ class Publication extends BaseTypesenseModel
         return [
             'name' => $this->searchableAs(),
             'fields' => [
-                // TODO
-                [ 'name' => '', 'type' => '' ],
+                [ 'name' => 'id',               'type' => 'string' ],
+                [ 'name' => 'paper_title',      'type' => 'string', 'infix' => true ],
+                [ 'name' => 'authors',          'type' => 'string', 'infix' => true ],
+                [ 'name' => 'paper_doi',        'type' => 'string', 'optional' => true ],
+                [ 'name' => 'publication_type', 'type' => 'string', 'optional' => true ],
+                [ 'name' => 'journal_name',     'type' => 'string', 'infix' => true ],
+                [ 'name' => 'abstract',         'type' => 'string', 'infix' => true, 'optional' => true ],
             ],
         ];
     }

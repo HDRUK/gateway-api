@@ -25,6 +25,7 @@ abstract class BaseTypesenseModel extends Model
         return config('scout.prefix') . $this->getTable();
     }
 
+    abstract public function toSearchableArray(): array;
     abstract public function typesenseCollectionSchema(): array;
     abstract public function typesenseSearchParameters(): array;
 }

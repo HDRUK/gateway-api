@@ -72,11 +72,27 @@ class DataProviderColl extends BaseTypesenseModel
         );
     }
 
+    public function shouldBeSearchable(): bool
+    {
+        return (bool) $this->enabled && $this->deleted_at === null;
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'      => (string) $this->id,
+            'enabled' => (int) $this->enabled,
+            'name'    => $this->name ?? '',
+            'summary' => $this->summary ?? '',
+            'service' => $this->service ?? '',
+        ];
+    }
+
     public function typesenseSearchParameters(): array
     {
         return [
-            'query_by' => '', // TODO
-            'query_by_weights' => '', // TODO
+            'query_by'         => 'name,summary,service',
+            'query_by_weights' => '5,4,1',
         ];
     }
 
@@ -85,8 +101,11 @@ class DataProviderColl extends BaseTypesenseModel
         return [
             'name' => $this->searchableAs(),
             'fields' => [
-                // TODO
-                [ 'name' => '', 'type' => '' ],
+                [ 'name' => 'id',       'type' => 'string', ],
+                [ 'name' => 'enabled',  'type' => 'int32', ],
+                [ 'name' => 'name',     'type' => 'string', 'infix' => true ],
+                [ 'name' => 'summary',  'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'service',  'type' => 'string', 'infix' => true, 'optional' => true ],
             ],
         ];
     }

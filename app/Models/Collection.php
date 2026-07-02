@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Laravel\Scout\Searchable;
 
 /**
  * @OA\Schema(
@@ -54,8 +53,6 @@ class Collection extends BaseTypesenseModel
     use DatasetFetch;
     use SortManager;
     use EntityCounter;
-    use Searchable;
-
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
@@ -279,11 +276,26 @@ class Collection extends BaseTypesenseModel
         )->withPivot('role');
     }
 
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'          => (string) $this->id,
+            'name'        => $this->name ?? '',
+            'description' => $this->description ?? '',
+            'status'      => $this->status ?? '',
+        ];
+    }
+
     public function typesenseSearchParameters(): array
     {
         return [
-            'query_by' => '', // TODO
-            'query_by_weights' => '', // TODO
+            'query_by'         => 'name,description,status',
+            'query_by_weights' => '5,4,1',
         ];
     }
 
@@ -292,8 +304,10 @@ class Collection extends BaseTypesenseModel
         return [
             'name' => $this->searchableAs(),
             'fields' => [
-                // TODO
-                [ 'name' => '', 'type' => '' ],
+                [ 'name' => 'id',           'type' => 'string', ],
+                [ 'name' => 'name',         'type' => 'string', 'infix' => true ],
+                [ 'name' => 'description',  'type' => 'string', 'infix' => true ],
+                [ 'name' => 'status',       'type' => 'string' ],
             ],
         ];
     }

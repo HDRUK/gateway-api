@@ -372,8 +372,8 @@ class Dur extends BaseTypesenseModel
     public function typesenseSearchParameters(): array
     {
         return [
-            'query_by' => '', // TODO
-            'query_by_weights' => '', // TODO
+            'query_by' => 'project_title,organisation_name,lay_summary,technical_summary,public_benefit_statement',
+            'query_by_weights' => '5,2,4,3,1',
         ];
     }
 
@@ -382,8 +382,13 @@ class Dur extends BaseTypesenseModel
         return [
             'name' => $this->searchableAs(),
             'fields' => [
-                // TODO
-                [ 'name' => '', 'type' => '' ],
+                [ 'name' => 'id', 'type' => 'string' ],
+                [ 'name' => 'project_title', 'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'organisation_name', 'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'lay_summary', 'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'technical_summary', 'type' => 'string', 'optional' => true ],
+                [ 'name' => 'public_benefit_statement', 'type' => 'string', 'optional' => true ],
+                // Likely more to follow
             ],
         ];
     }
