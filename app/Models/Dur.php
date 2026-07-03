@@ -369,11 +369,28 @@ class Dur extends BaseTypesenseModel
         ->where('collections.status', 'ACTIVE');
     }
 
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'                       => (string) $this->id,
+            'project_title'            => $this->project_title ?? '',
+            'organisation_name'        => $this->organisation_name ?? '',
+            'lay_summary'              => $this->lay_summary ?? '',
+            'technical_summary'        => $this->technical_summary ?? '',
+            'public_benefit_statement' => $this->public_benefit_statement ?? '',
+        ];
+    }
+
     public function typesenseSearchParameters(): array
     {
         return [
-            'query_by' => '', // TODO
-            'query_by_weights' => '', // TODO
+            'query_by'         => 'project_title,organisation_name,lay_summary,technical_summary,public_benefit_statement',
+            'query_by_weights' => '5,2,4,3,1',
         ];
     }
 
@@ -382,8 +399,13 @@ class Dur extends BaseTypesenseModel
         return [
             'name' => $this->searchableAs(),
             'fields' => [
-                // TODO
-                [ 'name' => '', 'type' => '' ],
+                [ 'name' => 'id', 'type' => 'string' ],
+                [ 'name' => 'project_title', 'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'organisation_name', 'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'lay_summary', 'type' => 'string', 'optional' => true ],
+                [ 'name' => 'technical_summary', 'type' => 'string', 'optional' => true ],
+                [ 'name' => 'public_benefit_statement', 'type' => 'string', 'optional' => true ],
+                // Likely more to follow
             ],
         ];
     }
