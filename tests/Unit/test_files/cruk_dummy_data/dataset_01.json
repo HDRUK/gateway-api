@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Pancreatic Cancer Radiomics and Biomarker Cohort",
             "abstract": "Registry data tracking treatment response patterns in advanced pancreatic ductal adenocarcinoma. Includes frequency of imaging and circulating tumor DNA details.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/087654b32",
-                "name": "Oncology Research Trust",
-                "logo": "https://www.oncologytrust.org/brand/",
-                "contactPoint": [
-                    "data@oncologytrust.org"
-                ],
-                "description": "https://www.oncologytrust.org/about"
-            },
-            "funders": "National Cancer Institute\nPancreatic Cancer Action Network",
-            "populationSize": 2105,
-            "keywords": [
-                "Pancreatic",
-                "Cancer",
-                "Radiomics",
-                "Biomarkers",
-                "Response"
-            ],
-            "doiName": "10.1500/data.45",
             "contactPoint": "access@oncologytrust.org",
-            "datasetAliases": [
-                "Pancreatic Cancer Biomarker Registry"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data tracking treatment response patterns in advanced pancreatic ductal adenocarcinoma. Includes frequency of imaging and circulating tumor DNA details. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://oncologytrust/docs/radiomics_protocol.pdf"
-            ]
+            "keywords": "Pancreatic;,;Cancer;,;Radiomics;,;Biomarkers;,;Response",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 2105,
+            "description": "Other data types:\n- Abdominal CT Scans (application/dicom): 3D volumetric scans of the pancreas with tumors segmented",
+            "doiName": "10.1500/data.45",
+            "shortTitle": "Pancreatic Cancer Radiomics and Biomarker Cohort",
+            "title": "Pancreatic Cancer Radiomics and Biomarker Cohort",
+            "leadResearcher": "Dr. Miller",
+            "leadResearchInstitute": "National Cancer Institute",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Oncology Research Trust",
+                "gatewayId": "https://ror.org/087654b32",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 35,
-            "typicalAgeRangeMax": 90,
-            "datasetCompleteness": "https://oncologytrust.org/pancreatic/completeness"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-03-01",
-                "timeLag": "More than 6 months",
-                "endDate": "2023-03-01",
-                "distributionReleaseDate": "2024-01-15"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Oncology Research Trust",
+                "dataProcessor": "Oncology Research Trust",
+                "accessRights": "https://www.oncologytrust.org/terms",
+                "accessService": "https://www.oncologytrust.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Oncology Research Trust",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Patients",
                 "measuredValue": 4120,
                 "observationDate": "2023-12-01",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 71
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 14
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 9
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 3
-                },
-                {
-                    "bin": "Other",
-                    "count": 1
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "01_000",
-                "projectGrantName": "Pancreatic Cancer Radiomics Integration",
-                "leadResearcher": "Dr. Miller",
-                "leadResearchInstitute": "National Cancer Institute",
-                "grantNumber": "ORT105, ORT106",
-                "projectGrantStartDate": "2019-06-01",
-                "projectGrantEndDate": "2024-06-01",
-                "projectGrantScope": "CT imaging, genetic markers, and clinical background information"
-            }
-        ],
-        "erd": "https://github.com/OncologyResearch/panc_cohort/blob/main/assets/erd.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Clinical_Features",
-                    "description": "Age, sex, tumor stage, treatment modalities",
-                    "columns": [
-                        {
-                            "name": "mutations",
-                            "dataType": "list",
-                            "description": "list of HGVS terms describing genetic mutations",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[KRAS_G12D]",
-                                    "description": "KRAS gene mutation",
-                                    "frequency": 1200
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 2500
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://oncologytrust.org/pancreatic/synthetic_data"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "Abdominal CT Scans",
-                "description": "3D volumetric scans of the pancreas with tumors segmented",
-                "format": "DICOM"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National Registry for Gastrointestinal Malignancies",
-                    "pid": "GI099",
-                    "url": "https://healthdatagateway.org/en/dataset/402"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/j.ejca.2021.08.012"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/j.ejca.2021.08.013"
-            ],
-            "tools": [
-                "https://github.com/topics/pancreatic-cancer-radiomics"
-            ],
-            "investigations": [
-                "ORT106"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/j.ejca.2019.05.004",
-                    "title": "Gastrointestinal Cancer Backgrounds",
-                    "pid": "ORTxyz"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Targeted panel sequencing",
-            "platform": "Illumina HiSeq"
-        },
-        "icons": [
-            "Patient Study",
-            "Imaging"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_1_10",
@@ -203,7 +131,7 @@
                 "id": "0_2_4_2",
                 "label": "Imaging Data",
                 "category": "Techniques",
-                "primaryGroup": "Techniques",
+                "primaryGroup": "data-type",
                 "description": ""
             },
             {
@@ -220,6 +148,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "01_000",
+                "projectGrantName": "Pancreatic Cancer Radiomics Integration",
+                "leadResearcher": "Dr. Miller",
+                "leadResearchInstitute": "National Cancer Institute",
+                "grantNumber": "ORT105, ORT106",
+                "projectGrantStartDate": "2019-06-01",
+                "projectGrantEndDate": "2024-06-01",
+                "projectGrantScope": "CT imaging, genetic markers, and clinical background information"
+            }
+        ],
+        "icons": [
+            "Patient Study",
+            "Imaging"
+        ],
+        "erd": {
+            "image": "https://github.com/OncologyResearch/panc_cohort/blob/main/assets/erd.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

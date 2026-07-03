@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Gastric Cancer Microbiome and Immunity Cohort",
             "abstract": "Registry data linking H. pylori eradication therapy outcomes to tumor microenvironment changes in gastric adenocarcinoma.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/01gastric",
-                "name": "Gastrointestinal Oncology Group",
-                "logo": "https://gi-oncology.org/logo.png",
-                "contactPoint": [
-                    "data@gi-oncology.org"
-                ],
-                "description": "https://gi-oncology.org/about"
-            },
-            "funders": "Cancer Research UK\nMedical Research Council",
-            "populationSize": 1500,
-            "keywords": [
-                "Gastric",
-                "Cancer",
-                "Microbiome",
-                "Immunity",
-                "H. pylori"
-            ],
-            "doiName": "10.2001/data.01",
             "contactPoint": "data@gi-oncology.org",
-            "datasetAliases": [
-                "Stomach Cancer Microenvironment"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data linking H. pylori eradication therapy outcomes to tumor microenvironment changes in gastric adenocarcinoma. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://gi-oncology.org/gastric_protocol.pdf"
-            ]
+            "keywords": "Gastric;,;Cancer;,;Microbiome;,;Immunity;,;H. pylori",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 1500,
+            "description": "Other data types:\n- Endoscopic Ultrasound (application/dicom): Staging images",
+            "doiName": "10.2001/data.01",
+            "shortTitle": "Gastric Cancer Microbiome and Immunity Cohort",
+            "title": "Gastric Cancer Microbiome and Immunity Cohort",
+            "leadResearcher": "Dr. A. Chen",
+            "leadResearchInstitute": "GI Institute",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Gastrointestinal Oncology Group",
+                "gatewayId": "https://ror.org/01gastric",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 40,
-            "typicalAgeRangeMax": 85,
-            "datasetCompleteness": "https://gi-oncology.org/completeness"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-01-01",
-                "timeLag": "6 months",
-                "endDate": "2023-12-31",
-                "distributionReleaseDate": "2024-06-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Gastrointestinal Oncology Group",
+                "dataProcessor": "Gastrointestinal Oncology Group",
+                "accessRights": "https://www.gi-oncology.org/terms",
+                "accessService": "https://www.gi-oncology.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Gastrointestinal Oncology Group",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Endoscopies",
                 "measuredValue": 4500,
                 "observationDate": "2023-12-31",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 50
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 25
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 15
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 5
-                },
-                {
-                    "bin": "Not stated",
-                    "count": 5
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "12_000",
-                "projectGrantName": "Gastric Microbiome Signatures",
-                "leadResearcher": "Dr. A. Chen",
-                "leadResearchInstitute": "GI Institute",
-                "grantNumber": "MRC-111",
-                "projectGrantStartDate": "2019-01-01",
-                "projectGrantEndDate": "2024-12-31",
-                "projectGrantScope": "Endoscopy reports and 16S sequencing"
-            }
-        ],
-        "erd": "https://github.com/gi-onc/schema.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Endoscopy_Logs",
-                    "description": "Lesion size and location",
-                    "columns": [
-                        {
-                            "name": "h_pylori_status",
-                            "dataType": "list",
-                            "description": "list of categorical infection statuses",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[Positive]",
-                                    "description": "Active H. pylori infection confirmed",
-                                    "frequency": 800
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 1500
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://gi-oncology.org/synthetic"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "Endoscopic Ultrasound",
-                "description": "Staging images",
-                "format": "DICOM"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National GI Database",
-                    "pid": "NGID-01",
-                    "url": "https://hdg.org/dataset/01"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/gastric.2023.01"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/gastric.2023.02"
-            ],
-            "tools": [
-                "https://github.com/topics/gastric"
-            ],
-            "investigations": [
-                "GI-101-A"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/gastric.2022",
-                    "title": "Esophageal Adenocarcinoma Cohort",
-                    "pid": "EAC-01"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "16S rRNA sequencing",
-            "platform": "Illumina MiSeq"
-        },
-        "icons": [
-            "Microbiome",
-            "Endoscopy"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_1_1",
@@ -234,6 +162,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "12_000",
+                "projectGrantName": "Gastric Microbiome Signatures",
+                "leadResearcher": "Dr. A. Chen",
+                "leadResearchInstitute": "GI Institute",
+                "grantNumber": "MRC-111",
+                "projectGrantStartDate": "2019-01-01",
+                "projectGrantEndDate": "2024-12-31",
+                "projectGrantScope": "Endoscopy reports and 16S sequencing"
+            }
+        ],
+        "icons": [
+            "Microbiome",
+            "Endoscopy"
+        ],
+        "erd": {
+            "image": "https://github.com/gi-onc/schema.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

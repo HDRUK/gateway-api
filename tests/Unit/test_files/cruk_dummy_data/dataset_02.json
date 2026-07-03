@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Non-Small Cell Lung Cancer Targeted Therapy Resistance Registry",
             "abstract": "Registry data evaluating the emergence of resistance mutations in non-small cell lung cancer patients undergoing EGFR inhibitor therapy. Includes longitudinal circulating tumor DNA analysis.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/055666d44",
-                "name": "Global Thoracic Oncology Consortium",
-                "logo": "https://www.thoraciconcology.org/media/logo.png",
-                "contactPoint": [
-                    "data-hub@thoraciconcology.org"
-                ],
-                "description": "https://www.thoraciconcology.org/mission"
-            },
-            "funders": "Lung Cancer Research Foundation\nEuropean Respiratory Society",
-            "populationSize": 3410,
-            "keywords": [
-                "Lung",
-                "Cancer",
-                "EGFR",
-                "Resistance",
-                "ctDNA"
-            ],
-            "doiName": "10.4000/data.12",
             "contactPoint": "access@thoraciconcology.org",
-            "datasetAliases": [
-                "NSCLC Resistance Biomarker Study"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data evaluating the emergence of resistance mutations in non-small cell lung cancer patients undergoing EGFR inhibitor therapy. Includes longitudinal circulating tumor DNA analysis. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://thoraciconcology.org/files/ctdna_protocol.pdf"
-            ]
+            "keywords": "Lung;,;Cancer;,;EGFR;,;Resistance;,;ctDNA",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 3410,
+            "description": "Other data types:\n- Histopathology Whole Slide Images (application/svs): Digitized H&E stained tissue microarrays from initial diagnostic biopsies",
+            "doiName": "10.4000/data.12",
+            "shortTitle": "Non-Small Cell Lung Cancer Targeted Therapy Resistance Registry",
+            "title": "Non-Small Cell Lung Cancer Targeted Therapy Resistance Registry",
+            "leadResearcher": "Dr. Elena Rostova",
+            "leadResearchInstitute": "Institute of Respiratory Medicine",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Global Thoracic Oncology Consortium",
+                "gatewayId": "https://ror.org/055666d44",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 45,
-            "typicalAgeRangeMax": 88,
-            "datasetCompleteness": "https://thoraciconcology.org/registry/data-dictionary"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Quarterly",
-                "startDate": "2017-05-01",
-                "timeLag": "3 months",
-                "endDate": "2024-05-01",
-                "distributionReleaseDate": "2024-08-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Global Thoracic Oncology Consortium",
+                "dataProcessor": "Global Thoracic Oncology Consortium",
+                "accessRights": "https://www.thoraciconcology.org/terms",
+                "accessService": "https://www.thoraciconcology.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Global Thoracic Oncology Consortium",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Liquid Biopsies",
                 "measuredValue": 12450,
                 "observationDate": "2024-05-01",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 52
-                },
-                {
-                    "bin": "Asian or Asian British - Chinese",
-                    "count": 27
-                },
-                {
-                    "bin": "White - Any other White background",
-                    "count": 11
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 4
-                },
-                {
-                    "bin": "Not stated",
-                    "count": 2
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "02_000",
-                "projectGrantName": "Tracking EGFR Resistance Mechanisms",
-                "leadResearcher": "Dr. Elena Rostova",
-                "leadResearchInstitute": "Institute of Respiratory Medicine",
-                "grantNumber": "LCRF-091, ERS-332",
-                "projectGrantStartDate": "2018-01-01",
-                "projectGrantEndDate": "2025-12-31",
-                "projectGrantScope": "ctDNA sequencing files, patient treatment timelines, and survival outcomes"
-            }
-        ],
-        "erd": "https://github.com/ThoracicOncology/nsclc_db/blob/main/schema/database_erd.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Molecular_Profiles",
-                    "description": "Longitudinal mutation profiles derived from plasma samples",
-                    "columns": [
-                        {
-                            "name": "resistance_mutations",
-                            "dataType": "list",
-                            "description": "list of acquired mutations associated with TKI resistance",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[T790M]",
-                                    "description": "EGFR gatekeeper mutation",
-                                    "frequency": 850
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 12450
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://thoraciconcology.org/registry/synthetic_tier"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "Histopathology Whole Slide Images",
-                "description": "Digitized H&E stained tissue microarrays from initial diagnostic biopsies",
-                "format": "SVS"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National Lung Cancer Audit Database",
-                    "pid": "NLCA-04",
-                    "url": "https://healthdatagateway.org/en/dataset/992"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/S1470-2045(22)00123-4"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/S1470-2045(22)00124-5"
-            ],
-            "tools": [
-                "https://github.com/topics/ctdna-variant-calling"
-            ],
-            "investigations": [
-                "GTOC-773-Phase2"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/S1470-2045(20)30456-7",
-                    "title": "Advanced Lung Cancer Genomic Profiling",
-                    "pid": "ALC-112"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Targeted RNA Sequencing",
-            "platform": "Ion Torrent Genexus"
-        },
-        "icons": [
-            "Genomics",
-            "Pathology"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_2_4",
@@ -220,6 +148,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "02_000",
+                "projectGrantName": "Tracking EGFR Resistance Mechanisms",
+                "leadResearcher": "Dr. Elena Rostova",
+                "leadResearchInstitute": "Institute of Respiratory Medicine",
+                "grantNumber": "LCRF-091, ERS-332",
+                "projectGrantStartDate": "2018-01-01",
+                "projectGrantEndDate": "2025-12-31",
+                "projectGrantScope": "ctDNA sequencing files, patient treatment timelines, and survival outcomes"
+            }
+        ],
+        "icons": [
+            "Genomics",
+            "Pathology"
+        ],
+        "erd": {
+            "image": "https://github.com/ThoracicOncology/nsclc_db/blob/main/schema/database_erd.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

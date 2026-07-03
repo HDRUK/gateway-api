@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Cervical Cancer HPV Integration Cohort",
             "abstract": "Registry data monitoring viral integration sites and genomic instability in high-risk HPV-associated cervical carcinomas.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/02cervical",
-                "name": "Women's Health Research Center",
-                "logo": "https://whrc.org/logo.png",
-                "contactPoint": [
-                    "access@whrc.org"
-                ],
-                "description": "https://whrc.org/about"
-            },
-            "funders": "Wellcome Trust",
-            "populationSize": 2200,
-            "keywords": [
-                "Cervical",
-                "Cancer",
-                "HPV",
-                "Integration",
-                "Genomics"
-            ],
-            "doiName": "10.2001/data.02",
             "contactPoint": "access@whrc.org",
-            "datasetAliases": [
-                "HPV Cervical Registry"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data monitoring viral integration sites and genomic instability in high-risk HPV-associated cervical carcinomas. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://whrc.org/hpv_protocol.pdf"
-            ]
+            "keywords": "Cervical;,;Cancer;,;HPV;,;Integration;,;Genomics",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 2200,
+            "description": "Other data types:\n- Colposcopy Images (application/jpeg): Digital images of cervix post-acetic acid",
+            "doiName": "10.2001/data.02",
+            "shortTitle": "Cervical Cancer HPV Integration Cohort",
+            "title": "Cervical Cancer HPV Integration Cohort",
+            "leadResearcher": "Dr. M. Garcia",
+            "leadResearchInstitute": "Women's Health Institute",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Women's Health Research Center",
+                "gatewayId": "https://ror.org/02cervical",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 25,
-            "typicalAgeRangeMax": 75,
-            "datasetCompleteness": "https://whrc.org/completeness"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-01-01",
-                "timeLag": "6 months",
-                "endDate": "2023-12-31",
-                "distributionReleaseDate": "2024-06-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Women's Health Research Center",
+                "dataProcessor": "Women's Health Research Center",
+                "accessRights": "https://www.whrc.org/terms",
+                "accessService": "https://www.whrc.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Women's Health Research Center",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Pap Smears",
                 "measuredValue": 8800,
                 "observationDate": "2023-12-31",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 50
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 25
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 15
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 5
-                },
-                {
-                    "bin": "Not stated",
-                    "count": 5
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "13_000",
-                "projectGrantName": "HPV Integration and Oncogenesis",
-                "leadResearcher": "Dr. M. Garcia",
-                "leadResearchInstitute": "Women's Health Institute",
-                "grantNumber": "WT-222",
-                "projectGrantStartDate": "2019-01-01",
-                "projectGrantEndDate": "2024-12-31",
-                "projectGrantScope": "Cytology and genomic sequence data"
-            }
-        ],
-        "erd": "https://github.com/whrc/schema.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Viral_Genomics",
-                    "description": "HPV genotype and integration coordinates",
-                    "columns": [
-                        {
-                            "name": "hpv_genotype",
-                            "dataType": "list",
-                            "description": "list of high-risk HPV types",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[HPV16]",
-                                    "description": "Human Papillomavirus type 16",
-                                    "frequency": 1400
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 2200
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://whrc.org/synthetic"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "Colposcopy Images",
-                "description": "Digital images of cervix post-acetic acid",
-                "format": "JPEG"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National Cervical Screening",
-                    "pid": "NCS-02",
-                    "url": "https://hdg.org/dataset/02"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/cervical.2023.01"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/cervical.2023.02"
-            ],
-            "tools": [
-                "https://github.com/topics/hpv"
-            ],
-            "investigations": [
-                "WHRC-201-A"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/cervical.2022",
-                    "title": "Ovarian Cancer Early Detection",
-                    "pid": "OCED-02"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Whole Genome Sequencing",
-            "platform": "Illumina NovaSeq"
-        },
-        "icons": [
-            "Genomics",
-            "Screening"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_10_2",
@@ -227,6 +155,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "13_000",
+                "projectGrantName": "HPV Integration and Oncogenesis",
+                "leadResearcher": "Dr. M. Garcia",
+                "leadResearchInstitute": "Women's Health Institute",
+                "grantNumber": "WT-222",
+                "projectGrantStartDate": "2019-01-01",
+                "projectGrantEndDate": "2024-12-31",
+                "projectGrantScope": "Cytology and genomic sequence data"
+            }
+        ],
+        "icons": [
+            "Genomics",
+            "Screening"
+        ],
+        "erd": {
+            "image": "https://github.com/whrc/schema.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

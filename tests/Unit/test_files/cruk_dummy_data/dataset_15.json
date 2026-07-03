@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Esophageal Squamous Cell Carcinoma Biomarker Registry",
             "abstract": "Registry data tracking the prognostic value of circulating tumor DNA in locally advanced esophageal squamous cell carcinoma treated with chemoradiation.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/04esophageal",
-                "name": "Thoracic and GI Consortium",
-                "logo": "https://tgic.org/logo.png",
-                "contactPoint": [
-                    "registry@tgic.org"
-                ],
-                "description": "https://tgic.org/about"
-            },
-            "funders": "Cancer Research UK",
-            "populationSize": 950,
-            "keywords": [
-                "Esophageal",
-                "Cancer",
-                "ESCC",
-                "ctDNA",
-                "Chemoradiation"
-            ],
-            "doiName": "10.2001/data.04",
             "contactPoint": "registry@tgic.org",
-            "datasetAliases": [
-                "ESCC Liquid Biopsy Cohort"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data tracking the prognostic value of circulating tumor DNA in locally advanced esophageal squamous cell carcinoma treated with chemoradiation. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://tgic.org/escc_protocol.pdf"
-            ]
+            "keywords": "Esophageal;,;Cancer;,;ESCC;,;ctDNA;,;Chemoradiation",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 950,
+            "description": "Other data types:\n- PET-CT Scans (application/dicom): Metabolic response assessments",
+            "doiName": "10.2001/data.04",
+            "shortTitle": "Esophageal Squamous Cell Carcinoma Biomarker Registry",
+            "title": "Esophageal Squamous Cell Carcinoma Biomarker Registry",
+            "leadResearcher": "Dr. L. Wang",
+            "leadResearchInstitute": "Thoracic Oncology Center",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Thoracic and GI Consortium",
+                "gatewayId": "https://ror.org/04esophageal",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 50,
-            "typicalAgeRangeMax": 80,
-            "datasetCompleteness": "https://tgic.org/completeness"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-01-01",
-                "timeLag": "6 months",
-                "endDate": "2023-12-31",
-                "distributionReleaseDate": "2024-06-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Thoracic and GI Consortium",
+                "dataProcessor": "Thoracic and GI Consortium",
+                "accessRights": "https://www.tgic.org/terms",
+                "accessService": "https://www.tgic.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Thoracic and GI Consortium",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Blood Draws",
                 "measuredValue": 3800,
                 "observationDate": "2023-12-31",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 50
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 25
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 14
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 4
-                },
-                {
-                    "bin": "Not stated",
-                    "count": 4
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "15_000",
-                "projectGrantName": "ctDNA in Esophageal Cancer",
-                "leadResearcher": "Dr. L. Wang",
-                "leadResearchInstitute": "Thoracic Oncology Center",
-                "grantNumber": "CRUK-444",
-                "projectGrantStartDate": "2019-01-01",
-                "projectGrantEndDate": "2024-12-31",
-                "projectGrantScope": "ctDNA profiles and PET-CT imaging"
-            }
-        ],
-        "erd": "https://github.com/tgic/schema.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Liquid_Biopsy",
-                    "description": "Variant allele frequencies over time",
-                    "columns": [
-                        {
-                            "name": "ctdna_clearance",
-                            "dataType": "list",
-                            "description": "list of ctDNA status post-treatment",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[Cleared]",
-                                    "description": "No detectable ctDNA post-chemoradiation",
-                                    "frequency": 420
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 950
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://tgic.org/synthetic"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "PET-CT Scans",
-                "description": "Metabolic response assessments",
-                "format": "DICOM"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "Upper GI Cancer Audit",
-                    "pid": "UGI-04",
-                    "url": "https://hdg.org/dataset/04"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/escc.2023.01"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/escc.2023.02"
-            ],
-            "tools": [
-                "https://github.com/topics/ctdna"
-            ],
-            "investigations": [
-                "TGIC-401-A"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/escc.2022",
-                    "title": "Gastric Cancer ctDNA Registry",
-                    "pid": "GCC-04"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Circulating Tumor DNA Sequencing",
-            "platform": "Illumina HiSeq"
-        },
-        "icons": [
-            "Genomics",
-            "Imaging"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_1",
@@ -220,6 +148,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "15_000",
+                "projectGrantName": "ctDNA in Esophageal Cancer",
+                "leadResearcher": "Dr. L. Wang",
+                "leadResearchInstitute": "Thoracic Oncology Center",
+                "grantNumber": "CRUK-444",
+                "projectGrantStartDate": "2019-01-01",
+                "projectGrantEndDate": "2024-12-31",
+                "projectGrantScope": "ctDNA profiles and PET-CT imaging"
+            }
+        ],
+        "icons": [
+            "Genomics",
+            "Imaging"
+        ],
+        "erd": {
+            "image": "https://github.com/tgic/schema.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }
