@@ -306,7 +306,7 @@ class Collection extends BaseTypesenseModel
             'fields' => [
                 [ 'name' => 'id',           'type' => 'string', ],
                 [ 'name' => 'name',         'type' => 'string', 'infix' => true ],
-                [ 'name' => 'description',  'type' => 'string', 'infix' => true ],
+                [ 'name' => 'description',  'type' => 'string' ],
                 [ 'name' => 'status',       'type' => 'string' ],
             ],
         ];

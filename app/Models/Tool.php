@@ -259,7 +259,7 @@ class Tool extends BaseTypesenseModel
             'fields' => [
                 [ 'name' => 'id',                   'type' => 'string', ],
                 [ 'name' => 'name',                 'type' => 'string', 'infix' => true, ],
-                [ 'name' => 'description',          'type' => 'string', 'infix' => true, ],
+                [ 'name' => 'description',          'type' => 'string', ],
                 [ 'name' => 'tech_stack',           'type' => 'string', 'optional' => true, ],
                 [ 'name' => 'associated_authors',   'type' => 'string', 'optional' => true, ],
             ],

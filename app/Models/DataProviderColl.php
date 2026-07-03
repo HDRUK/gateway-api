@@ -104,8 +104,8 @@ class DataProviderColl extends BaseTypesenseModel
                 [ 'name' => 'id',       'type' => 'string', ],
                 [ 'name' => 'enabled',  'type' => 'int32', ],
                 [ 'name' => 'name',     'type' => 'string', 'infix' => true ],
-                [ 'name' => 'summary',  'type' => 'string', 'infix' => true, 'optional' => true ],
-                [ 'name' => 'service',  'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'summary',  'type' => 'string', 'optional' => true ],
+                [ 'name' => 'service',  'type' => 'string', 'optional' => true ],
             ],
         ];
     }

@@ -402,7 +402,7 @@ class Dur extends BaseTypesenseModel
                 [ 'name' => 'id', 'type' => 'string' ],
                 [ 'name' => 'project_title', 'type' => 'string', 'infix' => true, 'optional' => true ],
                 [ 'name' => 'organisation_name', 'type' => 'string', 'infix' => true, 'optional' => true ],
-                [ 'name' => 'lay_summary', 'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'lay_summary', 'type' => 'string', 'optional' => true ],
                 [ 'name' => 'technical_summary', 'type' => 'string', 'optional' => true ],
                 [ 'name' => 'public_benefit_statement', 'type' => 'string', 'optional' => true ],
                 // Likely more to follow

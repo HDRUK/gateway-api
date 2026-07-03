@@ -274,7 +274,7 @@ class DatasetVersion extends BaseTypesenseModel
             return $this->dataset !== null;
         }
 
-        return \App\Models\Dataset::where('id', $this->dataset_id)
+        return Dataset::where('id', $this->dataset_id)
             ->where('status', 'ACTIVE')
             ->exists();
     }
@@ -327,7 +327,7 @@ class DatasetVersion extends BaseTypesenseModel
         ];
     }
 
-    public function makeAllSearchableUsing(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function makeAllSearchableUsing(Builder $query): Builder
     {
         return $query->with(['spatialCoverage', 'dataset']);
     }
@@ -335,7 +335,7 @@ class DatasetVersion extends BaseTypesenseModel
     public function typesenseSearchParameters(): array
     {
         return [
-            'query_by' => 'title,shortTitle,absract,keywords,publisherName,structuralTableNames,structuralColumnNames,structuralColumnDescriptions',
+            'query_by' => 'title,shortTitle,abstract,keywords,publisherName,structuralTableNames,structuralColumnNames,structuralColumnDescriptions',
             'query_by_weights' => '5,4,3,2,2,1,1,1',
         ];
     }
