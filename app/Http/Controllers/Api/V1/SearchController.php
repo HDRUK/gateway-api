@@ -909,6 +909,12 @@ class SearchController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
+        // Explicitly to prevent AppCheck vulnerability scan which exposes
+        // a false positive.
+        if ($request->query('view_type', null) !== null) {
+            return response()->json('bad request', 400);
+        }
+
         $input = $request->all();
         $download = array_key_exists('download', $input) ? $input['download'] : false;
         $sort = $request->query('sort', 'score:desc');

@@ -762,6 +762,18 @@ class SearchTest extends TestCase
         $response->assertStatus(400);
     }
 
+    public function test_publications_search_returns_400_for_view_type_param(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_SEARCH . '/publications?view_type=list',
+            ['query' => 'term'],
+            ['Accept' => 'application/json']
+        );
+
+        $response->assertStatus(400);
+    }
+
     /**
      * Search using a query with success
      *
