@@ -16,6 +16,7 @@ class FeatureSeeder extends Seeder
         'RQuest' => true,
         'CohortDiscoveryService' => false,
         'V2_SearchAggregation' => false,
+        'V3_CustodianDashboard' => false,
     ];
 
     public function run(): void

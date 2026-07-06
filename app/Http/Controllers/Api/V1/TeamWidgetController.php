@@ -11,9 +11,12 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Tool;
 use App\Models\Dur;
+use App\Models\WidgetAnalytic;
+use App\Jobs\WidgetAnalyticsJob;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use App\Http\Traits\LoggingContext;
 
 class TeamWidgetController extends Controller
@@ -517,6 +520,13 @@ class TeamWidgetController extends Controller
                 'description' => "Retrieve data related to team {$teamId}, widget {$id} and domain origin {$domainOrigin}",
             ]);
 
+            WidgetAnalyticsJob::dispatch([
+                'widget_id'     => $widget->id,
+                'team_id'       => $teamId,
+                'event_type'    => WidgetAnalytic::EVENT_WIDGET_LOAD,
+                'source_domain' => $domainOrigin,
+            ]);
+
             return response()->json(['data' => [
                 'datasets' => $datasets,
                 'data_uses' => $dataUses,
@@ -694,11 +704,22 @@ class TeamWidgetController extends Controller
             }
             $widget = Widget::create($validated);
 
+            WidgetAnalyticsJob::dispatch([
+                'widget_id'  => $widget->id,
+                'team_id'    => $teamId,
+                'event_type' => WidgetAnalytic::EVENT_WIDGET_CREATED,
+            ]);
+
             return response()->json([
                  'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                  'data' => $widget->id,
              ], Config::get('statuscodes.STATUS_CREATED.code'));
 
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -946,5 +967,217 @@ class TeamWidgetController extends Controller
             throw new Exception($e->getMessage());
         }
 
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/teams/{teamId}/widgets/{id}/track",
+     *     operationId="track_widget_event",
+     *     summary="Record a widget analytics event",
+     *     description="Public endpoint for frontend clients to record user interactions with a widget (page views, code copies, gateway clicks, searches). No authentication required.",
+     *     tags={"Widgets"},
+     *     @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"event_type"},
+     *             @OA\Property(property="event_type", type="string", enum={"page_view","code_copied","gateway_click","search"}),
+     *             @OA\Property(property="entity_id", type="integer", nullable=true),
+     *             @OA\Property(property="entity_type", type="string", nullable=true, enum={"dataset","tool","collection","dur"}),
+     *             @OA\Property(property="source_domain", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=204, description="Event recorded"),
+     *     @OA\Response(response=404, description="Widget not found"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
+    public function track(Request $request, int $teamId, int $id): JsonResponse
+    {
+        try {
+            $widget = Widget::where('id', $id)
+                ->where('team_id', $teamId)
+                ->first();
+
+            if (!$widget) {
+                return response()->json(
+                    ['message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')],
+                    Config::get('statuscodes.STATUS_NOT_FOUND.code')
+                );
+            }
+
+            $validated = $request->validate([
+                'event_type'    => 'required|string|in:' . implode(',', WidgetAnalytic::FRONTEND_EVENTS),
+                'entity_id'     => 'nullable|integer',
+                'entity_type'   => 'nullable|string|in:dataset,tool,collection,dur',
+                'source_domain' => 'nullable|string|max:255',
+            ]);
+
+            WidgetAnalyticsJob::dispatch([
+                'widget_id'     => $widget->id,
+                'team_id'       => $teamId,
+                'event_type'    => $validated['event_type'],
+                'entity_id'     => $validated['entity_id'] ?? null,
+                'entity_type'   => $validated['entity_type'] ?? null,
+                'source_domain' => $validated['source_domain'] ?? null,
+            ]);
+
+            return response()->json(null, Config::get('statuscodes.STATUS_NO_CONTENT.code', 204));
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            \Log::error('Error recording widget analytics event', [
+                'team_id'   => $teamId,
+                'widget_id' => $id,
+                'error'     => $e->getMessage(),
+            ]);
+
+            return response()->json(
+                ['message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message')],
+                Config::get('statuscodes.STATUS_SERVER_ERROR.code')
+            );
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/teams/{teamId}/widgets/analytics",
+     *     operationId="widget_analytics",
+     *     summary="Get widget analytics for a team",
+     *     description="Returns aggregated event counts per widget, per event type, and over time. Supports date range filtering and time-based grouping.",
+     *     tags={"Widgets"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="teamId", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="from", in="query", required=false, description="Start date (Y-m-d)", @OA\Schema(type="string", example="2026-01-01")),
+     *     @OA\Parameter(name="to", in="query", required=false, description="End date (Y-m-d)", @OA\Schema(type="string", example="2026-06-30")),
+     *     @OA\Parameter(name="group_by", in="query", required=false, description="Time granularity", @OA\Schema(type="string", enum={"day","week","month"}, default="day")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Analytics data",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="by_event", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="by_widget", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="over_time", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
+    public function analytics(Request $request, int $teamId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        try {
+            $validated = $request->validate([
+                'from'     => 'nullable|date_format:Y-m-d',
+                'to'       => 'nullable|date_format:Y-m-d',
+                'group_by' => 'nullable|string|in:day,week,month',
+            ]);
+
+            $from    = $validated['from'] ?? null;
+            $to      = isset($validated['to']) ? $validated['to'] . ' 23:59:59' : null;
+            $groupBy = $validated['group_by'] ?? 'day';
+
+            $byEvent = DB::select("
+                SELECT event_type, COUNT(*) as count
+                FROM widget_analytics
+                WHERE team_id = ?
+                  AND (? IS NULL OR created_at >= ?)
+                  AND (? IS NULL OR created_at <= ?)
+                GROUP BY event_type
+            ", [$teamId, $from, $from, $to, $to]);
+
+            $byWidget = DB::select("
+                SELECT
+                    wa.widget_id,
+                    w.widget_name,
+                    wa.event_type,
+                    COUNT(*) as count
+                FROM widget_analytics wa
+                INNER JOIN widgets w ON w.id = wa.widget_id
+                WHERE wa.team_id = ?
+                  AND (? IS NULL OR wa.created_at >= ?)
+                  AND (? IS NULL OR wa.created_at <= ?)
+                GROUP BY wa.widget_id, w.widget_name, wa.event_type
+                ORDER BY wa.widget_id, wa.event_type
+            ", [$teamId, $from, $from, $to, $to]);
+
+            // DATE() returns YYYY-MM-DD and is supported by both MySQL and SQLite.
+            // Week/month bucketing is done in PHP to avoid DB-specific date functions.
+            $dailyRows = DB::select("
+                SELECT
+                    DATE(created_at) as day,
+                    event_type,
+                    COUNT(*) as count
+                FROM widget_analytics
+                WHERE team_id = ?
+                  AND (? IS NULL OR created_at >= ?)
+                  AND (? IS NULL OR created_at <= ?)
+                GROUP BY day, event_type
+                ORDER BY day
+            ", [$teamId, $from, $from, $to, $to]);
+
+            $overTime = collect($dailyRows)
+                ->groupBy(fn ($r) => match ($groupBy) {
+                    'month' => substr($r->day, 0, 7),
+                    'week'  => date('Y-W', strtotime($r->day)),
+                    default => $r->day,
+                })
+                ->flatMap(
+                    fn ($rows, $period) =>
+                    collect($rows)
+                        ->groupBy('event_type')
+                        ->map(fn ($events, $eventType) => [
+                            'period'     => $period,
+                            'event_type' => $eventType,
+                            'count'      => collect($events)->sum('count'),
+                        ])
+                        ->values()
+                )
+                ->values();
+
+            return response()->json([
+                'data' => [
+                    'by_event'  => $byEvent,
+                    'by_widget' => $byWidget,
+                    'over_time' => $overTime,
+                ],
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id'     => (int)$jwtUser['id'],
+                'team_id'     => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            \Log::info($e->getMessage(), $loggingContext);
+
+            throw new Exception($e->getMessage());
+        }
     }
 }
