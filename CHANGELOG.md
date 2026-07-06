@@ -1,3 +1,15 @@
+## [2.45.0](https://github.com/HDRUK/gateway-api/compare/v2.44.0...v2.45.0) (2026-07-06)
+
+### ✨ Features
+
+* **GAT-8130:** Implements widget tracking for analytics (#1681) ([58790bc](https://github.com/HDRUK/gateway-api/commit/58790bcc9a3301374710d58b823177cbfc7b071c)), closes [GAT-8130](undefinedGAT-8130)
+* **GAT-9032:** Adds new custodian dashboard feature flag. Also adds … (#1683) ([9940440](https://github.com/HDRUK/gateway-api/commit/99404400168d233ca6826504a71075a4005e5035)), closes [GAT-9032](undefinedGAT-9032)
+* **GAT-9077:** Implementing laravel scout for Typesense interface to follow. (#1685) ([009bf61](https://github.com/HDRUK/gateway-api/commit/009bf61ce5d7be7b6a8a790e24d12e257f61608f)), closes [GAT-9077](undefinedGAT-9077)
+
+### 🐛 Bug Fixes
+
+* **GAT-9057:** added pipeline for automated Jira release to the registry apps (#1682) ([7687be2](https://github.com/HDRUK/gateway-api/commit/7687be23b16e85acc88bf858d6e59ad11d2101d4)), closes [GAT-9057](undefinedGAT-9057)
+
 ## [2.44.0](https://github.com/HDRUK/gateway-api/compare/v2.43.0...v2.44.0) (2026-06-30)
 
 ### ✨ Features
