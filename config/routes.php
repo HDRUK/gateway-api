@@ -3540,6 +3540,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'project_grants.store',
+        'method' => 'post',
+        'path' => '/project_grants',
+        'methodController' => 'ProjectGrantController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'project_grants.show',
         'method' => 'get',
         'path' => '/project_grants/{id}',
