@@ -45,6 +45,11 @@ class ARDC implements SearchProvider
         return ['datasets'];
     }
 
+    public function isTypesenseEnabled(): bool
+    {
+        return false;
+    }
+
     public function search(string $query, string $type, array $params = []): array
     {
         try {

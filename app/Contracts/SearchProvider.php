@@ -13,6 +13,8 @@ interface SearchProvider
 
     public function isDeferred(): bool;
 
+    public function isTypesenseEnabled(): bool;
+
     /**
      * @return array{hits: array, total: int, aggregations: array, ids: array}
      */
