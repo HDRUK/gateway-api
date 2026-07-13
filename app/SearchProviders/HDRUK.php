@@ -13,7 +13,6 @@ use App\Services\Search\DatasetHydrator;
 use App\Services\Search\DataUseHydrator;
 use App\Services\Search\PublicationHydrator;
 use App\Services\Search\ToolHydrator;
-
 use Laravel\Pennant\Feature;
 
 class HDRUK implements SearchProvider
@@ -49,9 +48,10 @@ class HDRUK implements SearchProvider
     ];
 
     // Facet fields per type — must match `facet => true` in the model's typesenseCollectionSchema().
+    //
     private const TYPESENSE_FACET_MAP = [
         'datasets'                => 'publisherName,keywords,dataType,geographicLocation,conformsTo',
-        'tools'                   => '',
+        'tools'                   => 'license,programmingLanguages,typeCategory',
         'collections'             => '',
         'dur'                     => '',
         'publications'            => 'publication_type',
@@ -60,8 +60,10 @@ class HDRUK implements SearchProvider
 
     // Fields callers may pass as pipe-delimited V2 filters (?publisherName=PIONEER|SAIL).
     // Only known facet fields are forwarded — keeps pagination/sort params out of filter_by.
+    //
     private const TYPESENSE_FILTERABLE_MAP = [
-        'datasets'   => ['publisherName', 'keywords', 'dataType', 'geographicLocation', 'conformsTo'],
+        'datasets'     => ['publisherName', 'keywords', 'dataType', 'geographicLocation', 'conformsTo'],
+        'tools'        => ['license', 'programmingLanguages', 'typeCategory'],
         'publications' => ['publication_type'],
     ];
 
@@ -106,11 +108,44 @@ class HDRUK implements SearchProvider
         return Feature::active('TypesenseSearch');
     }
 
+    private function modelClassForFilterType(string $filterType): ?string
+    {
+        foreach (self::FILTER_TYPE_MAP as $key => $config) {
+            if ($config['type'] === $filterType && isset(self::TYPESENSE_MODEL_MAP[$key])) {
+                return self::TYPESENSE_MODEL_MAP[$key];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves a Filter model's (type, keys) pair — e.g. ('dataset', 'dataType')
+     * — to the Typesense collection name backing it, but only if that field is
+     * actually facet-enabled in the model's typesenseCollectionSchema(). Fields
+     * not yet flattened/faceted for Typesense return null so callers can fall
+     * back to the legacy Elasticsearch filter service.
+     */
+    public function collectionForFacetableFilter(string $filterType, string $field): ?string
+    {
+        $modelClass = $this->modelClassForFilterType($filterType);
+        if ($modelClass === null) {
+            return null;
+        }
+
+        $model = new $modelClass();
+        $facetable = collect($model->typesenseCollectionSchema()['fields'] ?? [])
+            ->contains(fn ($f) => $f['name'] === $field && ($f['facet'] ?? false));
+
+        return $facetable ? $model->searchableAs() : null;
+    }
+
     public function search(string $query, string $type, array $params = []): array
     {
         try {
+            // Always offer a fallback in case of mismatched model map
             if (!$this->isTypesenseEnabled() || !array_key_exists($type, self::TYPESENSE_MODEL_MAP)) {
-                return $this->searchViaGoService($query, $type, $params);
+                return $this->searchViaElastic($query, $type, $params);
             }
 
             return $this->searchViaTypesense($query, $type, $params);
@@ -154,6 +189,7 @@ class HDRUK implements SearchProvider
         $sorted      = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
 
         return [
+            'source'       => 'typesense',
             'hits'         => $sorted,
             'total'        => $result['found'] ?? 0,
             'aggregations' => $this->mapFacetsToAggregations($result['facet_counts'] ?? []),
@@ -161,7 +197,7 @@ class HDRUK implements SearchProvider
         ];
     }
 
-    private function searchViaGoService(string $query, string $type, array $params): array
+    private function searchViaElastic(string $query, string $type, array $params): array
     {
         $filterConfig = self::FILTER_TYPE_MAP[$type] ?? ['type' => $type, 'enabledOnly' => false];
 

@@ -8,6 +8,7 @@ use App\Models\Traits\SortManager;
 use App\Observers\ToolObserver;
 use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -233,14 +234,25 @@ class Tool extends BaseTypesenseModel
         return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
     }
 
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['license', 'programmingLanguages', 'typeCategory']);
+    }
+
     public function toSearchableArray(): array
     {
         return [
-            'id'                 => (string) $this->id,
-            'name'               => $this->name ?? '',
-            'description'        => $this->description ?? '',
-            'tech_stack'         => $this->tech_stack ?? '',
-            'associated_authors' => $this->associated_authors ?? '',
+            'id'                    => (string) $this->id,
+            'name'                  => $this->name ?? '',
+            'description'           => $this->description ?? '',
+            'tech_stack'            => $this->tech_stack ?? '',
+            'associated_authors'    => $this->associated_authors ?? '',
+            // Not $this->license — that resolves the `license` FK column
+            // (an int), not the license() relation, since Eloquent prefers a
+            // same-named attribute over a same-named relation method.
+            'license'               => $this->getRelationValue('license')->label ?? '',
+            'programmingLanguages'  => $this->programmingLanguages->pluck('name')->all(),
+            'typeCategory'          => $this->typeCategory->pluck('name')->all(),
         ];
     }
 
@@ -262,6 +274,9 @@ class Tool extends BaseTypesenseModel
                 [ 'name' => 'description',          'type' => 'string', ],
                 [ 'name' => 'tech_stack',           'type' => 'string', 'optional' => true, ],
                 [ 'name' => 'associated_authors',   'type' => 'string', 'optional' => true, ],
+                [ 'name' => 'license',               'type' => 'string',   'facet' => true, 'optional' => true, ],
+                [ 'name' => 'programmingLanguages',  'type' => 'string[]', 'facet' => true, 'optional' => true, ],
+                [ 'name' => 'typeCategory',          'type' => 'string[]', 'facet' => true, 'optional' => true, ],
             ],
         ];
     }
