@@ -2,10 +2,13 @@
 
 namespace Tests\Unit\SearchProviders;
 
+use Mockery;
 use Tests\TestCase;
 use App\SearchProviders\HDRUK;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
+use App\Services\TypesenseService;
+use Laravel\Pennant\Feature;
 
 class HDRUKTest extends TestCase
 {
@@ -61,5 +64,208 @@ class HDRUKTest extends TestCase
         foreach (['license', 'programmingLanguages', 'typeCategory'] as $field) {
             $this->assertEquals($toolsCollection, $provider->collectionForFacetableFilter('tool', $field));
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // search() — nested filters shape: filters: { [type]: { [field]: "a|b" } }
+    // -------------------------------------------------------------------------
+
+    public function tearDown(): void
+    {
+        Feature::flushCache();
+        Feature::deactivate('TypesenseSearch');
+
+        parent::tearDown();
+    }
+
+    /**
+     * Mocks TypesenseService::multiSearch(), asserting on the full $searches
+     * array passed to it. Returns as many empty result stubs as searches
+     * were sent, so callers only asserting on request shape don't need to
+     * hand-craft a matching response.
+     */
+    private function mockTypesenseServiceExpectingSearches(callable $searchesMatcher): void
+    {
+        $mockService = Mockery::mock(TypesenseService::class);
+        $mockService->shouldReceive('multiSearch')
+            ->once()
+            ->with(Mockery::on($searchesMatcher))
+            ->andReturnUsing(fn ($searches) => [
+                'results' => array_fill(0, count($searches), ['found' => 0, 'hits' => [], 'facet_counts' => []]),
+            ]);
+
+        $this->app->instance(TypesenseService::class, $mockService);
+
+        Feature::flushCache();
+        Feature::activate('TypesenseSearch');
+    }
+
+    public function test_search_builds_filter_by_from_nested_filters_shape(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'publisherName:=[`Dementia Platform UK`,`International COVID-19 Data Alliance (ICODA)`]');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'page' => 1,
+            'per_page' => 20,
+            // Nested under the singular Filter.type value ('dataset'), not
+            // the plural service key ('datasets') used elsewhere in $type.
+            'filters' => [
+                'dataset' => [
+                    'publisherName' => ['Dementia Platform UK', 'International COVID-19 Data Alliance (ICODA)'],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_search_ignores_filters_nested_under_a_different_type(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            count($searches) === 1 && !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => [
+                'tool' => [
+                    'license' => ['MIT'],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_search_ignores_structured_filter_values_it_does_not_support_yet(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            count($searches) === 1 && !array_key_exists('filter_by', $searches[0]));
+
+        // populationSize isn't in TYPESENSE_FILTERABLE_MAP yet, and even if it
+        // were, its {includeUnreported} shape isn't an array of strings —
+        // this must not throw, just produce no filter clause.
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => [
+                'dataset' => [
+                    'populationSize' => ['includeUnreported' => false],
+                    'sampleAvailability' => [],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_search_reads_per_page_from_request_params(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => $searches[0]['per_page'] === 45);
+
+        (new HDRUK())->search('asthma', 'datasets', ['per_page' => 45]);
+    }
+
+    public function test_search_defaults_per_page_to_20_when_absent(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => $searches[0]['per_page'] === 20);
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+    }
+
+    // -------------------------------------------------------------------------
+    // Multi-select faceting — a field's own filter must not collapse its own
+    // facet counts down to just the selected value(s).
+    // -------------------------------------------------------------------------
+
+    public function test_search_issues_an_unfiltered_exclusion_query_for_a_self_filtered_facet_field(): void
+    {
+        // Reproduces the reported bug: selecting "SAIL" for publisherName
+        // must not shrink publisherName's own facet options down to SAIL.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            count($searches) === 2
+            && ($searches[0]['filter_by'] ?? null) === 'publisherName:=[`SAIL`]'
+            && ($searches[1]['facet_by'] ?? null) === 'publisherName'
+            && ($searches[1]['per_page'] ?? null) === 0
+            && !array_key_exists('filter_by', $searches[1]));
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+        ]);
+    }
+
+    public function test_search_exclusion_query_keeps_other_fields_filters(): void
+    {
+        // With two active filters, publisherName's exclusion query must keep
+        // dataType's clause (and vice versa) — only the field's own clause
+        // is dropped from its own exclusion query.
+        $this->mockTypesenseServiceExpectingSearches(function ($searches) {
+            if (count($searches) !== 3) {
+                return false;
+            }
+
+            $byFacet = collect($searches)->skip(1)->keyBy('facet_by');
+
+            return ($searches[0]['filter_by'] ?? null) === 'publisherName:=[`SAIL`] && dataType:=[`Registry`]'
+                && ($byFacet['publisherName']['filter_by'] ?? null) === 'dataType:=[`Registry`]'
+                && ($byFacet['dataType']['filter_by'] ?? null) === 'publisherName:=[`SAIL`]';
+        });
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => [
+                'dataset' => [
+                    'publisherName' => ['SAIL'],
+                    'dataType' => ['Registry'],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_search_does_not_issue_exclusion_queries_for_unfiltered_facet_fields(): void
+    {
+        // dataType has no active filter of its own, so it needs no exclusion
+        // query — only publisherName (the filtered field) does.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => count($searches) === 2);
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+        ]);
+    }
+
+    public function test_search_uses_exclusion_result_facet_counts_for_the_self_filtered_field(): void
+    {
+        $mockService = Mockery::mock(TypesenseService::class);
+        $mockService->shouldReceive('multiSearch')
+            ->once()
+            ->andReturn([
+                'results' => [
+                    [
+                        'found' => 7,
+                        'hits' => [],
+                        // Main (filtered) query only "sees" SAIL, since the
+                        // result set itself is restricted to SAIL rows.
+                        'facet_counts' => [
+                            ['field_name' => 'publisherName', 'counts' => [
+                                ['value' => 'SAIL', 'count' => 7],
+                            ]],
+                        ],
+                    ],
+                    [
+                        // Exclusion query: every publisherName option, as if
+                        // publisherName's own filter weren't applied.
+                        'facet_counts' => [
+                            ['field_name' => 'publisherName', 'counts' => [
+                                ['value' => 'PIONEER: HDR UK Health Da...', 'count' => 16],
+                                ['value' => 'SAIL', 'count' => 7],
+                                ['value' => 'Tissue directory', 'count' => 2],
+                            ]],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $this->app->instance(TypesenseService::class, $mockService);
+        Feature::flushCache();
+        Feature::activate('TypesenseSearch');
+
+        $result = (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+        ]);
+
+        $this->assertEquals(
+            ['PIONEER: HDR UK Health Da...' => 16, 'SAIL' => 7, 'Tissue directory' => 2],
+            collect($result['aggregations']['publisherName']['buckets'])->pluck('doc_count', 'key')->all()
+        );
     }
 }

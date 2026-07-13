@@ -91,6 +91,17 @@ class TypesenseService
     }
 
     /**
+     * Runs several searches (each specifying its own 'collection') in a
+     * single HTTP round trip. $searches is the list under the 'searches' key
+     * of the Typesense multi_search payload; results are returned in the
+     * same order under 'results'.
+     */
+    public function multiSearch(array $searches): array
+    {
+        return $this->client->multiSearch->perform(['searches' => $searches]);
+    }
+
+    /**
      * Returns facet counts for one or more fields on a collection, in the
      * same {field: {buckets: [{key, doc_count}]}} shape the Elasticsearch
      * filter service returns — so callers can drop this straight into an

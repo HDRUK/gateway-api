@@ -165,24 +165,63 @@ class HDRUK implements SearchProvider
     {
         $modelClass = self::TYPESENSE_MODEL_MAP[$type];
         $model      = new $modelClass();
+        $collection = $model->searchableAs();
+        $q          = $query ?: '*';
 
         $searchParams = array_merge($model->typesenseSearchParameters(), [
-            'per_page' => (int) ($params['limit'] ?? 20),
+            'per_page' => (int) ($params['per_page'] ?? 20),
             'page'     => (int) ($params['page'] ?? 1),
         ]);
 
-        $facetFields = self::TYPESENSE_FACET_MAP[$type] ?? '';
-        if ($facetFields !== '') {
-            $searchParams['facet_by'] = $facetFields;
+        $facetFields = array_values(array_filter(explode(',', self::TYPESENSE_FACET_MAP[$type] ?? '')));
+        if (!empty($facetFields)) {
+            $searchParams['facet_by'] = implode(',', $facetFields);
         }
 
-        $filterBy = $this->buildFilterBy($type, $params);
-        if ($filterBy !== '') {
-            $searchParams['filter_by'] = $filterBy;
+        $clauses          = $this->buildFilterClauses($type, $params);
+        $combinedFilterBy = implode(' && ', $clauses);
+        if ($combinedFilterBy !== '') {
+            $searchParams['filter_by'] = $combinedFilterBy;
         }
 
-        $result = app(\App\Services\TypesenseService::class)
-            ->rawSearch($model->searchableAs(), $query, $searchParams);
+        // Multi-select faceting: a field with its own active filter must
+        // still report counts for ALL its values, not just the one(s)
+        // selected — so its facet needs a second query with every filter
+        // applied EXCEPT its own. Fields with no filter of their own are
+        // unaffected and use the main query's facet_counts as-is.
+        $selfFilteredFields = array_values(array_intersect($facetFields, array_keys($clauses)));
+
+        $searches = [array_merge(['collection' => $collection, 'q' => $q], $searchParams)];
+        foreach ($selfFilteredFields as $field) {
+            $exclusionFilterBy = implode(' && ', array_diff_key($clauses, [$field => null]));
+
+            $searches[] = array_merge(
+                [
+                    'collection' => $collection,
+                    'q'          => $q,
+                    'query_by'   => $searchParams['query_by'],
+                    'facet_by'   => $field,
+                    'per_page'   => 0,
+                ],
+                $exclusionFilterBy !== '' ? ['filter_by' => $exclusionFilterBy] : []
+            );
+        }
+
+        $multiResult = app(\App\Services\TypesenseService::class)->multiSearch($searches);
+        $results     = $multiResult['results'] ?? [];
+        $result      = $results[0] ?? [];
+
+        $facetCounts = $result['facet_counts'] ?? [];
+        foreach (array_slice($results, 1) as $i => $exclusionResult) {
+            $field = $selfFilteredFields[$i];
+            $facetCounts = array_values(array_filter(
+                $facetCounts,
+                fn ($f) => $f['field_name'] !== $field
+            ));
+            foreach ($exclusionResult['facet_counts'] ?? [] as $facet) {
+                $facetCounts[] = $facet;
+            }
+        }
 
         $elasticHits = $this->mapHitsToElastic($result['hits'] ?? [], $type);
         $hydrated    = $this->hydrate($elasticHits, $type, $params['view_type'] ?? 'full');
@@ -192,7 +231,7 @@ class HDRUK implements SearchProvider
             'source'       => 'typesense',
             'hits'         => $sorted,
             'total'        => $result['found'] ?? 0,
-            'aggregations' => $this->mapFacetsToAggregations($result['facet_counts'] ?? []),
+            'aggregations' => $this->mapFacetsToAggregations($facetCounts),
             'ids'          => array_column($elasticHits, '_id'),
         ];
     }
@@ -279,29 +318,59 @@ class HDRUK implements SearchProvider
     }
 
     /**
-     * Build a Typesense filter_by string from V2 top-level pipe-delimited params.
-     * Only known facet fields are forwarded to avoid leaking pagination/sort into the filter.
+     * Build a map of field => Typesense filter_by clause from the V2
+     * request's filter values, nested as
+     * filters: { [Filter.type]: { [field]: [...values] } } — keyed by the
+     * singular Filter model type (e.g. 'dataset'), same as
+     * FILTER_TYPE_MAP/collectionForFacetableFilter, not the plural service
+     * key used elsewhere in this class. Only known facet fields are
+     * forwarded to avoid leaking arbitrary input into the filter. Fields not
+     * yet supporting array-of-string values (e.g. populationSize's range
+     * object) are silently ignored rather than erroring.
+     *
+     * Keeping this keyed by field (rather than one joined string) lets
+     * searchViaTypesense() build a "every filter except this field's own"
+     * variant per facet, for multi-select faceting.
+     *
+     * @return array<string, string>
      */
-    private function buildFilterBy(string $type, array $params): string
+    private function buildFilterClauses(string $type, array $params): array
     {
-        $fields  = self::TYPESENSE_FILTERABLE_MAP[$type] ?? [];
-        $clauses = [];
+        $fields      = self::TYPESENSE_FILTERABLE_MAP[$type] ?? [];
+        $filterType  = self::FILTER_TYPE_MAP[$type]['type'] ?? $type;
+        $typeFilters = $params['filters'][$filterType] ?? [];
+        $clauses     = [];
 
         foreach ($fields as $field) {
-            if (empty($params[$field])) {
-                continue;
-            }
-
-            $values = array_filter(array_map('trim', explode('|', (string) $params[$field])));
+            $values = $this->normalizeFilterValues($typeFilters[$field] ?? null);
             if (empty($values)) {
                 continue;
             }
 
-            $quoted    = array_map(fn ($v) => '`' . str_replace('`', '', $v) . '`', $values);
-            $clauses[] = $field . ':=[' . implode(',', $quoted) . ']';
+            $quoted          = array_map(fn ($v) => '`' . str_replace('`', '', $v) . '`', $values);
+            $clauses[$field] = $field . ':=[' . implode(',', $quoted) . ']';
         }
 
-        return implode(' && ', $clauses);
+        return $clauses;
+    }
+
+    /**
+     * Accepts an array of string values (the current V2 filter shape) and
+     * returns the trimmed, non-empty strings within it. Anything else —
+     * scalars, associative "structured" filters like populationSize's
+     * {includeUnreported}, empty arrays — normalizes to [] rather than
+     * erroring, since those aren't supported filter_by shapes yet.
+     */
+    private function normalizeFilterValues(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            fn ($v) => is_string($v) ? trim($v) : null,
+            $value
+        )));
     }
 
     private function sort(array $hits, string $type, string $sortParam): array
