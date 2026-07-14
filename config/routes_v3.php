@@ -1,6 +1,19 @@
 <?php
 
 return [
+    // v3 GET /datasets/{id} — no v3-specific read behaviour; delegates to V2 showActive for now
+    [
+        'name'                => 'datasets',
+        'method'              => 'get',
+        'path'                => '/datasets/{id}',
+        'methodController'    => 'DatasetController@showActive',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware'          => [],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+
     // v3 datasets — delta versioning update
     [
         'name'                => 'datasets',
@@ -37,6 +50,19 @@ return [
         'method'              => 'get',
         'path'                => '/datasets/{id}/version/{version}',
         'methodController'    => 'DatasetController@showVersion',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name'                => 'datasets',
+        'method'              => 'get',
+        'path'                => '/datasets/{id}/metadata-versions',
+        'methodController'    => 'DatasetController@metadataVersions',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'sanitize.input',

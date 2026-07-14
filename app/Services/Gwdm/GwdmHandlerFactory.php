@@ -32,7 +32,7 @@ class GwdmHandlerFactory
      * Note: legacy versions handled internally by the factory (e.g. < 1.1)
      * are not listed here because they are not user-selectable via the header.
      */
-    public const SUPPORTED_VERSIONS = ['2.0', '2.1'];
+    public const SUPPORTED_VERSIONS = ['2.0', '2.1', '3.0'];
 
     /** @return string[] */
     public static function supportedVersions(): array
@@ -46,6 +46,7 @@ class GwdmHandlerFactory
             version_compare($version, '1.1', '<') => new Gwdm1xHandler($version),
             $version === '2.0'                     => new Gwdm20Handler($version),
             $version === '2.1'                     => new Gwdm21Handler($version),
+            $version === '3.0'                     => new Gwdm30Handler($version),
             default                                => new Gwdm2xHandler($version),
         };
     }

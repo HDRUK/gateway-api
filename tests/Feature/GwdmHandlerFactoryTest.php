@@ -6,17 +6,17 @@ use App\Services\Gwdm\Gwdm1xHandler;
 use App\Services\Gwdm\Gwdm20Handler;
 use App\Services\Gwdm\Gwdm21Handler;
 use App\Services\Gwdm\Gwdm2xHandler;
+use App\Services\Gwdm\Gwdm30Handler;
 use App\Services\Gwdm\GwdmHandlerFactory;
 use Tests\TestCase;
 
 /**
- * PR2 coverage for the single point of GWDM version branching. This factory is
- * the ONLY place allowed to switch on the schema version; all scattered
+ * Coverage for the single point of GWDM version branching. This factory is the
+ * ONLY place allowed to switch on the schema version; all scattered
  * version_compare() calls in DatasetService were replaced by resolve() here.
  *
- * NOTE: in this PR the 3.0 arm is intentionally absent — GWDM 3.0 is enabled in
- * a later PR of the stack once its handler + SQL tables exist. This test guards
- * that 3.0 is not yet user-selectable so enabling it early cannot 500.
+ * GWDM 3.0 is activated in this PR (its handler + SQL tables now exist), so the
+ * factory resolves '3.0' to Gwdm30Handler and lists it in SUPPORTED_VERSIONS.
  */
 class GwdmHandlerFactoryTest extends TestCase
 {
@@ -43,10 +43,14 @@ class GwdmHandlerFactoryTest extends TestCase
         $this->assertInstanceOf(Gwdm2xHandler::class, $this->factory()->resolve('1.5'));
     }
 
-    public function test_supported_versions_are_2_0_and_2_1_only(): void
+    public function test_resolves_3_0_to_gwdm30_handler(): void
     {
-        // 3.0 is deliberately NOT yet supported in this PR of the stack.
-        $this->assertSame(['2.0', '2.1'], GwdmHandlerFactory::supportedVersions());
-        $this->assertNotContains('3.0', GwdmHandlerFactory::supportedVersions());
+        $this->assertInstanceOf(Gwdm30Handler::class, $this->factory()->resolve('3.0'));
+    }
+
+    public function test_supported_versions_include_3_0(): void
+    {
+        // 3.0 is activated in this PR alongside its handler + SQL tables.
+        $this->assertSame(['2.0', '2.1', '3.0'], GwdmHandlerFactory::supportedVersions());
     }
 }

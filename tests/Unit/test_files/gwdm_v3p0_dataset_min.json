@@ -1,0 +1,175 @@
+{
+    "gwdmVersion": "3.0",
+    "metadata": {
+        "required": {
+            "gatewayId": "1234",
+            "gatewayPid": "5124f2",
+            "issued": "2020-08-05T14:35:59Z",
+            "modified": "2021-01-28T14:15:46Z",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
+                }
+            ],
+            "version": "1.0.0"
+        },
+        "summary": {
+            "title": "GWDM 3.0 Test Dataset - Full Title",
+            "shortTitle": "GWDM 3.0 Test Dataset",
+            "abstract": "Test dataset for GWDM 3.0 feature tests",
+            "description": "A minimal GWDM 3.0 dataset for automated testing",
+            "contactPoint": "test@example.com",
+            "keywords": "Test,GWDM30",
+            "controlledKeywords": null,
+            "datasetType": "test",
+            "datasetSubType": "primaryCare",
+            "inPipeline": "available",
+            "funders": "Test Funder",
+            "doiName": null,
+            "licenseUrl": "https://example.com/licence",
+            "landingPage": "https://example.com/dataset/1234",
+            "creator": {
+                "name": "Test Creator Organisation",
+                "rorId": "0abcdef12",
+                "orcidId": null,
+                "gatewayId": null
+            },
+            "theme": [
+                "https://health-topic.example/T001"
+            ],
+            "publisher": {
+                "name": "Test Publisher",
+                "gatewayId": null,
+                "rorId": null
+            },
+            "populationSize": 0
+        },
+        "coverage": {
+            "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
+            "minTypicalAge": 0,
+            "maxTypicalAge": 150,
+            "populationCoverage": "Patients registered with a GP in England",
+            "numberOfUniqueIndividuals": 5000000,
+            "numberOfRecords": 12000000,
+            "pathway": "NOT APPLICABLE",
+            "followUp": "UNKNOWN",
+            "datasetCompleteness": "95%"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "OTHER",
+                "source": "MACHINE GENERATED",
+                "collectionSituation": "OTHER",
+                "imageContrast": null
+            },
+            "temporal": {
+                "startDate": "2020-01-01",
+                "endDate": "2024-12-31",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Annual",
+                "distributionReleaseDate": "2025-03-01"
+            },
+            "retentionPeriod": {
+                "startDate": "2020-01-01",
+                "endDate": "2030-12-31"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://example.com/licence",
+                "accessService": "https://example.com/access",
+                "accessServiceCategory": "TRE",
+                "accessRequestCost": "Free at point of access",
+                "deliveryLeadTime": "1-2 WEEKS",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Test Organisation",
+                "dataProcessor": "Test Organisation",
+                "legalBasis": "Article 6(1)(e) – public task",
+                "personalData": "pseudonymised",
+                "applicableLegislation": "UK GDPR"
+            },
+            "usage": {
+                "dataUseLimitation": ["GENERAL RESEARCH USE"],
+                "dataUseRequirements": ["RETURN TO DATABASE OR RESOURCE", "USER SPECIFIC RESTRICTION"],
+                "resourceCreator": {
+                    "name": "Test Organisation"
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": ["CSV", "JSON"]
+            }
+        },
+        "linkage": {
+            "datasetLinkage": {
+                "isDerivedFrom": [],
+                "isPartOf": [],
+                "isMemberOf": [],
+                "linkedDatasets": []
+            },
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null,
+            "isGeneratedUsing": null,
+            "associatedMedia": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null
+        },
+        "observations": [
+            {
+                "observedNode": "Findings",
+                "measuredValue": 100,
+                "observationDate": "2024-01-01",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Test observation"
+            }
+        ],
+        "omics": {
+            "assay": "WGS",
+            "platform": "Illumina NovaSeq"
+        },
+        "demographicFrequency": {
+            "age": [
+                { "bin": "0-4", "count": 12000 },
+                { "bin": "5-17", "count": 45000 }
+            ],
+            "ethnicity": [
+                { "bin": "White British", "count": 38000 },
+                { "bin": "Asian or Asian British", "count": 9000 }
+            ],
+            "disease": [
+                { "diseaseCode": "E11", "diseaseCodeVocabulary": "ICD-10", "count": 7500 }
+            ]
+        },
+        "distributions": [
+            {
+                "title": "CSV bulk download",
+                "description": "Full dataset as a comma-separated file",
+                "accessUrl": "https://example.com/access",
+                "downloadUrl": "https://example.com/download/dataset.csv",
+                "mediaType": "text/csv",
+                "format": "CSV",
+                "byteSize": 1048576,
+                "licenseUrl": "https://example.com/licence",
+                "accessService": "https://example.com/access",
+                "issued": "2024-01-01",
+                "modified": "2025-01-01"
+            }
+        ],
+        "qualityAnnotations": [
+            {
+                "annotationType": "duf_score",
+                "qualityDimension": "completeness",
+                "qualityValue": "3",
+                "qualityDescription": "Data Utility Framework completeness score",
+                "certificationUrl": null,
+                "annotationDate": "2024-06-01"
+            }
+        ]
+    }
+}

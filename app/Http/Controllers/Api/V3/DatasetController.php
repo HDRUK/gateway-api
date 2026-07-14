@@ -127,6 +127,45 @@ class DatasetController extends Controller
     }
 
     /**
+     * GET /api/v3/datasets/{id}/metadata-versions
+     *
+     * Return a summary of which GWDM schema versions are present across all
+     * dataset_version rows for this dataset, and how many rows belong to each.
+     */
+    public function metadataVersions(Request $request, int $id): JsonResponse
+    {
+        try {
+            $dataset = Dataset::find($id);
+
+            if (!$dataset) {
+                return response()->json(['message' => 'Dataset not found'], 404);
+            }
+
+            $summary    = $this->datasetService->getMetadataVersionSummary($dataset);
+            $validation = $this->datasetService->validateAllVersions($dataset);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dataset ' . $id . ' metadata version summary retrieved',
+            ]);
+
+            return response()->json([
+                'message' => 'success',
+                'data'    => array_merge($summary, ['validation' => $validation]),
+            ]);
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * GET /api/v3/datasets/{id}/version/{version}
      *
      * Return the fully reconstructed metadata envelope for a specific

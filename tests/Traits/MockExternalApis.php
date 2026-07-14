@@ -70,7 +70,16 @@ trait MockExternalApis
 
             case version_compare($version, "2.1", "<="):
                 return $this->getMetadataV2p1();
+
+            case version_compare($version, "3.0", "<="):
+                return $this->getMetadataV3p0();
         }
+    }
+
+    public function getMetadataV3p0(): array
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v3p0_dataset_min.json', 0, null);
+        return json_decode($jsonFile, true);
     }
 
     public function getPublicSchema()
