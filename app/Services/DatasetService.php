@@ -200,7 +200,7 @@ class DatasetService
                     throw new \RuntimeException($traserError);
                 }
 
-                $withLinks->metadata = json_encode(['metadata' => $translated['metadata']]);
+                $withLinks->metadata = ['metadata' => $translated['metadata']];
             } else {
                 $withLinks->metadata = $envelope;
             }
@@ -752,6 +752,8 @@ class DatasetService
             })
             ->select([
                 'dataset_version_has_dataset_version.linkage_type',
+                'dataset_version_has_dataset_version.raw_url',
+                'dataset_version_has_dataset_version.raw_title',
                 'dataset_versions.short_title',
                 'datasets.id as target_dataset_id',
             ])
@@ -876,6 +878,7 @@ class DatasetService
         int $targetVersion,
         bool $validate = true,
         ?DatasetVersion $prefetched = null,
+        bool $applySupplementary = true,
     ): array {
         $row = $prefetched ?? DatasetVersion::where('dataset_id', $datasetId)
             ->where('version', $targetVersion)
@@ -902,9 +905,14 @@ class DatasetService
         }
 
         // For 3.0+, afterRead() merges supplementary data from structured SQL tables.
-        $supplementary = $handler->afterRead($row);
-        if (! empty($supplementary)) {
-            $gwdm = array_merge($gwdm, $supplementary);
+        // Skipped when the caller is itself the writer of those tables (e.g.
+        // extractLinkages()), to avoid a circular read that would feed stale
+        // junction-table data back into the very rows being rewritten.
+        if ($applySupplementary) {
+            $supplementary = $handler->afterRead($row);
+            if (! empty($supplementary)) {
+                $gwdm = array_merge($gwdm, $supplementary);
+            }
         }
 
         // Validate the reconstructed metadata only when explicitly requested.
@@ -1047,44 +1055,11 @@ class DatasetService
             return $dv;
         });
 
-        // -----------------------------------------------------------------------
-        // Relation pivot table updates — DISCUSSION POINT FOR REVIEW
-        // -----------------------------------------------------------------------
-        // When a new version is persisted (delta or snapshot) the spatial coverage
-        // pivot table (dataset_version_has_spatial_coverage) should be updated
-        // to reflect the new version's coverage values.
-        //
-        // Currently mapCoverage() is only called during create(), which means
-        // existing version rows correctly reflect coverage at v1 but subsequent
-        // version rows have no pivot entries. This gap was pre-existing before
-        // delta versioning was introduced, but becomes more visible now that
-        // updates genuinely create new rows.
-        //
-        // The call below addresses spatial coverage. Questions for review:
-        //
-        //  1. Should the call use the FULL new metadata or only the GWDM portion?
-        //     mapCoverage() expects the shape { metadata: {...GWDM...} }, so we
-        //     reconstruct a compatible envelope here.
-        //
-        //  2. Should the old version's coverage rows be soft-deleted (or at least
-        //     flagged) when a new version supersedes them? At present coverage rows
-        //     accumulate across versions, which is used intentionally by
-        //     Dataset::getAllSpatialCoveragesAttribute() to union coverage across
-        //     all version rows. Whether that union is still desirable now that each
-        //     version has its own row is worth discussing.
-        //
-        //  3. Named entities (dataset_version_has_named_entities) are populated
-        //     asynchronously by the TermExtraction job and do NOT need to be
-        //     handled here — the job already receives the new version ID via
-        //     dispatchJobs() above.
-        //
-        //  4. Tool linkages (dataset_version_has_tool) are managed externally
-        //     (not set during a metadata update) and are therefore intentionally
-        //     omitted here.
-        //
-        // TODO: revisit points 2 and 3 in a follow-up ticket once the overall
-        //       per-version vs. cross-version model is confirmed.
-        // -----------------------------------------------------------------------
+        // Sync the spatial coverage pivot for this new version. mapCoverage()
+        // upserts the version's coverage rows and prunes stale ones, and
+        // Dataset::getAllSpatialCoveragesAttribute() reads only the latest
+        // version's rows — so coverage reflects the current metadata, not a
+        // union across all historical versions.
         $envelopeForCoverage = [
             'metadata' => $newGwdmMetadata,
         ];
@@ -1171,32 +1146,41 @@ class DatasetService
         $allCoverages = SpatialCoverage::all();
         $ukCoverages = $allCoverages->filter(fn ($c) => $c->region !== 'Rest of the world');
         $worldId = $allCoverages->firstWhere('region', 'Rest of the world')?->id;
-        $matchFound = false;
+
+        // Collect the coverage IDs this version should map to, then sync the pivot
+        // (upsert desired + prune stale) so editing coverage DOWN actually removes
+        // entries rather than accumulating them.
+        $desiredIds = [];
 
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c->region))) {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version->id,
-                    'spatial_coverage_id' => (int) $c->id,
-                ]);
-                $matchFound = true;
+                $desiredIds[] = (int) $c->id;
             }
         }
 
-        if (! $matchFound) {
+        if (empty($desiredIds)) {
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
-                    DatasetVersionHasSpatialCoverage::updateOrCreate([
-                        'dataset_version_id' => (int) $version->id,
-                        'spatial_coverage_id' => (int) $c->id,
-                    ]);
+                    $desiredIds[] = (int) $c->id;
                 }
-            } else {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version->id,
-                    'spatial_coverage_id' => (int) $worldId,
-                ]);
+            } elseif ($worldId !== null) {
+                $desiredIds[] = (int) $worldId;
             }
         }
+
+        foreach ($desiredIds as $coverageId) {
+            DatasetVersionHasSpatialCoverage::updateOrCreate([
+                'dataset_version_id' => (int) $version->id,
+                'spatial_coverage_id' => $coverageId,
+            ]);
+        }
+
+        // Prune any pivot rows for this version no longer present in the metadata.
+        DatasetVersionHasSpatialCoverage::where('dataset_version_id', (int) $version->id)
+            ->when(
+                ! empty($desiredIds),
+                fn ($q) => $q->whereNotIn('spatial_coverage_id', $desiredIds),
+            )
+            ->delete();
     }
 }
