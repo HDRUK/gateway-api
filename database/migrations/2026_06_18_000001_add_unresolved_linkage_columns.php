@@ -39,7 +39,10 @@ return new class () extends Migration {
             // Raw reference fields for unresolved linkages (target_id = NULL rows).
             $table->string('raw_url', 2048)->nullable()->after('dataset_version_target_id');
             $table->string('raw_pid', 255)->nullable()->after('raw_url');
-            $table->string('raw_title', 1000)->nullable()->after('raw_pid');
+            // text(): free text pulled from external, unvalidated linkage references —
+            // unlike the internal title/short_title columns there's no app-side bound
+            // on length, and a VARCHAR cap risks a strict-mode INSERT failure.
+            $table->text('raw_title')->nullable()->after('raw_pid');
 
             // Re-add FK as nullable (NULL = unresolved, non-NULL = resolved).
             if (!$isSqlite) {

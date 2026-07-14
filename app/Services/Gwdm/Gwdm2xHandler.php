@@ -24,12 +24,35 @@ use App\Services\DatasetService;
  */
 class Gwdm2xHandler extends GwdmMetadataHandler
 {
+    /**
+     * KNOWN LIMITATION: always attributes the metadata to the requesting team.
+     * There is currently no mechanism for a team to publish metadata attributed
+     * to a different team (e.g. team A submitting on behalf of team B) — $team
+     * is unconditionally the team resolved from the write request's auth context
+     * (see CheckAccess::checkAccessTeam()), and this output is never read back
+     * from the incoming payload. Tracked for a separate design/investigation.
+     */
     public function buildPublisher(Team $team): array
     {
         return [
             'gatewayId' => $team->pid,
             'name'      => $team->name,
         ];
+    }
+
+    /**
+     * Single named resolution point for DatasetService within this handler.
+     *
+     * Constructor injection isn't viable: this handler is instantiated via
+     * `new Gwdm20Handler($version)` in GwdmHandlerFactory::resolve() with a
+     * runtime-only $version string, not container-resolved. DatasetService
+     * already depends on GwdmHandlerFactory to create these handlers, so
+     * injecting DatasetService back into the factory (to pass down here)
+     * would be circular.
+     */
+    protected function datasetService(): DatasetService
+    {
+        return app(DatasetService::class);
     }
 
     public function buildRequiredBlock(Dataset $dataset, int $versionNumber): array
@@ -74,7 +97,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         // junction tables. afterRead() rebuilds gwdm['linkage'] from those same
         // tables, so applying it here would read back stale/soon-to-be-deleted
         // linkage and clobber the freshly-authored linkage on a re-dispatch.
-        $gwdm = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+        $gwdm = $this->datasetService()->getReconstructedMetadataEnvelope(
             $dv->dataset_id,
             $dv->version,
             false,

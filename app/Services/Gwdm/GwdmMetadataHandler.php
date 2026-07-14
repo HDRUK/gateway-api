@@ -73,7 +73,17 @@ abstract class GwdmMetadataHandler
 
     // ── Publisher field ───────────────────────────────────────────────────────
 
-    /** Build the summary.publisher object for this schema version. */
+    /**
+     * Build the summary.publisher object for this schema version.
+     *
+     * KNOWN LIMITATION: implementations always attribute the metadata to
+     * whichever team is passed in — there is currently no mechanism for a
+     * team to publish metadata attributed to a different team (e.g. team A
+     * submitting on behalf of team B). $team is unconditionally the team
+     * resolved from the write request's auth context (see
+     * CheckAccess::checkAccessTeam()), and this output is never read back
+     * from the incoming payload. Tracked for a separate design/investigation.
+     */
     abstract public function buildPublisher(Team $team): array;
 
     // ── Storage envelope ──────────────────────────────────────────────────────

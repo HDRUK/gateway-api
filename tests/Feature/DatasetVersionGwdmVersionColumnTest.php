@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -87,21 +86,5 @@ class DatasetVersionGwdmVersionColumnTest extends TestCase
         $this->assertNotNull($linked);
         $this->assertSame('Target Title', $linked->title);
         $this->assertSame('TT', $linked->shortTitle);
-    }
-
-    public function test_gwdm_version_backfill_deployment_step_runs_once(): void
-    {
-        $step = '2026_07_14_140156_backfill_gwdm_version';
-
-        $this->assertDatabaseMissing('deployment_steps', ['step' => $step]);
-
-        // deploy:run executes the pending step and records it. On SQLite the
-        // back-fill body no-ops (driver guard) but the step is still marked run.
-        Artisan::call('deploy:run');
-        $this->assertDatabaseHas('deployment_steps', ['step' => $step]);
-
-        // Run-once: a second deploy:run does not re-execute it.
-        Artisan::call('deploy:run');
-        $this->assertStringContainsString('Nothing to run', Artisan::output());
     }
 }

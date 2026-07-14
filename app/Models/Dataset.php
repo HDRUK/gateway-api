@@ -223,9 +223,12 @@ class Dataset extends Model
     {
         if ($gwdmVersion) {
             $result = DB::select(
-                'SELECT dv.id FROM dataset_versions dv
-                 WHERE dv.dataset_id = :dataset_id AND dv.gwdm_version = :gwdm_version
-                 ORDER BY version DESC LIMIT 1',
+                'SELECT dv.id
+                 FROM dataset_versions dv
+                 WHERE dv.dataset_id = :dataset_id
+                   AND dv.gwdm_version = :gwdm_version
+                 ORDER BY version DESC
+                 LIMIT 1',
                 ['dataset_id' => $datasetId, 'gwdm_version' => $gwdmVersion]
             );
 
@@ -233,9 +236,11 @@ class Dataset extends Model
         }
 
         $result = DB::select(
-            'SELECT dv.id FROM dataset_versions dv
+            'SELECT dv.id
+             FROM dataset_versions dv
              WHERE dv.dataset_id = :dataset_id
-             ORDER BY version DESC LIMIT 1',
+             ORDER BY version DESC
+             LIMIT 1',
             ['dataset_id' => $datasetId]
         );
 

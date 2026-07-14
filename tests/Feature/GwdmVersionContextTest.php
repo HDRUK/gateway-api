@@ -7,13 +7,14 @@ use Config;
 use Tests\TestCase;
 
 /**
- * PR2 coverage for the GWDM version request context — the read/write header split
- * that the whole handler-resolution refactor pivots on.
+ * Covers the GWDM version request context — the read/write header split that
+ * the handler-resolution refactor pivots on.
  *
- * Guards the C2 fix (requestedVersion() must return null on an absent header so the
- * read path falls back to the genuine latest version, rather than a config default)
- * and the deliberate asymmetry between the write path (targetVersion, config
- * fallback) and the read path (requestedVersion, null on absent header).
+ * Guards two things: requestedVersion() must return null when the
+ * x-gwdm-version header is absent (so the read path falls back to the
+ * dataset's genuine latest version, not a config default), and the
+ * deliberate asymmetry between the write path (targetVersion(), config
+ * fallback) and the read path (requestedVersion(), null on absent header).
  */
 class GwdmVersionContextTest extends TestCase
 {
@@ -66,7 +67,7 @@ class GwdmVersionContextTest extends TestCase
         Config::set('metadata.GWDM.version', '2.1');
         $this->setHeader(null);
 
-        // C2: read path must NOT substitute the config default — null signals the
+        // Read path must NOT substitute the config default — null signals the
         // caller to use the genuine latest version of the dataset.
         $this->assertNull($this->context()->requestedVersion());
     }
