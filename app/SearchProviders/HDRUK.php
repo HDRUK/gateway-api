@@ -345,12 +345,27 @@ class HDRUK implements SearchProvider
         $clauses     = [];
 
         foreach ($fields as $field) {
-            $values = $this->normalizeFilterValues($typeFilters[$field] ?? null);
+            $isBoolean = $this->isBooleanFacetField($type, $field);
+            $values    = $this->normalizeFilterValues($typeFilters[$field] ?? null);
+
+            // Checkbox-style boolean filters (e.g. a "Datasets with BioSamples"
+            // toggle) arrive as a flat top-level query param — non-empty
+            // (typically the field's own name, e.g.
+            // ?containsBioSamples=containsBioSamples) when checked, but when
+            // unchecked the key can still be PRESENT with an empty string
+            // (?isCohortDiscovery=) rather than fully absent — so presence
+            // alone isn't enough; the value must be non-empty too. Presence
+            // means "true"; empty/absent means "no filter" (never "false"),
+            // matching normal single-checkbox UX.
+            if (empty($values) && $isBoolean && !empty($params[$field] ?? '')) {
+                $values = ['true'];
+            }
+
             if (empty($values)) {
                 continue;
             }
 
-            if ($this->isBooleanFacetField($type, $field)) {
+            if ($isBoolean) {
                 $clause = $this->buildBooleanClause($field, $values);
                 if ($clause !== null) {
                     $clauses[$field] = $clause;
@@ -406,11 +421,14 @@ class HDRUK implements SearchProvider
     }
 
     /**
-     * Accepts an array of string values (the current V2 filter shape) and
-     * returns the trimmed, non-empty strings within it. Anything else —
-     * scalars, associative "structured" filters like populationSize's
-     * {includeUnreported}, empty arrays — normalizes to [] rather than
-     * erroring, since those aren't supported filter_by shapes yet.
+     * Accepts an array of filter values (the current V2 filter shape) and
+     * returns their string representations, trimmed and non-empty. Scalars
+     * (string, bool, int, float) are all coerced to a string — e.g. a
+     * literal JSON `true` in `isCohortDiscovery: [true]` becomes 'true' here
+     * so buildBooleanClause() can recognize it, not just a pre-stringified
+     * "true". Non-scalars — associative "structured" filters like
+     * populationSize's {includeUnreported}, nested arrays — normalize to []
+     * rather than erroring, since those aren't supported filter_by shapes yet.
      */
     private function normalizeFilterValues(mixed $value): array
     {
@@ -419,9 +437,20 @@ class HDRUK implements SearchProvider
         }
 
         return array_values(array_filter(array_map(
-            fn ($v) => is_string($v) ? trim($v) : null,
+            function ($v) {
+                if (is_string($v)) {
+                    return trim($v);
+                }
+                if (is_bool($v)) {
+                    return $v ? 'true' : 'false';
+                }
+                if (is_int($v) || is_float($v)) {
+                    return (string) $v;
+                }
+                return null;
+            },
             $value
-        )));
+        ), fn ($v) => $v !== null && $v !== ''));
     }
 
     private function sort(array $hits, string $type, string $sortParam): array

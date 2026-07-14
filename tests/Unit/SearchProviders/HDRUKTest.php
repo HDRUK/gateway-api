@@ -192,6 +192,33 @@ class HDRUKTest extends TestCase
         ]);
     }
 
+    /**
+     * Regression: the real FE payload sends a literal JSON boolean inside the
+     * array (isCohortDiscovery: [true]), not a pre-stringified "true".
+     * normalizeFilterValues() used to only keep array elements that were
+     * already strings, silently dropping a literal `true`/`false` and
+     * leaving the search completely unfiltered.
+     */
+    public function test_search_builds_boolean_clause_from_a_literal_json_boolean_in_the_array(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'isCohortDiscovery:=true');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['isCohortDiscovery' => [true]]],
+        ]);
+    }
+
+    public function test_search_builds_false_clause_from_a_literal_json_boolean_in_the_array(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'isCohortDiscovery:=false');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['isCohortDiscovery' => [false]]],
+        ]);
+    }
+
     public function test_search_builds_false_boolean_clause_correctly(): void
     {
         $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
@@ -220,6 +247,76 @@ class HDRUKTest extends TestCase
 
         (new HDRUK())->search('asthma', 'datasets', [
             'filters' => ['dataset' => ['isCohortDiscovery' => ['maybe']]],
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Checkbox-style boolean filters — sent as a flat top-level query param
+    // (?isCohortDiscovery=isCohortDiscovery), not nested under `filters` like
+    // the multi-select facets. Present (any value) means true; absent means
+    // no filter at all.
+    // -------------------------------------------------------------------------
+
+    public function test_search_treats_flat_top_level_param_as_true_for_boolean_field(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'isCohortDiscovery:=true');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'isCohortDiscovery' => 'isCohortDiscovery',
+        ]);
+    }
+
+    public function test_search_combines_multiple_flat_boolean_params(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'containsBioSamples:=true && isCohortDiscovery:=true');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'containsBioSamples' => 'containsBioSamples',
+            'isCohortDiscovery' => 'isCohortDiscovery',
+        ]);
+    }
+
+    public function test_search_applies_no_filter_when_flat_boolean_param_is_absent(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            count($searches) === 1 && !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'dataType' => '',
+            'dataSubType' => '',
+        ]);
+    }
+
+    /**
+     * Regression: the FE's unchecked state isn't always a fully absent key —
+     * it can be present with an empty string (?isCohortDiscovery=). An
+     * earlier version of this fix checked array_key_exists() only, which
+     * treated an empty-string "unchecked" param as true, incorrectly
+     * combining it with any other genuinely-checked boolean filter.
+     */
+    public function test_search_treats_present_but_empty_flat_param_as_unchecked(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'containsBioSamples:=true');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'isCohortDiscovery' => '',
+            'containsBioSamples' => 'containsBioSamples',
+        ]);
+    }
+
+    public function test_search_prefers_nested_filters_shape_over_flat_param_when_both_present(): void
+    {
+        // Nested (explicit array) takes precedence — the flat-param fallback
+        // only kicks in when the nested lookup found nothing.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'isCohortDiscovery:=false');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'isCohortDiscovery' => 'isCohortDiscovery',
+            'filters' => ['dataset' => ['isCohortDiscovery' => ['false']]],
         ]);
     }
 
