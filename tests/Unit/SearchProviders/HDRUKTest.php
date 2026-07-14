@@ -7,6 +7,7 @@ use Tests\TestCase;
 use App\SearchProviders\HDRUK;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
+use App\Models\DataProviderColl;
 use App\Services\TypesenseService;
 use Laravel\Pennant\Feature;
 
@@ -66,6 +67,29 @@ class HDRUKTest extends TestCase
         foreach (['license', 'programmingLanguages', 'typeCategory'] as $field) {
             $this->assertEquals($toolsCollection, $provider->collectionForFacetableFilter('tool', $field));
         }
+    }
+
+    /**
+     * Regression: FILTER_TYPE_MAP previously mapped the 'data_custodian_networks'
+     * service key to 'dataProviderColl', but the `filters` table (and FE
+     * payloads) actually use the literal string 'datacustodiannetwork' —
+     * meaning this could never have resolved. Confirmed against live DB rows.
+     */
+    public function test_returns_collection_name_for_each_data_custodian_network_facet_field(): void
+    {
+        $provider = new HDRUK();
+        $collection = (new DataProviderColl())->searchableAs();
+
+        foreach (['publisherNames', 'datasetTitles'] as $field) {
+            $this->assertEquals($collection, $provider->collectionForFacetableFilter('datacustodiannetwork', $field));
+        }
+    }
+
+    public function test_returns_null_for_the_old_incorrect_data_custodian_network_filter_type(): void
+    {
+        $provider = new HDRUK();
+
+        $this->assertNull($provider->collectionForFacetableFilter('dataProviderColl', 'publisherNames'));
     }
 
     // -------------------------------------------------------------------------

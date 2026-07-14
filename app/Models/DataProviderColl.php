@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Base\BaseTypesenseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -43,27 +44,6 @@ class DataProviderColl extends BaseTypesenseModel
         'enabled' => 'boolean',
     ];
 
-    /**
-     * Indicates whether this model is enabled or disabled
-     *
-     * @var bool
-     */
-    private $enabled = false;
-
-    /**
-     * Represents the name of this DataProvider
-     *
-     * @var string
-     */
-    private $name = '';
-
-    /**
-     * Represents the image url for this DataProvider
-     *
-     * @var string
-     */
-    private $img_url = '';
-
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -77,14 +57,55 @@ class DataProviderColl extends BaseTypesenseModel
         return (bool) $this->enabled && $this->deleted_at === null;
     }
 
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['teams' => fn ($q) => $q->where('teams.enabled', true)]);
+    }
+
+    /**
+     * Titles of the latest, non-deleted version of every ACTIVE dataset
+     * owned by this network's member teams. Two bulk queries (dataset ids,
+     * then their versions) rather than per-dataset lookups, since this runs
+     * once per DataProviderColl during indexing.
+     */
+    private function memberDatasetTitles(array $teamIds): array
+    {
+        if (empty($teamIds)) {
+            return [];
+        }
+
+        $datasetIds = Dataset::whereIn('team_id', $teamIds)
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->pluck('id');
+
+        if ($datasetIds->isEmpty()) {
+            return [];
+        }
+
+        return DatasetVersion::whereIn('dataset_id', $datasetIds)
+            ->whereNull('deleted_at')
+            ->select('dataset_id', 'title', 'version')
+            ->get()
+            ->groupBy('dataset_id')
+            ->map(fn ($versions) => $versions->sortByDesc('version')->first()->title)
+            ->filter(fn ($title) => is_string($title) && $title !== '')
+            ->values()
+            ->all();
+    }
+
     public function toSearchableArray(): array
     {
+        $teamIds   = $this->teams->pluck('id')->all();
+        $teamNames = $this->teams->pluck('name')->filter()->values()->all();
+
         return [
-            'id'      => (string) $this->id,
-            'enabled' => (int) $this->enabled,
-            'name'    => $this->name ?? '',
-            'summary' => $this->summary ?? '',
-            'service' => $this->service ?? '',
+            'id'             => (string) $this->id,
+            'enabled'        => (int) $this->enabled,
+            'name'           => $this->name ?? '',
+            'summary'        => $this->summary ?? '',
+            'service'        => $this->service ?? '',
+            'publisherNames' => $teamNames,
+            'datasetTitles'  => $this->memberDatasetTitles($teamIds),
         ];
     }
 
@@ -101,11 +122,13 @@ class DataProviderColl extends BaseTypesenseModel
         return [
             'name' => $this->searchableAs(),
             'fields' => [
-                [ 'name' => 'id',       'type' => 'string', ],
-                [ 'name' => 'enabled',  'type' => 'int32', ],
-                [ 'name' => 'name',     'type' => 'string', 'infix' => true ],
-                [ 'name' => 'summary',  'type' => 'string', 'optional' => true ],
-                [ 'name' => 'service',  'type' => 'string', 'optional' => true ],
+                [ 'name' => 'id',              'type' => 'string', ],
+                [ 'name' => 'enabled',         'type' => 'int32', ],
+                [ 'name' => 'name',            'type' => 'string', 'infix' => true ],
+                [ 'name' => 'summary',         'type' => 'string', 'optional' => true ],
+                [ 'name' => 'service',         'type' => 'string', 'optional' => true ],
+                [ 'name' => 'publisherNames',  'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'datasetTitles',   'type' => 'string[]', 'facet' => true, 'optional' => true ],
             ],
         ];
     }

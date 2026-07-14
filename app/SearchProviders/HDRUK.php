@@ -33,7 +33,9 @@ class HDRUK implements SearchProvider
         'collections'             => ['type' => 'collection',       'enabledOnly' => false],
         'dur'                     => ['type' => 'dataUseRegister',  'enabledOnly' => false],
         'publications'            => ['type' => 'paper',            'enabledOnly' => false],
-        'data_custodian_networks' => ['type' => 'dataProviderColl', 'enabledOnly' => false],
+        // 'datacustodiannetwork' (no camelCase/underscore) is what the `filters`
+        // table and FE payloads actually use — confirmed against live DB rows.
+        'data_custodian_networks' => ['type' => 'datacustodiannetwork', 'enabledOnly' => false],
         'data_custodians'         => ['type' => 'dataProvider',     'enabledOnly' => false],
     ];
 
@@ -55,16 +57,17 @@ class HDRUK implements SearchProvider
         'collections'             => '',
         'dur'                     => '',
         'publications'            => 'publication_type',
-        'data_custodian_networks' => '',
+        'data_custodian_networks' => 'publisherNames,datasetTitles',
     ];
 
     // Fields callers may pass as pipe-delimited V2 filters (?publisherName=PIONEER|SAIL).
     // Only known facet fields are forwarded — keeps pagination/sort params out of filter_by.
     //
     private const TYPESENSE_FILTERABLE_MAP = [
-        'datasets'     => ['publisherName', 'keywords', 'dataType', 'dataSubType', 'geographicLocation', 'conformsTo', 'accessService', 'containsBioSamples', 'sampleAvailability', 'isCohortDiscovery'],
-        'tools'        => ['license', 'programmingLanguages', 'typeCategory'],
-        'publications' => ['publication_type'],
+        'datasets'                => ['publisherName', 'keywords', 'dataType', 'dataSubType', 'geographicLocation', 'conformsTo', 'accessService', 'containsBioSamples', 'sampleAvailability', 'isCohortDiscovery'],
+        'tools'                   => ['license', 'programmingLanguages', 'typeCategory'],
+        'publications'            => ['publication_type'],
+        'data_custodian_networks' => ['publisherNames', 'datasetTitles'],
     ];
 
     public function isDeferred(): bool
