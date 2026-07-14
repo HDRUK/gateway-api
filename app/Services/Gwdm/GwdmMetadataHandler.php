@@ -74,17 +74,80 @@ abstract class GwdmMetadataHandler
     // ── Publisher field ───────────────────────────────────────────────────────
 
     /**
-     * Build the summary.publisher object for this schema version.
+     * Build the FALLBACK summary.publisher object for this schema version.
      *
-     * KNOWN LIMITATION: implementations always attribute the metadata to
-     * whichever team is passed in — there is currently no mechanism for a
-     * team to publish metadata attributed to a different team (e.g. team A
-     * submitting on behalf of team B). $team is unconditionally the team
-     * resolved from the write request's auth context (see
-     * CheckAccess::checkAccessTeam()), and this output is never read back
-     * from the incoming payload. Tracked for a separate design/investigation.
+     * This is used only when the incoming payload carries no usable publisher
+     * (see resolvePublisher()/resolvePublisherWithKeys()). It attributes the
+     * metadata to $team — the team resolved from the write request's auth
+     * context (see CheckAccess::checkAccessTeam()) — using the team's pid.
+     *
+     * The primary path is resolvePublisher(): publisher reflects the RAW
+     * submitted data (so a team may publish metadata whose publisher is a
+     * different organisation), with gatewayId normalised to a pid.
      */
     abstract public function buildPublisher(Team $team): array;
+
+    /**
+     * Resolve the publisher for this write from the incoming (post-TRASER)
+     * payload, normalised to a pid, with a fallback to the requesting team.
+     *
+     * Concrete handlers implement this with their own key names
+     * (2.x: gatewayId/name; 1.x: publisherId/publisherName) by delegating to
+     * resolvePublisherWithKeys().
+     */
+    abstract public function resolvePublisher(array $incoming, Team $team): array;
+
+    /**
+     * Resolve a Team from a publisher gateway identifier that may be either the
+     * internal primary key (numeric) or the persistent id (pid). Mirrors the
+     * id-or-pid tolerance in DataAccessApplicationController.
+     *
+     * Public + static so the legacy V1 inline write paths (MetadataOnboard,
+     * IntegrationDatasetController) can share the exact same resolution without
+     * instantiating a handler.
+     */
+    public static function resolveTeamFromGatewayId(mixed $gatewayId): ?Team
+    {
+        if ($gatewayId === null || $gatewayId === '') {
+            return null;
+        }
+
+        if (is_numeric($gatewayId)) {
+            return Team::find((int) $gatewayId);
+        }
+
+        return Team::where('pid', $gatewayId)->first();
+    }
+
+    /**
+     * Shared publisher-resolution core, parameterised by the version-specific
+     * id/name key names.
+     *
+     * Behaviour:
+     *   - Resolve the team from $incoming[$idKey] (by id or pid).
+     *   - If unresolvable (absent, empty, or no matching team) → fall back to
+     *     buildPublisher($team) (the requesting team, by pid).
+     *   - Otherwise preserve the incoming object (including extra keys such as
+     *     rorId), normalising $idKey to the resolved team's pid and defaulting
+     *     $nameKey to the resolved team's name when the payload omits it.
+     */
+    protected function resolvePublisherWithKeys(
+        array $incoming,
+        Team $team,
+        string $idKey,
+        string $nameKey,
+    ): array {
+        $resolved = self::resolveTeamFromGatewayId($incoming[$idKey] ?? null);
+
+        if (!$resolved) {
+            return $this->buildPublisher($team);
+        }
+
+        $incoming[$idKey]   = $resolved->pid;
+        $incoming[$nameKey] = $incoming[$nameKey] ?? $resolved->name;
+
+        return $incoming;
+    }
 
     // ── Storage envelope ──────────────────────────────────────────────────────
 

@@ -250,6 +250,10 @@ class FormHydrationTest extends TestCase
             ]);
 
         $defaultValues = $response->decodeResponseJson()['data']['defaultValues'];
+        // The data-custodian default identifier must be the team's pid (persistent,
+        // public id), NOT the internal MySQL primary key — this hydrates
+        // summary.dataCustodian.identifier, which downstream flows resolve as a pid.
+        $this->assertEquals(Team::find($teamId)->pid, $defaultValues['identifier']);
         $this->assertEquals($defaultValues['Name of Data Custodian'], 'Form hydration test team');
         $this->assertEquals($defaultValues['Jurisdiction'], ['UK']);
         $this->assertNull($defaultValues['Organisation Logo']);

@@ -572,21 +572,21 @@ class IntegrationDatasetController extends Controller
                 //            - publisher.publisherId --> publisher.gatewayId
                 //            - publisher.publisherName --> publisher.name
                 // -------------------------------------------------------------------
+                // Normalise the raw (post-TRASER) publisher instead of forcing
+                // the requesting team: keep a publisher that names a different
+                // organisation, while normalising its gateway identifier to a
+                // pid and falling back to the requesting team when absent.
+                $incomingPublisher = $input['metadata']['metadata']['summary']['publisher'] ?? [];
+
                 if (version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
-                    $publisher = [
-                        'publisherId' => $team['pid'],
-                        'publisherName' => $team['name'],
-                    ];
+                    $publisher = $this->normalisePublisher($incomingPublisher, $team, 'publisherId', 'publisherName');
                 } else {
                     $version = $this->getVersion(1);
                     if (array_key_exists('version', $input['metadata']['metadata']['required'])) {
                         $version = $input['metadata']['metadata']['required']['version'];
                     }
                     $required['version'] = $version;
-                    $publisher = [
-                        'gatewayId' => $team['pid'],
-                        'name' => $team['name'],
-                    ];
+                    $publisher = $this->normalisePublisher($incomingPublisher, $team, 'gatewayId', 'name');
                 }
 
                 $input['metadata']['metadata']['required'] = $required;

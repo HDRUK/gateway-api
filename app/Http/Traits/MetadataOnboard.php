@@ -12,9 +12,38 @@ use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 use Illuminate\Support\Str;
 use MetadataManagementController as MMC;
+use App\Services\Gwdm\GwdmMetadataHandler;
 
 trait MetadataOnboard
 {
+    /**
+     * Normalise a summary.publisher object for these legacy V1 inline write
+     * paths: prefer the raw (post-TRASER) publisher, resolve its gateway
+     * identifier to a team pid (accepting either a primary key or a pid), and
+     * fall back to the requesting team when no resolvable publisher is present.
+     *
+     * Mirrors GwdmMetadataHandler::resolvePublisher() for the paths that build
+     * the version envelope inline instead of via the handler. $idKey/$nameKey
+     * select the version-specific shape (2.x: gatewayId/name; <1.1:
+     * publisherId/publisherName).
+     */
+    protected function normalisePublisher(array $incoming, array $team, string $idKey, string $nameKey): array
+    {
+        $resolved = GwdmMetadataHandler::resolveTeamFromGatewayId($incoming[$idKey] ?? null);
+
+        if (!$resolved) {
+            return [
+                $idKey   => $team['pid'],
+                $nameKey => $team['name'],
+            ];
+        }
+
+        $incoming[$idKey]   = $resolved->pid;
+        $incoming[$nameKey] = $incoming[$nameKey] ?? $resolved->name;
+
+        return $incoming;
+    }
+
     /**
      * Create new Dataset, calling translation service if necessary
      *
@@ -119,18 +148,23 @@ trait MetadataOnboard
             //            - publisher.publisherId --> publisher.gatewayId
             //            - publisher.publisherName --> publisher.name
             // -------------------------------------------------------------------
+            // Normalise the publisher from the raw (post-TRASER) payload rather
+            // than force-attributing to the requesting team: this preserves a
+            // publisher that names a different organisation while guaranteeing
+            // its gateway identifier is stored as a pid (not a raw primary key).
+            $incomingPublisher = $input['metadata']['metadata']['summary']['publisher'] ?? [];
+
             if (version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')) {
-                $publisher = [
-                    'publisherId' => $team['pid'],
-                    'publisherName' => $team['name'],
-                ];
-                $input['metadata']['metadata']['summary']['publisher'] = $publisher;
+                $input['metadata']['metadata']['summary']['publisher'] =
+                    $this->normalisePublisher($incomingPublisher, $team, 'publisherId', 'publisherName');
             } else {
                 $version = $this->formatVersion(1);
                 if (array_key_exists('version', $input['metadata']['metadata']['required'])) {
                     $version = $input['metadata']['metadata']['required']['version'];
                 }
                 $required['version'] = $version;
+                $input['metadata']['metadata']['summary']['publisher'] =
+                    $this->normalisePublisher($incomingPublisher, $team, 'gatewayId', 'name');
             }
 
             $input['metadata']['metadata']['required'] = $required;

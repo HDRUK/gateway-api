@@ -173,7 +173,14 @@ class FormHydrationController extends Controller
         $team = Team::findOrFail($id);
 
         $defaultValues = array();
-        $defaultValues['identifier'] = $team['id'];
+        // Seed the data-custodian default with the team's persistent identifier
+        // (pid), NOT the internal MySQL primary key. This value hydrates
+        // `summary.dataCustodian.identifier`, which the bulk-upload flow already
+        // validates against `team.pid` (UploadDataset.tsx -> errorNoMatchingPid)
+        // and which downstream lookups resolve as a pid. Using $team['id'] here
+        // previously made the manual-wizard and bulk-upload flows disagree on the
+        // meaning of the same field. See GAT publisher/dataCustodian investigation.
+        $defaultValues['identifier'] = $team['pid'];
         $defaultValues['Name of Data Custodian'] = $team['name'];
         $defaultValues['Organisation Logo'] = (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? null : (preg_match('/^https?:\/\//', $team['team_logo']) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']);
         $defaultValues['Organisation Description'] = $team['name'];

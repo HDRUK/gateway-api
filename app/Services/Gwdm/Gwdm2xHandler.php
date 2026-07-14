@@ -25,12 +25,12 @@ use App\Services\DatasetService;
 class Gwdm2xHandler extends GwdmMetadataHandler
 {
     /**
-     * KNOWN LIMITATION: always attributes the metadata to the requesting team.
-     * There is currently no mechanism for a team to publish metadata attributed
-     * to a different team (e.g. team A submitting on behalf of team B) — $team
-     * is unconditionally the team resolved from the write request's auth context
-     * (see CheckAccess::checkAccessTeam()), and this output is never read back
-     * from the incoming payload. Tracked for a separate design/investigation.
+     * FALLBACK `summary.publisher` = { gatewayId, name } for GWDM 2.x.
+     *
+     * Used by resolvePublisher() only when the incoming payload has no usable
+     * publisher. Attributes to the requesting team ($team, from the write
+     * request's auth context) using the team's pid — never the internal MySQL
+     * primary key.
      */
     public function buildPublisher(Team $team): array
     {
@@ -38,6 +38,27 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             'gatewayId' => $team->pid,
             'name'      => $team->name,
         ];
+    }
+
+    /**
+     * GWDM 2.x publisher resolution: prefer the RAW payload publisher, normalise
+     * its `gatewayId` to a pid (resolving a team by id-or-pid), and fall back to
+     * the requesting team when the payload carries no resolvable publisher.
+     *
+     * This allows a team to publish metadata whose publisher is a different
+     * organisation (publisher = who the metadata says published it), while
+     * guaranteeing `gatewayId` is stored as a pid rather than a raw primary key.
+     * Historically this field was force-set to the requesting team's pid; that
+     * ignored the payload and could not represent publish-on-behalf.
+     *
+     * NAMING NOTE: the HDRUK 4.0.0 translation output also renames the canonical
+     * GWDM `summary.dataCustodian` to `publisher`; `publisher` (who published
+     * the metadata) and `dataCustodian` (who controls the data) can legitimately
+     * diverge. Candidate for a future naming cleanup.
+     */
+    public function resolvePublisher(array $incoming, Team $team): array
+    {
+        return $this->resolvePublisherWithKeys($incoming, $team, 'gatewayId', 'name');
     }
 
     /**
@@ -77,7 +98,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         $required['version'] = $gwdm['required']['version'] ?? $required['version'];
 
         $gwdm['required']             = array_merge($gwdm['required'] ?? [], $required);
-        $gwdm['summary']['publisher'] = $this->buildPublisher($team);
+        $gwdm['summary']['publisher'] = $this->resolvePublisher($gwdm['summary']['publisher'] ?? [], $team);
 
         return $gwdm;
     }

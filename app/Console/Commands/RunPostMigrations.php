@@ -81,6 +81,10 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // add team dar modal content
             [
+                'command' => 'app:normalise-publisher-gateway-id',
+                'arguments' => [],
+            ], // normalise summary.publisher gatewayId/publisherId to team pids (before reindex)
+            [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
                     'entity' => 'datasets',

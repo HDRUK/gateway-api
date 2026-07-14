@@ -19,12 +19,9 @@ use App\Models\Team;
 class Gwdm1xHandler extends GwdmMetadataHandler
 {
     /**
-     * KNOWN LIMITATION: always attributes the metadata to the requesting team.
-     * There is currently no mechanism for a team to publish metadata attributed
-     * to a different team (e.g. team A submitting on behalf of team B) — $team
-     * is unconditionally the team resolved from the write request's auth context
-     * (see CheckAccess::checkAccessTeam()), and this output is never read back
-     * from the incoming payload. Tracked for a separate design/investigation.
+     * FALLBACK `summary.publisher` = { publisherId, publisherName } for the
+     * legacy GWDM < 1.1 shape. Used by resolvePublisher() only when the payload
+     * carries no usable publisher; attributes to the requesting team by pid.
      */
     public function buildPublisher(Team $team): array
     {
@@ -32,6 +29,16 @@ class Gwdm1xHandler extends GwdmMetadataHandler
             'publisherId'   => $team->pid,
             'publisherName' => $team->name,
         ];
+    }
+
+    /**
+     * Legacy GWDM < 1.1 publisher resolution: prefer the raw payload publisher,
+     * normalise `publisherId` to a pid (resolving a team by id-or-pid), and fall
+     * back to the requesting team when no resolvable publisher is present.
+     */
+    public function resolvePublisher(array $incoming, Team $team): array
+    {
+        return $this->resolvePublisherWithKeys($incoming, $team, 'publisherId', 'publisherName');
     }
 
     public function buildRequiredBlock(Dataset $dataset, int $versionNumber): array
@@ -51,7 +58,7 @@ class Gwdm1xHandler extends GwdmMetadataHandler
         $required = $this->buildRequiredBlock($dataset, $versionNumber);
         // DB-derived values win over whatever TRASER returned for the same keys
         $gwdm['required']             = array_merge($gwdm['required'] ?? [], $required);
-        $gwdm['summary']['publisher'] = $this->buildPublisher($team);
+        $gwdm['summary']['publisher'] = $this->resolvePublisher($gwdm['summary']['publisher'] ?? [], $team);
 
         return $gwdm;
     }
