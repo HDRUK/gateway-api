@@ -12,15 +12,15 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
 /**
- * PR2 coverage for H4 — persistMetadataVersion() must force a full snapshot when
- * the GWDM schema version changes between the previous version and the new one,
- * so every delta window stays schema-homogeneous (a patch diffed across differing
- * schemas would be meaningless, and reconstruction resolves its handler from the
- * nearest snapshot's gwdm_version).
+ * persistMetadataVersion() must force a full snapshot when the GWDM schema
+ * version changes between the previous version and the new one, so every
+ * delta window stays schema-homogeneous — a patch diffed across differing
+ * schemas would be meaningless, and reconstruction resolves its handler from
+ * the nearest snapshot's gwdm_version.
  *
- * Drives DatasetService directly (the V3 HTTP route that normally calls update()
- * lands in a later PR of the stack); the x-gwdm-version header steers the target
- * version via GwdmVersionContext.
+ * Drives DatasetService directly (the V3 HTTP route that normally calls
+ * update() lands in a later branch of this stack); the x-gwdm-version header
+ * steers the target version via GwdmVersionContext.
  */
 class DatasetVersionSchemaChangeTest extends TestCase
 {
@@ -107,7 +107,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
         );
 
         $v3 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 3)->first();
-        $this->assertNull($v3->patch, 'H4: a schema change must force a full snapshot (patch null)');
+        $this->assertNull($v3->patch, 'a schema change must force a full snapshot (patch null)');
         $this->assertSame('2.1', $v3->gwdm_version);
     }
 }

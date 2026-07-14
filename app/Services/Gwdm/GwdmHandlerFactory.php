@@ -12,7 +12,7 @@ namespace App\Services\Gwdm;
  * Resolution rules:
  *   < 1.1  → Gwdm1xHandler  (legacy publisher field format, no required.version)
  *   2.0    → Gwdm20Handler  (extends Gwdm2xHandler; override here when 2.0 diverges)
- *   2.1    → Gwdm21Handler  (extends Gwdm2xHandler; override here when 2.1 diverges)
+ *   2.1    → Gwdm21Handler  (extends Gwdm20Handler; inherits 2.0 fixes, override here when 2.1 diverges)
  *   3.0    → Gwdm30Handler  (extends Gwdm2xHandler; SQL structured table hooks)
  *   else   → Gwdm2xHandler  (catch-all for any 1.1+ version without a dedicated class)
  *

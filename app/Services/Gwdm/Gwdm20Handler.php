@@ -8,7 +8,8 @@ namespace App\Services\Gwdm;
  * Currently identical to Gwdm2xHandler — exists as a dedicated class so that
  * any future 2.0-specific gateway-side logic (required block changes, publisher
  * field mutations, afterStore hooks) can be added here without touching the
- * shared 2.x base or 2.1's handler.
+ * shared 2.x base. Gwdm21Handler extends this class, so any override added
+ * here is inherited by 2.1 automatically unless 2.1 overrides it back.
  */
 class Gwdm20Handler extends Gwdm2xHandler
 {

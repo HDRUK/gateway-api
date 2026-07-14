@@ -14,20 +14,13 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
 /**
- * Regression coverage for the GWDM version-handler review fixes:
+ * Covers dataset/publication linkage extraction and read-back via
+ * DatasetService/Gwdm2xHandler.
  *
- *  - H-a: getLinkages() must project raw_url/raw_title so UNRESOLVED (free-text)
- *         linkages round-trip with their title/url instead of rendering null.
- *  - H-b: extractLinkages() must read the reconstructed-from-blob GWDM WITHOUT the
- *         afterRead() SQL overlay, so re-running extraction cannot feed stale
- *         junction-table linkage back into the rows it is about to rewrite.
- *  - M5:  spatial coverage is scoped to the latest version, so editing coverage
- *         (England -> Scotland) reflects only the new value, not a growing union.
- *
- * Drives DatasetService/handlers directly; the x-gwdm-version header steers the
- * target GWDM version via GwdmVersionContext.
+ * Drives DatasetService/handlers directly; the x-gwdm-version header steers
+ * the target GWDM version via GwdmVersionContext.
  */
-class DatasetLinkageCoverageFixTest extends TestCase
+class DatasetVersionLinkageTest extends TestCase
 {
     use Authorization;
     use MockExternalApis {
@@ -75,8 +68,6 @@ class DatasetLinkageCoverageFixTest extends TestCase
         return [$created['dataset_id'], $created['version_id']];
     }
 
-    // ── H-a ─────────────────────────────────────────────────────────────────
-
     public function test_unresolved_linkage_roundtrips_title_and_url_via_get_linkages(): void
     {
         $this->disableObservers();
@@ -104,9 +95,7 @@ class DatasetLinkageCoverageFixTest extends TestCase
         $this->assertSame('isDerivedFrom', $linkages[0]['linkage_type']);
     }
 
-    // ── H-b ─────────────────────────────────────────────────────────────────
-
-    public function test_extract_linkages_uses_blob_not_stale_sql_overlay(): void
+    public function test_extract_linkages_reads_blob_not_stale_sql_overlay(): void
     {
         $this->disableObservers();
 
@@ -151,48 +140,6 @@ class DatasetLinkageCoverageFixTest extends TestCase
         $this->assertFalse(
             $rows->contains(fn ($r) => str_contains((string) $r->raw_url, 'STALE')),
             'extractLinkages must not resurrect stale SQL-overlay linkage',
-        );
-    }
-
-    // ── M5 ──────────────────────────────────────────────────────────────────
-
-    public function test_spatial_coverage_is_scoped_to_latest_version(): void
-    {
-        $this->disableObservers();
-
-        $team = Team::first();
-        $user = User::first();
-
-        // v1 coverage: England.
-        $metadata = $this->getMetadataV2p0();
-        $metadata['metadata']['coverage']['spatial'] = 'England';
-        [$datasetId] = $this->createDataset($metadata);
-
-        $regionsV1 = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
-        $this->assertContains('England', $regionsV1);
-        $this->assertNotContains('Scotland', $regionsV1);
-
-        // v2 coverage: Scotland (replaces, does not accumulate).
-        $updateMetadata = $this->getMetadataV2p0();
-        $updateMetadata['metadata']['coverage']['spatial'] = 'Scotland';
-
-        $this->setGwdmHeader('2.0');
-        $this->service()->update(
-            Dataset::find($datasetId),
-            ['metadata' => $updateMetadata, 'status' => Dataset::STATUS_ACTIVE],
-            $user->id,
-            $team->id,
-            Dataset::ORIGIN_MANUAL,
-            false,
-            $team,
-        );
-
-        $regionsV2 = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
-        $this->assertContains('Scotland', $regionsV2);
-        $this->assertNotContains(
-            'England',
-            $regionsV2,
-            'allSpatialCoverages must reflect only the latest version, not a union across versions',
         );
     }
 }

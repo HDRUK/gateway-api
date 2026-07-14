@@ -116,9 +116,10 @@ return [
     */
     'schema' => [
 
-        'HDRUK' => ['model' => 'HDRUK', 'version' => '4.0.0'],
+        'HDRUK' => ['model' => 'HDRUK', 'version' => env('HDRUK_CURRENT_VERSION', '4.0.0')],
         'CRUK'  => ['model' => 'CRUK',  'version' => '1.1.0'],
-        'PRUK'  => ['model' => 'PRUK',  'version' => null],
+        // PRUK schema version is not yet finalised — placeholder until confirmed.
+        'PRUK'  => ['model' => 'PRUK',  'version' => '0.0.0'],
 
     ],
 

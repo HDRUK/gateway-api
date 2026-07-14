@@ -18,6 +18,14 @@ use App\Models\Team;
  */
 class Gwdm1xHandler extends GwdmMetadataHandler
 {
+    /**
+     * KNOWN LIMITATION: always attributes the metadata to the requesting team.
+     * There is currently no mechanism for a team to publish metadata attributed
+     * to a different team (e.g. team A submitting on behalf of team B) — $team
+     * is unconditionally the team resolved from the write request's auth context
+     * (see CheckAccess::checkAccessTeam()), and this output is never read back
+     * from the incoming payload. Tracked for a separate design/investigation.
+     */
     public function buildPublisher(Team $team): array
     {
         return [
