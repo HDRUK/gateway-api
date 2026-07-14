@@ -225,7 +225,7 @@ class DatasetService
      * Supports the same x-gwdm-version header and schema_model/schema_version
      * TRASER translation as the full show path.
      *
-     * @return array{gwdmVersion: string, metadata: array}
+     * @return array{gwdmVersion?: string, metadata?: array} empty when the dataset has no version rows
      *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException when the requested GWDM version has no rows
      * @throws \InvalidArgumentException when schema_model/schema_version are mismatched
@@ -342,17 +342,19 @@ class DatasetService
 
     public function getMetadataVersionSummary(Dataset $dataset): array
     {
-        $rows = DatasetVersion::where('dataset_id', $dataset->id)
-            ->selectRaw('gwdm_version, count(*) as count')
-            ->groupBy('gwdm_version')
+        // countBy() over the plucked version strings avoids selecting a `count`
+        // aggregate alias onto the Eloquent model (which phpstan cannot see as a
+        // property). Keys stay in ascending gwdm_version order via the orderBy.
+        $counts = DatasetVersion::where('dataset_id', $dataset->id)
             ->orderBy('gwdm_version')
-            ->get();
+            ->pluck('gwdm_version')
+            ->countBy();
 
         return [
-            'total_versions' => $rows->sum('count'),
-            'gwdm_versions' => $rows->map(fn ($r) => [
-                'gwdm_version' => $r->gwdm_version,
-                'count' => (int) $r->count,
+            'total_versions' => $counts->sum(),
+            'gwdm_versions' => $counts->map(fn (int $count, string $version) => [
+                'gwdm_version' => $version,
+                'count' => $count,
             ])->values()->all(),
         ];
     }
