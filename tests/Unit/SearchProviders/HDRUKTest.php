@@ -38,7 +38,9 @@ class HDRUKTest extends TestCase
     {
         $provider = new HDRUK();
 
-        $this->assertNull($provider->collectionForFacetableFilter('dataset', 'accessService'));
+        // collectionName is a real Filter row but is cross-entity (Collection
+        // linked via a pivot) and not yet flattened into DatasetVersion.
+        $this->assertNull($provider->collectionForFacetableFilter('dataset', 'collectionName'));
     }
 
     public function test_returns_null_for_filter_type_with_no_typesense_model(): void
@@ -147,6 +149,53 @@ class HDRUKTest extends TestCase
                     'sampleAvailability' => [],
                 ],
             ],
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Boolean facet fields — Typesense needs a bare `field:=true`, not the
+    // quoted-array syntax used for string facets (which silently matches
+    // zero rows against a bool field instead of erroring).
+    // -------------------------------------------------------------------------
+
+    public function test_search_builds_a_bare_unquoted_clause_for_boolean_facet_fields(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'containsBioSamples:=true');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['containsBioSamples' => ['true']]],
+        ]);
+    }
+
+    public function test_search_builds_false_boolean_clause_correctly(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'isCohortDiscovery:=false');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['isCohortDiscovery' => ['false']]],
+        ]);
+    }
+
+    public function test_search_ignores_boolean_filter_when_both_values_selected(): void
+    {
+        // Selecting both true and false is equivalent to no filter at all.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['isCohortDiscovery' => ['true', 'false']]],
+        ]);
+    }
+
+    public function test_search_ignores_invalid_boolean_value(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['isCohortDiscovery' => ['maybe']]],
         ]);
     }
 

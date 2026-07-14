@@ -248,7 +248,7 @@ class DatasetVersion extends BaseTypesenseModel
     {
         return $this->belongsTo(Dataset::class, 'dataset_id', 'id')
             ->where('status', 'ACTIVE')
-            ->select(['id', 'status']);
+            ->select(['id', 'status', 'is_cohort_discovery']);
     }
 
     public function shouldBeSearchable(): bool
@@ -279,14 +279,38 @@ class DatasetVersion extends BaseTypesenseModel
             ->exists();
     }
 
+    /**
+     * Material types present on the dataset (GWDM >= 2.0's
+     * metadata.tissuesSampleCollection[].materialType, excluding the
+     * "no samples" sentinel value), or null if the section is absent.
+     * Backs both containsBioSamples (boolean) and sampleAvailability
+     * (the material type list itself) — same source, two views.
+     */
+    private function materialTypes(array $meta): ?array
+    {
+        $tissues = data_get($meta, 'metadata.tissuesSampleCollection', null);
+        if (!is_array($tissues)) {
+            return null;
+        }
+
+        $types = array_values(array_filter(array_map(
+            fn ($item) => ($item['materialType'] ?? null),
+            $tissues
+        ), fn ($type) => $type !== null && $type !== 'None/not available'));
+
+        return $types === [] ? null : array_values(array_unique($types));
+    }
+
     public function toSearchableArray(): array
     {
         $meta = $this->metadata ?? [];
 
-        $keywords   = data_get($meta, 'metadata.summary.keywords', '');
-        $dataType   = data_get($meta, 'metadata.summary.datasetType', '');
-        $conformsTo = data_get($meta, 'metadata.accessibility.formatAndStandards.conformsTo', '');
-        $structural = data_get($meta, 'metadata.structuralMetadata', []);
+        $keywords      = data_get($meta, 'metadata.summary.keywords', '');
+        $dataType      = data_get($meta, 'metadata.summary.datasetType', '');
+        $dataSubType   = data_get($meta, 'metadata.summary.datasetSubType', '') ?? '';
+        $conformsTo    = data_get($meta, 'metadata.accessibility.formatAndStandards.conformsTo', '');
+        $materialTypes = $this->materialTypes($meta);
+        $structural    = data_get($meta, 'metadata.structuralMetadata', []);
         if (is_string($structural)) {
             $structural = json_decode($structural, true) ?? [];
         }
@@ -308,10 +332,15 @@ class DatasetVersion extends BaseTypesenseModel
                 data_get($meta, 'metadata.summary.publisher.publisherName', '')
             ),
             'dataType'                      => array_values(array_filter(explode(';,;', $dataType))),
+            'dataSubType'                   => array_values(array_filter(explode(';,;', $dataSubType))),
             'populationSize'                => (int) data_get($meta, 'metadata.summary.populationSize', -1),
             'geographicLocation'            => $this->spatialCoverage->pluck('region')->all(),
             'datasetDOI'                    => data_get($meta, 'metadata.summary.doiName', ''),
             'conformsTo'                    => array_values(array_filter(explode(';,;', $conformsTo))),
+            'accessService'                 => data_get($meta, 'metadata.accessibility.access.accessServiceCategory', '') ?? '',
+            'containsBioSamples'            => $materialTypes !== null,
+            'sampleAvailability'            => $materialTypes ?? [],
+            'isCohortDiscovery'             => (bool) ($this->dataset->is_cohort_discovery ?? false),
             'structuralTableNames'          => collect($structural)
                                                 ->pluck('name')
                                                 ->filter(fn ($v) => is_string($v) && $v !== '')
@@ -354,10 +383,15 @@ class DatasetVersion extends BaseTypesenseModel
                 ['name' => 'keywords',                     'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'publisherName',                'type' => 'string',   'facet' => true, 'optional' => true],
                 ['name' => 'dataType',                     'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'dataSubType',                  'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'populationSize',               'type' => 'int64',    'optional' => true],
                 ['name' => 'geographicLocation',           'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'datasetDOI',                   'type' => 'string',   'optional' => true],
                 ['name' => 'conformsTo',                   'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'accessService',                'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'containsBioSamples',           'type' => 'bool',     'facet' => true, 'optional' => true],
+                ['name' => 'sampleAvailability',           'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'isCohortDiscovery',             'type' => 'bool',     'facet' => true, 'optional' => true],
                 ['name' => 'structuralTableNames',         'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnNames',        'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnDescriptions', 'type' => 'string[]', 'optional' => true],

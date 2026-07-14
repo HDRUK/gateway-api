@@ -50,7 +50,7 @@ class HDRUK implements SearchProvider
     // Facet fields per type — must match `facet => true` in the model's typesenseCollectionSchema().
     //
     private const TYPESENSE_FACET_MAP = [
-        'datasets'                => 'publisherName,keywords,dataType,geographicLocation,conformsTo',
+        'datasets'                => 'publisherName,keywords,dataType,dataSubType,geographicLocation,conformsTo,accessService,containsBioSamples,sampleAvailability,isCohortDiscovery',
         'tools'                   => 'license,programmingLanguages,typeCategory',
         'collections'             => '',
         'dur'                     => '',
@@ -62,7 +62,7 @@ class HDRUK implements SearchProvider
     // Only known facet fields are forwarded — keeps pagination/sort params out of filter_by.
     //
     private const TYPESENSE_FILTERABLE_MAP = [
-        'datasets'     => ['publisherName', 'keywords', 'dataType', 'geographicLocation', 'conformsTo'],
+        'datasets'     => ['publisherName', 'keywords', 'dataType', 'dataSubType', 'geographicLocation', 'conformsTo', 'accessService', 'containsBioSamples', 'sampleAvailability', 'isCohortDiscovery'],
         'tools'        => ['license', 'programmingLanguages', 'typeCategory'],
         'publications' => ['publication_type'],
     ];
@@ -347,11 +347,59 @@ class HDRUK implements SearchProvider
                 continue;
             }
 
+            if ($this->isBooleanFacetField($type, $field)) {
+                $clause = $this->buildBooleanClause($field, $values);
+                if ($clause !== null) {
+                    $clauses[$field] = $clause;
+                }
+                continue;
+            }
+
             $quoted          = array_map(fn ($v) => '`' . str_replace('`', '', $v) . '`', $values);
             $clauses[$field] = $field . ':=[' . implode(',', $quoted) . ']';
         }
 
         return $clauses;
+    }
+
+    /**
+     * Typesense's bool fields filter as a bare `field:=true`/`field:=false`,
+     * not the quoted-array syntax used for string/string[] facets — that
+     * syntax silently matches zero rows against a bool field rather than
+     * erroring, so this must be detected and handled separately. Derived
+     * from the model's schema (not a hardcoded field list) so it can't drift
+     * out of sync the way TYPESENSE_FACET_MAP once did.
+     */
+    private function isBooleanFacetField(string $type, string $field): bool
+    {
+        $modelClass = self::TYPESENSE_MODEL_MAP[$type] ?? null;
+        if ($modelClass === null) {
+            return false;
+        }
+
+        $fieldDef = collect((new $modelClass())->typesenseCollectionSchema()['fields'] ?? [])
+            ->firstWhere('name', $field);
+
+        return ($fieldDef['type'] ?? null) === 'bool';
+    }
+
+    /**
+     * Builds a bare (unquoted, non-array) boolean filter_by clause. Returns
+     * null — no filter — if the selection is empty or ambiguous (both true
+     * and false selected is equivalent to no filter at all).
+     */
+    private function buildBooleanClause(string $field, array $values): ?string
+    {
+        $normalized = array_values(array_unique(array_map(
+            fn ($v) => strtolower(trim($v)),
+            $values
+        )));
+
+        if (count($normalized) !== 1 || !in_array($normalized[0], ['true', 'false'], true)) {
+            return null;
+        }
+
+        return $field . ':=' . $normalized[0];
     }
 
     /**
