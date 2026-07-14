@@ -213,7 +213,9 @@ class BackfillGwdm30 extends Command
                     $envelope30 = $handler->buildEnvelope($gwdm30, $envelope['original_metadata'] ?? []);
                     $existing30->title       = $title;
                     $existing30->short_title = $shortTitle;
-                    $existing30->metadata    = json_encode($envelope30);
+                    // Assign the array (the metadata Attribute json-encodes it). Passing
+                    // a pre-encoded string trips phpstan on the array-cast column.
+                    $existing30->metadata    = $envelope30;
                     $existing30->save();
                     $handler->afterStore($dataset, $existing30, $gwdm30);
                 });
