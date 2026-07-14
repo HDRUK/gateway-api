@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -26,29 +25,10 @@ return new class () extends Migration {
             $table->index('gwdm_version');
         });
 
-        // Back-fill from the JSON envelope.
-        //
-        // Snapshot rows (patch IS NULL) have gwdmVersion set in metadata->gwdmVersion.
-        // Delta rows (patch IS NOT NULL) store a reduced envelope where metadata = []
-        // or metadata = {gwdmVersion, original_metadata} — JSON_EXTRACT may return NULL.
-        //
-        // COALESCE falls back to '2.0' for any row where the JSON path is absent
-        // (delta rows, legacy rows, or rows where metadata is a bare empty array).
-        // This is always correct because no GWDM 2.1+ data exists in the DB today.
-        //
-        // Guarded to MySQL only — JSON_UNQUOTE/JSON_EXTRACT are not available in
-        // SQLite (used by the test suite). The column default of '2.0' covers
-        // test fixtures correctly.
-        if (DB::connection()->getDriverName() === 'mysql') {
-            DB::statement("
-                UPDATE dataset_versions
-                SET gwdm_version = COALESCE(
-                    JSON_UNQUOTE(JSON_EXTRACT(NULLIF(metadata, 'null'), '$.gwdmVersion')),
-                    '2.0'
-                )
-                WHERE deleted_at IS NULL
-            ");
-        }
+        // Data back-fill of existing rows from metadata->gwdmVersion is handled by a
+        // deployment step (database/deployment-steps/*_backfill_gwdm_version.php),
+        // which runs via `php artisan deploy:run` after migrations. New rows get the
+        // '2.0' column default until the service layer sets an explicit version.
     }
 
     public function down(): void
