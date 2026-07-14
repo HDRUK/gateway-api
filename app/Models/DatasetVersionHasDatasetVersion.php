@@ -24,6 +24,9 @@ class DatasetVersionHasDatasetVersion extends Model
         'linkage_type',
         'direct_linkage',
         'description',
+        'raw_url',
+        'raw_pid',
+        'raw_title',
     ];
 
     /**

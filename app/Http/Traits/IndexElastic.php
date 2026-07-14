@@ -31,6 +31,7 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
+use App\Services\DatasetService;
 use ElasticClientController as ECC;
 
 trait IndexElastic
@@ -42,6 +43,35 @@ trait IndexElastic
     private $tools = [];
     private $publications = [];
     private $collections = [];
+
+    /**
+     * Reconstruct the full GWDM envelope for a dataset's latest version.
+     *
+     * DatasetVersion->metadata cannot be read directly for indexing: delta rows
+     * store an empty metadata blob, and GWDM 3.0 rows omit the `metadata` key
+     * entirely (their data lives in dedicated SQL tables). Funnelling through
+     * DatasetService::getReconstructedMetadataEnvelope() yields a complete
+     * {gwdmVersion, metadata, original_metadata} envelope for every schema
+     * version and every snapshot/delta storage shape. Validation is skipped —
+     * data is validated at write time.
+     *
+     * @return array The reconstructed envelope, or [] when the dataset has no versions.
+     */
+    private function reconstructedLatestEnvelope(Dataset $dataset): array
+    {
+        $version = $dataset->latestVersion();
+
+        if (!$version) {
+            return [];
+        }
+
+        return app(DatasetService::class)->getReconstructedMetadataEnvelope(
+            $dataset->id,
+            $version->version,
+            false,
+            $version,
+        );
+    }
 
     /**
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
@@ -71,7 +101,7 @@ trait IndexElastic
                 // throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
             }
 
-            $metadata = $datasetMatch->latestVersion()->metadata;
+            $metadata = $this->reconstructedLatestEnvelope($datasetMatch);
 
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
@@ -535,8 +565,8 @@ trait IndexElastic
 
             foreach ($datasets as $dataset) {
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
-                $metadata = $dataset['versions'][0];
-                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+                $envelope = $this->reconstructedLatestEnvelope($dataset);
+                $datasetTitles[] = $envelope['metadata']['summary']['shortTitle'] ?? '';
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
@@ -698,9 +728,10 @@ trait IndexElastic
             ];
 
             foreach ($datasets as $dataset) {
-                $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
-                $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                $datasetModel = Dataset::where(['id' => $dataset['id']])->first();
+                $latestVersionID = $datasetModel->latestVersion()->id;
+                $envelope = $this->reconstructedLatestEnvelope($datasetModel);
+                $datasetTitles[] = $envelope['metadata']['summary']['shortTitle'] ?? '';
 
                 // change from 'UNKNOWN' to 'USING' - temp
                 $linkType = PublicationHasDatasetVersion::where([
@@ -838,8 +869,8 @@ trait IndexElastic
                 $datasetTitles[] = '_Can be used with any dataset';
             } else {
                 foreach ($datasets as $dataset) {
-                    $dataset_version = $dataset['versions'][0];
-                    $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
+                    $envelope = $this->reconstructedLatestEnvelope($dataset);
+                    $datasetTitles[] = $envelope['metadata']['summary']['shortTitle'] ?? '';
                 }
                 usort($datasetTitles, 'strcasecmp');
             }
@@ -1110,14 +1141,7 @@ trait IndexElastic
         $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
         $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
-        $version = $dataset->latestVersion();
-        $withLinks = DatasetVersion::where('id', $version['id'])
-            ->with(['linkedDatasetVersions'])
-            ->first();
-
-        $dataset->setAttribute('versions', [$withLinks]);
-
-        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
+        $metadataSummary = $this->reconstructedLatestEnvelope($dataset)['metadata']['summary'] ?? [];
 
         $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
         $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
