@@ -25,18 +25,29 @@ use App\Services\DatasetService;
 class Gwdm2xHandler extends GwdmMetadataHandler
 {
     /**
-     * KNOWN LIMITATION: always attributes the metadata to the requesting team.
-     * There is currently no mechanism for a team to publish metadata attributed
-     * to a different team (e.g. team A submitting on behalf of team B) — $team
-     * is unconditionally the team resolved from the write request's auth context
-     * (see CheckAccess::checkAccessTeam()), and this output is never read back
-     * from the incoming payload. Tracked for a separate design/investigation.
+     * Build summary.publisher = { gatewayId, name }.
+     *
+     * Keeps the publisher from the incoming metadata payload when its gatewayId
+     * maps to an existing team (validated by casting to an integer team id and
+     * looking it up); otherwise falls back to the requesting team.
+     *
+     * KNOWN ISSUE: gatewayId here is the raw team primary key (e.g. "07"), not
+     * the team's persistent id (pid) — inconsistent with the rest of the model,
+     * and nothing checks the requesting team is allowed to publish as the named
+     * team.
      */
-    public function buildPublisher(Team $team): array
+    public function buildPublisher(Team $team, array $incoming = []): array
     {
+        $gatewayId = $incoming['gatewayId'] ?? null;
+
+        // Valid only if the gatewayId maps to an existing team (by integer id).
+        if ($gatewayId !== null && Team::find((int) $gatewayId)) {
+            return $incoming;
+        }
+
         return [
-            'gatewayId' => $team->pid,
-            'name'      => $team->name,
+            'gatewayId' => (string) $team->id,
+            'name' => $team->name,
         ];
     }
 
@@ -58,17 +69,17 @@ class Gwdm2xHandler extends GwdmMetadataHandler
     public function buildRequiredBlock(Dataset $dataset, int $versionNumber): array
     {
         return [
-            'gatewayId'  => strval($dataset->id),
+            'gatewayId' => strval($dataset->id),
             'gatewayPid' => $dataset->pid,
-            'issued'     => $dataset->created,
-            'modified'   => $dataset->updated,
-            'version'    => $this->formatVersion($versionNumber),
-            'revisions'  => $this->buildRevisions($dataset, $versionNumber),
+            'issued' => $dataset->created,
+            'modified' => $dataset->updated,
+            'version' => $this->formatVersion($versionNumber),
+            'revisions' => $this->buildRevisions($dataset, $versionNumber),
         ];
     }
 
     public function prepareMetadata(array $gwdm, Dataset $dataset, Team $team, int $versionNumber): array
-    {   
+    {
         $required = $this->buildRequiredBlock($dataset, $versionNumber);
 
         // Preserve any version string the caller (or TRASER) already set,
@@ -76,8 +87,8 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         // DB-derived values win for all other required keys.
         $required['version'] = $gwdm['required']['version'] ?? $required['version'];
 
-        $gwdm['required']             = array_merge($gwdm['required'] ?? [], $required);
-        $gwdm['summary']['publisher'] = $this->buildPublisher($team);
+        $gwdm['required'] = array_merge($gwdm['required'] ?? [], $required);
+        $gwdm['summary']['publisher'] = $this->buildPublisher($team, $gwdm['summary']['publisher'] ?? []);
 
         return $gwdm;
     }
@@ -138,8 +149,8 @@ class Gwdm2xHandler extends GwdmMetadataHandler
     {
         DatasetVersionHasDatasetVersion::where([
             'dataset_version_source_id' => $sourceVersionId,
-            'direct_linkage'            => 1,
-            'description'               => self::LINKAGE_DESCRIPTION,
+            'direct_linkage' => 1,
+            'description' => self::LINKAGE_DESCRIPTION,
         ])->delete();
 
         if (is_null($datasetLinkages)) {
@@ -147,33 +158,34 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         }
 
         foreach ($datasetLinkages as $key => $data) {
-            if (!$data) {
+            if (! $data) {
                 continue;
             }
             foreach ($data as $d) {
                 $targetVersionId = $this->findTargetDataset($d);
 
-                if (!$targetVersionId) {
+                if (! $targetVersionId) {
                     // Store unresolved reference so afterRead() can reconstruct it from SQL.
                     DatasetVersionHasDatasetVersion::create([
                         'dataset_version_source_id' => $sourceVersionId,
                         'dataset_version_target_id' => null,
-                        'linkage_type'              => $key,
-                        'direct_linkage'            => 1,
-                        'description'               => self::LINKAGE_DESCRIPTION,
-                        'raw_url'                   => $d['url'] ?? null,
-                        'raw_pid'                   => $d['pid'] ?? null,
-                        'raw_title'                 => $d['title'] ?? null,
+                        'linkage_type' => $key,
+                        'direct_linkage' => 1,
+                        'description' => self::LINKAGE_DESCRIPTION,
+                        'raw_url' => $d['url'] ?? null,
+                        'raw_pid' => $d['pid'] ?? null,
+                        'raw_title' => $d['title'] ?? null,
                     ]);
+
                     continue;
                 }
 
                 DatasetVersionHasDatasetVersion::firstOrCreate([
                     'dataset_version_source_id' => $sourceVersionId,
                     'dataset_version_target_id' => $targetVersionId,
-                    'linkage_type'              => $key,
-                    'direct_linkage'            => 1,
-                    'description'               => self::LINKAGE_DESCRIPTION,
+                    'linkage_type' => $key,
+                    'direct_linkage' => 1,
+                    'description' => self::LINKAGE_DESCRIPTION,
                 ]);
             }
         }
@@ -183,8 +195,8 @@ class Gwdm2xHandler extends GwdmMetadataHandler
     {
         PublicationHasDatasetVersion::where([
             'dataset_version_id' => $sourceVersionId,
-            'description'        => self::LINKAGE_DESCRIPTION,
-            'link_type'          => $linkType,
+            'description' => self::LINKAGE_DESCRIPTION,
+            'link_type' => $linkType,
         ])->delete();
 
         if (is_null($publicationLinkages)) {
@@ -192,29 +204,30 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         }
 
         foreach ($publicationLinkages as $doi) {
-            if (!$doi) {
+            if (! $doi) {
                 continue;
             }
 
             $publicationId = $this->findTargetPublication($doi);
 
-            if (!$publicationId) {
+            if (! $publicationId) {
                 // Store unresolved DOI so afterRead() can reconstruct it from SQL.
                 PublicationHasDatasetVersion::create([
-                    'publication_id'     => null,
+                    'publication_id' => null,
                     'dataset_version_id' => $sourceVersionId,
-                    'link_type'          => $linkType,
-                    'description'        => self::LINKAGE_DESCRIPTION,
-                    'raw_doi'            => $doi,
+                    'link_type' => $linkType,
+                    'description' => self::LINKAGE_DESCRIPTION,
+                    'raw_doi' => $doi,
                 ]);
+
                 continue;
             }
 
             $linkage = PublicationHasDatasetVersion::withTrashed()->firstOrCreate([
-                'publication_id'     => $publicationId,
+                'publication_id' => $publicationId,
                 'dataset_version_id' => $sourceVersionId,
-                'link_type'          => $linkType,
-                'description'        => self::LINKAGE_DESCRIPTION,
+                'link_type' => $linkType,
+                'description' => self::LINKAGE_DESCRIPTION,
             ]);
 
             if ($linkage->trashed()) {
@@ -225,8 +238,8 @@ class Gwdm2xHandler extends GwdmMetadataHandler
 
     protected function findTargetDataset(array $data): ?int
     {
-        $id    = $data['url'] ?? null;
-        $pid   = $data['pid'] ?? null;
+        $id = $data['url'] ?? null;
+        $pid = $data['pid'] ?? null;
         $title = $data['title'] ?? null;
 
         if ($id) {
@@ -309,22 +322,22 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             || $unresolvedDatasets->isNotEmpty()
             || $publications->isNotEmpty();
 
-        if (!$hasExtractedRows) {
+        if (! $hasExtractedRows) {
             return [];
         }
 
         $datasetLinkage = [];
         foreach ($resolvedDatasets as $row) {
             $datasetLinkage[$row->linkage_type][] = [
-                'url'   => config('gateway.gateway_url') . '/en/dataset/' . $row->dataset_id,
-                'pid'   => $row->pid,
+                'url' => config('gateway.gateway_url').'/en/dataset/'.$row->dataset_id,
+                'pid' => $row->pid,
                 'title' => $row->short_title,
             ];
         }
         foreach ($unresolvedDatasets as $row) {
             $datasetLinkage[$row->linkage_type][] = [
-                'url'   => $row->raw_url,
-                'pid'   => $row->raw_pid,
+                'url' => $row->raw_url,
+                'pid' => $row->raw_pid,
                 'title' => $row->raw_title,
             ];
         }
@@ -333,7 +346,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         $usingDataset = [];
         foreach ($publications as $row) {
             $doi = $row->paper_doi ?? $row->raw_doi;
-            if (!$doi) {
+            if (! $doi) {
                 continue;
             }
             if ($row->link_type === 'ABOUT') {
@@ -345,7 +358,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
 
         return [
             'linkage' => [
-                'datasetLinkage'          => $datasetLinkage,
+                'datasetLinkage' => $datasetLinkage,
                 'publicationAboutDataset' => $aboutDataset,
                 'publicationUsingDataset' => $usingDataset,
             ],

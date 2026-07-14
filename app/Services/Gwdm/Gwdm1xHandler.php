@@ -19,17 +19,27 @@ use App\Models\Team;
 class Gwdm1xHandler extends GwdmMetadataHandler
 {
     /**
-     * KNOWN LIMITATION: always attributes the metadata to the requesting team.
-     * There is currently no mechanism for a team to publish metadata attributed
-     * to a different team (e.g. team A submitting on behalf of team B) — $team
-     * is unconditionally the team resolved from the write request's auth context
-     * (see CheckAccess::checkAccessTeam()), and this output is never read back
-     * from the incoming payload. Tracked for a separate design/investigation.
+     * Build the legacy summary.publisher = { publisherId, publisherName }.
+     *
+     * Keeps the publisher from the incoming metadata payload when its publisherId
+     * maps to an existing team (validated by casting to an integer team id and
+     * looking it up); otherwise falls back to the requesting team.
+     *
+     * KNOWN ISSUE: publisherId here is the raw team primary key, not the team's
+     * persistent id (pid). Properly resolved/normalised on
+     * fix/GAT-9018-publisher-fix.
      */
-    public function buildPublisher(Team $team): array
+    public function buildPublisher(Team $team, array $incoming = []): array
     {
+        $publisherId = $incoming['publisherId'] ?? null;
+
+        // Valid only if the publisherId maps to an existing team (by integer id).
+        if ($publisherId !== null && Team::find((int) $publisherId)) {
+            return $incoming;
+        }
+
         return [
-            'publisherId'   => $team->pid,
+            'publisherId'   => (string) $team->id,
             'publisherName' => $team->name,
         ];
     }
@@ -51,7 +61,7 @@ class Gwdm1xHandler extends GwdmMetadataHandler
         $required = $this->buildRequiredBlock($dataset, $versionNumber);
         // DB-derived values win over whatever TRASER returned for the same keys
         $gwdm['required']             = array_merge($gwdm['required'] ?? [], $required);
-        $gwdm['summary']['publisher'] = $this->buildPublisher($team);
+        $gwdm['summary']['publisher'] = $this->buildPublisher($team, $gwdm['summary']['publisher'] ?? []);
 
         return $gwdm;
     }

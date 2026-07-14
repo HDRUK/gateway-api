@@ -76,15 +76,17 @@ abstract class GwdmMetadataHandler
     /**
      * Build the summary.publisher object for this schema version.
      *
-     * KNOWN LIMITATION: implementations always attribute the metadata to
-     * whichever team is passed in — there is currently no mechanism for a
-     * team to publish metadata attributed to a different team (e.g. team A
-     * submitting on behalf of team B). $team is unconditionally the team
-     * resolved from the write request's auth context (see
-     * CheckAccess::checkAccessTeam()), and this output is never read back
-     * from the incoming payload. Tracked for a separate design/investigation.
+     * Takes the publisher from the incoming metadata payload ($incoming) when its
+     * gateway identifier references an existing team, and otherwise falls back to
+     * attributing the metadata to the requesting $team.
+     *
+     * KNOWN ISSUE: the publisher gateway identifier is a raw team primary key
+     * (e.g. "07"), not the team's persistent id (pid) — inconsistent with the
+     * rest of the model, and there is no check that the requesting team is
+     * authorised to publish as the named team. Properly resolved/normalised on
+     * fix/GAT-9018-publisher-fix; tracked for a separate design/investigation.
      */
-    abstract public function buildPublisher(Team $team): array;
+    abstract public function buildPublisher(Team $team, array $incoming = []): array;
 
     // ── Storage envelope ──────────────────────────────────────────────────────
 
