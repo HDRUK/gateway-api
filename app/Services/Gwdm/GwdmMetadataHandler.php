@@ -187,6 +187,32 @@ abstract class GwdmMetadataHandler
         // no-op for versions without linkage extraction support
     }
 
+    // ── Onboarding form defaults ──────────────────────────────────────────────
+
+    /**
+     * GWDM dot-paths, relative to the raw dataset_versions.metadata envelope
+     * (i.e. {gwdmVersion, metadata: {...GWDM...}, original_metadata}), used by
+     * FormHydrationController::getDefaultValues() to pre-populate onboarding
+     * form fields from a team's existing datasets.
+     *
+     * Shared across all JSON-based versions — the accessibility section shape
+     * has not changed between GWDM < 1.1 and 2.x. Override this when a version
+     * restructures these fields, or return [] when the fields are no longer
+     * JSON-addressable (e.g. GWDM 3.0, where this data lives in SQL tables).
+     */
+    public function defaultValuePaths(): array
+    {
+        return [
+            'dataUseLimitation'   => 'metadata.accessibility.usage.dataUseLimitation',
+            'dataUseRequirements' => 'metadata.accessibility.usage.dataUseRequirements',
+            'accessRights'        => 'metadata.accessibility.access.accessRights',
+            'accessService'       => 'metadata.accessibility.access.accessService',
+            'accessRequestCost'   => 'metadata.accessibility.access.accessRequestCost',
+            'deliveryLeadTime'    => 'metadata.accessibility.access.deliveryLeadTime',
+            'formats'             => 'metadata.accessibility.formatAndStandards.formats',
+        ];
+    }
+
     // ── Shared helpers ────────────────────────────────────────────────────────
 
     /**
