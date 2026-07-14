@@ -785,4 +785,44 @@ class DatasetVersionGwdm30Test extends TestCase
             ],
         ]);
     }
+
+    // ─── M2: batched section preload (avoids N+1 on multi-version reads) ────────
+
+    public function test_preload_sections_for_versions_batches_queries(): void
+    {
+        $handler = app(GwdmHandlerFactory::class)->resolve('3.0');
+        $gwdm = $this->getGwdm30Metadata()['metadata'];
+
+        // Three separate 3.0 versions, each with SQL sections written.
+        $versions = collect();
+        for ($i = 0; $i < 3; $i++) {
+            $dv = $this->makeDatasetVersion30([]);
+            $handler->afterStore($dv->dataset, $dv, $gwdm);
+            $versions->push(DatasetVersion::find($dv->id)); // fresh, no relations loaded
+        }
+
+        \Illuminate\Support\Facades\DB::flushQueryLog();
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        $handler->preloadSectionsForVersions($versions);
+        $preloadQueries = count(\Illuminate\Support\Facades\DB::getQueryLog());
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+
+        // One query per section type regardless of the version count — bounded well
+        // below the per-row cost (3 versions x ~16 sections = ~48 queries).
+        $this->assertLessThanOrEqual(20, $preloadQueries, "expected a batched preload, got {$preloadQueries} queries");
+        $this->assertTrue($versions->first()->relationLoaded('gwdm30Summary'));
+        $this->assertTrue($versions->last()->relationLoaded('gwdm30Observations'));
+
+        // afterRead() on a preloaded version reads the 16 SQL sections from the
+        // hydrated relations (no re-query); the only queries it may still issue are
+        // for linkage reconstruction from the junction tables, which are not part
+        // of the section preload. So the count stays small and constant, not ~16.
+        \Illuminate\Support\Facades\DB::flushQueryLog();
+        \Illuminate\Support\Facades\DB::enableQueryLog();
+        $handler->afterRead($versions->first());
+        $afterReadQueries = count(\Illuminate\Support\Facades\DB::getQueryLog());
+        \Illuminate\Support\Facades\DB::disableQueryLog();
+
+        $this->assertLessThanOrEqual(4, $afterReadQueries, 'afterRead should serve the 16 SQL sections from preloaded relations');
+    }
 }

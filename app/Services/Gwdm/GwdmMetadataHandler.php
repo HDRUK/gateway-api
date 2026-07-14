@@ -165,6 +165,19 @@ abstract class GwdmMetadataHandler
     }
 
     /**
+     * Batch equivalent of preloadSections() for a whole collection of versions,
+     * loading each section type once across all ids to avoid N+1 reads.
+     *
+     * No-op for JSON-based versions. Gwdm30Handler overrides it.
+     *
+     * @param  \Illuminate\Support\Collection<int, DatasetVersion>  $versions
+     */
+    public function preloadSectionsForVersions(\Illuminate\Support\Collection $versions): void
+    {
+        // no-op for 2.x and below
+    }
+
+    /**
      * Extract linkage data from this version and write it to the appropriate
      * junction tables. Called by the LinkageExtraction job.
      *

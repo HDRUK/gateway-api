@@ -24,6 +24,7 @@ use App\Models\Gwdm30\StructuralValue;
 use App\Models\Gwdm30\Summary;
 use App\Models\Gwdm30\TissueSampleCollection;
 use App\Models\PublicationHasDatasetVersion;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -435,6 +436,55 @@ class Gwdm30Handler extends Gwdm2xHandler
         $dv->setRelation('gwdm30TissueSampleCollections', TissueSampleCollection::where('dataset_version_id', $id)->orderBy('id')->get());
         $dv->setRelation('gwdm30ProjectGrants',           ProjectGrant::where('dataset_version_id', $id)->orderBy('id')->get());
         $dv->setRelation('gwdm30DatasetFilters',          DatasetFilter::where('dataset_version_id', $id)->orderBy('id')->get());
+    }
+
+    /**
+     * Batch equivalent of preloadSections() for a whole collection of dataset
+     * versions: loads each section type ONCE across all version ids and hydrates
+     * every row's relations from the result. Fixes the N+1 (~16 queries per row)
+     * when reading many 3.0 versions at once, e.g. GET /metadata-versions.
+     *
+     * @param  \Illuminate\Support\Collection<int, DatasetVersion>  $versions
+     */
+    public function preloadSectionsForVersions(Collection $versions): void
+    {
+        $ids = $versions->pluck('id')->all();
+        if ($ids === []) {
+            return;
+        }
+
+        // Single-row sections: keyBy dataset_version_id -> at most one row each.
+        $single = [
+            'gwdm30Summary' => Summary::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+            'gwdm30Coverage' => Coverage::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+            'gwdm30Provenance' => Provenance::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+            'gwdm30Accessibility' => Accessibility::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+            'gwdm30LinkageMeta' => LinkageMeta::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+            'gwdm30Omics' => Omics::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+            'gwdm30Erd' => Erd::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+            'gwdm30Required' => Required::whereIn('dataset_version_id', $ids)->get()->keyBy('dataset_version_id'),
+        ];
+
+        // Multi-row sections: groupBy dataset_version_id -> a collection each.
+        $many = [
+            'gwdm30Observations' => Observation::whereIn('dataset_version_id', $ids)->orderBy('id')->get()->groupBy('dataset_version_id'),
+            'gwdm30DemographicFrequencies' => DemographicFrequency::whereIn('dataset_version_id', $ids)->orderBy('id')->get()->groupBy('dataset_version_id'),
+            'gwdm30Distributions' => Distribution::whereIn('dataset_version_id', $ids)->orderBy('id')->get()->groupBy('dataset_version_id'),
+            'gwdm30QualityAnnotations' => QualityAnnotation::whereIn('dataset_version_id', $ids)->orderBy('id')->get()->groupBy('dataset_version_id'),
+            'gwdm30StructuralTables' => StructuralTable::whereIn('dataset_version_id', $ids)->with(['columns.values'])->orderBy('id')->get()->groupBy('dataset_version_id'),
+            'gwdm30TissueSampleCollections' => TissueSampleCollection::whereIn('dataset_version_id', $ids)->orderBy('id')->get()->groupBy('dataset_version_id'),
+            'gwdm30ProjectGrants' => ProjectGrant::whereIn('dataset_version_id', $ids)->orderBy('id')->get()->groupBy('dataset_version_id'),
+            'gwdm30DatasetFilters' => DatasetFilter::whereIn('dataset_version_id', $ids)->orderBy('id')->get()->groupBy('dataset_version_id'),
+        ];
+
+        foreach ($versions as $dv) {
+            foreach ($single as $relation => $keyed) {
+                $dv->setRelation($relation, $keyed->get($dv->id));
+            }
+            foreach ($many as $relation => $grouped) {
+                $dv->setRelation($relation, $grouped->get($dv->id, collect())->values());
+            }
+        }
     }
 
     private function read(DatasetVersion $dv): array

@@ -376,6 +376,14 @@ class DatasetService
             ->orderBy('version')
             ->get();
 
+        // Batch-preload GWDM 3.0 SQL sections across all versions up front so the
+        // per-row afterRead() below reads hydrated relations instead of issuing
+        // ~16 queries per 3.0 row (N+1).
+        $versions30 = $versions->where('gwdm_version', '3.0');
+        if ($versions30->isNotEmpty()) {
+            $this->handlerFactory->resolve('3.0')->preloadSectionsForVersions($versions30);
+        }
+
         $results = [];
         $schemaName = Config::get('metadata.GWDM.name');
 
@@ -997,7 +1005,14 @@ class DatasetService
             ->value('gwdm_version');
         $schemaChanged = $previousGwdmVersion !== null && $previousGwdmVersion !== $targetGwdmVersion;
 
-        $isSnapshot = ($newVersionNumber % self::SNAPSHOT_INTERVAL === 0) || $schemaChanged;
+        // GWDM 3.0 stores its section content in dedicated SQL tables, not in the
+        // JSON envelope — a delta patch would (a) be reconstructed from SQL anyway
+        // and (b) duplicate the section values (incl. any PII) into the immutable
+        // patch column, where they would survive SQL-row erasure. So 3.0 rows are
+        // always snapshots (patch = null); reconstruction reads them straight from SQL.
+        $isPii3xVersion = $targetGwdmVersion === '3.0';
+
+        $isSnapshot = ($newVersionNumber % self::SNAPSHOT_INTERVAL === 0) || $schemaChanged || $isPii3xVersion;
 
         // Persist the version row and its handler-owned structured tables in a
         // single transaction. Without this, a failure inside afterStore() (e.g.

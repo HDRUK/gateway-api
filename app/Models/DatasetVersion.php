@@ -40,6 +40,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
  *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
  * )
+ *
+ * GWDM 3.0 SQL section relations, hydrated dynamically via setRelation() by
+ * Gwdm30Handler::preloadSections()/preloadSectionsForVersions() (there are no
+ * relation methods on this model; these declarations type the read access):
+ * @property-read \App\Models\Gwdm30\Summary|null $gwdm30Summary
+ * @property-read \App\Models\Gwdm30\Coverage|null $gwdm30Coverage
+ * @property-read \App\Models\Gwdm30\Provenance|null $gwdm30Provenance
+ * @property-read \App\Models\Gwdm30\Accessibility|null $gwdm30Accessibility
+ * @property-read \App\Models\Gwdm30\LinkageMeta|null $gwdm30LinkageMeta
+ * @property-read \App\Models\Gwdm30\Omics|null $gwdm30Omics
+ * @property-read \App\Models\Gwdm30\Erd|null $gwdm30Erd
+ * @property-read \App\Models\Gwdm30\Required|null $gwdm30Required
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\Observation> $gwdm30Observations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\DemographicFrequency> $gwdm30DemographicFrequencies
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\Distribution> $gwdm30Distributions
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\QualityAnnotation> $gwdm30QualityAnnotations
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\StructuralTable> $gwdm30StructuralTables
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\TissueSampleCollection> $gwdm30TissueSampleCollections
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\ProjectGrant> $gwdm30ProjectGrants
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Gwdm30\DatasetFilter> $gwdm30DatasetFilters
  */
 #[ObservedBy(DatasetVersionObserver::class)]
 class DatasetVersion extends BaseTypesenseModel
