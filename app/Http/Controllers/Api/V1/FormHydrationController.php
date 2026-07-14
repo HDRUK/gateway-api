@@ -9,35 +9,17 @@ use App\Context\OutputSchemaContext;
 use App\Http\Controllers\Controller;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Services\Gwdm\GwdmHandlerFactory;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
 class FormHydrationController extends Controller
 {
-    /**
-     * GWDM metadata dot-paths used by getDefaultValues() to extract per-team defaults.
-     *
-     * Keyed by GWDM version string. The '2.1' entry inherits '2.0' paths unless
-     * GWDM 2.1 restructures these fields — add overrides here if it does.
-     * Add a '3.0' entry when structured SQL columns replace the JSON paths.
-     */
-    private const DEFAULTS_PATHS = [
-        '2.0' => [
-            'dataUseLimitation'   => 'metadata.metadata.accessibility.usage.dataUseLimitation',
-            'dataUseRequirements' => 'metadata.metadata.accessibility.usage.dataUseRequirements',
-            'accessRights'        => 'metadata.metadata.accessibility.access.accessRights',
-            'accessService'       => 'metadata.metadata.accessibility.access.accessService',
-            'accessRequestCost'   => 'metadata.metadata.accessibility.access.accessRequestCost',
-            'deliveryLeadTime'    => 'metadata.metadata.accessibility.access.deliveryLeadTime',
-            'formats'             => 'metadata.metadata.accessibility.formatAndStandards.formats',
-        ],
-        '2.1' => [],  // inherits '2.0' paths; override here if 2.1 restructures these fields
-    ];
-
     public function __construct(
         private readonly OutputSchemaContext $outputSchemaContext,
         private readonly GwdmVersionContext $gwdmVersionContext,
+        private readonly GwdmHandlerFactory $gwdmHandlerFactory,
     ) {
     }
 
@@ -210,39 +192,39 @@ class FormHydrationController extends Controller
 
             $datasets = $datasets->toArray();
 
-            // Resolve paths for the active GWDM version; fall back to 2.0 if the
-            // version has no override entry in DEFAULTS_PATHS.
+            // Paths are owned by the GWDM handler for the active version — see
+            // GwdmMetadataHandler::defaultValuePaths().
             $gwdmVersion = $this->gwdmVersionContext->targetVersion();
-            $paths = self::DEFAULTS_PATHS[$gwdmVersion] ?? self::DEFAULTS_PATHS['2.0'];
+            $paths = $this->gwdmHandlerFactory->resolve($gwdmVersion)->defaultValuePaths();
 
             $datasetDefaultValues['Data use limitation'] = $this->mostCommonValue(
-                $paths['dataUseLimitation'],
+                $paths['dataUseLimitation'] ?? null,
                 $datasets,
                 true
             );
             $datasetDefaultValues['Data use requirements'] = $this->mostCommonValue(
-                $paths['dataUseRequirements'],
+                $paths['dataUseRequirements'] ?? null,
                 $datasets,
                 true
             );
             $datasetDefaultValues['Access rights'] = $this->mostCommonValue(
-                $paths['accessRights'],
+                $paths['accessRights'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Access service description'] = $this->mostCommonValue(
-                $paths['accessService'],
+                $paths['accessService'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Access request cost'] = $this->mostCommonValue(
-                $paths['accessRequestCost'],
+                $paths['accessRequestCost'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Time to dataset access'] = $this->mostCommonValue(
-                $paths['deliveryLeadTime'],
+                $paths['deliveryLeadTime'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Format'] = $this->mostCommonValue(
-                $paths['formats'],
+                $paths['formats'] ?? null,
                 $datasets,
                 true
             );
@@ -261,11 +243,17 @@ class FormHydrationController extends Controller
         ];
     }
 
-    private function mostCommonValue(string $path, array $datasets, bool $isArray = false): mixed
+    private function mostCommonValue(?string $path, array $datasets, bool $isArray = false): mixed
     {
+        if ($path === null) {
+            return $isArray ? [] : null;
+        }
+
         $values = array();
         foreach ($datasets as $dataset) {
-            $v = $this->getValueFromPath($dataset, $path);
+            // $dataset['metadata'] holds the raw dataset_versions.metadata envelope;
+            // handler-owned paths are relative to that envelope (see defaultValuePaths()).
+            $v = $this->getValueFromPath($dataset, 'metadata.' . $path);
             $values[] = is_scalar($v) ? (string)$v : '';
         }
 
