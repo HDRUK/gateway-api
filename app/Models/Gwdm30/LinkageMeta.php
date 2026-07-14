@@ -6,6 +6,19 @@ use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read int $id
+ * @property int|null $dataset_version_id
+ * @property array|null $is_generated_using
+ * @property array|null $associated_media
+ * @property array|null $data_uses
+ * @property array|null $is_reference_in
+ * @property array|null $tools
+ * @property array|null $investigations
+ * @property array|null $synthetic_data_web_link
+ * @property-read \Illuminate\Support\Carbon|null $created_at
+ * @property-read \Illuminate\Support\Carbon|null $updated_at
+ */
 class LinkageMeta extends Model
 {
     protected $table = 'gwdm30_linkage_meta';

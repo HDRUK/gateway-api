@@ -6,6 +6,34 @@ use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read int $id
+ * @property int|null $dataset_version_id
+ * @property string|null $abstract
+ * @property string|null $contact_point
+ * @property array|null $keywords
+ * @property array|null $controlled_keywords
+ * @property array|null $dataset_type
+ * @property array|null $dataset_sub_type
+ * @property string|null $in_pipeline
+ * @property array|null $funders
+ * @property array|null $dataset_aliases
+ * @property string|null $description
+ * @property string|null $doi_name
+ * @property string|null $license_url
+ * @property string|null $landing_page
+ * @property string|null $creator_name
+ * @property string|null $creator_ror_id
+ * @property string|null $creator_orcid_id
+ * @property string|null $creator_gateway_id
+ * @property array|null $theme
+ * @property string|null $publisher_name
+ * @property string|null $publisher_gateway_id
+ * @property string|null $publisher_ror_id
+ * @property int|null $population_size
+ * @property-read \Illuminate\Support\Carbon|null $created_at
+ * @property-read \Illuminate\Support\Carbon|null $updated_at
+ */
 class Summary extends Model
 {
     protected $table = 'gwdm30_summary';

@@ -6,6 +6,21 @@ use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read int $id
+ * @property int|null $dataset_version_id
+ * @property array|null $spatial
+ * @property int|null $min_typical_age
+ * @property int|null $max_typical_age
+ * @property string|null $population_coverage
+ * @property int|null $number_of_unique_individuals
+ * @property int|null $number_of_records
+ * @property string|null $pathway
+ * @property string|null $followup
+ * @property string|null $dataset_completeness
+ * @property-read \Illuminate\Support\Carbon|null $created_at
+ * @property-read \Illuminate\Support\Carbon|null $updated_at
+ */
 class Coverage extends Model
 {
     protected $table = 'gwdm30_coverage';

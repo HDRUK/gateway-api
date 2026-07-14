@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property-read int $id
+ * @property int|null $gwdm30_structural_table_id
+ * @property string|null $name
+ * @property string|null $data_type
+ * @property string|null $description
+ * @property bool|null $sensitive
+ * @property-read \Illuminate\Support\Carbon|null $created_at
+ * @property-read \Illuminate\Support\Carbon|null $updated_at
+ */
 class StructuralColumn extends Model
 {
     protected $table = 'gwdm30_structural_columns';

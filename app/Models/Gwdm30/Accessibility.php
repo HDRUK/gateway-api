@@ -6,6 +6,32 @@ use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read int $id
+ * @property int|null $dataset_version_id
+ * @property array|null $access_rights
+ * @property string|null $access_service
+ * @property array|null $access_service_category
+ * @property string|null $access_request_cost
+ * @property string|null $delivery_lead_time
+ * @property array|null $jurisdiction
+ * @property string|null $data_controller
+ * @property string|null $data_processor
+ * @property string|null $legal_basis
+ * @property string|null $personal_data
+ * @property string|null $applicable_legislation
+ * @property string|null $resource_creator
+ * @property string|null $resource_creator_gateway_id
+ * @property string|null $resource_creator_ror_id
+ * @property array|null $vocabulary_encoding_schemes
+ * @property array|null $conforms_to
+ * @property array|null $languages
+ * @property array|null $data_use_limitation
+ * @property array|null $data_use_requirements
+ * @property array|null $formats
+ * @property-read \Illuminate\Support\Carbon|null $created_at
+ * @property-read \Illuminate\Support\Carbon|null $updated_at
+ */
 class Accessibility extends Model
 {
     protected $table = 'gwdm30_accessibility';

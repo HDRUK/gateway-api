@@ -6,6 +6,18 @@ use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read int $id
+ * @property int|null $dataset_version_id
+ * @property string|null $gateway_id
+ * @property string|null $gateway_pid
+ * @property \Illuminate\Support\Carbon|null $issued
+ * @property \Illuminate\Support\Carbon|null $modified
+ * @property string|null $version
+ * @property array|null $revisions
+ * @property-read \Illuminate\Support\Carbon|null $created_at
+ * @property-read \Illuminate\Support\Carbon|null $updated_at
+ */
 class Required extends Model
 {
     protected $table = 'gwdm30_required';
