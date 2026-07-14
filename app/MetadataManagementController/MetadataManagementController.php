@@ -157,7 +157,47 @@ class MetadataManagementController
                 'application/json'
             )->post($urlString);
 
+            if ($response->status() !== 200) {
+                \Log::warning('GWDM validation rejected by TRASER', array_merge($loggingContext, [
+                    'status'   => $response->status(),
+                    'response' => $response->body(),
+                ]));
+            }
+
             return ($response->status() === 200);
+        } catch (Exception $e) {
+            \Log::info($e->getMessage(), $loggingContext);
+            throw new MMCException($e->getMessage());
+        }
+    }
+
+    /**
+     * Validate a metadata JSON string against the given schema and version, returning
+     * structured error details from TRASER rather than a plain boolean.
+     *
+     * @return array{valid: bool, errors: mixed}
+     */
+    public function validateDataModelTypeWithErrors(string &$dataset, string $input_schema, string $input_version): array
+    {
+        $loggingContext = $this->getLoggingContext(\request());
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        try {
+            $urlString = sprintf(
+                '%s/validate?input_schema=%s&input_version=%s',
+                config('services.traser.url'),
+                $input_schema,
+                $input_version
+            );
+
+            $response = Http::withBody($dataset, 'application/json')->post($urlString);
+
+            $valid = $response->status() === 200;
+
+            return [
+                'valid'  => $valid,
+                'errors' => $valid ? null : $response->json(),
+            ];
         } catch (Exception $e) {
             \Log::info($e->getMessage(), $loggingContext);
             throw new MMCException($e->getMessage());

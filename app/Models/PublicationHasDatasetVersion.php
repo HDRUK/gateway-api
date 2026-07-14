@@ -25,6 +25,7 @@ class PublicationHasDatasetVersion extends Model
         'dataset_version_id',
         'link_type',
         'description',
+        'raw_doi',
     ];
 
     protected $dates = ['deleted_at'];
