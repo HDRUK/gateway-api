@@ -3,22 +3,23 @@
 namespace App\Models;
 
 use App\Models\Base\BaseTypesenseModel;
-use Illuminate\Database\Eloquent\Model;
 use App\Observers\DatasetVersionObserver;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Prunable;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @OA\Schema(
  *   schema="DatasetVersion",
  *   description="A versioned snapshot of dataset metadata in GWDM format",
+ *
  *   @OA\Property(property="id", type="integer", example=101),
  *   @OA\Property(property="dataset_id", type="integer", example=1),
  *   @OA\Property(property="version", type="integer", example=3),
@@ -35,8 +36,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *     type="array",
  *     nullable=true,
  *     description="RFC 6902 JSON Patch array used to reconstruct this version from the previous snapshot. Null for full snapshots (v1 and every 10th version).",
+ *
  *     @OA\Items(type="object")
  *   ),
+ *
  *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
  *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
  * )
@@ -45,8 +48,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class DatasetVersion extends BaseTypesenseModel
 {
     use HasFactory;
-    use SoftDeletes;
     use Prunable;
+    use SoftDeletes;
 
     /**
      * Table associated with this model
@@ -57,7 +60,7 @@ class DatasetVersion extends BaseTypesenseModel
 
     protected $casts = [
         'metadata' => 'array',
-        'patch'    => 'array',
+        'patch' => 'array',
     ];
 
     /**
@@ -85,8 +88,6 @@ class DatasetVersion extends BaseTypesenseModel
 
     /**
      * Get and Set the metadata.
-     *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
     public function metadata(): Attribute
     {
@@ -96,6 +97,7 @@ class DatasetVersion extends BaseTypesenseModel
                 if (is_string($response)) {
                     $response = json_decode($response, true);
                 }
+
                 return $response;
             },
             set: fn ($value) => is_array($value) ? json_encode($value) : $value,
@@ -109,8 +111,7 @@ class DatasetVersion extends BaseTypesenseModel
      * to the encoding of the string being added to the db field.
      * Needs further investigation as this is just a workaround.
      *
-     * @param $value The original value prior to pre-processing
-     *
+     * @param  $value  The original value prior to pre-processing
      * @return array The json metadata string as an array
      */
     // public function getMetadataAttribute($value): array
@@ -132,12 +133,8 @@ class DatasetVersion extends BaseTypesenseModel
     // }
 
     /**
-    * Scope a query to filter on metadata summary title
-    *
-    * @param Builder $query
-    * @param string $filterTitle
-    * @return Builder
-    */
+     * Scope a query to filter on metadata summary title
+     */
     public function scopeFilterTitle(Builder $query, string $filterTitle): Builder
     {
         return $query->where('title', 'LIKE', "%{$filterTitle}%");
@@ -158,7 +155,6 @@ class DatasetVersion extends BaseTypesenseModel
     {
         return $this->belongsToMany(SpatialCoverage::class, 'dataset_version_has_spatial_coverage');
     }
-
 
     /**
      * The tools that belong to the dataset version.
@@ -228,10 +224,10 @@ class DatasetVersion extends BaseTypesenseModel
     }
 
     /**
-    * The reduced dataset versions that belong to the dataset version, the above linkedDatasetVersions
-    * is used in a few places, if in infuture we discover that we only ever need to use the below instead,
-    * we can easily switch. - Jamie B
-    */
+     * The reduced dataset versions that belong to the dataset version, the above linkedDatasetVersions
+     * is used in a few places, if in infuture we discover that we only ever need to use the below instead,
+     * we can easily switch. - Jamie B
+     */
     public function reducedLinkedDatasetVersions(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -243,14 +239,14 @@ class DatasetVersion extends BaseTypesenseModel
             'dataset_version_source_id',
             'dataset_version_target_id',
             'linkage_type',
-        )->selectRaw("dataset_versions.id, dataset_versions.dataset_id, title, short_title as shortTitle");
+        )->selectRaw('dataset_versions.id, dataset_versions.dataset_id, title, short_title as shortTitle');
     }
 
     public function dataset(): BelongsTo
     {
         return $this->belongsTo(Dataset::class, 'dataset_id', 'id')
             ->where('status', 'ACTIVE')
-            ->select(['id', 'status', 'team_id']);
+            ->select(['id', 'status']);
     }
 
     public function shouldBeSearchable(): bool
@@ -285,47 +281,47 @@ class DatasetVersion extends BaseTypesenseModel
     {
         $meta = $this->metadata ?? [];
 
-        $keywords   = data_get($meta, 'metadata.summary.keywords', '');
-        $dataType   = data_get($meta, 'metadata.summary.datasetType', '');
+        $keywords = data_get($meta, 'metadata.summary.keywords', '');
+        $dataType = data_get($meta, 'metadata.summary.datasetType', '');
         $conformsTo = data_get($meta, 'metadata.accessibility.formatAndStandards.conformsTo', '');
         $structural = data_get($meta, 'metadata.structuralMetadata', []);
         if (is_string($structural)) {
             $structural = json_decode($structural, true) ?? [];
         }
-        if (!is_array($structural)) {
+        if (! is_array($structural)) {
             $structural = [];
         }
 
         return [
-            'id'                            => (string) $this->id,
-            'dataset_id'                    => (string) $this->dataset_id,
-            'title'                         => $this->title ?? '',
-            'shortTitle'                    => $this->short_title ?? '',
-            'abstract'                      => data_get($meta, 'metadata.summary.abstract', ''),
-            'description'                   => data_get($meta, 'metadata.summary.description', ''),
-            'keywords'                      => array_values(array_filter(explode(';,;', $keywords))),
-            'publisherName'                 => data_get(
+            'id' => (string) $this->id,
+            'dataset_id' => (string) $this->dataset_id,
+            'title' => $this->title ?? '',
+            'shortTitle' => $this->short_title ?? '',
+            'abstract' => data_get($meta, 'metadata.summary.abstract', ''),
+            'description' => data_get($meta, 'metadata.summary.description', ''),
+            'keywords' => array_values(array_filter(explode(';,;', $keywords))),
+            'publisherName' => data_get(
                 $meta,
                 'metadata.summary.publisher.name',
                 data_get($meta, 'metadata.summary.publisher.publisherName', '')
             ),
-            'dataType'                      => array_values(array_filter(explode(';,;', $dataType))),
-            'populationSize'                => (int) data_get($meta, 'metadata.summary.populationSize', -1),
-            'geographicLocation'            => $this->spatialCoverage->pluck('region')->all(),
-            'datasetDOI'                    => data_get($meta, 'metadata.summary.doiName', ''),
-            'conformsTo'                    => array_values(array_filter(explode(';,;', $conformsTo))),
-            'structuralTableNames'          => collect($structural)
-                                                ->pluck('name')
-                                                ->filter(fn ($v) => is_string($v) && $v !== '')
-                                                ->values()->all(),
-            'structuralColumnNames'         => collect($structural)
-                                                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('name'))
-                                                ->filter(fn ($v) => is_string($v) && $v !== '')
-                                                ->values()->all(),
-            'structuralColumnDescriptions'  => collect($structural)
-                                                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('description'))
-                                                ->filter(fn ($v) => is_string($v) && $v !== '')
-                                                ->values()->all(),
+            'dataType' => array_values(array_filter(explode(';,;', $dataType))),
+            'populationSize' => (int) data_get($meta, 'metadata.summary.populationSize', -1),
+            'geographicLocation' => $this->spatialCoverage->pluck('region')->all(),
+            'datasetDOI' => data_get($meta, 'metadata.summary.doiName', ''),
+            'conformsTo' => array_values(array_filter(explode(';,;', $conformsTo))),
+            'structuralTableNames' => collect($structural)
+                ->pluck('name')
+                ->filter(fn ($v) => is_string($v) && $v !== '')
+                ->values()->all(),
+            'structuralColumnNames' => collect($structural)
+                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('name'))
+                ->filter(fn ($v) => is_string($v) && $v !== '')
+                ->values()->all(),
+            'structuralColumnDescriptions' => collect($structural)
+                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('description'))
+                ->filter(fn ($v) => is_string($v) && $v !== '')
+                ->values()->all(),
         ];
     }
 

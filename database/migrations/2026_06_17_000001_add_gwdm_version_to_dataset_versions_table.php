@@ -25,10 +25,6 @@ return new class () extends Migration {
             $table->index('gwdm_version');
         });
 
-        // Data back-fill of existing rows from metadata->gwdmVersion is handled by a
-        // deployment step (database/deployment-steps/*_backfill_gwdm_version.php),
-        // which runs via `php artisan deploy:run` after migrations. New rows get the
-        // '2.0' column default until the service layer sets an explicit version.
     }
 
     public function down(): void
