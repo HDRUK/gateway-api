@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models\Gwdm30;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class StructuralColumn extends Model
+{
+    protected $table = 'gwdm30_structural_columns';
+
+    protected $fillable = [
+        'gwdm30_structural_table_id',
+        'name',
+        'data_type',
+        'description',
+        'sensitive',
+    ];
+
+    protected $casts = [
+        'sensitive' => 'boolean',
+    ];
+
+    public function structuralTable(): BelongsTo
+    {
+        return $this->belongsTo(StructuralTable::class, 'gwdm30_structural_table_id');
+    }
+
+    public function values(): HasMany
+    {
+        return $this->hasMany(StructuralValue::class, 'gwdm30_structural_column_id');
+    }
+}
