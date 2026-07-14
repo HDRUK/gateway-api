@@ -69,11 +69,17 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         // metadata column: delta rows store only a patch (metadata = []), so
         // reading the column directly would wipe existing linkage on every
         // delta update. Reconstruction replays the delta chain to a full object.
+        //
+        // $applySupplementary = false: this method is the WRITER of the linkage
+        // junction tables. afterRead() rebuilds gwdm['linkage'] from those same
+        // tables, so applying it here would read back stale/soon-to-be-deleted
+        // linkage and clobber the freshly-authored linkage on a re-dispatch.
         $gwdm = app(DatasetService::class)->getReconstructedMetadataEnvelope(
             $dv->dataset_id,
             $dv->version,
             false,
             $dv,
+            false,
         )['metadata'] ?? [];
 
         $this->writeLinkages($dv, $gwdm);
