@@ -49,27 +49,6 @@ class HDRUK implements SearchProvider
         'data_custodian_networks' => \App\Models\DataProviderColl::class,
     ];
 
-    // Facet fields per type — must match `facet => true` in the model's typesenseCollectionSchema().
-    //
-    private const TYPESENSE_FACET_MAP = [
-        'datasets'                => 'publisherName,keywords,dataType,dataSubType,geographicLocation,conformsTo,accessService,containsBioSamples,sampleAvailability,isCohortDiscovery',
-        'tools'                   => 'license,programmingLanguages,typeCategory',
-        'collections'             => '',
-        'dur'                     => '',
-        'publications'            => 'publication_type',
-        'data_custodian_networks' => 'publisherNames,datasetTitles',
-    ];
-
-    // Fields callers may pass as pipe-delimited V2 filters (?publisherName=PIONEER|SAIL).
-    // Only known facet fields are forwarded — keeps pagination/sort params out of filter_by.
-    //
-    private const TYPESENSE_FILTERABLE_MAP = [
-        'datasets'                => ['publisherName', 'keywords', 'dataType', 'dataSubType', 'geographicLocation', 'conformsTo', 'accessService', 'containsBioSamples', 'sampleAvailability', 'isCohortDiscovery'],
-        'tools'                   => ['license', 'programmingLanguages', 'typeCategory'],
-        'publications'            => ['publication_type'],
-        'data_custodian_networks' => ['publisherNames', 'datasetTitles'],
-    ];
-
     public function isDeferred(): bool
     {
         return false;
@@ -176,7 +155,7 @@ class HDRUK implements SearchProvider
             'page'     => (int) ($params['page'] ?? 1),
         ]);
 
-        $facetFields = array_values(array_filter(explode(',', self::TYPESENSE_FACET_MAP[$type] ?? '')));
+        $facetFields = array_values(array_filter(explode(',', config("typesense.facet_map.{$type}", ''))));
         if (!empty($facetFields)) {
             $searchParams['facet_by'] = implode(',', $facetFields);
         }
@@ -339,7 +318,7 @@ class HDRUK implements SearchProvider
      */
     private function buildFilterClauses(string $type, array $params): array
     {
-        $fields      = self::TYPESENSE_FILTERABLE_MAP[$type] ?? [];
+        $fields      = config("typesense.filterable_map.{$type}", []);
         $filterType  = self::FILTER_TYPE_MAP[$type]['type'] ?? $type;
         $typeFilters = $params['filters'][$filterType] ?? [];
         $clauses     = [];
@@ -386,7 +365,7 @@ class HDRUK implements SearchProvider
      * syntax silently matches zero rows against a bool field rather than
      * erroring, so this must be detected and handled separately. Derived
      * from the model's schema (not a hardcoded field list) so it can't drift
-     * out of sync the way TYPESENSE_FACET_MAP once did.
+     * out of sync with config/typesense.php's facet_map.
      */
     private function isBooleanFacetField(string $type, string $field): bool
     {
