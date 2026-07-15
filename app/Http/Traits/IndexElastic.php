@@ -319,9 +319,15 @@ trait IndexElastic
                 $latestVersion = $dataset->latestVersion();
                 if ($latestVersion) {
                     $datasetVersionIds[] = $latestVersion->id;
-                    $metadata = $latestVersion->metadata;
-                    $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                    $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
+                    // Reconstruct via the handler system rather than reading the raw
+                    // metadata column: GWDM 3.0 rows store their sections in SQL (or
+                    // the denormalised cache), so the JSON blob has no 'metadata' key
+                    // to read directly. Mirrors the reconstruction reindexElastic() does.
+                    $metadata = $this->reconstructedLatestEnvelope($dataset);
+                    $datasetTitles[] = $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '');
+                    // datasetType may be a delimited string (2.x) or an array (3.0);
+                    // normalizeDelimitedList() handles both.
+                    $types = $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''));
                     foreach ($types as $t) {
                         if (!in_array($t, $dataTypes)) {
                             $dataTypes[] = $t;

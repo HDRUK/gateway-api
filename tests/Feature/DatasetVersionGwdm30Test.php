@@ -17,6 +17,7 @@ use App\Models\Gwdm30\Summary;
 use App\Models\Permission;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\DatasetService;
 use App\Services\Gwdm\Gwdm2xHandler;
 use App\Services\Gwdm\GwdmHandlerFactory;
 use Tests\TestCase;
@@ -187,7 +188,7 @@ class DatasetVersionGwdm30Test extends TestCase
 
     public function test_extract_linkages_creates_external_rows_for_unresolved_entries(): void
     {
-        $dv = $this->makeDatasetVersion30([
+        $overrides = [
             'linkage' => [
                 'datasetLinkage' => [
                     'isDerivedFrom' => [
@@ -197,12 +198,13 @@ class DatasetVersionGwdm30Test extends TestCase
                 'publicationAboutDataset' => null,
                 'publicationUsingDataset' => null,
             ],
-        ]);
+        ];
+        $dv = $this->makeDatasetVersion30($overrides);
 
         // GWDM 3.0 writes linkage junctions synchronously in afterStore() from the
         // input metadata; extractLinkages() (the async job path) is a no-op for 3.0
         // because these arrays are not recoverable from storage on reconstruction.
-        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $dv->metadata['metadata']);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $this->gwdm30Input($overrides));
 
         $rows = DatasetVersionHasDatasetVersion::where('dataset_version_source_id', $dv->id)
             ->where('direct_linkage', 1)
@@ -220,7 +222,7 @@ class DatasetVersionGwdm30Test extends TestCase
     {
         $targetDv = $this->makeDatasetVersion30([]);
 
-        $sourceDv = $this->makeDatasetVersion30([
+        $overrides = [
             'linkage' => [
                 'datasetLinkage' => [
                     'linkedDatasets' => [
@@ -234,9 +236,10 @@ class DatasetVersionGwdm30Test extends TestCase
                 'publicationAboutDataset' => null,
                 'publicationUsingDataset' => null,
             ],
-        ]);
+        ];
+        $sourceDv = $this->makeDatasetVersion30($overrides);
 
-        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($sourceDv->dataset, $sourceDv, $sourceDv->metadata['metadata']);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($sourceDv->dataset, $sourceDv, $this->gwdm30Input($overrides));
 
         $rows = DatasetVersionHasDatasetVersion::where('dataset_version_source_id', $sourceDv->id)
             ->where('direct_linkage', 1)
@@ -250,7 +253,7 @@ class DatasetVersionGwdm30Test extends TestCase
 
     public function test_extract_linkages_replaces_existing_rows_on_rerun(): void
     {
-        $dv = $this->makeDatasetVersion30([
+        $overrides = [
             'linkage' => [
                 'datasetLinkage' => [
                     'isDerivedFrom' => [
@@ -260,10 +263,11 @@ class DatasetVersionGwdm30Test extends TestCase
                 'publicationAboutDataset' => null,
                 'publicationUsingDataset' => null,
             ],
-        ]);
+        ];
+        $dv = $this->makeDatasetVersion30($overrides);
 
         $handler = app(GwdmHandlerFactory::class)->resolve('3.0');
-        $handler->afterStore($dv->dataset, $dv, $dv->metadata['metadata']);
+        $handler->afterStore($dv->dataset, $dv, $this->gwdm30Input($overrides));
 
         $countRows = fn () => DatasetVersionHasDatasetVersion::where('dataset_version_source_id', $dv->id)
             ->where('direct_linkage', 1)
@@ -273,19 +277,17 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertEquals(1, $countRows());
 
         // Re-run with different entries — old rows must be replaced, not appended
-        $dv->metadata = array_replace_recursive($dv->metadata, [
-            'metadata' => [
-                'linkage' => [
-                    'datasetLinkage' => [
-                        'isDerivedFrom' => [
-                            ['url' => 'https://external.example.com/b', 'pid' => null, 'title' => 'Dataset B'],
-                            ['url' => 'https://external.example.com/c', 'pid' => null, 'title' => 'Dataset C'],
-                        ],
+        $rerunInput = $this->gwdm30Input([
+            'linkage' => [
+                'datasetLinkage' => [
+                    'isDerivedFrom' => [
+                        ['url' => 'https://external.example.com/b', 'pid' => null, 'title' => 'Dataset B'],
+                        ['url' => 'https://external.example.com/c', 'pid' => null, 'title' => 'Dataset C'],
                     ],
                 ],
             ],
         ]);
-        $handler->afterStore($dv->dataset, $dv, $dv->metadata['metadata']);
+        $handler->afterStore($dv->dataset, $dv, $rerunInput);
 
         $this->assertEquals(2, $countRows());
     }
@@ -632,7 +634,8 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertEquals('FHIR API', $rows[1]->title);
         $this->assertEquals('https://example.com/fhir', $rows[1]->access_url);
 
-        // Read path round-trip
+        // Read path round-trip. No X-Gwdm-Cache header, so afterRead() reconstructs
+        // from SQL (the default) — proves persist() wrote correct, reconstructable rows.
         $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
         $this->assertArrayHasKey('distributions', $result);
         $this->assertCount(2, $result['distributions']);
@@ -673,7 +676,8 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertEquals('certification', $rows[1]->annotation_type);
         $this->assertEquals('https://example.com/iso27001-cert.pdf', $rows[1]->certification_url);
 
-        // Read path round-trip
+        // Read path round-trip. No X-Gwdm-Cache header, so afterRead() reconstructs
+        // from SQL (the default) — proves persist() wrote correct, reconstructable rows.
         $result = app(GwdmHandlerFactory::class)->resolve('3.0')->afterRead($dv);
         $this->assertArrayHasKey('qualityAnnotations', $result);
         $this->assertCount(2, $result['qualityAnnotations']);
@@ -744,6 +748,149 @@ class DatasetVersionGwdm30Test extends TestCase
         $this->assertCount(2, Distribution::where('dataset_version_id', $dv->id)->get());
     }
 
+    // ─── Section cache: read parity with 2.x (denormalised metadata column) ─────
+
+    public function test_after_store_denormalises_sections_and_excludes_linkage(): void
+    {
+        $overrides = [
+            'linkage' => [
+                'datasetLinkage' => [
+                    'isDerivedFrom' => [
+                        ['url' => 'https://external.example.com/x', 'pid' => null, 'title' => 'External X'],
+                    ],
+                ],
+                'publicationAboutDataset' => null,
+                'publicationUsingDataset' => null,
+            ],
+        ];
+        $dv = $this->makeDatasetVersion30($overrides);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $this->gwdm30Input($overrides));
+
+        $stored = DatasetVersion::find($dv->id)->metadata;
+
+        $this->assertArrayHasKey('metadata', $stored, 'afterStore should denormalise the sections into the metadata column');
+        $this->assertArrayHasKey('summary', $stored['metadata'], 'the section cache should contain reconstructed sections');
+        $this->assertArrayNotHasKey('linkage', $stored['metadata'], 'linkage must be EXCLUDED from the cache (merged fresh on read)');
+    }
+
+    public function test_cached_read_equals_forced_sql_read(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $this->getGwdm30Metadata()['metadata']);
+
+        $service = app(DatasetService::class);
+
+        // Default path (no header): reassembled from the SQL section tables.
+        $sql = $service->getReconstructedMetadataEnvelope(
+            $dv->dataset_id,
+            1,
+            validate: false,
+            prefetched: DatasetVersion::find($dv->id),
+        );
+
+        // Cache path: caller opts in via X-Gwdm-Cache: bypass.
+        request()->headers->set('X-Gwdm-Cache', 'bypass');
+        $cached = $service->getReconstructedMetadataEnvelope(
+            $dv->dataset_id,
+            1,
+            validate: false,
+            prefetched: DatasetVersion::find($dv->id),
+        );
+
+        $this->assertEquals($sql['metadata'], $cached['metadata'], 'cached read must equal the SQL reconstruction');
+    }
+
+    public function test_cached_read_issues_far_fewer_queries_than_sql(): void
+    {
+        $dv = $this->makeDatasetVersion30([]);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dv->dataset, $dv, $this->getGwdm30Metadata()['metadata']);
+        $service = app(DatasetService::class);
+
+        $countQueries = function () use ($service, $dv): int {
+            $fresh = DatasetVersion::find($dv->id);
+            \Illuminate\Support\Facades\DB::flushQueryLog();
+            \Illuminate\Support\Facades\DB::enableQueryLog();
+            $service->getReconstructedMetadataEnvelope($dv->dataset_id, 1, validate: false, prefetched: $fresh);
+            $n = count(\Illuminate\Support\Facades\DB::getQueryLog());
+            \Illuminate\Support\Facades\DB::disableQueryLog();
+
+            return $n;
+        };
+
+        // Default (no header) = SQL reconstruction; header opts into the cache.
+        $sqlQueries = $countQueries();
+        request()->headers->set('X-Gwdm-Cache', 'bypass');
+        $cachedQueries = $countQueries();
+
+        // Cache path only reads linkage from the junction tables (~4); the SQL path
+        // additionally preloads ~16 section tables.
+        $this->assertLessThanOrEqual(6, $cachedQueries, "cached read should be lean, got {$cachedQueries} queries");
+        $this->assertGreaterThan($cachedQueries, $sqlQueries, 'the SQL path should issue more queries than the cache path');
+    }
+
+    public function test_unbackfilled_row_falls_back_to_sql(): void
+    {
+        // Even when the caller opts into the cache, a row with no denormalised cache
+        // (created before the cache existed, or an un-backfilled 3.0 row) must still
+        // reconstruct correctly from SQL.
+        $dv = $this->makeDatasetVersion30([]);
+        Summary::create([
+            'dataset_version_id' => $dv->id,
+            'abstract' => 'Fallback abstract',
+            'publisher_name' => 'Fallback Publisher',
+        ]);
+
+        $fresh = DatasetVersion::find($dv->id);
+        $this->assertArrayNotHasKey('metadata', $fresh->metadata, 'precondition: no section cache present');
+
+        request()->headers->set('X-Gwdm-Cache', 'bypass');
+        $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+            $dv->dataset_id,
+            1,
+            validate: false,
+            prefetched: $fresh,
+        );
+
+        $this->assertEquals('Fallback abstract', $envelope['metadata']['summary']['abstract']);
+    }
+
+    public function test_linkage_is_read_fresh_not_from_stale_cache(): void
+    {
+        // Cache dataset A with a resolved link to dataset B's latest version.
+        $targetDv = $this->makeDatasetVersion30([]);
+
+        $overrides = [
+            'linkage' => [
+                'datasetLinkage' => [
+                    'linkedDatasets' => [
+                        [
+                            'url' => config('gateway.gateway_url').'/en/dataset/'.$targetDv->dataset_id,
+                            'pid' => null,
+                            'title' => null,
+                        ],
+                    ],
+                ],
+                'publicationAboutDataset' => null,
+                'publicationUsingDataset' => null,
+            ],
+        ];
+        $sourceDv = $this->makeDatasetVersion30($overrides);
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($sourceDv->dataset, $sourceDv, $this->gwdm30Input($overrides));
+
+        // On the cache path (opted in via header), the cached sections hold no
+        // linkage; the reconstructed envelope resolves it fresh from the junction
+        // tables so link titles track each target's latest version.
+        request()->headers->set('X-Gwdm-Cache', 'bypass');
+        $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+            $sourceDv->dataset_id,
+            1,
+            validate: false,
+            prefetched: DatasetVersion::find($sourceDv->id),
+        );
+
+        $this->assertArrayHasKey('linkage', $envelope['metadata'], 'linkage must be present in the reconstructed envelope');
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private function getGwdm30Metadata(): array
@@ -754,8 +901,26 @@ class DatasetVersionGwdm30Test extends TestCase
     }
 
     /**
-     * Create a Dataset + DatasetVersion directly with GWDM 3.0 metadata,
-     * merging $metadataOverrides into the `metadata` section of the envelope.
+     * The GWDM 3.0 input metadata (base fixture merged with $overrides), suitable
+     * for passing to afterStore(). Kept separate from makeDatasetVersion30() so
+     * tests can feed the same input to afterStore() without reading it back out of
+     * the row's metadata column (which now holds only the stored envelope, not the
+     * write-time input — see makeDatasetVersion30()).
+     */
+    private function gwdm30Input(array $overrides = []): array
+    {
+        return array_replace_recursive($this->getGwdm30Metadata()['metadata'], $overrides);
+    }
+
+    /**
+     * Create a Dataset + DatasetVersion directly with a GWDM 3.0 envelope.
+     *
+     * The stored metadata column mirrors what Gwdm30Handler::buildEnvelope()
+     * produces at write time: {gwdmVersion, original_metadata} with NO denormalised
+     * 'metadata' section cache. The cache is only written later by afterStore()
+     * (refreshSectionCache), so a row made here reads via the SQL section tables —
+     * which is what the read-reconstruction tests exercise. Pass the same
+     * $metadataOverrides to gwdm30Input() when you also need the write-time input.
      */
     private function makeDatasetVersion30(array $metadataOverrides): DatasetVersion
     {
@@ -770,8 +935,7 @@ class DatasetVersionGwdm30Test extends TestCase
             'status' => Dataset::STATUS_ACTIVE,
         ]);
 
-        $baseMetadata = $this->getGwdm30Metadata()['metadata'];
-        $mergedMetadata = array_replace_recursive($baseMetadata, $metadataOverrides);
+        $mergedMetadata = $this->gwdm30Input($metadataOverrides);
 
         return DatasetVersion::create([
             'dataset_id' => $dataset->id,
@@ -780,7 +944,6 @@ class DatasetVersionGwdm30Test extends TestCase
             'short_title' => $mergedMetadata['summary']['shortTitle'] ?? 'GWDM 3.0 Test',
             'metadata' => [
                 'gwdmVersion' => '3.0',
-                'metadata' => $mergedMetadata,
                 'original_metadata' => [],
             ],
         ]);

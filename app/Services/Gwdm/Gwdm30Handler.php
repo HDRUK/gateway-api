@@ -52,6 +52,34 @@ class Gwdm30Handler extends Gwdm2xHandler
         // The async LinkageExtraction job (extractLinkages) is therefore a no-op
         // for 3.0 — see the override below.
         $this->writeLinkages($dv, $gwdm);
+
+        // Denormalise the reconstructed sections into the metadata JSON column so a
+        // caller that opts in (X-Gwdm-Cache: bypass) can read the whole envelope in
+        // one JSON read — parity with 2.x — instead of reassembling ~16 SQL tables.
+        // The SQL tables remain the source of truth (and the default read path);
+        // this column is a derived read copy, rewritten on every write in the same
+        // transaction, so it never drifts on in-band writes.
+        //
+        // Sections are read back FROM SQL (not from the input $gwdm) so the stored
+        // JSON is byte-identical to what reconstructing from SQL produces — the
+        // readXxx() helpers apply coercions the raw input does not. Linkage is EXCLUDED: it
+        // tracks other datasets' latest versions and must be merged fresh on read
+        // (see readLinkageOnly()).
+        $this->refreshSectionCache($dv);
+    }
+
+    /**
+     * (Re)write the denormalised section cache into $dv->metadata['metadata']
+     * from the current SQL section rows. Idempotent — safe to call from
+     * afterStore() and from the backfill command. Uses saveQuietly() so it does
+     * not fire a second "updated" model event (indexing already fires on create).
+     */
+    public function refreshSectionCache(DatasetVersion $dv): void
+    {
+        $stored = is_array($dv->metadata) ? $dv->metadata : [];
+        $stored['metadata'] = $this->readSections($dv);
+        $dv->metadata = $stored;
+        $dv->saveQuietly();
     }
 
     /**
@@ -67,11 +95,21 @@ class Gwdm30Handler extends Gwdm2xHandler
 
     public function afterRead(DatasetVersion $dv): array
     {
+        // When the caller opted into the cache (X-Gwdm-Cache: bypass) and this row
+        // carries it, the sections come from extractStoredGwdm() and afterRead()
+        // only merges the always-fresh linkage on top. Otherwise — the default, or
+        // an un-backfilled row — reconstruct in full from SQL (the source of truth).
+        if ($this->hasCachedSections($dv)) {
+            return $this->readLinkageOnly($dv);
+        }
+
         return $this->read($dv);
     }
 
     public function buildEnvelope(array $gwdm, array $originalMetadata): array
     {
+        // The section cache ('metadata' key) is written afterwards in afterStore()
+        // once persist() has populated the SQL tables — see refreshSectionCache().
         return [
             'gwdmVersion'       => $this->version(),
             'original_metadata' => $originalMetadata,
@@ -80,7 +118,15 @@ class Gwdm30Handler extends Gwdm2xHandler
 
     public function extractStoredGwdm(array $storedData): array
     {
-        return [];
+        // The denormalised section cache lives under the 'metadata' key (mirroring
+        // 2.x). Only served when the caller opted in via `X-Gwdm-Cache: bypass`;
+        // by default (and on un-backfilled rows) return [] so afterRead()
+        // reconstructs from the SQL section tables.
+        if (! $this->cacheRequested()) {
+            return [];
+        }
+
+        return $storedData['metadata'] ?? [];
     }
 
     // ── Write path ────────────────────────────────────────────────────────────
@@ -419,6 +465,12 @@ class Gwdm30Handler extends Gwdm2xHandler
 
     public function preloadSections(DatasetVersion $dv): void
     {
+        // Skip the ~16 section queries entirely when the denormalised cache will
+        // serve this read (see afterRead()/extractStoredGwdm()).
+        if ($this->hasCachedSections($dv)) {
+            return;
+        }
+
         $id = $dv->id;
         $dv->setRelation('gwdm30Summary',                 Summary::where('dataset_version_id', $id)->first());
         $dv->setRelation('gwdm30Coverage',                Coverage::where('dataset_version_id', $id)->first());
@@ -489,7 +541,20 @@ class Gwdm30Handler extends Gwdm2xHandler
 
     private function read(DatasetVersion $dv): array
     {
-        $sections = array_merge(
+        return array_merge(
+            $this->readSections($dv),
+            $this->readLinkageOnly($dv),
+        );
+    }
+
+    /**
+     * The 15 non-linkage GWDM sections, reassembled from the SQL tables. This is
+     * exactly what gets denormalised into the metadata JSON column on write
+     * (see refreshSectionCache()), so cache and SQL reconstruction stay identical.
+     */
+    private function readSections(DatasetVersion $dv): array
+    {
+        return array_merge(
             $this->readRequired($dv),
             $this->readSummary($dv),
             $this->readCoverage($dv),
@@ -506,18 +571,59 @@ class Gwdm30Handler extends Gwdm2xHandler
             $this->readDatasetFilters($dv),
             $this->readErd($dv),
         );
+    }
 
+    /**
+     * The linkage section only, always read fresh from the junction tables so
+     * resolved link titles track each target dataset's current latest version
+     * (deliberately excluded from the section cache).
+     *
+     * @return array{linkage?: array} empty when there is no linkage at all
+     */
+    private function readLinkageOnly(DatasetVersion $dv): array
+    {
         $linkageSection = $this->readLinkages($dv);
         $linkageMetaSection = $this->readLinkageMeta($dv);
 
-        if (! empty($linkageSection) || ! empty($linkageMetaSection)) {
-            $sections['linkage'] = array_merge(
-                $linkageSection['linkage'] ?? [],
-                $linkageMetaSection['linkage'] ?? [],
-            );
+        if (empty($linkageSection) && empty($linkageMetaSection)) {
+            return [];
         }
 
-        return $sections;
+        return [
+            'linkage' => array_merge(
+                $linkageSection['linkage'] ?? [],
+                $linkageMetaSection['linkage'] ?? [],
+            ),
+        ];
+    }
+
+    /**
+     * Whether the caller opted into the denormalised metadata-column cache via the
+     * per-request `X-Gwdm-Cache: bypass` header — "bypass" = bypass the default
+     * SQL reconstruction and serve the cached sections instead.
+     *
+     * With no header, reads reconstruct from the SQL section tables (the
+     * authoritative source of truth).
+     */
+    private function cacheRequested(): bool
+    {
+        return request()->header('X-Gwdm-Cache') === 'bypass';
+    }
+
+    /**
+     * True when the caller opted into the cache AND this row carries a non-empty
+     * denormalised 'metadata' section blob to serve it from. Otherwise the read
+     * falls through to the SQL reconstruction.
+     */
+    private function hasCachedSections(DatasetVersion $dv): bool
+    {
+        if (! $this->cacheRequested()) {
+            return false;
+        }
+
+        $stored = $dv->metadata;
+
+        return is_array($stored) && ! empty($stored['metadata']);
     }
 
     private function readSummary(DatasetVersion $dv): array
