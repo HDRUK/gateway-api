@@ -7,6 +7,7 @@ use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\DatasetService;
+use App\Services\Gwdm\GwdmHandlerFactory;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
@@ -105,6 +106,93 @@ class BackfillGwdm30CommandTest extends TestCase
         return DatasetVersion::where('dataset_id', $datasetId)
             ->where('gwdm_version', '3.0')
             ->count();
+    }
+
+    /**
+     * An ACTIVE 3.0 dataset with SQL section rows populated but NO denormalised
+     * section cache in the metadata column — i.e. a row written before the cache
+     * existed. This is what --rebuild-json targets.
+     */
+    private function createUnbackfilled30Dataset(): int
+    {
+        $team = Team::first();
+        $user = User::first();
+
+        $dataset = Dataset::create([
+            'user_id' => $user->id,
+            'team_id' => $team->id,
+            'pid' => 'bf-'.fake()->uuid(),
+            'create_origin' => Dataset::ORIGIN_MANUAL,
+            'status' => Dataset::STATUS_ACTIVE,
+        ]);
+
+        $dv = DatasetVersion::create([
+            'dataset_id' => $dataset->id,
+            'version' => 1,
+            'gwdm_version' => '3.0',
+            'short_title' => 'Unbackfilled 3.0',
+            'metadata' => ['gwdmVersion' => '3.0', 'original_metadata' => []],
+        ]);
+
+        // Write the SQL section tables (afterStore also refreshes the cache), then
+        // strip the cache back out to simulate a pre-cache row.
+        app(GwdmHandlerFactory::class)->resolve('3.0')->afterStore($dataset, $dv, $this->gwdm30Metadata());
+        $dv->metadata = ['gwdmVersion' => '3.0', 'original_metadata' => []];
+        $dv->saveQuietly();
+
+        return $dataset->id;
+    }
+
+    public function test_rebuild_json_populates_section_cache_from_sql(): void
+    {
+        $datasetId = $this->createUnbackfilled30Dataset();
+
+        $dv = DatasetVersion::where('dataset_id', $datasetId)->where('gwdm_version', '3.0')->first();
+        $this->assertArrayNotHasKey('metadata', $dv->metadata, 'precondition: no section cache present');
+
+        Artisan::call('app:backfill-gwdm30', ['--dataset-id' => $datasetId, '--rebuild-json' => true]);
+
+        $dv->refresh();
+        $this->assertArrayHasKey('metadata', $dv->metadata, 'rebuild-json should populate the section cache');
+        $this->assertArrayHasKey('summary', $dv->metadata['metadata']);
+        $this->assertArrayNotHasKey('linkage', $dv->metadata['metadata'], 'linkage stays out of the cache');
+
+        // The cache equals the SQL reconstruction of the sections (no X-Gwdm-Cache
+        // header, so the reconstruction reads from SQL — the default).
+        $sql = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+            $datasetId,
+            $dv->version,
+            validate: false,
+            prefetched: DatasetVersion::find($dv->id),
+        );
+        $this->assertEquals($sql['metadata']['summary'], $dv->metadata['metadata']['summary']);
+    }
+
+    public function test_rebuild_json_dry_run_writes_nothing(): void
+    {
+        $datasetId = $this->createUnbackfilled30Dataset();
+
+        Artisan::call('app:backfill-gwdm30', [
+            '--dataset-id' => $datasetId,
+            '--rebuild-json' => true,
+            '--dry-run' => true,
+        ]);
+
+        $dv = DatasetVersion::where('dataset_id', $datasetId)->where('gwdm_version', '3.0')->first();
+        $this->assertArrayNotHasKey('metadata', $dv->metadata, 'dry-run must not write the cache');
+    }
+
+    public function test_rebuild_json_is_idempotent(): void
+    {
+        $datasetId = $this->createUnbackfilled30Dataset();
+
+        Artisan::call('app:backfill-gwdm30', ['--dataset-id' => $datasetId, '--rebuild-json' => true]);
+        $first = DatasetVersion::where('dataset_id', $datasetId)->where('gwdm_version', '3.0')->first()->metadata;
+
+        Artisan::call('app:backfill-gwdm30', ['--dataset-id' => $datasetId, '--rebuild-json' => true]);
+        $second = DatasetVersion::where('dataset_id', $datasetId)->where('gwdm_version', '3.0')->first()->metadata;
+
+        $this->assertEquals($first, $second, 'a second rebuild-json must produce identical output');
     }
 
     public function test_dry_run_creates_no_gwdm30_version(): void

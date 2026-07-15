@@ -16,6 +16,7 @@ class BackfillGwdm30 extends Command
         {--dry-run : Preview without writing}
         {--dataset-id= : Limit migration to a single dataset ID}
         {--force : Re-persist rows already at GWDM 3.0 (re-runs prepareMetadata + afterStore, skips TRASER)}
+        {--rebuild-json : Only (re)populate the denormalised metadata section cache for existing GWDM 3.0 rows from their SQL tables — no TRASER, no re-persist, no SQL/linkage writes}
         {--min-dataset-id= : Resume from this datasets.id (inclusive)}
         {--max-dataset-id= : Stop after this datasets.id (inclusive)}';
 
@@ -33,6 +34,7 @@ class BackfillGwdm30 extends Command
         $dryRun      = $this->option('dry-run');
         $datasetId   = $this->option('dataset-id');
         $force       = $this->option('force');
+        $rebuildJson = $this->option('rebuild-json');
         $minDatasetId = $this->option('min-dataset-id');
         $maxDatasetId = $this->option('max-dataset-id');
 
@@ -45,6 +47,7 @@ class BackfillGwdm30 extends Command
         $flags = implode(' ', array_filter([
             $dryRun       ? '--dry-run'                        : null,
             $force        ? '--force'                          : null,
+            $rebuildJson  ? '--rebuild-json'                   : null,
             $datasetId    ? "--dataset-id={$datasetId}"        : null,
             $minDatasetId ? "--min-dataset-id={$minDatasetId}" : null,
             $maxDatasetId ? "--max-dataset-id={$maxDatasetId}" : null,
@@ -61,8 +64,13 @@ class BackfillGwdm30 extends Command
         $query = Dataset::query()
             ->where('status', 'ACTIVE')
             ->whereNull('deleted_at')
-            ->unless($force, fn ($q) =>
-                $q->whereDoesntHave('versions', fn ($q) => $q->where('gwdm_version', '3.0'))
+            ->when(
+                $rebuildJson,
+                // rebuild-json only touches datasets that already have a 3.0 row.
+                fn ($q) => $q->whereHas('versions', fn ($q) => $q->where('gwdm_version', '3.0')),
+                fn ($q) => $q->unless($force, fn ($q) =>
+                    $q->whereDoesntHave('versions', fn ($q) => $q->where('gwdm_version', '3.0'))
+                )
             )
             ->when($datasetId, fn ($q) => $q->where('id', $datasetId))
             ->when($minDatasetId, fn ($q) => $q->where('id', '>=', $minDatasetId))
@@ -74,7 +82,7 @@ class BackfillGwdm30 extends Command
         if ($total === 0) {
             $this->info('No ACTIVE datasets require migration. Nothing to do.');
 
-            if (!$force) {
+            if (!$force && !$rebuildJson) {
                 $already30 = Dataset::query()
                     ->where('status', 'ACTIVE')
                     ->whereNull('deleted_at')
@@ -90,9 +98,11 @@ class BackfillGwdm30 extends Command
             return self::SUCCESS;
         }
 
-        $label = $force
-            ? "Found {$total} ACTIVE dataset(s) to process (including those already at GWDM 3.0)."
-            : "Found {$total} ACTIVE dataset(s) without a GWDM 3.0 version to migrate.";
+        $label = match (true) {
+            $rebuildJson => "Found {$total} ACTIVE dataset(s) with a GWDM 3.0 version to rebuild the section cache for.",
+            $force       => "Found {$total} ACTIVE dataset(s) to process (including those already at GWDM 3.0).",
+            default      => "Found {$total} ACTIVE dataset(s) without a GWDM 3.0 version to migrate.",
+        };
         $this->info($label);
 
         $bar = $this->output->createProgressBar($total);
@@ -123,11 +133,15 @@ class BackfillGwdm30 extends Command
         });
 
         $query->with('team')
-            ->chunkById(50, function ($datasets) use ($dryRun, $force, $handler, $bar, $write, &$migrated, &$failed, &$currentDataset, &$lastDataset) {
+            ->chunkById(50, function ($datasets) use ($dryRun, $force, $rebuildJson, $handler, $bar, $write, &$migrated, &$failed, &$currentDataset, &$lastDataset) {
                 foreach ($datasets as $dataset) {
                     $currentDataset = $dataset;
                     try {
-                        $this->migrateDataset($dataset, $handler, $dryRun, $force);
+                        if ($rebuildJson) {
+                            $this->rebuildJsonForDataset($dataset, $handler, $dryRun);
+                        } else {
+                            $this->migrateDataset($dataset, $handler, $dryRun, $force);
+                        }
                         $migrated++;
                     } catch (\Throwable $e) {
                         $failed++;
@@ -156,6 +170,32 @@ class BackfillGwdm30 extends Command
         $write($summary . '  finished ' . date('Y-m-d H:i:s'));
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * --rebuild-json path: (re)populate the denormalised section cache in the
+     * metadata column for every existing GWDM 3.0 version of a dataset, straight
+     * from the SQL section tables. No TRASER, no prepareMetadata, no SQL/linkage
+     * writes — just the derived read cache. Idempotent.
+     */
+    private function rebuildJsonForDataset(Dataset $dataset, $handler, bool $dryRun): void
+    {
+        $rows = DatasetVersion::where('dataset_id', $dataset->id)
+            ->where('gwdm_version', '3.0')
+            ->orderBy('version')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            throw new \RuntimeException('No GWDM 3.0 version rows found to rebuild.');
+        }
+
+        if ($dryRun) {
+            return;
+        }
+
+        foreach ($rows as $row) {
+            $handler->refreshSectionCache($row);
+        }
     }
 
     private function migrateDataset(Dataset $dataset, $handler, bool $dryRun, bool $force = false): void
