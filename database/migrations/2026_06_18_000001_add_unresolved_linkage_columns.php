@@ -23,8 +23,7 @@ use Illuminate\Support\Facades\Schema;
  * references. Re-dispatching LinkageExtraction for those dataset versions will backfill
  * any unresolved references that were previously discarded.
  */
-return new class extends Migration
-{
+return new class () extends Migration {
     public function up(): void
     {
         $isSqlite = DB::connection()->getDriverName() === 'sqlite';

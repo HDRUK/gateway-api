@@ -142,4 +142,59 @@ class DatasetVersionLinkageTest extends TestCase
             'extractLinkages must not resurrect stale SQL-overlay linkage',
         );
     }
+
+    public function test_resolved_linkage_title_tracks_target_latest_version(): void
+    {
+        $this->disableObservers();
+
+        // Target dataset that the source will link to, and the source itself.
+        [$targetDatasetId, $targetVersionId] = $this->createDataset($this->getMetadataV2p0());
+        [$sourceDatasetId, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+
+        // A resolved linkage: source -> the target's (current latest) version. The junction
+        // row freezes dataset_version_target_id, mirroring what extraction stores.
+        DatasetVersionHasDatasetVersion::create([
+            'dataset_version_source_id' => $sourceVersionId,
+            'dataset_version_target_id' => $targetVersionId,
+            'linkage_type' => 'isDerivedFrom',
+            'direct_linkage' => 1,
+            'description' => 'Extracted from GWDM',
+        ]);
+
+        $originalTitle = Dataset::find($targetDatasetId)->latestMetadata->short_title;
+
+        // Sanity: read-back reflects the target's current title.
+        $linkages = $this->service()->getLinkages($sourceVersionId);
+        $this->assertCount(1, $linkages);
+        $this->assertSame($originalTitle, $linkages[0]['title']);
+        $this->assertStringContainsString('/en/dataset/'.$targetDatasetId, (string) $linkages[0]['url']);
+
+        // The target gains a NEWER version with a changed short_title. The junction row
+        // still points at the OLD (frozen) target version id.
+        DatasetVersion::create([
+            'dataset_id' => $targetDatasetId,
+            'version' => 2,
+            'metadata' => [],
+            'patch' => null,
+            'title' => 'Target Title v2',
+            'short_title' => 'Target Short Title v2',
+            'gwdm_version' => '2.0',
+        ]);
+
+        // getLinkages() now reflects the target's LATEST title (not the frozen one)...
+        $linkages = $this->service()->getLinkages($sourceVersionId);
+        $this->assertCount(1, $linkages);
+        $this->assertSame('Target Short Title v2', $linkages[0]['title']);
+        $this->assertStringContainsString('/en/dataset/'.$targetDatasetId, (string) $linkages[0]['url']);
+
+        // ...and so does the afterRead()-driven reconstructed envelope for the source.
+        $envelope = $this->service()->getReconstructedMetadataEnvelope($sourceDatasetId, 1, false);
+        $datasetLinkage = $envelope['metadata']['linkage']['datasetLinkage'] ?? [];
+        $this->assertArrayHasKey('isDerivedFrom', $datasetLinkage);
+        $this->assertSame('Target Short Title v2', $datasetLinkage['isDerivedFrom'][0]['title']);
+        $this->assertStringContainsString(
+            '/en/dataset/'.$targetDatasetId,
+            (string) $datasetLinkage['isDerivedFrom'][0]['url'],
+        );
+    }
 }
