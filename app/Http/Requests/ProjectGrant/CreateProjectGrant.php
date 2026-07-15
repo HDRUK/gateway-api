@@ -12,6 +12,7 @@ class CreateProjectGrant extends BaseFormRequest
             'pid' => [
                 'required',
                 'string',
+                'unique:project_grants,pid',
             ],
             'user_id' => [
                 'required',

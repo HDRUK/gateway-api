@@ -3536,7 +3536,7 @@ return [
         'path' => '/project_grants',
         'methodController' => 'ProjectGrantController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [],
     ],
     [
@@ -3545,7 +3545,11 @@ return [
         'path' => '/project_grants',
         'methodController' => 'ProjectGrantController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,project_grants.create',
+            'sunset',
+        ],
         'constraint' => [],
     ],
     [
@@ -3554,7 +3558,7 @@ return [
         'path' => '/project_grants/{id}',
         'methodController' => 'ProjectGrantController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [
             'id' => '[0-9]+',
         ],

@@ -15,10 +15,12 @@ use App\Services\ProjectGrantService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectGrant\CreateProjectGrant;
 use App\Exceptions\NotFoundException;
+use App\Http\Traits\CheckAccess;
 use App\Http\Traits\Responses;
 
 class ProjectGrantController extends Controller
 {
+    use CheckAccess;
     use Responses;
 
     public function __construct(
@@ -202,6 +204,7 @@ class ProjectGrantController extends Controller
      *    tags={"Project Grant"},
      *    summary="ProjectGrantController@store",
      *    description="Create a project grant (and initial version)",
+     *    security={{"bearerAuth":{}}},
      *    @OA\Response(
      *        response="201",
      *        description="Created",
@@ -214,13 +217,21 @@ class ProjectGrantController extends Controller
      */
     public function store(CreateProjectGrant $request): JsonResponse
     {
+        list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
+        $jwtUser = $request->input('jwt_user', []);
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
+
+        if (!is_null($teamId)) {
+            $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
+        }
+
         try {
             $input = $request->validated();
 
             $grant = ProjectGrant::create([
                 'pid' => $input['pid'],
-                'user_id' => (int) $input['user_id'],
-                'team_id' => (int) $input['team_id'],
+                'user_id' => $currentUser,
+                'team_id' => (int) $teamId,
             ]);
 
             $versionNumber = array_key_exists('version', $input) ? (int) $input['version'] : 1;
@@ -254,6 +265,8 @@ class ProjectGrantController extends Controller
             }
 
             Auditor::log([
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'ProjectGrant ' . $grant->id . ' created',
@@ -269,6 +282,8 @@ class ProjectGrantController extends Controller
             ], 201);
         } catch (Exception $e) {
             Auditor::log([
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
