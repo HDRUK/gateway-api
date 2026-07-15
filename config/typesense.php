@@ -9,7 +9,7 @@ return [
         'tools'                   => 'license,programmingLanguages,typeCategory',
         'collections'             => '',
         'dur'                     => '',
-        'publications'            => 'publication_type',
+        'publications'            => 'publicationType,datasetTitles,datasetLinkTypes',
         'data_custodian_networks' => 'publisherNames,datasetTitles',
     ],
 
@@ -18,7 +18,7 @@ return [
     'filterable_map' => [
         'datasets'                => ['publisherName', 'keywords', 'dataType', 'dataSubType', 'geographicLocation', 'conformsTo', 'accessService', 'containsBioSamples', 'sampleAvailability', 'isCohortDiscovery'],
         'tools'                   => ['license', 'programmingLanguages', 'typeCategory'],
-        'publications'            => ['publication_type'],
+        'publications'            => ['publicationType', 'datasetTitles', 'datasetLinkTypes'],
         'data_custodian_networks' => ['publisherNames', 'datasetTitles'],
     ],
 
