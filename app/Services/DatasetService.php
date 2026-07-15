@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
+use Config;
 use App\Context\GwdmVersionContext;
-use App\Jobs\LinkageExtraction;
-use App\Jobs\TermExtraction;
-use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
+use App\Models\DataAccessTemplate;
 use App\Models\SpatialCoverage;
 use App\Models\Team;
+use App\Jobs\TermExtraction;
+use App\Jobs\LinkageExtraction;
 use App\Services\Gwdm\GwdmHandlerFactory;
-use Config;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -36,7 +36,8 @@ class DatasetService
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
-    ) {}
+    ) {
+    }
 
     public function list(
         ?string $filterStatus,
@@ -45,7 +46,7 @@ class DatasetService
         int $perPage,
         ?string $partnerContext = null,
     ): LengthAwarePaginator {
-        if (! empty($filterTitle)) {
+        if (!empty($filterTitle)) {
             // Use a subquery for the status filter to avoid materialising all IDs.
             // The unique-per-dataset deduplication still requires PHP-side processing
             // because MySQL lacks a portable "latest version per group" without window
@@ -53,7 +54,7 @@ class DatasetService
             $statusSubquery = Dataset::query()
                 ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
                 ->when(
-                    $partnerContext && ($partnerContext !== 'HDRUK' || ! config('partners.allow_cross_context_read', true)),
+                    $partnerContext && ($partnerContext !== 'HDRUK' || !config('partners.allow_cross_context_read', true)),
                     fn ($q) => $q->where('partner_context', $partnerContext)
                 )
                 ->select('id');
@@ -71,7 +72,7 @@ class DatasetService
             $query = Dataset::query()
                 ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
                 ->when(
-                    $partnerContext && ($partnerContext !== 'HDRUK' || ! config('partners.allow_cross_context_read', true)),
+                    $partnerContext && ($partnerContext !== 'HDRUK' || !config('partners.allow_cross_context_read', true)),
                     fn ($q) => $q->where('partner_context', $partnerContext)
                 );
         }
@@ -100,8 +101,8 @@ class DatasetService
      * Replaces DatasetsV2Helpers@getDatasetDetails. All counts are pre-computed
      * here so the Resource's toArray() runs no queries.
      *
-     * @throws \InvalidArgumentException when schema_model/schema_version are mismatched
-     * @throws \RuntimeException when MMC translation fails
+     * @throws \InvalidArgumentException  when schema_model/schema_version are mismatched
+     * @throws \RuntimeException          when MMC translation fails
      */
     public function prepareForShow(
         Dataset $dataset,
@@ -135,8 +136,8 @@ class DatasetService
             $latestVersionId = $allVersions->first()?->id;
         }
 
-        $activeCollections = $dataset->allActiveCollections ?? [];
-        $activeDurs = $dataset->allActiveDurs ?? [];
+        $activeCollections  = $dataset->allActiveCollections ?? [];
+        $activeDurs         = $dataset->allActiveDurs ?? [];
         $activePublications = $dataset->allActivePublications ?? [];
 
         $dataset->durs_count = count(array_filter(
@@ -147,13 +148,13 @@ class DatasetService
             $activePublications,
             fn ($p) => in_array($latestVersionId, array_column($p['dataset_versions'] ?? [], 'dataset_version_id'))
         ));
-        $dataset->tools_count = count($dataset->allActiveTools);
-        $dataset->collections_count = count($activeCollections);
-        $dataset->spatialCoverage = $dataset->allSpatialCoverages ?? [];
-        $dataset->durs = $activeDurs;
-        $dataset->publications = $activePublications;
-        $dataset->named_entities = $dataset->allNamedEntities ?? [];
-        $dataset->collections = $activeCollections;
+        $dataset->tools_count        = count($dataset->allActiveTools);
+        $dataset->collections_count  = count($activeCollections);
+        $dataset->spatialCoverage    = $dataset->allSpatialCoverages ?? [];
+        $dataset->durs               = $activeDurs;
+        $dataset->publications       = $activePublications;
+        $dataset->named_entities     = $dataset->allNamedEntities ?? [];
+        $dataset->collections        = $activeCollections;
 
         if ($outputSchemaModel && ! $outputSchemaVersion) {
             throw new \InvalidArgumentException('schema_model provided without schema_version');
@@ -193,7 +194,7 @@ class DatasetService
                     $envelope['gwdmVersion'],
                 );
 
-                if (! $translated['wasTranslated']) {
+                if (!$translated['wasTranslated']) {
                     $traserError = is_array($translated['traser_message'])
                         ? json_encode($translated['traser_message'])
                         : ($translated['traser_message'] ?? 'unknown error');
@@ -321,7 +322,7 @@ class DatasetService
             ->where('version', $version)
             ->exists();
 
-        if (! $exists) {
+        if (!$exists) {
             return null;
         }
 
@@ -434,52 +435,52 @@ class DatasetService
     ): array {
         $input['metadata'] = $this->extractMetadata($input['metadata']);
 
-        $payload = $input['metadata'];
-        $payload['extra'] = [
-            'id' => 'placeholder',
-            'pid' => 'placeholder',
-            'datasetType' => 'Health and disease',
-            'publisherId' => $team->pid,
+        $payload            = $input['metadata'];
+        $payload['extra']   = [
+            'id'            => 'placeholder',
+            'pid'           => 'placeholder',
+            'datasetType'   => 'Health and disease',
+            'publisherId'   => $team->pid,
             'publisherName' => $team->name,
         ];
 
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
-        $isDraft = $input['status'] === Dataset::STATUS_DRAFT;
+        $isDraft        = $input['status'] === Dataset::STATUS_DRAFT;
         $traserResponse = MMC::translateDataModelType(
             json_encode($payload),
             Config::get('metadata.GWDM.name'),
             $targetGwdmVersion,
             $inputSchema,
             $inputVersion,
-            ! $isDraft,
-            ! $isDraft,
+            !$isDraft,
+            !$isDraft,
         );
 
-        if (! $traserResponse['wasTranslated']) {
+        if (!$traserResponse['wasTranslated']) {
             return ['translated' => false, 'response' => $traserResponse];
         }
 
         $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
-        $input['metadata']['metadata'] = $traserResponse['metadata'];
+        $input['metadata']['metadata']           = $traserResponse['metadata'];
 
-        $pid = $input['pid'] ?? (string) Str::uuid();
+        $pid               = $input['pid'] ?? (string) Str::uuid();
         $isCohortDiscovery = $input['is_cohort_discovery'] ?? false;
 
         $dataset = MMC::createDataset([
-            'user_id' => $input['user_id'],
-            'team_id' => $input['team_id'],
-            'mongo_object_id' => $input['mongo_object_id'] ?? null,
-            'mongo_id' => $input['mongo_id'] ?? null,
-            'mongo_pid' => $input['mongo_pid'] ?? null,
-            'datasetid' => $input['datasetid'] ?? null,
-            'created' => now(),
-            'updated' => now(),
-            'submitted' => now(),
-            'pid' => $pid,
-            'create_origin' => $input['create_origin'],
-            'status' => $input['status'],
+            'user_id'             => $input['user_id'],
+            'team_id'             => $input['team_id'],
+            'mongo_object_id'     => $input['mongo_object_id'] ?? null,
+            'mongo_id'            => $input['mongo_id'] ?? null,
+            'mongo_pid'           => $input['mongo_pid'] ?? null,
+            'datasetid'           => $input['datasetid'] ?? null,
+            'created'             => now(),
+            'updated'             => now(),
+            'submitted'           => now(),
+            'pid'                 => $pid,
+            'create_origin'       => $input['create_origin'],
+            'status'              => $input['status'],
             'is_cohort_discovery' => $isCohortDiscovery,
-            'partner_context' => $partnerContext,
+            'partner_context'     => $partnerContext,
         ]);
 
         $handler = $this->handlerFactory->resolve($targetGwdmVersion);
@@ -505,14 +506,14 @@ class DatasetService
             $gwdm,
         ) {
             $version = MMC::createDatasetVersion([
-                'dataset_id' => $dataset->id,
-                'metadata' => json_encode($envelope),
-                'version' => 1,
+                'dataset_id'   => $dataset->id,
+                'metadata'     => json_encode($envelope),
+                'version'      => 1,
                 // Base snapshot — no patch; title/short_title populated explicitly now
                 // that the columns are no longer GENERATED (see migration 2026_03_11_133601).
-                'patch' => null,
-                'title' => $title,
-                'short_title' => $shortTitle,
+                'patch'        => null,
+                'title'        => $title,
+                'short_title'  => $shortTitle,
                 'gwdm_version' => $targetGwdmVersion,
             ]);
 
@@ -553,17 +554,17 @@ class DatasetService
     ): int {
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
-            'id' => $dataset->id,
-            'pid' => $dataset->pid,
-            'datasetType' => 'Health and disease',
-            'publisherId' => $team->pid,
+            'id'            => $dataset->id,
+            'pid'           => $dataset->pid,
+            'datasetType'   => 'Health and disease',
+            'publisherId'   => $team->pid,
             'publisherName' => $team->name,
         ];
 
-        $inputSchema = $input['metadata']['schemaModel'] ?? null;
-        $inputVersion = $input['metadata']['schemaVersion'] ?? null;
+        $inputSchema       = $input['metadata']['schemaModel'] ?? null;
+        $inputVersion      = $input['metadata']['schemaVersion'] ?? null;
         $submittedMetadata = $input['metadata'];
-        $isDraft = $input['status'] === Dataset::STATUS_DRAFT;
+        $isDraft           = $input['status'] === Dataset::STATUS_DRAFT;
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
 
         $traserResponse = MMC::translateDataModelType(
@@ -572,11 +573,11 @@ class DatasetService
             $targetGwdmVersion,
             $inputSchema,
             $inputVersion,
-            ! $isDraft,
-            ! $isDraft,
+            !$isDraft,
+            !$isDraft,
         );
 
-        if (! $traserResponse['wasTranslated']) {
+        if (!$traserResponse['wasTranslated']) {
             throw new \RuntimeException('metadata is in an unknown format and cannot be processed');
         }
 
@@ -592,12 +593,12 @@ class DatasetService
         );
 
         $dataset->update([
-            'user_id' => $userId,
-            'team_id' => $teamId,
-            'updated' => now(),
-            'pid' => $dataset->pid,
-            'create_origin' => $createOrigin,
-            'status' => $input['status'],
+            'user_id'             => $userId,
+            'team_id'             => $teamId,
+            'updated'             => now(),
+            'pid'                 => $dataset->pid,
+            'create_origin'       => $createOrigin,
+            'status'              => $input['status'],
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
         ]);
 
@@ -636,19 +637,19 @@ class DatasetService
         bool $elasticIndexing,
         Team $team,
     ): int {
-        $payload = $this->extractMetadata($input['metadata']);
+        $payload          = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
-            'id' => $dataset->id,
-            'pid' => $dataset->pid,
-            'datasetType' => 'Health and disease',
-            'publisherId' => $team->pid,
+            'id'            => $dataset->id,
+            'pid'           => $dataset->pid,
+            'datasetType'   => 'Health and disease',
+            'publisherId'   => $team->pid,
             'publisherName' => $team->name,
         ];
 
-        $inputSchema = $input['metadata']['schemaModel'] ?? null;
-        $inputVersion = $input['metadata']['schemaVersion'] ?? null;
+        $inputSchema       = $input['metadata']['schemaModel'] ?? null;
+        $inputVersion      = $input['metadata']['schemaVersion'] ?? null;
         $submittedMetadata = $input['metadata']['metadata'];
-        $isDraft = $input['status'] === Dataset::STATUS_DRAFT;
+        $isDraft           = $input['status'] === Dataset::STATUS_DRAFT;
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
 
         $traserResponse = MMC::translateDataModelType(
@@ -657,11 +658,11 @@ class DatasetService
             $targetGwdmVersion,
             $inputSchema,
             $inputVersion,
-            ! $isDraft,
-            ! $isDraft,
+            !$isDraft,
+            !$isDraft,
         );
 
-        if (! $traserResponse['wasTranslated']) {
+        if (!$traserResponse['wasTranslated']) {
             throw new \RuntimeException('metadata is in an unknown format and cannot be processed');
         }
 
@@ -676,12 +677,12 @@ class DatasetService
         );
 
         $dataset->update([
-            'user_id' => $userId,
-            'team_id' => $teamId,
-            'updated' => now(),
-            'pid' => $dataset->pid,
-            'create_origin' => $createOrigin,
-            'status' => $input['status'],
+            'user_id'             => $userId,
+            'team_id'             => $teamId,
+            'updated'             => now(),
+            'pid'                 => $dataset->pid,
+            'create_origin'       => $createOrigin,
+            'status'              => $input['status'],
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
         ]);
 
@@ -719,7 +720,7 @@ class DatasetService
     public function updateCohortDiscovery(Dataset $dataset, bool $isCohortDiscovery): void
     {
         if ($dataset->status !== Dataset::STATUS_ACTIVE) {
-            throw new \RuntimeException('Dataset status is '.strtoupper($dataset->status));
+            throw new \RuntimeException('Dataset status is ' . strtoupper($dataset->status));
         }
 
         $dataset->is_cohort_discovery = $isCohortDiscovery;
@@ -761,11 +762,11 @@ class DatasetService
             ])
             ->get()
             ->map(fn ($row) => [
-                'title' => $row->short_title ?? $row->raw_title,
-                'url' => $row->target_dataset_id
-                    ? config('gateway.gateway_url').'/en/dataset/'.$row->target_dataset_id
+                'title'        => $row->short_title ?? $row->raw_title,
+                'url'          => $row->target_dataset_id
+                    ? config('gateway.gateway_url') . '/en/dataset/' . $row->target_dataset_id
                     : $row->raw_url,
-                'dataset_id' => $row->target_dataset_id,
+                'dataset_id'   => $row->target_dataset_id,
                 'linkage_type' => $row->linkage_type,
             ])
             ->values()
@@ -790,15 +791,15 @@ class DatasetService
 
         $dv = DatasetVersion::where([
             'dataset_id' => $dataset->id,
-            'version' => $versionNumber,
+            'version'    => $versionNumber,
         ])->first();
 
         // Overwrite the version row and rewrite its structured tables atomically
         // (see persistMetadataVersion for the same rationale).
         DB::transaction(function () use ($dv, $envelope, $title, $shortTitle, $targetGwdmVersion, $handler, $dataset, $newMetadata) {
-            $dv->metadata = json_encode($envelope);
-            $dv->title = $title;
-            $dv->short_title = $shortTitle;
+            $dv->metadata     = json_encode($envelope);
+            $dv->title        = $title;
+            $dv->short_title  = $shortTitle;
             $dv->gwdm_version = $targetGwdmVersion;
             $dv->save();
 
@@ -820,8 +821,8 @@ class DatasetService
      *
      * The worst-case forward walk is (SNAPSHOT_INTERVAL - 1) delta applications.
      *
-     * @return array The GWDM metadata object (i.e. the value of metadata.metadata
-     *               in a full snapshot row).
+     * @return array  The GWDM metadata object (i.e. the value of metadata.metadata
+     *                in a full snapshot row).
      *
      * @throws \RuntimeException when no base snapshot can be found.
      */
@@ -834,7 +835,7 @@ class DatasetService
             ->orderBy('version', 'desc')
             ->first();
 
-        if (! $snapshot) {
+        if (!$snapshot) {
             throw new \RuntimeException(
                 "No base snapshot found for dataset {$datasetId} at or before version {$targetVersion}."
             );
@@ -934,8 +935,8 @@ class DatasetService
         }
 
         return [
-            'gwdmVersion' => $storedVersion,
-            'metadata' => $gwdm,
+            'gwdmVersion'       => $storedVersion,
+            'metadata'          => $gwdm,
             'original_metadata' => $row->metadata['original_metadata'] ?? [],
         ];
     }
@@ -946,12 +947,12 @@ class DatasetService
      * REARRANGE_ARRAYS prevents the diff engine from emitting a full array
      * replacement when items are merely reordered — keeping patches surgical.
      *
-     * @return array A JSON-serialisable RFC 6902 patch array.
+     * @return array  A JSON-serialisable RFC 6902 patch array.
      */
     private function computePatch(array $from, array $to): array
     {
         $fromObj = json_decode(json_encode($from));
-        $toObj = json_decode(json_encode($to));
+        $toObj   = json_decode(json_encode($to));
 
         $diff = new JsonDiff($fromObj, $toObj, JsonDiff::REARRANGE_ARRAYS);
 
@@ -973,7 +974,7 @@ class DatasetService
      *                 capping the forward-walk cost at ≤ (SNAPSHOT_INTERVAL - 1) deltas for any
      *                 version in the next window.
      *
-     * @return int The ID of the newly created DatasetVersion row.
+     * @return int  The ID of the newly created DatasetVersion row.
      */
     private function persistMetadataVersion(
         Dataset $dataset,
@@ -1023,29 +1024,29 @@ class DatasetService
                 $envelope = $handler->buildEnvelope($newGwdmMetadata, $previousMetadata);
 
                 $dv = DatasetVersion::create([
-                    'dataset_id' => $dataset->id,
-                    'metadata' => json_encode($envelope),
+                    'dataset_id'   => $dataset->id,
+                    'metadata'     => json_encode($envelope),
                     // Snapshot version, thus full rebuild of metadata and no patch.
-                    'patch' => null,
-                    'version' => $newVersionNumber,
-                    'title' => $title,
-                    'short_title' => $shortTitle,
+                    'patch'        => null,
+                    'version'      => $newVersionNumber,
+                    'title'        => $title,
+                    'short_title'  => $shortTitle,
                     'gwdm_version' => $targetGwdmVersion,
                 ]);
             } else {
                 // Delta row: reconstruct the current full GWDM object, diff against
                 // the new metadata to produce a minimal RFC 6902 patch.
                 $currentGwdm = $this->reconstructGwdmMetadata($dataset->id, $versionNumber);
-                $patch = $this->computePatch($currentGwdm, $newGwdmMetadata);
+                $patch       = $this->computePatch($currentGwdm, $newGwdmMetadata);
 
                 $dv = DatasetVersion::create([
-                    'dataset_id' => $dataset->id,
+                    'dataset_id'   => $dataset->id,
                     // Patch delta, therefore no metadata stored.
-                    'metadata' => [],
-                    'patch' => $patch,   // array — the cast handles JSON encoding
-                    'version' => $newVersionNumber,
-                    'title' => $title,
-                    'short_title' => $shortTitle,
+                    'metadata'     => [],
+                    'patch'        => $patch,   // array — the cast handles JSON encoding
+                    'version'      => $newVersionNumber,
+                    'title'        => $title,
+                    'short_title'  => $shortTitle,
                     'gwdm_version' => $targetGwdmVersion,
                 ]);
             }
@@ -1114,7 +1115,7 @@ class DatasetService
     {
         if (is_array($metadata) && Arr::has($metadata, 'metadata.metadata')) {
             $metadata = $metadata['metadata'];
-        } elseif (is_array($metadata) && ! Arr::has($metadata, 'metadata')) {
+        } elseif (is_array($metadata) && !Arr::has($metadata, 'metadata')) {
             $metadata = ['metadata' => $metadata];
         }
 
@@ -1140,14 +1141,14 @@ class DatasetService
      */
     private function mapCoverage(array $metadata, DatasetVersion $version): void
     {
-        if (! isset($metadata['metadata']['coverage']['spatial'])) {
+        if (!isset($metadata['metadata']['coverage']['spatial'])) {
             return;
         }
 
-        $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
+        $coverage     = strtolower($metadata['metadata']['coverage']['spatial']);
         $allCoverages = SpatialCoverage::all();
-        $ukCoverages = $allCoverages->filter(fn ($c) => $c->region !== 'Rest of the world');
-        $worldId = $allCoverages->firstWhere('region', 'Rest of the world')?->id;
+        $ukCoverages  = $allCoverages->filter(fn ($c) => $c->region !== 'Rest of the world');
+        $worldId      = $allCoverages->firstWhere('region', 'Rest of the world')?->id;
 
         // Collect the coverage IDs this version should map to, then sync the pivot
         // (upsert desired + prune stale) so editing coverage DOWN actually removes

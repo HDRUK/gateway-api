@@ -23,29 +23,27 @@ use Illuminate\Support\Facades\Schema;
  * references. Re-dispatching LinkageExtraction for those dataset versions will backfill
  * any unresolved references that were previously discarded.
  */
-return new class () extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         $isSqlite = DB::connection()->getDriverName() === 'sqlite';
 
         Schema::table('dataset_version_has_dataset_version', function (Blueprint $table) use ($isSqlite) {
             // SQLite rebuilds the whole table on ALTER — named FK drop is not supported.
-            if (!$isSqlite) {
+            if (! $isSqlite) {
                 $table->dropForeign('ld_dataset_version_target_id_fk');
             }
 
             $table->unsignedBigInteger('dataset_version_target_id')->nullable()->change();
 
             // Raw reference fields for unresolved linkages (target_id = NULL rows).
-            $table->string('raw_url', 2048)->nullable()->after('dataset_version_target_id');
-            $table->string('raw_pid', 255)->nullable()->after('raw_url');
-            // text(): free text pulled from external, unvalidated linkage references —
-            // unlike the internal title/short_title columns there's no app-side bound
-            // on length, and a VARCHAR cap risks a strict-mode INSERT failure.
+            $table->string('raw_url')->nullable()->after('dataset_version_target_id');
+            $table->string('raw_pid')->nullable()->after('raw_url');
             $table->text('raw_title')->nullable()->after('raw_pid');
 
             // Re-add FK as nullable (NULL = unresolved, non-NULL = resolved).
-            if (!$isSqlite) {
+            if (! $isSqlite) {
                 $table->foreign('dataset_version_target_id', 'ld_dataset_version_target_id_fk')
                     ->references('id')->on('dataset_versions')
                     ->onDelete('cascade');
@@ -57,7 +55,7 @@ return new class () extends Migration {
 
             $table->unsignedBigInteger('publication_id')->nullable()->change();
 
-            $table->string('raw_doi', 2048)->nullable()->after('publication_id');
+            $table->string('raw_doi')->nullable()->after('publication_id');
 
             $table->foreign('publication_id')
                 ->references('id')->on('publications')
@@ -70,7 +68,7 @@ return new class () extends Migration {
         $isSqlite = DB::connection()->getDriverName() === 'sqlite';
 
         Schema::table('dataset_version_has_dataset_version', function (Blueprint $table) use ($isSqlite) {
-            if (!$isSqlite) {
+            if (! $isSqlite) {
                 $table->dropForeign('ld_dataset_version_target_id_fk');
             }
             $table->dropColumn(['raw_url', 'raw_pid', 'raw_title']);
@@ -78,7 +76,7 @@ return new class () extends Migration {
                 ->whereNull('dataset_version_target_id')
                 ->delete();
             $table->unsignedBigInteger('dataset_version_target_id')->nullable(false)->change();
-            if (!$isSqlite) {
+            if (! $isSqlite) {
                 $table->foreign('dataset_version_target_id', 'ld_dataset_version_target_id_fk')
                     ->references('id')->on('dataset_versions')
                     ->onDelete('cascade');
