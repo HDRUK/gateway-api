@@ -77,6 +77,10 @@ class DatasetVersion extends BaseTypesenseModel
         // from the reconstructed GWDM metadata at write time.
         'title',
         'short_title',
+        // Queryable GWDM schema version for this row (see migration
+        // 2026_06_17_000001). Replaces reading from metadata->gwdmVersion, which
+        // is absent on delta rows and unindexed on all rows.
+        'gwdm_version',
     ];
 
     /**
@@ -239,9 +243,7 @@ class DatasetVersion extends BaseTypesenseModel
             'dataset_version_source_id',
             'dataset_version_target_id',
             'linkage_type',
-        )->selectRaw("dataset_versions.id, dataset_versions.dataset_id,
-        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) as title,
-        short_title as shortTitle");
+        )->selectRaw('dataset_versions.id, dataset_versions.dataset_id, title, short_title as shortTitle');
     }
 
     public function dataset(): BelongsTo
