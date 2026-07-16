@@ -32,6 +32,7 @@ use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
 use App\Services\DatasetService;
+use App\Services\Gwdm\GwdmHandlerFactory;
 use ElasticClientController as ECC;
 
 trait IndexElastic
@@ -85,6 +86,18 @@ trait IndexElastic
         );
     }
 
+    // Whether this envelope's GWDM version should be indexed into Elasticsearch.
+    private function isElasticIndexable(array $envelope): bool
+    {
+        $version = $envelope['gwdmVersion'] ?? null;
+
+        if ($version === null) {
+            return true; // no version info available — preserve current behaviour
+        }
+
+        return app(GwdmHandlerFactory::class)->resolve($version)->supportsElasticIndexing();
+    }
+
     /**
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
      *
@@ -114,6 +127,12 @@ trait IndexElastic
             }
 
             $metadata = $this->reconstructedLatestEnvelope($datasetMatch);
+
+            if (!$this->isElasticIndexable($metadata)) {
+                $this->deleteDatasetFromElastic($datasetId);
+                return null;
+            }
+
             $latestVersion = $datasetMatch->latestVersion();
 
             // inject relationships via Local functions
@@ -333,13 +352,16 @@ trait IndexElastic
 
                 $latestVersion = $dataset->latestVersion();
                 if ($latestVersion) {
-                    $datasetVersionIds[] = $latestVersion->id;
-                    $metadata = $latestVersion->metadata;
-                    $datasetTitles[] = $latestVersion->short_title ?? ($metadata['metadata']['summary']['shortTitle'] ?? '');
-                    $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
-                    foreach ($types as $t) {
-                        if (!in_array($t, $dataTypes)) {
-                            $dataTypes[] = $t;
+                    $metadata = $this->reconstructedLatestEnvelope($dataset);
+
+                    if ($this->isElasticIndexable($metadata)) {
+                        $datasetVersionIds[] = $latestVersion->id;
+                        $datasetTitles[] = $latestVersion->short_title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '');
+                        $types = $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''));
+                        foreach ($types as $t) {
+                            if (!in_array($t, $dataTypes)) {
+                                $dataTypes[] = $t;
+                            }
                         }
                     }
                 }
@@ -505,10 +527,19 @@ trait IndexElastic
         $datasetTitles = array();
         $datasetAbstracts = array();
         foreach ($datasetIds as $d) {
-            $latestVersion = Dataset::where(['id' => $d])->first()->latestVersion();
-            $metadata = $latestVersion->metadata;
-            $datasetTitles[] = $latestVersion->short_title ?? ($metadata['metadata']['summary']['shortTitle'] ?? '');
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
+            $datasetRow = Dataset::where(['id' => $d])->first();
+            $latestVersion = $datasetRow?->latestVersion();
+            if (!$latestVersion) {
+                continue;
+            }
+
+            $metadata = $this->reconstructedLatestEnvelope($datasetRow);
+            if (!$this->isElasticIndexable($metadata)) {
+                continue;
+            }
+
+            $datasetTitles[] = $latestVersion->short_title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '');
+            $datasetAbstracts[] = $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], '');
         }
 
         $keywords = array();
@@ -1009,7 +1040,10 @@ trait IndexElastic
     public function getMaterialTypes(array $metadata): array|null
     {
         $materialTypes = null;
-        if (version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
+        // Check the reconstructed envelope's own gwdmVersion, not the global config
+        // default — a dataset's actual version can diverge from that default.
+        $rowGwdmVersion = $metadata['gwdmVersion'] ?? Config::get('metadata.GWDM.version');
+        if (version_compare($rowGwdmVersion, "2.0", "<")) {
             $containsTissue = !empty($this->getValueByPossibleKeys($metadata, [
                 'metadata.coverage.biologicalsamples',
                 'metadata.coverage.physicalSampleAvailability',
