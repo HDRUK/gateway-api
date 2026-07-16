@@ -376,6 +376,17 @@ return [
     ],
     [
         'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/{id}/metadata',
+        'methodController' => 'DatasetController@metadataOnly',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets',
         'method' => 'post',
         'path' => '/datasets',
         'methodController' => 'DatasetController@store',

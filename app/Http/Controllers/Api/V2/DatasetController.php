@@ -225,6 +225,100 @@ class DatasetController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *    path="/api/v2/datasets/{id}/metadata",
+     *    operationId="fetch_dataset_metadata_only_v2",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@metadataOnly",
+     *    description="Returns just the reconstructed GWDM metadata envelope for a dataset
+        (or the TRASER-translated equivalent when schema_model/schema_version are supplied),
+        skipping the relation loading (DURs, tools, collections, publications, named
+        entities, linkages, team DAR check) that the full dataset resource carries.",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dataset id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(type="integer"),
+     *    ),
+     *    @OA\Parameter(
+     *       name="schema_model",
+     *       in="query",
+     *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="schema_version",
+     *       in="query",
+     *       description="Alternative output schema version.",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(property="data", type="object",
+     *             @OA\Property(property="gwdmVersion", type="string", example="3.0"),
+     *             @OA\Property(property="metadata", type="object"),
+     *             @OA\Property(property="original_metadata", type="object")
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(response=400, description="Bad request",
+     *       @OA\JsonContent(@OA\Property(property="message", type="string", example="schema_model provided without schema_version"))
+     *    ),
+     *    @OA\Response(response=401, description="Unauthorized",
+     *       @OA\JsonContent(@OA\Property(property="message", type="string", example="unauthorized"))
+     *    ),
+     *    @OA\Response(response=404, description="Not found response",
+     *       @OA\JsonContent(@OA\Property(property="message", type="string", example="not found"))
+     *    )
+     * )
+     */
+    public function metadataOnly(GetDataset $request, int $id): JsonResponse
+    {
+        try {
+            $dataset = $this->datasetService->findActive($id, $this->partnerContext->getPartner());
+
+            if (!$dataset) {
+                return response()->json(['message' => 'Dataset not found'], 404);
+            }
+
+            $metadata = $this->datasetService->getMetadataOnly(
+                $dataset,
+                $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
+                $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
+            );
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dataset metadata get ' . $id,
+            ]);
+
+            return response()->json(['message' => 'success', 'data' => $metadata]);
+
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => 'failed to translate', 'details' => $e->getMessage()], 400);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Post(
      *    path="/api/v2/datasets",
      *    operationId="create_datasets_v2",
