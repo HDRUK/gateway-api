@@ -11,6 +11,16 @@ use Config;
  * targetVersion()   — write path: x-gwdm-version header with config fallback
  * requestedVersion() — read path: x-gwdm-version header only; null if not set
  *
+ * These two deliberately handle an unsupported header differently.
+ * targetVersion() is called unconditionally by ResolveGwdmVersionContext
+ * middleware on every API request (read or write) to seed the request-scoped
+ * Context — it must never throw, or a garbage/unsupported header on an
+ * unrelated GET would 500 the whole request. It silently falls back to the
+ * config default instead. requestedVersion() is only called explicitly by
+ * read paths that are asking "did the client request a specific version?" —
+ * there, a bad header is a genuine client error, so it throws and the
+ * controller turns that into a 400.
+ *
  * To add a new supported GWDM version, update GwdmHandlerFactory — the valid
  * version list (SUPPORTED_VERSIONS) lives there as the single source of truth.
  *

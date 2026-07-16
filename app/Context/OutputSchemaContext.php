@@ -19,7 +19,7 @@ namespace App\Context;
  */
 class OutputSchemaContext
 {
-    public function __construct(private PartnerContext $partnerContext)
+    public function __construct(private readonly PartnerContext $partnerContext)
     {
     }
 
