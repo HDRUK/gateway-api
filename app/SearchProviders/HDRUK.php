@@ -39,7 +39,6 @@ class HDRUK implements SearchProvider
         'data_custodians'         => ['type' => 'dataProvider',     'enabledOnly' => false],
     ];
 
-    // Types we index ourselves — data_custodians (Team) is owned by external providers.
     private const TYPESENSE_MODEL_MAP = [
         'datasets'                => \App\Models\DatasetVersion::class,
         'tools'                   => \App\Models\Tool::class,
@@ -47,6 +46,7 @@ class HDRUK implements SearchProvider
         'dur'                     => \App\Models\Dur::class,
         'publications'            => \App\Models\Publication::class,
         'data_custodian_networks' => \App\Models\DataProviderColl::class,
+        'data_custodians'         => \App\Models\Team::class,
     ];
 
     public function isDeferred(): bool

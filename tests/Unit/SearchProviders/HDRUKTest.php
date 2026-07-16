@@ -44,12 +44,14 @@ class HDRUKTest extends TestCase
         $this->assertNull($provider->collectionForFacetableFilter('dataset', 'collectionName'));
     }
 
-    public function test_returns_null_for_filter_type_with_no_typesense_model(): void
+    public function test_returns_collection_name_for_each_data_custodian_facet_field(): void
     {
         $provider = new HDRUK();
+        $teamsCollection = (new \App\Models\Team())->searchableAs();
 
-        // 'dataProvider' filter type (Team) is owned by external providers.
-        $this->assertNull($provider->collectionForFacetableFilter('dataProvider', 'dataType'));
+        foreach (['datasetTitles', 'dataType', 'geographicLocation'] as $field) {
+            $this->assertEquals($teamsCollection, $provider->collectionForFacetableFilter('dataProvider', $field));
+        }
     }
 
     public function test_returns_null_for_unknown_filter_type(): void

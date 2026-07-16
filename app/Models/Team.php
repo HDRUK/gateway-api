@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Config;
+use App\Models\Base\BaseTypesenseModel;
 use App\Observers\TeamObserver;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Prunable;
@@ -47,7 +48,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * )
  */
 #[ObservedBy(TeamObserver::class)]
-class Team extends Model
+class Team extends BaseTypesenseModel
 {
     use HasFactory;
     use Notifiable;
@@ -349,5 +350,179 @@ class Team extends Model
     public function datasets(): HasMany
     {
         return $this->hasMany(Dataset::class);
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return (bool) $this->getAttribute('enabled') && $this->deleted_at === null;
+    }
+
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with([
+            'aliases',
+            'datasets' => fn ($q) => $q->where('status', Dataset::STATUS_ACTIVE)
+                ->with(['latestMetadata' => fn ($q2) => $q2->select([
+                    'dataset_versions.id',
+                    'dataset_versions.dataset_id',
+                    'dataset_versions.short_title',
+                    'dataset_versions.metadata',
+                ])->with('spatialCoverage')]),
+        ]);
+    }
+
+    /**
+     * Latest, non-null version of every ACTIVE dataset owned by this team.
+     * Mirrors legacy reindexElasticDataProvider(), bounded to this team's own
+     * datasets rather than an entire network's, so the per-record metadata
+     * load stays small (see DataCustodianNetworkHydrator for the OOM this
+     * pattern avoids at larger scale).
+     */
+    private function activeDatasetVersions()
+    {
+        return $this->datasets
+            ->where('status', Dataset::STATUS_ACTIVE)
+            ->map(fn ($dataset) => $dataset->getAttribute('latestMetadata'))
+            ->filter();
+    }
+
+    private function facetDatasetTitles(): array
+    {
+        return $this->activeDatasetVersions()
+            ->pluck('short_title')
+            ->filter(fn ($title) => is_string($title) && $title !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function facetDataTypes(): array
+    {
+        return $this->activeDatasetVersions()
+            ->flatMap(fn ($version) => explode(';,;', data_get($version->metadata, 'metadata.summary.datasetType', '') ?? ''))
+            ->filter(fn ($type) => $type !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function facetGeographicLocations(): array
+    {
+        return $this->activeDatasetVersions()
+            ->flatMap(fn ($version) => $version->spatialCoverage->pluck('region'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function activeDatasetVersionIds(): array
+    {
+        return $this->activeDatasetVersions()->pluck('id')->all();
+    }
+
+    private function durTitlesText(): string
+    {
+        $versionIds = $this->activeDatasetVersionIds();
+
+        $linkedTitles = empty($versionIds) ? collect() : Dur::whereIn(
+            'id',
+            DurHasDatasetVersion::whereIn('dataset_version_id', $versionIds)->pluck('dur_id')
+        )->pluck('project_title');
+
+        $ownTitles = Dur::where('team_id', $this->id)->pluck('project_title');
+
+        return $linkedTitles->merge($ownTitles)->filter()->unique()->implode(',');
+    }
+
+    private function toolNamesText(): string
+    {
+        $versionIds = $this->activeDatasetVersionIds();
+        if (empty($versionIds)) {
+            return '';
+        }
+
+        return Tool::whereIn(
+            'id',
+            DatasetVersionHasTool::whereIn('dataset_version_id', $versionIds)->pluck('tool_id')
+        )->pluck('name')->filter()->unique()->implode(',');
+    }
+
+    private function publicationTitlesText(): string
+    {
+        $versionIds = $this->activeDatasetVersionIds();
+        if (empty($versionIds)) {
+            return '';
+        }
+
+        return Publication::whereIn(
+            'id',
+            PublicationHasDatasetVersion::whereIn('dataset_version_id', $versionIds)
+                ->whereNull('deleted_at')
+                ->pluck('publication_id')
+        )->pluck('paper_title')->filter()->unique()->implode(',');
+    }
+
+    private function collectionNamesText(): string
+    {
+        $versionIds = $this->activeDatasetVersionIds();
+        if (empty($versionIds)) {
+            return '';
+        }
+
+        return Collection::whereIn(
+            'id',
+            CollectionHasDatasetVersion::whereIn('dataset_version_id', $versionIds)
+                ->whereNull('deleted_at')
+                ->pluck('collection_id')
+        )->where('status', Collection::STATUS_ACTIVE)->pluck('name')->filter()->unique()->implode(',');
+    }
+
+    private function teamAliases(): array
+    {
+        return $this->aliases->pluck('name')->filter()->values()->all();
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'                 => (string) $this->id,
+            'name'               => $this->getAttribute('name') ?? '',
+            'datasetTitles'      => $this->facetDatasetTitles(),
+            'dataType'           => $this->facetDataTypes(),
+            'geographicLocation' => $this->facetGeographicLocations(),
+            'durTitles'          => $this->durTitlesText(),
+            'toolNames'          => $this->toolNamesText(),
+            'publicationTitles'  => $this->publicationTitlesText(),
+            'collectionNames'    => $this->collectionNamesText(),
+            'teamAliases'        => $this->teamAliases(),
+        ];
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by'         => 'name,datasetTitles,durTitles,toolNames,publicationTitles,collectionNames,teamAliases',
+            'query_by_weights' => '10,3,2,2,2,2,3',
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                [ 'name' => 'id',                   'type' => 'string' ],
+                [ 'name' => 'name',                 'type' => 'string', 'infix' => true ],
+                [ 'name' => 'datasetTitles',        'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'dataType',             'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'geographicLocation',   'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'durTitles',            'type' => 'string', 'optional' => true ],
+                [ 'name' => 'toolNames',            'type' => 'string', 'optional' => true ],
+                [ 'name' => 'publicationTitles',    'type' => 'string', 'optional' => true ],
+                [ 'name' => 'collectionNames',      'type' => 'string', 'optional' => true ],
+                [ 'name' => 'teamAliases',          'type' => 'string[]', 'optional' => true ],
+            ],
+        ];
     }
 }
