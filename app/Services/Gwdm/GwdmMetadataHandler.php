@@ -189,60 +189,6 @@ abstract class GwdmMetadataHandler
         // no-op for versions without linkage extraction support
     }
 
-    /**
-     * Whether datasets on this GWDM version should be indexed into Elasticsearch.
-     */
-    public function supportsElasticIndexing(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Extract Typesense-searchable fields from a reconstructed GWDM envelope.
-     * Override when a version's field shapes diverge from delimited strings.
-     */
-    public function toSearchableFields(array $envelope): array
-    {
-        $keywords   = data_get($envelope, 'metadata.summary.keywords', '');
-        $dataType   = data_get($envelope, 'metadata.summary.datasetType', '');
-        $conformsTo = data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo', '');
-        $structural = data_get($envelope, 'metadata.structuralMetadata', []);
-
-        if (is_string($structural)) {
-            $structural = json_decode($structural, true) ?? [];
-        }
-        if (!is_array($structural)) {
-            $structural = [];
-        }
-
-        return [
-            'abstract' => data_get($envelope, 'metadata.summary.abstract', ''),
-            'description' => data_get($envelope, 'metadata.summary.description', ''),
-            'keywords' => array_values(array_filter(explode(';,;', $keywords))),
-            'publisherName' => data_get(
-                $envelope,
-                'metadata.summary.publisher.name',
-                data_get($envelope, 'metadata.summary.publisher.publisherName', '')
-            ),
-            'dataType' => array_values(array_filter(explode(';,;', $dataType))),
-            'populationSize' => (int) data_get($envelope, 'metadata.summary.populationSize', -1),
-            'datasetDOI' => data_get($envelope, 'metadata.summary.doiName', ''),
-            'conformsTo' => array_values(array_filter(explode(';,;', $conformsTo))),
-            'structuralTableNames' => collect($structural)
-                ->pluck('name')
-                ->filter(fn ($v) => is_string($v) && $v !== '')
-                ->values()->all(),
-            'structuralColumnNames' => collect($structural)
-                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('name'))
-                ->filter(fn ($v) => is_string($v) && $v !== '')
-                ->values()->all(),
-            'structuralColumnDescriptions' => collect($structural)
-                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('description'))
-                ->filter(fn ($v) => is_string($v) && $v !== '')
-                ->values()->all(),
-        ];
-    }
-
     // ── Onboarding form defaults ──────────────────────────────────────────────
 
     /**

@@ -31,8 +31,6 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
-use App\Services\DatasetService;
-use App\Services\Gwdm\GwdmHandlerFactory;
 use ElasticClientController as ECC;
 
 trait IndexElastic
@@ -44,59 +42,6 @@ trait IndexElastic
     private $tools = [];
     private $publications = [];
     private $collections = [];
-
-    /**
-     * Single named resolution point for DatasetService within this trait.
-     *
-     * Constructor injection isn't viable here: IndexElastic is a trait consumed
-     * by ~20 unrelated controllers/jobs/observers, so there is no single
-     * constructor to inject into without a much larger refactor.
-     */
-    private function datasetService(): DatasetService
-    {
-        return app(DatasetService::class);
-    }
-
-    /**
-     * Reconstruct the full GWDM envelope for a dataset's latest version.
-     *
-     * DatasetVersion->metadata cannot be read directly for indexing: delta rows
-     * store an empty metadata blob, and GWDM 3.0 rows omit the `metadata` key
-     * entirely (their data lives in dedicated SQL tables). Funnelling through
-     * DatasetService::getReconstructedMetadataEnvelope() yields a complete
-     * {gwdmVersion, metadata, original_metadata} envelope for every schema
-     * version and every snapshot/delta storage shape. Validation is skipped —
-     * data is validated at write time.
-     *
-     * @return array The reconstructed envelope, or [] when the dataset has no versions.
-     */
-    private function reconstructedLatestEnvelope(Dataset $dataset): array
-    {
-        $version = $dataset->latestVersion();
-
-        if (!$version) {
-            return [];
-        }
-
-        return $this->datasetService()->getReconstructedMetadataEnvelope(
-            $dataset->id,
-            $version->version,
-            false,
-            $version,
-        );
-    }
-
-    // Whether this envelope's GWDM version should be indexed into Elasticsearch.
-    private function isElasticIndexable(array $envelope): bool
-    {
-        $version = $envelope['gwdmVersion'] ?? null;
-
-        if ($version === null) {
-            return true; // no version info available — preserve current behaviour
-        }
-
-        return app(GwdmHandlerFactory::class)->resolve($version)->supportsElasticIndexing();
-    }
 
     /**
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
@@ -126,14 +71,7 @@ trait IndexElastic
                 // throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
             }
 
-            $metadata = $this->reconstructedLatestEnvelope($datasetMatch);
-
-            if (!$this->isElasticIndexable($metadata)) {
-                $this->deleteDatasetFromElastic($datasetId);
-                return null;
-            }
-
-            $latestVersion = $datasetMatch->latestVersion();
+            $metadata = $datasetMatch->latestVersion()->metadata;
 
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
@@ -144,10 +82,8 @@ trait IndexElastic
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
                 'keywords' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], '')),
                 'description' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.description'], ''),
-                // short_title/title are populated columns on every write (see DatasetVersion);
-                // only fall back to the envelope for legacy pre-migration rows where they're null.
-                'shortTitle' => $latestVersion->short_title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], ''),
-                'title' => $latestVersion->title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''),
+                'shortTitle' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], ''),
+                'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''),
                 'populationSize' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.populationSize'], -1),
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
@@ -352,16 +288,13 @@ trait IndexElastic
 
                 $latestVersion = $dataset->latestVersion();
                 if ($latestVersion) {
-                    $metadata = $this->reconstructedLatestEnvelope($dataset);
-
-                    if ($this->isElasticIndexable($metadata)) {
-                        $datasetVersionIds[] = $latestVersion->id;
-                        $datasetTitles[] = $latestVersion->short_title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '');
-                        $types = $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''));
-                        foreach ($types as $t) {
-                            if (!in_array($t, $dataTypes)) {
-                                $dataTypes[] = $t;
-                            }
+                    $datasetVersionIds[] = $latestVersion->id;
+                    $metadata = $latestVersion->metadata;
+                    $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                    $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
+                    foreach ($types as $t) {
+                        if (!in_array($t, $dataTypes)) {
+                            $dataTypes[] = $t;
                         }
                     }
                 }
@@ -527,19 +460,12 @@ trait IndexElastic
         $datasetTitles = array();
         $datasetAbstracts = array();
         foreach ($datasetIds as $d) {
-            $datasetRow = Dataset::where(['id' => $d])->first();
-            $latestVersion = $datasetRow?->latestVersion();
-            if (!$latestVersion) {
-                continue;
-            }
-
-            $metadata = $this->reconstructedLatestEnvelope($datasetRow);
-            if (!$this->isElasticIndexable($metadata)) {
-                continue;
-            }
-
-            $datasetTitles[] = $latestVersion->short_title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '');
-            $datasetAbstracts[] = $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], '');
+            $metadata = Dataset::where(['id' => $d])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
         }
 
         $keywords = array();
@@ -609,7 +535,8 @@ trait IndexElastic
 
             foreach ($datasets as $dataset) {
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
-                $datasetTitles[] = $dataset->latestVersion()?->short_title ?? '';
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
@@ -671,7 +598,11 @@ trait IndexElastic
 
             $datasetTitles = array();
             foreach ($datasetIds as $d) {
-                $datasetTitles[] = Dataset::where(['id' => $d])->first()->latestVersion()->short_title ?? '';
+                $metadata = Dataset::where(['id' => $d])
+                    ->first()
+                    ->latestVersion()
+                    ->metadata;
+                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
             }
 
             $keywords = array();
@@ -767,10 +698,9 @@ trait IndexElastic
             ];
 
             foreach ($datasets as $dataset) {
-                $datasetModel = Dataset::where(['id' => $dataset['id']])->first();
-                $latestVersion = $datasetModel->latestVersion();
-                $latestVersionID = $latestVersion->id;
-                $datasetTitles[] = $latestVersion->short_title ?? '';
+                $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
+                $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
+                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
 
                 // change from 'UNKNOWN' to 'USING' - temp
                 $linkType = PublicationHasDatasetVersion::where([
@@ -908,7 +838,8 @@ trait IndexElastic
                 $datasetTitles[] = '_Can be used with any dataset';
             } else {
                 foreach ($datasets as $dataset) {
-                    $datasetTitles[] = $dataset->latestVersion()?->short_title ?? '';
+                    $dataset_version = $dataset['versions'][0];
+                    $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
                 }
                 usort($datasetTitles, 'strcasecmp');
             }
@@ -1040,10 +971,7 @@ trait IndexElastic
     public function getMaterialTypes(array $metadata): array|null
     {
         $materialTypes = null;
-        // Check the reconstructed envelope's own gwdmVersion, not the global config
-        // default — a dataset's actual version can diverge from that default.
-        $rowGwdmVersion = $metadata['gwdmVersion'] ?? Config::get('metadata.GWDM.version');
-        if (version_compare($rowGwdmVersion, "2.0", "<")) {
+        if (version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
             $containsTissue = !empty($this->getValueByPossibleKeys($metadata, [
                 'metadata.coverage.biologicalsamples',
                 'metadata.coverage.physicalSampleAvailability',
@@ -1182,12 +1110,16 @@ trait IndexElastic
         $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
         $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
-        $metadataSummary = $this->reconstructedLatestEnvelope($dataset)['metadata']['summary'] ?? [];
+        $version = $dataset->latestVersion();
+        $withLinks = DatasetVersion::where('id', $version['id'])
+            ->with(['linkedDatasetVersions'])
+            ->first();
 
-        // title/short_title are populated columns on every write; only fall back
-        // to the reconstructed envelope for legacy pre-migration rows.
-        $title = $dataset->latestVersion()?->title
-            ?? $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $dataset->setAttribute('versions', [$withLinks]);
+
+        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
+
+        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
         $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
         $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 

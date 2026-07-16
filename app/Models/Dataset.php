@@ -401,22 +401,13 @@ class Dataset extends Model
     ): array {
         $targetTable = (new $targetClass())->getTable();
 
-        // Scope to the latest version only. Coverage pivot rows accumulate one set
-        // per version; unioning across all versions makes displayed coverage only
-        // ever grow (e.g. changing England -> Scotland would show both forever).
-        $latestVersionId = $this->latestVersionID($this->id);
-
-        if ($latestVersionId === null) {
-            return [];
-        }
-
         $results = DB::select("
             SELECT {$targetTable}.*, {$linkageTable}.dataset_version_id
             FROM {$targetTable}
             INNER JOIN {$linkageTable} ON {$targetTable}.id = {$linkageTable}.{$foreignKey}
             INNER JOIN dataset_versions ON dataset_versions.id = {$linkageTable}.dataset_version_id
-            WHERE dataset_versions.dataset_id = ? AND dataset_versions.id = ?
-        ", [$this->id, $latestVersionId]);
+            WHERE dataset_versions.dataset_id = ?
+        ", [$this->id]);
 
         return collect($results)
             ->groupBy('id')

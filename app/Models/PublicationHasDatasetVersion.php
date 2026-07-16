@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Observers\PublicationHasDatasetVersionObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
+/**
+ * Populated by the join select in Gwdm2xHandler::afterRead() (publications.paper_doi):
+ * @property-read string|null $paper_doi
+ */
 #[ObservedBy([PublicationHasDatasetVersionObserver::class])]
 class PublicationHasDatasetVersion extends Model
 {
@@ -25,7 +29,6 @@ class PublicationHasDatasetVersion extends Model
         'dataset_version_id',
         'link_type',
         'description',
-        'raw_doi',
     ];
 
     protected $dates = ['deleted_at'];

@@ -6,8 +6,6 @@ use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
-use App\Services\DatasetService;
 use Illuminate\Support\Arr;
 use Illuminate\Bus\Queueable;
 use App\Http\Traits\IndexElastic;
@@ -61,15 +59,17 @@ class ExtractToolsFromMetadata implements ShouldQueue
         $linkageToolsDataset = 'metadata.linkage.tools';
         $type = 'Used on';
 
-        // Reconstruct via DatasetService — the raw `metadata` column is empty on delta rows.
-        $dv = DatasetVersion::where('id', $datasetVersionId)->first();
+        $metadata = \DB::table('dataset_versions')
+            ->where('id', $datasetVersionId)
+            ->select('id', 'dataset_id', 'metadata', \DB::raw('JSON_TYPE(metadata) as metadata_type'))
+            ->first();
 
-        if (is_null($dv)) {
+        if (is_null($metadata)) {
             \Log::info('ExtractToolsFromMetadata :: Metadata not found.', $this->loggingContext);
             return;
         }
 
-        $dataset = Dataset::where('id', $dv->dataset_id)->select(['id', 'user_id', 'team_id'])->first();
+        $dataset = Dataset::where('id', $metadata->dataset_id)->select(['id', 'user_id', 'team_id'])->first();
         if (is_null($dataset)) {
             \Log::info('ExtractToolsFromMetadata :: Dataset not found.', $this->loggingContext);
             return;
@@ -92,9 +92,16 @@ class ExtractToolsFromMetadata implements ShouldQueue
 
         $this->cleanToolDatasetVersion($datasetVersionId, $type, (int)$dataset->id);
 
-        $data = app(DatasetService::class)->getReconstructedMetadataEnvelope($dv->dataset_id, $dv->version, false, $dv);
+        $data = null;
+        if ($metadata->metadata_type === 'OBJECT') {
+            $data = json_decode($metadata->metadata, true);
+        }
 
-        if (empty($data['metadata'])) {
+        if ($metadata->metadata_type === 'STRING') {
+            $data = json_decode(json_decode($metadata->metadata), true);
+        }
+
+        if (count($data ?: []) === 0) {
             return;
         }
 

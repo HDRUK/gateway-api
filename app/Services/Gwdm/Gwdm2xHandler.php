@@ -165,18 +165,6 @@ class Gwdm2xHandler extends GwdmMetadataHandler
                 $targetVersionId = $this->findTargetDataset($d);
 
                 if (! $targetVersionId) {
-                    // Store unresolved reference so afterRead() can reconstruct it from SQL.
-                    DatasetVersionHasDatasetVersion::create([
-                        'dataset_version_source_id' => $sourceVersionId,
-                        'dataset_version_target_id' => null,
-                        'linkage_type' => $key,
-                        'direct_linkage' => 1,
-                        'description' => self::LINKAGE_DESCRIPTION,
-                        'raw_url' => $d['url'] ?? null,
-                        'raw_pid' => $d['pid'] ?? null,
-                        'raw_title' => $d['title'] ?? null,
-                    ]);
-
                     continue;
                 }
 
@@ -211,15 +199,6 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             $publicationId = $this->findTargetPublication($doi);
 
             if (! $publicationId) {
-                // Store unresolved DOI so afterRead() can reconstruct it from SQL.
-                PublicationHasDatasetVersion::create([
-                    'publication_id' => null,
-                    'dataset_version_id' => $sourceVersionId,
-                    'link_type' => $linkType,
-                    'description' => self::LINKAGE_DESCRIPTION,
-                    'raw_doi' => $doi,
-                ]);
-
                 continue;
             }
 
@@ -294,7 +273,6 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             ->where('dataset_version_has_dataset_version.dataset_version_source_id', $dv->id)
             ->where('dataset_version_has_dataset_version.direct_linkage', 1)
             ->where('dataset_version_has_dataset_version.description', self::LINKAGE_DESCRIPTION)
-            ->whereNotNull('dataset_version_has_dataset_version.dataset_version_target_id')
             ->join('dataset_versions as dv', 'dv.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
             ->join('datasets as d', 'd.id', '=', 'dv.dataset_id')
             ->select(
@@ -305,21 +283,13 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             )
             ->get();
 
-        $unresolvedDatasets = DatasetVersionHasDatasetVersion::query()
-            ->where('dataset_version_source_id', $dv->id)
-            ->where('direct_linkage', 1)
-            ->where('description', self::LINKAGE_DESCRIPTION)
-            ->whereNull('dataset_version_target_id')
-            ->get();
-
         $publications = PublicationHasDatasetVersion::query()
             ->where('publication_has_dataset_version.dataset_version_id', $dv->id)
             ->where('publication_has_dataset_version.description', self::LINKAGE_DESCRIPTION)
-            ->leftJoin('publications', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
+            ->join('publications', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
             ->get();
 
         $hasExtractedRows = $resolvedDatasets->isNotEmpty()
-            || $unresolvedDatasets->isNotEmpty()
             || $publications->isNotEmpty();
 
         if (! $hasExtractedRows) {
@@ -334,18 +304,11 @@ class Gwdm2xHandler extends GwdmMetadataHandler
                 'title' => $row->short_title,
             ];
         }
-        foreach ($unresolvedDatasets as $row) {
-            $datasetLinkage[$row->linkage_type][] = [
-                'url' => $row->raw_url,
-                'pid' => $row->raw_pid,
-                'title' => $row->raw_title,
-            ];
-        }
 
         $aboutDataset = [];
         $usingDataset = [];
         foreach ($publications as $row) {
-            $doi = $row->paper_doi ?? $row->raw_doi;
+            $doi = $row->paper_doi;
             if (! $doi) {
                 continue;
             }

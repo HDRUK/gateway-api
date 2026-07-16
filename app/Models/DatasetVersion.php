@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Models\Base\BaseTypesenseModel;
-use App\Services\DatasetService;
-use App\Services\Gwdm\GwdmHandlerFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\DatasetVersionObserver;
 use Illuminate\Database\Eloquent\Builder;
@@ -285,24 +283,50 @@ class DatasetVersion extends BaseTypesenseModel
 
     public function toSearchableArray(): array
     {
-        $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
-            $this->dataset_id,
-            $this->version,
-            false,
-            $this,
-        );
+        $meta = $this->metadata ?? [];
 
-        $fields = app(GwdmHandlerFactory::class)
-            ->resolve($envelope['gwdmVersion'] ?? $this->gwdm_version ?? '2.0')
-            ->toSearchableFields($envelope);
+        $keywords   = data_get($meta, 'metadata.summary.keywords', '');
+        $dataType   = data_get($meta, 'metadata.summary.datasetType', '');
+        $conformsTo = data_get($meta, 'metadata.accessibility.formatAndStandards.conformsTo', '');
+        $structural = data_get($meta, 'metadata.structuralMetadata', []);
+        if (is_string($structural)) {
+            $structural = json_decode($structural, true) ?? [];
+        }
+        if (!is_array($structural)) {
+            $structural = [];
+        }
 
-        return array_merge($fields, [
-            'id' => (string) $this->id,
-            'dataset_id' => (string) $this->dataset_id,
-            'title' => $this->title ?? '',
-            'shortTitle' => $this->short_title ?? '',
-            'geographicLocation' => $this->spatialCoverage->pluck('region')->all(),
-        ]);
+        return [
+            'id'                            => (string) $this->id,
+            'dataset_id'                    => (string) $this->dataset_id,
+            'title'                         => $this->title ?? '',
+            'shortTitle'                    => $this->short_title ?? '',
+            'abstract'                      => data_get($meta, 'metadata.summary.abstract', ''),
+            'description'                   => data_get($meta, 'metadata.summary.description', ''),
+            'keywords'                      => array_values(array_filter(explode(';,;', $keywords))),
+            'publisherName'                 => data_get(
+                $meta,
+                'metadata.summary.publisher.name',
+                data_get($meta, 'metadata.summary.publisher.publisherName', '')
+            ),
+            'dataType'                      => array_values(array_filter(explode(';,;', $dataType))),
+            'populationSize'                => (int) data_get($meta, 'metadata.summary.populationSize', -1),
+            'geographicLocation'            => $this->spatialCoverage->pluck('region')->all(),
+            'datasetDOI'                    => data_get($meta, 'metadata.summary.doiName', ''),
+            'conformsTo'                    => array_values(array_filter(explode(';,;', $conformsTo))),
+            'structuralTableNames'          => collect($structural)
+                                                ->pluck('name')
+                                                ->filter(fn ($v) => is_string($v) && $v !== '')
+                                                ->values()->all(),
+            'structuralColumnNames'         => collect($structural)
+                                                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('name'))
+                                                ->filter(fn ($v) => is_string($v) && $v !== '')
+                                                ->values()->all(),
+            'structuralColumnDescriptions'  => collect($structural)
+                                                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('description'))
+                                                ->filter(fn ($v) => is_string($v) && $v !== '')
+                                                ->values()->all(),
+        ];
     }
 
     public function makeAllSearchableUsing(Builder $query): Builder

@@ -741,9 +741,8 @@ class DatasetService
      */
     public function getLinkages(int $datasetVersionId): array
     {
-        // SQL is the complete source of truth for linkage data. Resolved rows are joined
-        // to dataset_versions/datasets; unresolved rows (target_id = NULL) carry the raw
-        // title/url from the original metadata so nothing is discarded.
+        // SQL is the complete source of truth for linkage data. Rows are joined
+        // to dataset_versions/datasets to read the current title/status.
         return DatasetVersionHasDatasetVersion::query()
             ->where('dataset_version_has_dataset_version.dataset_version_source_id', $datasetVersionId)
             ->where('dataset_version_has_dataset_version.direct_linkage', 1)
@@ -755,17 +754,15 @@ class DatasetService
             })
             ->select([
                 'dataset_version_has_dataset_version.linkage_type',
-                'dataset_version_has_dataset_version.raw_url',
-                'dataset_version_has_dataset_version.raw_title',
                 'dataset_versions.short_title',
                 'datasets.id as target_dataset_id',
             ])
             ->get()
             ->map(fn ($row) => [
-                'title' => $row->short_title ?? $row->raw_title,
+                'title' => $row->short_title,
                 'url' => $row->target_dataset_id
                     ? config('gateway.gateway_url').'/en/dataset/'.$row->target_dataset_id
-                    : $row->raw_url,
+                    : null,
                 'dataset_id' => $row->target_dataset_id,
                 'linkage_type' => $row->linkage_type,
             ])
@@ -1149,41 +1146,32 @@ class DatasetService
         $allCoverages = SpatialCoverage::all();
         $ukCoverages = $allCoverages->filter(fn ($c) => $c->region !== 'Rest of the world');
         $worldId = $allCoverages->firstWhere('region', 'Rest of the world')?->id;
-
-        // Collect the coverage IDs this version should map to, then sync the pivot
-        // (upsert desired + prune stale) so editing coverage DOWN actually removes
-        // entries rather than accumulating them.
-        $desiredIds = [];
+        $matchFound = false;
 
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c->region))) {
-                $desiredIds[] = (int) $c->id;
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version->id,
+                    'spatial_coverage_id' => (int) $c->id,
+                ]);
+                $matchFound = true;
             }
         }
 
-        if (empty($desiredIds)) {
+        if (! $matchFound) {
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
-                    $desiredIds[] = (int) $c->id;
+                    DatasetVersionHasSpatialCoverage::updateOrCreate([
+                        'dataset_version_id' => (int) $version->id,
+                        'spatial_coverage_id' => (int) $c->id,
+                    ]);
                 }
-            } elseif ($worldId !== null) {
-                $desiredIds[] = (int) $worldId;
+            } else {
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version->id,
+                    'spatial_coverage_id' => (int) $worldId,
+                ]);
             }
         }
-
-        foreach ($desiredIds as $coverageId) {
-            DatasetVersionHasSpatialCoverage::updateOrCreate([
-                'dataset_version_id' => (int) $version->id,
-                'spatial_coverage_id' => $coverageId,
-            ]);
-        }
-
-        // Prune any pivot rows for this version no longer present in the metadata.
-        DatasetVersionHasSpatialCoverage::where('dataset_version_id', (int) $version->id)
-            ->when(
-                ! empty($desiredIds),
-                fn ($q) => $q->whereNotIn('spatial_coverage_id', $desiredIds),
-            )
-            ->delete();
     }
 }
