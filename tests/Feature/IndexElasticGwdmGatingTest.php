@@ -19,9 +19,8 @@ use Tests\Traits\MockExternalApis;
  * on a GWDM version that doesn't support Elasticsearch indexing get deindexed
  * rather than partially/incorrectly indexed (GwdmMetadataHandler::supportsElasticIndexing()).
  *
- * No real GWDM version returns false yet — Gwdm30Handler (the intended override,
- * added on a later branch) doesn't exist here — so this test fakes the handler
- * resolution to exercise the gate itself ahead of that landing.
+ * No handler currently returns false, so this test fakes the handler resolution
+ * to exercise the gate itself.
  */
 class IndexElasticGwdmGatingTest extends TestCase
 {
@@ -58,8 +57,7 @@ class IndexElasticGwdmGatingTest extends TestCase
         );
         $datasetId = $created['dataset_id'];
 
-        // Stand-in for a future Gwdm30Handler that overrides
-        // supportsElasticIndexing() to false.
+        // Fake a handler that overrides supportsElasticIndexing() to false.
         $fakeHandler = Mockery::mock(Gwdm2xHandler::class, ['2.0'])->makePartial();
         $fakeHandler->shouldReceive('supportsElasticIndexing')->andReturn(false);
 
