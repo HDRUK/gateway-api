@@ -270,6 +270,71 @@ class DatasetService
     }
 
     /**
+     * Validate every stored version of a dataset against TRASER.
+     *
+     * Reconstructs each version's full GWDM metadata and posts it to the TRASER
+     * /validate endpoint. Each version is validated independently — one failure
+     * does not abort the rest. Returns per-version results with any TRASER error
+     * details.
+     *
+     * Currently unwired (no route/controller calls this yet) — staged ahead of
+     * PR4 (GWDM 3.0 activation), which is its intended consumer.
+     *
+     * @return array<int, array{version: int, gwdm_version: string, valid: bool, errors: mixed}>
+     */
+    public function validateAllVersions(Dataset $dataset): array
+    {
+        $versions = DatasetVersion::where('dataset_id', $dataset->id)
+            ->select(['id', 'version', 'gwdm_version', 'created_at', 'title', 'short_title'])
+            ->orderBy('version')
+            ->get();
+
+        $results = [];
+        $schemaName = Config::get('metadata.GWDM.name');
+
+        foreach ($versions as $row) {
+            $versionNum = $row->version;
+            $gwdmVersion = $row->gwdm_version
+                ?? $this->gwdmVersionContext->targetVersion();
+
+            try {
+                $gwdm = $this->reconstructGwdmMetadata($dataset->id, $versionNum);
+                $handler = $this->handlerFactory->resolve($gwdmVersion);
+
+                // TODO(GAT-9018 PR4): call Gwdm30Handler::preloadSections() before
+                // afterRead() in this loop to avoid an N+1 once 3.0 rows exist —
+                // see docs/GAT-9018-pr-plan.md M2.
+                $supplementary = $handler->afterRead($row);
+                if (! empty($supplementary)) {
+                    $gwdm = array_merge($gwdm, $supplementary);
+                }
+
+                $metadataJson = json_encode(['metadata' => $gwdm]);
+                $result = MMC::validateDataModelTypeWithErrors($metadataJson, $schemaName, $gwdmVersion);
+
+                $results[] = [
+                    'version' => $versionNum,
+                    'gwdm_version' => $gwdmVersion,
+                    'created_at' => $row->created_at,
+                    'required_issued' => $gwdm['required']['issued'] ?? null,
+                    'valid' => $result['valid'],
+                    'errors' => $result['errors'],
+                ];
+            } catch (\Throwable $e) {
+                $results[] = [
+                    'version' => $versionNum,
+                    'gwdm_version' => $gwdmVersion,
+                    'created_at' => $row->created_at,
+                    'valid' => false,
+                    'errors' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      * Create a new dataset, translating metadata via MMC/TRASER.
      *
      * Returns ['translated' => true,  'dataset_id' => int, 'version_id' => int]

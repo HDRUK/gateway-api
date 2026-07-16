@@ -172,6 +172,39 @@ class MetadataManagementController
     }
 
     /**
+     * Validate a metadata JSON string against the given schema and version, returning
+     * structured error details from TRASER rather than a plain boolean.
+     *
+     * @return array{valid: bool, errors: mixed}
+     */
+    public function validateDataModelTypeWithErrors(string $dataset, string $input_schema, string $input_version): array
+    {
+        $loggingContext = $this->getLoggingContext(\request());
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        try {
+            $urlString = sprintf(
+                '%s/validate?input_schema=%s&input_version=%s',
+                config('services.traser.url'),
+                $input_schema,
+                $input_version
+            );
+
+            $response = Http::withBody($dataset, 'application/json')->post($urlString);
+
+            $isValid = $response->status() === 200;
+
+            return [
+                'valid'  => $isValid,
+                'errors' => $isValid ? null : $response->json(),
+            ];
+        } catch (Exception $e) {
+            \Log::info($e->getMessage(), $loggingContext);
+            throw new MMCException($e->getMessage());
+        }
+    }
+
+    /**
      * Finds the matching data model schema for a given dataset by querying the TRASER service.
      *
      * Sends the dataset JSON to the TRASER /find endpoint with error reporting enabled,
