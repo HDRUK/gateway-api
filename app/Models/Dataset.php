@@ -227,6 +227,7 @@ class Dataset extends Model
                  FROM dataset_versions dv
                  WHERE dv.dataset_id = :dataset_id
                    AND dv.gwdm_version = :gwdm_version
+                   AND dv.deleted_at IS NULL
                  ORDER BY version DESC
                  LIMIT 1',
                 ['dataset_id' => $datasetId, 'gwdm_version' => $gwdmVersion]
@@ -239,6 +240,7 @@ class Dataset extends Model
             'SELECT dv.id
              FROM dataset_versions dv
              WHERE dv.dataset_id = :dataset_id
+               AND dv.deleted_at IS NULL
              ORDER BY version DESC
              LIMIT 1',
             ['dataset_id' => $datasetId]
