@@ -2,6 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Http\Traits\LoggingContext;
+use App\Models\DatasetVersion;
+use App\Services\Gwdm\GwdmHandlerFactory;
 use Auditor;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -9,34 +12,37 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Http\Traits\LoggingContext;
-use App\Models\DatasetVersion;
-use App\Services\Gwdm\GwdmHandlerFactory;
 
 class LinkageExtraction implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
+    use LoggingContext;
     use Queueable;
     use SerializesModels;
-    use LoggingContext;
 
-    public $tries   = 3;
+    public $tries = 3;
+
     public $backoff = 30;
 
     protected string $sourceDatasetId = '';
+
     protected string $sourceDatasetVersionId = '';
+
     protected string $gwdmVersion = '';
 
     private ?array $loggingContext = null;
 
+    /**
+     * Create a new job instance.
+     */
     public function __construct(string $datasetId, string $datasetVersionId)
     {
         $this->onQueue('enrichment');
         try {
             $version = DatasetVersion::findOrFail($datasetVersionId);
 
-            $this->sourceDatasetId        = $datasetId;
+            $this->sourceDatasetId = $datasetId;
             $this->sourceDatasetVersionId = $datasetVersionId;
             // Indexed column is reliable on delta rows where the metadata envelope
             // stores only a patch, not the full document.
@@ -51,7 +57,7 @@ class LinkageExtraction implements ShouldQueue
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception('Error initializing LinkageExtraction job: ' . $e->getMessage());
+            throw new Exception('Error initializing LinkageExtraction job: '.$e->getMessage());
         }
     }
 
@@ -67,17 +73,17 @@ class LinkageExtraction implements ShouldQueue
                 'description' => $e->getMessage(),
             ]);
 
-            \Log::info('Error handling LinkageExtraction job: ' . $e->getMessage(), $this->loggingContext);
+            \Log::info('Error handling LinkageExtraction job: '.$e->getMessage(), $this->loggingContext);
 
-            throw new Exception('Error handling LinkageExtraction job: ' . $e->getMessage());
+            throw new Exception('Error handling LinkageExtraction job: '.$e->getMessage());
         }
     }
 
     public function tags(): array
     {
         return [
-            'dataset:' . $this->sourceDatasetId,
-            'version:' . $this->sourceDatasetVersionId,
+            'dataset:'.$this->sourceDatasetId,
+            'version:'.$this->sourceDatasetVersionId,
         ];
     }
 }
