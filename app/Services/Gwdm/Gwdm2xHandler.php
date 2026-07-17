@@ -127,11 +127,6 @@ class Gwdm2xHandler extends GwdmMetadataHandler
      * from afterStore() with the input metadata — its linkage arrays are not
      * recoverable via reconstruction (persist() does not store them, and the
      * read path rebuilds them from the very junction tables written here).
-     *
-     * NOTE on dual storage: for 2.x the `linkage` section is retained in the JSON
-     * blob/delta chain, but there it serves ONLY as (a) the seed this method reads
-     * and (b) the delta diff base. SQL is authoritative on read via afterRead().
-     * Do not strip linkage from the blob without first re-plumbing this seed.
      */
     protected function writeLinkages(DatasetVersion $dv, array $gwdm): void
     {
