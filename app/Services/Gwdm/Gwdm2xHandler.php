@@ -270,7 +270,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
      */
     public function afterRead(DatasetVersion $dv): array
     {
-        $resolvedDatasets = collect(DB::select(
+        $resolvedDatasets = DB::select(
             'SELECT
                 dataset_version_has_dataset_version.linkage_type,
                 dv.short_title,
@@ -283,20 +283,22 @@ class Gwdm2xHandler extends GwdmMetadataHandler
               AND dataset_version_has_dataset_version.direct_linkage = ?
               AND dataset_version_has_dataset_version.description = ?',
             [$dv->id, 1, self::LINKAGE_DESCRIPTION]
-        ));
+        );
 
-        $publications = collect(DB::select(
-            'SELECT *
+        $publications = DB::select(
+            'SELECT
+                publication_has_dataset_version.link_type,
+                publications.paper_doi
             FROM publication_has_dataset_version
             INNER JOIN publications ON publications.id = publication_has_dataset_version.publication_id
             WHERE publication_has_dataset_version.dataset_version_id = ?
               AND publication_has_dataset_version.description = ?
               AND publication_has_dataset_version.deleted_at IS NULL',
             [$dv->id, self::LINKAGE_DESCRIPTION]
-        ));
+        );
 
-        $hasExtractedRows = $resolvedDatasets->isNotEmpty()
-            || $publications->isNotEmpty();
+        $hasExtractedRows = ! empty($resolvedDatasets)
+            || ! empty($publications);
 
         if (! $hasExtractedRows) {
             return [];
