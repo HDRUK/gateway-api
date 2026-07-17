@@ -9,6 +9,7 @@ use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\Team;
 use App\Services\DatasetService;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Handler for GWDM >= 1.1, covering versions 2.0 and 2.1.
@@ -269,25 +270,30 @@ class Gwdm2xHandler extends GwdmMetadataHandler
      */
     public function afterRead(DatasetVersion $dv): array
     {
-        $resolvedDatasets = DatasetVersionHasDatasetVersion::query()
-            ->where('dataset_version_has_dataset_version.dataset_version_source_id', $dv->id)
-            ->where('dataset_version_has_dataset_version.direct_linkage', 1)
-            ->where('dataset_version_has_dataset_version.description', self::LINKAGE_DESCRIPTION)
-            ->join('dataset_versions as dv', 'dv.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
-            ->join('datasets as d', 'd.id', '=', 'dv.dataset_id')
-            ->select(
-                'dataset_version_has_dataset_version.linkage_type',
-                'dv.short_title',
-                'd.pid',
-                'd.id as dataset_id',
-            )
-            ->get();
+        $resolvedDatasets = collect(DB::select(
+            'SELECT
+                dataset_version_has_dataset_version.linkage_type,
+                dv.short_title,
+                d.pid,
+                d.id AS dataset_id
+            FROM dataset_version_has_dataset_version
+            INNER JOIN dataset_versions AS dv ON dv.id = dataset_version_has_dataset_version.dataset_version_target_id
+            INNER JOIN datasets AS d ON d.id = dv.dataset_id
+            WHERE dataset_version_has_dataset_version.dataset_version_source_id = ?
+              AND dataset_version_has_dataset_version.direct_linkage = ?
+              AND dataset_version_has_dataset_version.description = ?',
+            [$dv->id, 1, self::LINKAGE_DESCRIPTION]
+        ));
 
-        $publications = PublicationHasDatasetVersion::query()
-            ->where('publication_has_dataset_version.dataset_version_id', $dv->id)
-            ->where('publication_has_dataset_version.description', self::LINKAGE_DESCRIPTION)
-            ->join('publications', 'publications.id', '=', 'publication_has_dataset_version.publication_id')
-            ->get();
+        $publications = collect(DB::select(
+            'SELECT *
+            FROM publication_has_dataset_version
+            INNER JOIN publications ON publications.id = publication_has_dataset_version.publication_id
+            WHERE publication_has_dataset_version.dataset_version_id = ?
+              AND publication_has_dataset_version.description = ?
+              AND publication_has_dataset_version.deleted_at IS NULL',
+            [$dv->id, self::LINKAGE_DESCRIPTION]
+        ));
 
         $hasExtractedRows = $resolvedDatasets->isNotEmpty()
             || $publications->isNotEmpty();
