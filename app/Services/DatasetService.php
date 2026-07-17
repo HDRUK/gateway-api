@@ -593,7 +593,7 @@ class DatasetService
     {
         // SQL is the complete source of truth for linkage data. Rows are joined
         // to dataset_versions/datasets to read the current title/status.
-        return DatasetVersionHasDatasetVersion::query()
+        $rows = DatasetVersionHasDatasetVersion::query()
             ->where('dataset_version_has_dataset_version.dataset_version_source_id', $datasetVersionId)
             ->where('dataset_version_has_dataset_version.direct_linkage', 1)
             ->leftJoin('dataset_versions', 'dataset_versions.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
@@ -604,12 +604,20 @@ class DatasetService
             })
             ->select([
                 'dataset_version_has_dataset_version.linkage_type',
-                'dataset_versions.short_title',
                 'datasets.id as target_dataset_id',
             ])
-            ->get()
+            ->get();
+
+        // Source resolved titles from each target dataset's LATEST version so the displayed
+        // title matches the URL (which points at the dataset, i.e. its latest version)
+        // rather than the frozen version captured at extraction time.
+        $latestTitles = $this->latestShortTitlesFor(
+            $rows->pluck('target_dataset_id')->filter()->unique()->all()
+        );
+
+        return $rows
             ->map(fn ($row) => [
-                'title' => $row->short_title,
+                'title' => $row->target_dataset_id ? ($latestTitles[$row->target_dataset_id] ?? null) : null,
                 'url' => $row->target_dataset_id
                     ? config('gateway.gateway_url').'/en/dataset/'.$row->target_dataset_id
                     : null,
@@ -618,6 +626,34 @@ class DatasetService
             ])
             ->values()
             ->toArray();
+    }
+
+    /**
+     * Latest-version short_title for each given dataset id, keyed by dataset id.
+     *
+     * Linkage junction rows freeze a `dataset_version_target_id` (whatever was latest at
+     * extraction time), but the read-back URL resolves to the dataset — i.e. its current
+     * latest version. Resolving titles from the latest version here keeps the displayed
+     * title consistent with the URL once the target dataset gains newer versions.
+     *
+     * Reuses Dataset::latestMetadata() (latestOfMany('version'), soft-delete aware).
+     *
+     * @param  array<int, int>  $datasetIds
+     * @return array<int, string|null>
+     */
+    public function latestShortTitlesFor(array $datasetIds): array
+    {
+        if (empty($datasetIds)) {
+            return [];
+        }
+
+        // NB: latestMetadata() uses latestOfMany('version'), whose internal joins make a
+        // column-limited eager load ("latestMetadata:id,...") ambiguous. Load it in full.
+        return Dataset::whereIn('id', $datasetIds)
+            ->with('latestMetadata')
+            ->get()
+            ->mapWithKeys(fn (Dataset $d) => [$d->id => $d->latestMetadata?->short_title])
+            ->all();
     }
 
     /**
