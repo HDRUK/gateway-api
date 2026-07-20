@@ -36,8 +36,7 @@ class DatasetService
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
-    ) {
-    }
+    ) {}
 
     public function list(
         ?string $filterStatus,
@@ -603,10 +602,6 @@ class DatasetService
      */
     public function resolveDatasetLinkages(int $sourceVersionId, bool $useLatestTitle = false): array
     {
-        // Raw SQL, not Eloquent: a LEFT JOIN loses Eloquent's automatic soft-delete
-        // global scope on the joined tables, so deleted_at IS NULL is applied explicitly
-        // in each JOIN's ON clause (both dataset_versions and datasets are soft-deletable;
-        // dataset_version_has_dataset_version itself has no deleted_at column).
         $rows = collect(DB::select(
             'SELECT
                 dataset_version_has_dataset_version.linkage_type,
@@ -650,10 +645,6 @@ class DatasetService
      * Resolved publication linkages for the given source version, sourced from SQL.
      * Companion to resolveDatasetLinkages(); consumed by Gwdm2xHandler::afterRead()
      * to rebuild the publicationAboutDataset / publicationUsingDataset arrays.
-     *
-     * Raw SQL, not Eloquent: soft-deleted rows on both publication_has_dataset_version
-     * and publications are excluded explicitly, since joins don't get Eloquent's
-     * automatic soft-delete global scope.
      *
      * @return array<int, object{link_type: string, doi: string}>
      */
@@ -710,8 +701,6 @@ class DatasetService
             return [];
         }
 
-        // NB: latestMetadata() uses latestOfMany('version'), whose internal joins make a
-        // column-limited eager load ("latestMetadata:id,...") ambiguous. Load it in full.
         return Dataset::whereIn('id', $datasetIds)
             ->with('latestMetadata')
             ->get()
