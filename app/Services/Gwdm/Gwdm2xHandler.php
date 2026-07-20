@@ -283,7 +283,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
      */
     public function afterRead(DatasetVersion $dv): array
     {
-        $resolvedDatasets = $this->resolveDatasetLinkages($dv->id, useLatestTitle: false);
+        $resolvedDatasets = $this->resolveDatasetLinkages($dv->id, useLatestTitle: true);
         $publications = $this->resolvePublicationLinkages($dv->id);
 
         if (empty($resolvedDatasets) && empty($publications)) {
@@ -419,7 +419,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
                 'dataset_id' => $row->dataset_id,
                 'linkage_type' => $row->linkage_type,
             ],
-            $this->resolveDatasetLinkages($datasetVersionId, useLatestTitle: false)
+            $this->resolveDatasetLinkages($datasetVersionId, useLatestTitle: true)
         );
     }
 
