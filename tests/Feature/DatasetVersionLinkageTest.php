@@ -27,7 +27,7 @@ class DatasetVersionLinkageTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->commonSetUp();
     }
@@ -114,7 +114,7 @@ class DatasetVersionLinkageTest extends TestCase
         $originalTitle = Dataset::find($targetDatasetId)->latestMetadata->short_title;
 
         // Sanity: read-back reflects the target's current title.
-        $linkages = $this->service()->getLinkages($sourceVersionId);
+        $linkages = $this->handler()->getLinkages($sourceVersionId);
         $this->assertCount(1, $linkages);
         $this->assertSame($originalTitle, $linkages[0]['title']);
         $this->assertStringContainsString('/en/dataset/'.$targetDatasetId, (string) $linkages[0]['url']);
@@ -132,7 +132,7 @@ class DatasetVersionLinkageTest extends TestCase
         ]);
 
         // getLinkages() now reflects the target's LATEST title (not the frozen one)...
-        $linkages = $this->service()->getLinkages($sourceVersionId);
+        $linkages = $this->handler()->getLinkages($sourceVersionId);
         $this->assertCount(1, $linkages);
         $this->assertSame('Target Short Title v2', $linkages[0]['title']);
         $this->assertStringContainsString('/en/dataset/'.$targetDatasetId, (string) $linkages[0]['url']);
@@ -152,7 +152,7 @@ class DatasetVersionLinkageTest extends TestCase
     {
         $this->disableObservers();
 
-        [$targetDatasetId, ] = $this->createDataset($this->getMetadataV2p0());
+        [$targetDatasetId] = $this->createDataset($this->getMetadataV2p0());
         [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
         $targetPid = Dataset::find($targetDatasetId)->pid;
 
@@ -170,7 +170,7 @@ class DatasetVersionLinkageTest extends TestCase
         ]);
         $this->handler()->extractLinkages($dv);
 
-        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+        $this->assertCount(1, $this->handler()->getLinkages($sourceVersionId));
 
         // Re-run extraction against the SAME version id (mirrors updateV2()'s in-place
         // reuse, or a manual re-dispatch/repair) but this time the metadata has no
@@ -181,14 +181,14 @@ class DatasetVersionLinkageTest extends TestCase
         $this->handler()->extractLinkages($dv);
 
         // The previously-extracted link must survive — omission is not a clear.
-        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+        $this->assertCount(1, $this->handler()->getLinkages($sourceVersionId));
     }
 
     public function test_write_linkages_clears_rows_when_linkage_explicitly_emptied(): void
     {
         $this->disableObservers();
 
-        [$targetDatasetId, ] = $this->createDataset($this->getMetadataV2p0());
+        [$targetDatasetId] = $this->createDataset($this->getMetadataV2p0());
         [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
         $targetPid = Dataset::find($targetDatasetId)->pid;
 
@@ -205,7 +205,7 @@ class DatasetVersionLinkageTest extends TestCase
         ]);
         $this->handler()->extractLinkages($dv);
 
-        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+        $this->assertCount(1, $this->handler()->getLinkages($sourceVersionId));
 
         // Re-run extraction against the SAME version id, this time with the linkage
         // section explicitly present but empty — this must still clear, unlike omission.
@@ -218,7 +218,7 @@ class DatasetVersionLinkageTest extends TestCase
         ]);
         $this->handler()->extractLinkages($dv);
 
-        $this->assertCount(0, $this->service()->getLinkages($sourceVersionId));
+        $this->assertCount(0, $this->handler()->getLinkages($sourceVersionId));
     }
 
     /** Both read paths run off the SAME shared resolver — they must agree on the resolved set. */
@@ -238,7 +238,7 @@ class DatasetVersionLinkageTest extends TestCase
         ]);
 
         // Flat `linkages` attribute (getLinkages).
-        $flat = $this->service()->getLinkages($sourceVersionId);
+        $flat = $this->handler()->getLinkages($sourceVersionId);
         $this->assertCount(1, $flat);
         $this->assertSame($targetDatasetId, $flat[0]['dataset_id']);
         $this->assertSame('isDerivedFrom', $flat[0]['linkage_type']);
@@ -268,13 +268,13 @@ class DatasetVersionLinkageTest extends TestCase
         ]);
 
         // ACTIVE target: present in both.
-        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+        $this->assertCount(1, $this->handler()->getLinkages($sourceVersionId));
 
         Dataset::find($targetDatasetId)->update(['status' => Dataset::STATUS_ARCHIVED]);
 
         // Now excluded: flat attribute empty, and afterRead has no SQL rows to return
         // so it falls through to the stored JSON blob (returns []).
-        $this->assertCount(0, $this->service()->getLinkages($sourceVersionId));
+        $this->assertCount(0, $this->handler()->getLinkages($sourceVersionId));
         $this->assertSame([], $this->handler()->afterRead(DatasetVersion::find($sourceVersionId)));
     }
 

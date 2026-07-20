@@ -25,9 +25,7 @@ use App\Models\Team;
  */
 abstract class GwdmMetadataHandler
 {
-    public function __construct(protected readonly string $resolvedVersion)
-    {
-    }
+    public function __construct(protected readonly string $resolvedVersion) {}
 
     // ── Version identity ──────────────────────────────────────────────────────
 
@@ -50,11 +48,11 @@ abstract class GwdmMetadataHandler
      *      merging over any existing required fields so DB-derived values win.
      *   2. Call buildPublisher() and write the result into $gwdm['summary']['publisher'].
      *
-     * @param  array   $gwdm          Post-TRASER GWDM metadata object
-     * @param  Dataset $dataset       The parent dataset row (for gatewayId, pid, dates)
-     * @param  Team    $team          Owning team (for publisher fields)
-     * @param  int     $versionNumber The version number being written (1 on create)
-     * @return array                  Mutated GWDM array ready for envelope + storage
+     * @param  array  $gwdm  Post-TRASER GWDM metadata object
+     * @param  Dataset  $dataset  The parent dataset row (for gatewayId, pid, dates)
+     * @param  Team  $team  Owning team (for publisher fields)
+     * @param  int  $versionNumber  The version number being written (1 on create)
+     * @return array Mutated GWDM array ready for envelope + storage
      */
     abstract public function prepareMetadata(
         array $gwdm,
@@ -102,8 +100,8 @@ abstract class GwdmMetadataHandler
     public function buildEnvelope(array $gwdm, array $originalMetadata): array
     {
         return [
-            'gwdmVersion'       => $this->version(),
-            'metadata'          => $gwdm,
+            'gwdmVersion' => $this->version(),
+            'metadata' => $gwdm,
             'original_metadata' => $originalMetadata,
         ];
     }
@@ -121,6 +119,7 @@ abstract class GwdmMetadataHandler
         if (array_key_exists('metadata', $storedData)) {
             return $storedData['metadata'];
         }
+
         return $storedData;
     }
 
@@ -134,7 +133,7 @@ abstract class GwdmMetadataHandler
      */
     public function extractTitleFields(array $gwdm): array
     {
-        $title      = $gwdm['summary']['title'] ?? null;
+        $title = $gwdm['summary']['title'] ?? null;
         $shortTitle = $gwdm['summary']['shortTitle'] ?? $title;
 
         return [$title, $shortTitle];
@@ -189,6 +188,21 @@ abstract class GwdmMetadataHandler
         // no-op for versions without linkage extraction support
     }
 
+    /**
+     * Return the flat dataset-linkage list for a version (the frontend
+     * `linkages` attribute: {title, url, dataset_id, linkage_type}).
+     *
+     * No-op for the base class. Gwdm2xHandler reads it from the
+     * dataset_version_has_dataset_version junction table. Companion to
+     * extractLinkages() (write) and afterRead() (nested metadata block) — all
+     * three read/write the same handler-owned junction tables, so a
+     * version-specific handler overrides them together.
+     */
+    public function getLinkages(int $datasetVersionId): array
+    {
+        return [];
+    }
+
     // ── Onboarding form defaults ──────────────────────────────────────────────
 
     /**
@@ -205,13 +219,13 @@ abstract class GwdmMetadataHandler
     public function defaultValuePaths(): array
     {
         return [
-            'dataUseLimitation'   => 'metadata.accessibility.usage.dataUseLimitation',
+            'dataUseLimitation' => 'metadata.accessibility.usage.dataUseLimitation',
             'dataUseRequirements' => 'metadata.accessibility.usage.dataUseRequirements',
-            'accessRights'        => 'metadata.accessibility.access.accessRights',
-            'accessService'       => 'metadata.accessibility.access.accessService',
-            'accessRequestCost'   => 'metadata.accessibility.access.accessRequestCost',
-            'deliveryLeadTime'    => 'metadata.accessibility.access.deliveryLeadTime',
-            'formats'             => 'metadata.accessibility.formatAndStandards.formats',
+            'accessRights' => 'metadata.accessibility.access.accessRights',
+            'accessService' => 'metadata.accessibility.access.accessService',
+            'accessRequestCost' => 'metadata.accessibility.access.accessRequestCost',
+            'deliveryLeadTime' => 'metadata.accessibility.access.deliveryLeadTime',
+            'formats' => 'metadata.accessibility.formatAndStandards.formats',
         ];
     }
 
@@ -232,7 +246,7 @@ abstract class GwdmMetadataHandler
         sort($all);
 
         return array_map(fn (int $v) => [
-            'url'     => config('gateway.gateway_url') . '/dataset/' . $dataset->id . '?version=' . $this->formatVersion($v),
+            'url' => config('gateway.gateway_url').'/dataset/'.$dataset->id.'?version='.$this->formatVersion($v),
             'version' => $this->formatVersion($v),
         ], $all);
     }

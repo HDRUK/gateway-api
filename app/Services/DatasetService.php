@@ -11,7 +11,6 @@ use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Models\Team;
-use App\Services\Gwdm\Gwdm2xHandler;
 use App\Services\Gwdm\GwdmHandlerFactory;
 use Config;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -208,7 +207,13 @@ class DatasetService
             $dataset->setRelation('versions', collect([$withLinks]));
         }
 
-        $dataset->linkages = $this->getLinkages($latestVersionId);
+        if ($latestVersionId !== null) {
+            $latestGwdmVersion = $allVersions->firstWhere('id', $latestVersionId)?->gwdm_version
+                ?? $this->gwdmVersionContext->targetVersion();
+            $dataset->linkages = $this->handlerFactory->resolve($latestGwdmVersion)->getLinkages($latestVersionId);
+        } else {
+            $dataset->linkages = [];
+        }
 
         $dataset->team->has_published_dar_template = DataAccessTemplate::where('team_id', $dataset->team->id)
             ->where('published', 1)
@@ -579,133 +584,6 @@ class DatasetService
     public function delete(int $id): void
     {
         MMC::deleteDataset($id);
-    }
-
-    /**
-     * Single source of truth for dataset-linkage row selection, shared by
-     * Gwdm2xHandler::afterRead() (GWDM metadata block) and getLinkages() (flat
-     * attribute). SQL is authoritative for 2.x linkage data on reads.
-     *
-     * Rules:
-     *   - direct_linkage = 1 rows for the given source version.
-     *   - Target resolved via target version -> dataset_id -> datasets using LEFT
-     *     joins (robust to a missing/hard-deleted target version row).
-     *   - Only targets that exist (not soft-deleted) and are ACTIVE are returned;
-     *     unresolved / archived / deleted targets are dropped.
-     *   - Title tracks the target dataset's CURRENT latest short_title when
-     *     $useLatestTitle is true, so it stays consistent with the dataset-level URL;
-     *     otherwise (default) the frozen short_title captured at extraction time is
-     *     used as-is. When $useLatestTitle is true, the frozen short_title is still
-     *     the fallback if the latest lookup misses.
-     *
-     * @return array<int, object{linkage_type: string, dataset_id: int, pid: string, title: ?string}>
-     */
-    public function resolveDatasetLinkages(int $sourceVersionId, bool $useLatestTitle = false): array
-    {
-        $rows = collect(DB::select(
-            'SELECT
-                dataset_version_has_dataset_version.linkage_type,
-                datasets.id AS dataset_id,
-                datasets.pid,
-                dataset_versions.short_title AS frozen_short_title
-            FROM dataset_version_has_dataset_version
-            LEFT JOIN dataset_versions
-                ON dataset_versions.id = dataset_version_has_dataset_version.dataset_version_target_id
-               AND dataset_versions.deleted_at IS NULL
-            LEFT JOIN datasets
-                ON datasets.id = dataset_versions.dataset_id
-               AND datasets.deleted_at IS NULL
-            WHERE dataset_version_has_dataset_version.dataset_version_source_id = ?
-              AND dataset_version_has_dataset_version.direct_linkage = ?
-              AND datasets.status = ?',
-            [$sourceVersionId, 1, Dataset::STATUS_ACTIVE]
-        ));
-
-        // this is a refactor candidate
-        // - there are inconsistencies with the dataset title in the linkages if a new dataset version
-        //   is published and changes the title (unlikely)
-        // - all due to linkages being on dataset-version rather that dataset
-        // - for now, keep at it is, but a method has been added to look up the latest tittle
-        $latestTitles = $useLatestTitle
-            ? $this->latestShortTitlesFor($rows->pluck('dataset_id')->filter()->unique()->all())
-            : [];
-
-        return $rows
-            ->map(fn ($row) => (object) [
-                'linkage_type' => $row->linkage_type,
-                'dataset_id' => (int) $row->dataset_id,
-                'pid' => $row->pid,
-                'title' => $latestTitles[$row->dataset_id] ?? $row->frozen_short_title,
-            ])
-            ->values()
-            ->all();
-    }
-
-    /**
-     * Resolved publication linkages for the given source version, sourced from SQL.
-     * Companion to resolveDatasetLinkages(); consumed by Gwdm2xHandler::afterRead()
-     * to rebuild the publicationAboutDataset / publicationUsingDataset arrays.
-     *
-     * @return array<int, object{link_type: string, doi: string}>
-     */
-    public function resolvePublicationLinkages(int $sourceVersionId): array
-    {
-        return DB::select(
-            'SELECT
-                publication_has_dataset_version.link_type,
-                publications.paper_doi AS doi
-            FROM publication_has_dataset_version
-            INNER JOIN publications
-                ON publications.id = publication_has_dataset_version.publication_id
-               AND publications.deleted_at IS NULL
-            WHERE publication_has_dataset_version.dataset_version_id = ?
-              AND publication_has_dataset_version.description = ?
-              AND publication_has_dataset_version.deleted_at IS NULL',
-            [$sourceVersionId, Gwdm2xHandler::LINKAGE_DESCRIPTION]
-        );
-    }
-
-    /**
-     * Flat dataset-linkage list for the given version (frontend `linkages` attribute).
-     * Thin formatter over resolveDatasetLinkages() — see it for the selection rules.
-     */
-    public function getLinkages(int $datasetVersionId): array
-    {
-        return array_map(
-            fn ($row) => [
-                'title' => $row->title,
-                'url' => config('gateway.gateway_url').'/en/dataset/'.$row->dataset_id,
-                'dataset_id' => $row->dataset_id,
-                'linkage_type' => $row->linkage_type,
-            ],
-            $this->resolveDatasetLinkages($datasetVersionId, useLatestTitle: true)
-        );
-    }
-
-    /**
-     * Latest-version short_title for each given dataset id, keyed by dataset id.
-     *
-     * Linkage junction rows freeze a `dataset_version_target_id` (whatever was latest at
-     * extraction time), but the read-back URL resolves to the dataset — i.e. its current
-     * latest version. Resolving titles from the latest version here keeps the displayed
-     * title consistent with the URL once the target dataset gains newer versions.
-     *
-     * Reuses Dataset::latestMetadata() (latestOfMany('version'), soft-delete aware).
-     *
-     * @param  array<int, int>  $datasetIds
-     * @return array<int, string|null>
-     */
-    public function latestShortTitlesFor(array $datasetIds): array
-    {
-        if (empty($datasetIds)) {
-            return [];
-        }
-
-        return Dataset::whereIn('id', $datasetIds)
-            ->with('latestMetadata')
-            ->get()
-            ->mapWithKeys(fn (Dataset $d) => [$d->id => $d->latestMetadata?->short_title])
-            ->all();
     }
 
     /**
