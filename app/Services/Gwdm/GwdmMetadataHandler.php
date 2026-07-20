@@ -189,6 +189,21 @@ abstract class GwdmMetadataHandler
         // no-op for versions without linkage extraction support
     }
 
+    /**
+     * Return the flat dataset-linkage list for a version (the frontend
+     * `linkages` attribute: {title, url, dataset_id, linkage_type}).
+     *
+     * No-op for the base class. Gwdm2xHandler reads it from the
+     * dataset_version_has_dataset_version junction table. Companion to
+     * extractLinkages() (write) and afterRead() (nested metadata block) — all
+     * three read/write the same handler-owned junction tables, so a
+     * version-specific handler overrides them together.
+     */
+    public function getLinkages(int $datasetVersionId): array
+    {
+        return [];
+    }
+
     // ── Onboarding form defaults ──────────────────────────────────────────────
 
     /**

@@ -8,7 +8,6 @@ use App\Jobs\TermExtraction;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Models\Team;
@@ -36,8 +35,7 @@ class DatasetService
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
-    ) {
-    }
+    ) {}
 
     public function list(
         ?string $filterStatus,
@@ -209,7 +207,13 @@ class DatasetService
             $dataset->setRelation('versions', collect([$withLinks]));
         }
 
-        $dataset->linkages = $this->getLinkages($latestVersionId);
+        if ($latestVersionId !== null) {
+            $latestGwdmVersion = $allVersions->firstWhere('id', $latestVersionId)?->gwdm_version
+                ?? $this->gwdmVersionContext->targetVersion();
+            $dataset->linkages = $this->handlerFactory->resolve($latestGwdmVersion)->getLinkages($latestVersionId);
+        } else {
+            $dataset->linkages = [];
+        }
 
         $dataset->team->has_published_dar_template = DataAccessTemplate::where('team_id', $dataset->team->id)
             ->where('published', 1)
@@ -580,44 +584,6 @@ class DatasetService
     public function delete(int $id): void
     {
         MMC::deleteDataset($id);
-    }
-
-    /**
-    /**
-     * Return dataset linkages for the given version, sourced entirely from SQL.
-     * Resolved rows are joined to datasets; unresolved rows carry the raw reference
-     * data stored during extraction. Only resolved linkages whose target is ACTIVE
-     * are included; unresolved rows are always included.
-     */
-    public function getLinkages(int $datasetVersionId): array
-    {
-        // SQL is the complete source of truth for linkage data. Rows are joined
-        // to dataset_versions/datasets to read the current title/status.
-        return DatasetVersionHasDatasetVersion::query()
-            ->where('dataset_version_has_dataset_version.dataset_version_source_id', $datasetVersionId)
-            ->where('dataset_version_has_dataset_version.direct_linkage', 1)
-            ->leftJoin('dataset_versions', 'dataset_versions.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
-            ->leftJoin('datasets', 'datasets.id', '=', 'dataset_versions.dataset_id')
-            ->where(function ($q) {
-                $q->whereNull('datasets.id')
-                    ->orWhere('datasets.status', Dataset::STATUS_ACTIVE);
-            })
-            ->select([
-                'dataset_version_has_dataset_version.linkage_type',
-                'dataset_versions.short_title',
-                'datasets.id as target_dataset_id',
-            ])
-            ->get()
-            ->map(fn ($row) => [
-                'title' => $row->short_title,
-                'url' => $row->target_dataset_id
-                    ? config('gateway.gateway_url').'/en/dataset/'.$row->target_dataset_id
-                    : null,
-                'dataset_id' => $row->target_dataset_id,
-                'linkage_type' => $row->linkage_type,
-            ])
-            ->values()
-            ->toArray();
     }
 
     /**
