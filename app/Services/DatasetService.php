@@ -8,7 +8,6 @@ use App\Jobs\TermExtraction;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
-use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Models\Team;
@@ -604,21 +603,28 @@ class DatasetService
      */
     public function resolveDatasetLinkages(int $sourceVersionId, bool $useLatestTitle = false): array
     {
-        $rows = DatasetVersionHasDatasetVersion::query()
-            ->where('dataset_version_has_dataset_version.dataset_version_source_id', $sourceVersionId)
-            ->where('dataset_version_has_dataset_version.direct_linkage', 1)
-            ->leftJoin('dataset_versions', 'dataset_versions.id', '=', 'dataset_version_has_dataset_version.dataset_version_target_id')
-            ->leftJoin('datasets', 'datasets.id', '=', 'dataset_versions.dataset_id')
-            ->whereNull('datasets.deleted_at')
-            ->where('datasets.status', Dataset::STATUS_ACTIVE)
-            ->select([
-                'dataset_version_has_dataset_version.linkage_type',
-                'datasets.id as dataset_id',
-                'datasets.pid',
-                'dataset_versions.short_title as frozen_short_title',
-            ])
-            ->toBase()
-            ->get();
+        // Raw SQL, not Eloquent: a LEFT JOIN loses Eloquent's automatic soft-delete
+        // global scope on the joined tables, so deleted_at IS NULL is applied explicitly
+        // in each JOIN's ON clause (both dataset_versions and datasets are soft-deletable;
+        // dataset_version_has_dataset_version itself has no deleted_at column).
+        $rows = collect(DB::select(
+            'SELECT
+                dataset_version_has_dataset_version.linkage_type,
+                datasets.id AS dataset_id,
+                datasets.pid,
+                dataset_versions.short_title AS frozen_short_title
+            FROM dataset_version_has_dataset_version
+            LEFT JOIN dataset_versions
+                ON dataset_versions.id = dataset_version_has_dataset_version.dataset_version_target_id
+               AND dataset_versions.deleted_at IS NULL
+            LEFT JOIN datasets
+                ON datasets.id = dataset_versions.dataset_id
+               AND datasets.deleted_at IS NULL
+            WHERE dataset_version_has_dataset_version.dataset_version_source_id = ?
+              AND dataset_version_has_dataset_version.direct_linkage = ?
+              AND datasets.status = ?',
+            [$sourceVersionId, 1, Dataset::STATUS_ACTIVE]
+        ));
 
         // this is a refactor candidate
         // - there are inconsistencies with the dataset title in the linkages if a new dataset version
@@ -645,6 +651,10 @@ class DatasetService
      * Companion to resolveDatasetLinkages(); consumed by Gwdm2xHandler::afterRead()
      * to rebuild the publicationAboutDataset / publicationUsingDataset arrays.
      *
+     * Raw SQL, not Eloquent: soft-deleted rows on both publication_has_dataset_version
+     * and publications are excluded explicitly, since joins don't get Eloquent's
+     * automatic soft-delete global scope.
+     *
      * @return array<int, object{link_type: string, doi: string}>
      */
     public function resolvePublicationLinkages(int $sourceVersionId): array
@@ -654,7 +664,9 @@ class DatasetService
                 publication_has_dataset_version.link_type,
                 publications.paper_doi AS doi
             FROM publication_has_dataset_version
-            INNER JOIN publications ON publications.id = publication_has_dataset_version.publication_id
+            INNER JOIN publications
+                ON publications.id = publication_has_dataset_version.publication_id
+               AND publications.deleted_at IS NULL
             WHERE publication_has_dataset_version.dataset_version_id = ?
               AND publication_has_dataset_version.description = ?
               AND publication_has_dataset_version.deleted_at IS NULL',
