@@ -8,6 +8,8 @@ use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\DatasetService;
+use App\Services\Gwdm\Gwdm2xHandler;
+use App\Services\Gwdm\GwdmHandlerFactory;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -38,6 +40,31 @@ class DatasetVersionLinkageTest extends TestCase
     private function service(): DatasetService
     {
         return app(DatasetService::class);
+    }
+
+    private function handler(): Gwdm2xHandler
+    {
+        return app(GwdmHandlerFactory::class)->resolve('2.0');
+    }
+
+    /**
+     * Overwrite a version's stored envelope with a specific GWDM shape (as a
+     * snapshot row, patch = null) so extractLinkages()'s reconstruction takes
+     * the direct extractStoredGwdm() path with no delta replay involved.
+     */
+    private function overwriteVersionMetadata(int $versionId, array $gwdm): DatasetVersion
+    {
+        $dv = DatasetVersion::find($versionId);
+        $dv->update([
+            'metadata' => [
+                'gwdmVersion' => '2.0',
+                'metadata' => $gwdm,
+                'original_metadata' => [],
+            ],
+            'patch' => null,
+        ]);
+
+        return $dv->fresh();
     }
 
     /** Create a 2.0 dataset and return [datasetId, versionId]. */
@@ -119,5 +146,145 @@ class DatasetVersionLinkageTest extends TestCase
             '/en/dataset/'.$targetDatasetId,
             (string) $datasetLinkage['isDerivedFrom'][0]['url'],
         );
+    }
+
+    public function test_write_linkages_preserves_existing_rows_when_linkage_key_omitted(): void
+    {
+        $this->disableObservers();
+
+        [$targetDatasetId, ] = $this->createDataset($this->getMetadataV2p0());
+        [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+        $targetPid = Dataset::find($targetDatasetId)->pid;
+
+        // Extraction runs against the source version with a real linkage section.
+        $dv = $this->overwriteVersionMetadata($sourceVersionId, [
+            'linkage' => [
+                'datasetLinkage' => [
+                    'isDerivedFrom' => [
+                        ['pid' => $targetPid, 'url' => null, 'title' => null],
+                    ],
+                ],
+                'publicationAboutDataset' => [],
+                'publicationUsingDataset' => [],
+            ],
+        ]);
+        $this->handler()->extractLinkages($dv);
+
+        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+
+        // Re-run extraction against the SAME version id (mirrors updateV2()'s in-place
+        // reuse, or a manual re-dispatch/repair) but this time the metadata has no
+        // `linkage` key at all — e.g. a partial update that never touched linkage.
+        $dv = $this->overwriteVersionMetadata($sourceVersionId, [
+            // no 'linkage' key
+        ]);
+        $this->handler()->extractLinkages($dv);
+
+        // The previously-extracted link must survive — omission is not a clear.
+        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+    }
+
+    public function test_write_linkages_clears_rows_when_linkage_explicitly_emptied(): void
+    {
+        $this->disableObservers();
+
+        [$targetDatasetId, ] = $this->createDataset($this->getMetadataV2p0());
+        [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+        $targetPid = Dataset::find($targetDatasetId)->pid;
+
+        $dv = $this->overwriteVersionMetadata($sourceVersionId, [
+            'linkage' => [
+                'datasetLinkage' => [
+                    'isDerivedFrom' => [
+                        ['pid' => $targetPid, 'url' => null, 'title' => null],
+                    ],
+                ],
+                'publicationAboutDataset' => [],
+                'publicationUsingDataset' => [],
+            ],
+        ]);
+        $this->handler()->extractLinkages($dv);
+
+        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+
+        // Re-run extraction against the SAME version id, this time with the linkage
+        // section explicitly present but empty — this must still clear, unlike omission.
+        $dv = $this->overwriteVersionMetadata($sourceVersionId, [
+            'linkage' => [
+                'datasetLinkage' => [],
+                'publicationAboutDataset' => [],
+                'publicationUsingDataset' => [],
+            ],
+        ]);
+        $this->handler()->extractLinkages($dv);
+
+        $this->assertCount(0, $this->service()->getLinkages($sourceVersionId));
+    }
+
+    /** Both read paths run off the SAME shared resolver — they must agree on the resolved set. */
+    public function test_after_read_and_get_linkages_resolve_the_same_dataset_set(): void
+    {
+        $this->disableObservers();
+
+        [$targetDatasetId, $targetVersionId] = $this->createDataset($this->getMetadataV2p0());
+        [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+
+        DatasetVersionHasDatasetVersion::create([
+            'dataset_version_source_id' => $sourceVersionId,
+            'dataset_version_target_id' => $targetVersionId,
+            'linkage_type' => 'isDerivedFrom',
+            'direct_linkage' => 1,
+            'description' => 'Extracted from GWDM',
+        ]);
+
+        // Flat `linkages` attribute (getLinkages).
+        $flat = $this->service()->getLinkages($sourceVersionId);
+        $this->assertCount(1, $flat);
+        $this->assertSame($targetDatasetId, $flat[0]['dataset_id']);
+        $this->assertSame('isDerivedFrom', $flat[0]['linkage_type']);
+
+        // GWDM linkage block (afterRead) — same dataset, same title.
+        $block = $this->handler()->afterRead(DatasetVersion::find($sourceVersionId))['linkage']['datasetLinkage'] ?? [];
+        $this->assertArrayHasKey('isDerivedFrom', $block);
+        $this->assertCount(1, $block['isDerivedFrom']);
+        $this->assertStringContainsString('/en/dataset/'.$targetDatasetId, (string) $block['isDerivedFrom'][0]['url']);
+        $this->assertSame($flat[0]['title'], $block['isDerivedFrom'][0]['title']);
+    }
+
+    /** An ARCHIVED (non-ACTIVE) linkage target is dropped by the shared resolver, so both paths hide it. */
+    public function test_archived_linkage_target_is_excluded_from_both_paths(): void
+    {
+        $this->disableObservers();
+
+        [$targetDatasetId, $targetVersionId] = $this->createDataset($this->getMetadataV2p0());
+        [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+
+        DatasetVersionHasDatasetVersion::create([
+            'dataset_version_source_id' => $sourceVersionId,
+            'dataset_version_target_id' => $targetVersionId,
+            'linkage_type' => 'isDerivedFrom',
+            'direct_linkage' => 1,
+            'description' => 'Extracted from GWDM',
+        ]);
+
+        // ACTIVE target: present in both.
+        $this->assertCount(1, $this->service()->getLinkages($sourceVersionId));
+
+        Dataset::find($targetDatasetId)->update(['status' => Dataset::STATUS_ARCHIVED]);
+
+        // Now excluded: flat attribute empty, and afterRead has no SQL rows to return
+        // so it falls through to the stored JSON blob (returns []).
+        $this->assertCount(0, $this->service()->getLinkages($sourceVersionId));
+        $this->assertSame([], $this->handler()->afterRead(DatasetVersion::find($sourceVersionId)));
+    }
+
+    /** No extracted rows → afterRead returns [] so the envelope falls back to the stored JSON blob. */
+    public function test_after_read_returns_empty_when_no_extracted_rows(): void
+    {
+        $this->disableObservers();
+
+        [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+
+        $this->assertSame([], $this->handler()->afterRead(DatasetVersion::find($sourceVersionId)));
     }
 }

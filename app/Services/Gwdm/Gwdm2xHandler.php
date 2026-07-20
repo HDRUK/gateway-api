@@ -9,7 +9,6 @@ use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\Team;
 use App\Services\DatasetService;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Handler for GWDM >= 1.1, covering versions 2.0 and 2.1.
@@ -130,20 +129,33 @@ class Gwdm2xHandler extends GwdmMetadataHandler
      */
     protected function writeLinkages(DatasetVersion $dv, array $gwdm): void
     {
-        $linkage = $gwdm['linkage'] ?? [];
+        // A `linkage` key absent entirely means this version's metadata never touched
+        // linkage (e.g. a partial update) — leave existing junction rows untouched rather
+        // than treating omission as an intentional clear. A present-but-empty sub-array
+        // still clears, as before.
+        if (! array_key_exists('linkage', $gwdm)) {
+            return;
+        }
 
-        $datasetLinkages = $linkage['datasetLinkage'] ?? null;
-        $datasetLinkages = $datasetLinkages !== '' ? $datasetLinkages : null;
+        $linkage = $gwdm['linkage'];
 
-        $aboutLinkages = $linkage['publicationAboutDataset'] ?? null;
-        $aboutLinkages = $aboutLinkages !== '' ? $aboutLinkages : null;
+        if (array_key_exists('datasetLinkage', $linkage)) {
+            $datasetLinkages = $linkage['datasetLinkage'];
+            $datasetLinkages = $datasetLinkages !== '' ? $datasetLinkages : null;
+            $this->processDatasetLinkages($dv->id, $datasetLinkages);
+        }
 
-        $usingLinkages = $linkage['publicationUsingDataset'] ?? null;
-        $usingLinkages = $usingLinkages !== '' ? $usingLinkages : null;
+        if (array_key_exists('publicationAboutDataset', $linkage)) {
+            $aboutLinkages = $linkage['publicationAboutDataset'];
+            $aboutLinkages = $aboutLinkages !== '' ? $aboutLinkages : null;
+            $this->processPublicationLinkages($dv->id, $aboutLinkages, 'ABOUT');
+        }
 
-        $this->processDatasetLinkages($dv->id, $datasetLinkages);
-        $this->processPublicationLinkages($dv->id, $aboutLinkages, 'ABOUT');
-        $this->processPublicationLinkages($dv->id, $usingLinkages, 'USING');
+        if (array_key_exists('publicationUsingDataset', $linkage)) {
+            $usingLinkages = $linkage['publicationUsingDataset'];
+            $usingLinkages = $usingLinkages !== '' ? $usingLinkages : null;
+            $this->processPublicationLinkages($dv->id, $usingLinkages, 'USING');
+        }
     }
 
     protected function processDatasetLinkages(int $sourceVersionId, ?array $datasetLinkages): void
@@ -270,61 +282,26 @@ class Gwdm2xHandler extends GwdmMetadataHandler
      */
     public function afterRead(DatasetVersion $dv): array
     {
-        $resolvedDatasets = DB::select(
-            'SELECT
-                dataset_version_has_dataset_version.linkage_type,
-                dv.short_title,
-                d.pid,
-                d.id AS dataset_id
-            FROM dataset_version_has_dataset_version
-            INNER JOIN dataset_versions AS dv ON dv.id = dataset_version_has_dataset_version.dataset_version_target_id
-            INNER JOIN datasets AS d ON d.id = dv.dataset_id
-            WHERE dataset_version_has_dataset_version.dataset_version_source_id = ?
-              AND dataset_version_has_dataset_version.direct_linkage = ?
-              AND dataset_version_has_dataset_version.description = ?',
-            [$dv->id, 1, self::LINKAGE_DESCRIPTION]
-        );
+        $resolvedDatasets = $this->datasetService()->resolveDatasetLinkages($dv->id, useLatestTitle: true);
+        $publications = $this->datasetService()->resolvePublicationLinkages($dv->id);
 
-        $publications = DB::select(
-            'SELECT
-                publication_has_dataset_version.link_type,
-                publications.paper_doi
-            FROM publication_has_dataset_version
-            INNER JOIN publications ON publications.id = publication_has_dataset_version.publication_id
-            WHERE publication_has_dataset_version.dataset_version_id = ?
-              AND publication_has_dataset_version.description = ?
-              AND publication_has_dataset_version.deleted_at IS NULL',
-            [$dv->id, self::LINKAGE_DESCRIPTION]
-        );
-
-        $hasExtractedRows = ! empty($resolvedDatasets)
-            || ! empty($publications);
-
-        if (! $hasExtractedRows) {
+        if (empty($resolvedDatasets) && empty($publications)) {
             return [];
         }
-
-        // Source resolved titles from each target dataset's LATEST version so the title
-        // matches the URL (which points at the dataset, i.e. its latest version) rather
-        // than the frozen target version captured at extraction time. Fall back to the
-        // stored (frozen) short_title if the latest lookup yields nothing.
-        $latestTitles = $this->datasetService()->latestShortTitlesFor(
-            collect($resolvedDatasets)->pluck('dataset_id')->filter()->unique()->all()
-        );
 
         $datasetLinkage = [];
         foreach ($resolvedDatasets as $row) {
             $datasetLinkage[$row->linkage_type][] = [
                 'url' => config('gateway.gateway_url').'/en/dataset/'.$row->dataset_id,
                 'pid' => $row->pid,
-                'title' => $latestTitles[$row->dataset_id] ?? $row->short_title,
+                'title' => $row->title,
             ];
         }
 
         $aboutDataset = [];
         $usingDataset = [];
         foreach ($publications as $row) {
-            $doi = $row->paper_doi;
+            $doi = $row->doi;
             if (! $doi) {
                 continue;
             }
