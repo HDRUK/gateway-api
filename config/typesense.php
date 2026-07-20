@@ -7,10 +7,11 @@ return [
     'facet_map' => [
         'datasets'                => 'publisherName,keywords,dataType,dataSubType,geographicLocation,conformsTo,accessService,containsBioSamples,sampleAvailability,isCohortDiscovery',
         'tools'                   => 'license,programmingLanguages,typeCategory',
-        'collections'             => '',
-        'dur'                     => '',
+        'collections'             => 'publisherName,datasetTitles,dataProviderColl',
+        'dur'                     => 'publisherName,sector,datasetTitles,collectionNames,dataProviderColl,accessType',
         'publications'            => 'publicationType,datasetTitles,datasetLinkTypes',
         'data_custodian_networks' => 'publisherNames,datasetTitles',
+        'data_custodians'         => 'datasetTitles,dataType,geographicLocation',
     ],
 
     // Fields callers may pass as pipe-delimited V2 filters (?publisherName=PIONEER|SAIL).
@@ -18,8 +19,11 @@ return [
     'filterable_map' => [
         'datasets'                => ['publisherName', 'keywords', 'dataType', 'dataSubType', 'geographicLocation', 'conformsTo', 'accessService', 'containsBioSamples', 'sampleAvailability', 'isCohortDiscovery'],
         'tools'                   => ['license', 'programmingLanguages', 'typeCategory'],
+        'collections'             => ['publisherName', 'datasetTitles', 'dataProviderColl'],
+        'dur'                     => ['publisherName', 'sector', 'datasetTitles', 'collectionNames', 'dataProviderColl', 'accessType'],
         'publications'            => ['publicationType', 'datasetTitles', 'datasetLinkTypes'],
         'data_custodian_networks' => ['publisherNames', 'datasetTitles'],
+        'data_custodians'         => ['datasetTitles', 'dataType', 'geographicLocation'],
     ],
 
 ];

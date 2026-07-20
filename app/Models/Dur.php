@@ -7,7 +7,9 @@ use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\EntityCounter;
 use App\Models\Traits\SortManager;
 use App\Observers\DurObserver;
+use App\Services\Search\DataProviderCollLoader;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -374,6 +376,59 @@ class Dur extends BaseTypesenseModel
         return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
     }
 
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with([
+            'team',
+            'sector',
+            'collections',
+            'versions' => fn ($q) => $q->select(['dataset_versions.id', 'dataset_versions.dataset_id', 'dataset_versions.short_title']),
+            'versions.dataset',
+        ]);
+    }
+
+    private function facetPublisherName(): string
+    {
+        return $this->team?->getAttribute('name') ?? '';
+    }
+
+    private function facetSector(): string
+    {
+        return $this->sector?->getAttribute('name') ?? '';
+    }
+
+    private function activeDatasetVersions()
+    {
+        // DatasetVersion::dataset() already constrains to status=ACTIVE, so a
+        // null relation here means the version's dataset is not active.
+        return $this->versions->filter(fn ($version) => $version->dataset !== null);
+    }
+
+    private function facetDatasetTitles(): array
+    {
+        return $this->activeDatasetVersions()
+            ->pluck('short_title')
+            ->filter(fn ($title) => is_string($title) && $title !== '')
+            ->unique()->values()->all();
+    }
+
+    private function facetCollectionNames(): array
+    {
+        return $this->collections->pluck('name')->filter()->unique()->values()->all();
+    }
+
+    private function facetDataProviderColl(): array
+    {
+        if ($this->team_id === null) {
+            return [];
+        }
+
+        return array_column(
+            DataProviderCollLoader::forTeamIds([$this->team_id])->get($this->team_id, []),
+            'name'
+        );
+    }
+
     public function toSearchableArray(): array
     {
         return [
@@ -383,6 +438,12 @@ class Dur extends BaseTypesenseModel
             'lay_summary'              => $this->lay_summary ?? '',
             'technical_summary'        => $this->technical_summary ?? '',
             'public_benefit_statement' => $this->public_benefit_statement ?? '',
+            'publisherName'            => $this->facetPublisherName(),
+            'sector'                   => $this->facetSector(),
+            'datasetTitles'            => $this->facetDatasetTitles(),
+            'collectionNames'          => $this->facetCollectionNames(),
+            'dataProviderColl'         => $this->facetDataProviderColl(),
+            'accessType'               => $this->access_type ?? '',
         ];
     }
 
@@ -405,7 +466,14 @@ class Dur extends BaseTypesenseModel
                 [ 'name' => 'lay_summary', 'type' => 'string', 'optional' => true ],
                 [ 'name' => 'technical_summary', 'type' => 'string', 'optional' => true ],
                 [ 'name' => 'public_benefit_statement', 'type' => 'string', 'optional' => true ],
-                // Likely more to follow
+                [ 'name' => 'publisherName', 'type' => 'string', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'sector', 'type' => 'string', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'datasetTitles', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'collectionNames', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'dataProviderColl', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'accessType', 'type' => 'string', 'facet' => true, 'optional' => true ],
+                // latestApprovalDate is a date, not a categorical facet — deferred
+                // as a range filter alongside populationSize/publicationDate (Tier 3, not yet supported by buildFilterClauses()).
             ],
         ];
     }
