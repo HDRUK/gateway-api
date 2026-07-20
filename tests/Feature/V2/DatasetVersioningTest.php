@@ -11,7 +11,19 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
 /**
- * Delta-based metadata versioning (GAT-7181): v1 snapshot, v2-v9 deltas, v10 re-snapshots.
+ * Tests for delta-based metadata versioning (GAT-7181).
+ *
+ * Strategy:
+ *  - v1 is a full base snapshot (patch = null).
+ *  - v2–v9 are deltas (patch = RFC 6902 array, metadata = reduced envelope).
+ *  - v10 is a materialised full snapshot again (patch = null).
+ *
+ * The tests exercise:
+ *  1. Correct RFC 6902 patch content when a single field changes.
+ *  2. Version list endpoint returns the right set of rows.
+ *  3. Version reconstruction endpoint correctly rebuilds full GWDM metadata
+ *     for any version (v1 snapshot, v2 delta, v3 delta after two edits).
+ *  4. The 10th version materialises as a full snapshot (patch = null).
  */
 class DatasetVersioningTest extends TestCase
 {
@@ -38,14 +50,25 @@ class DatasetVersioningTest extends TestCase
         $this->metadata = $this->getMetadata();
     }
 
+    // -------------------------------------------------------------------------
+    // Test 1 — Patch content for a single-field change
+    // -------------------------------------------------------------------------
+
+    /**
+     * When only `summary.title` is changed on the first update, the v2 delta
+     * row's patch must contain exactly one RFC 6902 "replace" operation targeting
+     * the title path.
+     */
     public function test_delta_patch_contains_replace_operation_for_changed_field(): void
     {
         [$teamId, $userId] = $this->createTeamAndUser();
 
         $originalTitle = $this->metadata['metadata']['summary']['title'];
 
+        // Create dataset (v1 — base snapshot)
         $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
 
+        // Update with only the title changed (v2 — first delta)
         $updatedMetadata = $this->metadata;
         $updatedMetadata['metadata']['summary']['title'] = 'Patched Title v2';
 
@@ -70,12 +93,19 @@ class DatasetVersioningTest extends TestCase
         $v1 = $dsv[0];
         $v2 = $dsv[1];
 
+        // v1 is a full snapshot — patch must be null
         $this->assertNull($v1->patch, 'v1 base snapshot must have patch = null');
+
+        // v2 must be a delta — patch must not be null
         $this->assertNotNull($v2->patch, 'v2 delta must have a patch');
+
+        // The patch must be a non-empty array (RFC 6902 operations)
         $this->assertIsArray($v2->patch);
         $this->assertNotEmpty($v2->patch);
 
-        // GWDM summary.title is diffed at /summary/title, not /metadata/summary/title
+        // Find the operation that targets the title field.
+        // The GWDM summary.title lives at the JSON path /summary/title inside the
+        // GWDM metadata object (DatasetService diffs the inner GWDM object).
         $titleOp = null;
         foreach ($v2->patch as $op) {
             if (($op['path'] ?? '') === '/summary/title' && ($op['op'] ?? '') === 'replace') {
@@ -93,12 +123,21 @@ class DatasetVersioningTest extends TestCase
         $this->assertEquals('Patched Title v2', $titleOp['value'] ?? null);
     }
 
+    // -------------------------------------------------------------------------
+    // Test 2 — Version list endpoint
+    // -------------------------------------------------------------------------
+
+    /**
+     * GET /api/v2/datasets/{id}/versions must return one entry per stored version
+     * with at minimum: id, version, title, created_at fields.
+     */
     public function test_list_versions_returns_all_stored_versions(): void
     {
         [$teamId, $userId] = $this->createTeamAndUser();
 
         $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
 
+        // Apply two more updates so we have 3 versions
         foreach (['Title v2', 'Title v3'] as $newTitle) {
             $updated = $this->metadata;
             $updated['metadata']['summary']['title'] = $newTitle;
@@ -116,7 +155,7 @@ class DatasetVersioningTest extends TestCase
             )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        // active dataset endpoint is public — no auth header needed
+        // Unauthenticated GET (active dataset endpoint is public)
         $response = $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/versions');
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
@@ -128,6 +167,7 @@ class DatasetVersioningTest extends TestCase
         $this->assertContains(2, $versionNumbers);
         $this->assertContains(3, $versionNumbers);
 
+        // Each entry must expose at least these fields
         foreach ($data as $entry) {
             $this->assertArrayHasKey('id', $entry);
             $this->assertArrayHasKey('version', $entry);
@@ -136,6 +176,25 @@ class DatasetVersioningTest extends TestCase
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Test 3 — Version reconstruction (rollup)
+    // -------------------------------------------------------------------------
+
+    /**
+     * GET /api/v2/datasets/{id}/version/{version} must reconstruct the correct
+     * full GWDM metadata at every version, whether it is a base snapshot or a
+     * delta that requires replaying patches.
+     *
+     * Scenario:
+     *   v1 — created with original title
+     *   v2 — title changed to "Title v2"
+     *   v3 — title changed to "Title v3", abstract also changed
+     *
+     * We then assert:
+     *   GET …/version/1 → title = original
+     *   GET …/version/2 → title = "Title v2"
+     *   GET …/version/3 → title = "Title v3", abstract = updated value
+     */
     public function test_version_reconstruction_returns_correct_metadata_at_each_version(): void
     {
         [$teamId, $userId] = $this->createTeamAndUser();
@@ -143,8 +202,10 @@ class DatasetVersioningTest extends TestCase
         $originalTitle    = $this->metadata['metadata']['summary']['title'];
         $originalAbstract = $this->metadata['metadata']['summary']['abstract'] ?? null;
 
+        // v1 — base snapshot
         $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
 
+        // v2 — title only changed
         $v2Metadata = $this->metadata;
         $v2Metadata['metadata']['summary']['title'] = 'Title v2';
         $this->json(
@@ -160,6 +221,7 @@ class DatasetVersioningTest extends TestCase
             $this->header,
         )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
+        // v3 — title and abstract changed
         $v3Metadata = $this->metadata;
         $v3Metadata['metadata']['summary']['title']    = 'Title v3';
         $v3Metadata['metadata']['summary']['abstract'] = 'Updated abstract for v3';
@@ -182,19 +244,24 @@ class DatasetVersioningTest extends TestCase
             'Three version rows must exist before reconstruction tests'
         );
 
-        // gwdm object is at data.metadata, not data.metadata.metadata
+        // Response shape: {"message":"success","data":{"gwdmVersion":"2.0","metadata":{...}}}
+        // The inner GWDM object is at data.metadata, not data.metadata.metadata.
+
+        // --- Reconstruct v1 ---
         $respV1 = $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/1');
         $respV1->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $gwdmV1 = $respV1->decodeResponseJson()['data']['metadata'] ?? null;
         $this->assertNotNull($gwdmV1, 'v1 response must contain a GWDM metadata object');
         $this->assertEquals($originalTitle, $gwdmV1['summary']['title'] ?? null, 'v1 title must match original');
 
+        // --- Reconstruct v2 (one delta replayed) ---
         $respV2 = $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/2');
         $respV2->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $gwdmV2 = $respV2->decodeResponseJson()['data']['metadata'] ?? null;
         $this->assertNotNull($gwdmV2, 'v2 response must contain a GWDM metadata object');
         $this->assertEquals('Title v2', $gwdmV2['summary']['title'] ?? null, 'v2 title must be "Title v2"');
 
+        // --- Reconstruct v3 (two deltas replayed from v1 snapshot) ---
         $respV3 = $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/3');
         $respV3->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $gwdmV3 = $respV3->decodeResponseJson()['data']['metadata'] ?? null;
@@ -203,6 +270,9 @@ class DatasetVersioningTest extends TestCase
         $this->assertEquals('Updated abstract for v3', $gwdmV3['summary']['abstract'] ?? null, 'v3 abstract must be updated value');
     }
 
+    /**
+     * Requesting a version that does not exist must return 404.
+     */
     public function test_show_version_returns_404_for_nonexistent_version(): void
     {
         [$teamId, $userId] = $this->createTeamAndUser();
@@ -212,11 +282,20 @@ class DatasetVersioningTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
+    // -------------------------------------------------------------------------
+    // Test 4 — 10th version materialises as a full snapshot
+    // -------------------------------------------------------------------------
+
+    /**
+     * After 9 delta updates the 10th version row must have patch = null
+     * (materialised full snapshot), capping reconstruction cost at ≤9 deltas.
+     */
     public function test_tenth_version_is_materialised_snapshot(): void
     {
         [$teamId, $userId] = $this->createTeamAndUser();
         $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
 
+        // Perform 9 further updates (total 10 versions: v1 base + v2–v10)
         for ($i = 2; $i <= 10; $i++) {
             $updated = $this->metadata;
             $updated['metadata']['summary']['title'] = "Title iteration {$i}";
@@ -242,17 +321,21 @@ class DatasetVersioningTest extends TestCase
 
         $v10 = $versions->firstWhere('version', 10);
         $this->assertNotNull($v10, 'v10 row must exist');
+
+        // v10 is a materialised snapshot — patch must be null
         $this->assertNull(
             $v10->patch,
             'v10 (every 10th version) must be a materialised full snapshot with patch = null'
         );
 
+        // Confirm intermediate versions (v2–v9) are all deltas
         for ($v = 2; $v <= 9; $v++) {
             $row = $versions->firstWhere('version', $v);
             $this->assertNotNull($row, "v{$v} row must exist");
             $this->assertNotNull($row->patch, "v{$v} must be a delta (patch not null)");
         }
 
+        // Also verify v10 can be correctly reconstructed via the API
         $resp = $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/10');
         $resp->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $gwdm = $resp->decodeResponseJson()['data']['metadata'] ?? null;
@@ -260,6 +343,14 @@ class DatasetVersioningTest extends TestCase
         $this->assertEquals('Title iteration 10', $gwdm['summary']['title'] ?? null);
     }
 
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Create a notification, team, and user in one call.
+     * Returns [$teamId, $userId].
+     */
     private function createTeamAndUser(): array
     {
         $notificationId = $this->createNotification();
@@ -268,6 +359,9 @@ class DatasetVersioningTest extends TestCase
         return [$teamId, $userId];
     }
 
+    /**
+     * POST /api/v2/datasets and return the new dataset ID.
+     */
     private function createDataset(int $teamId, int $userId, array $metadata): int
     {
         $response = $this->json(
