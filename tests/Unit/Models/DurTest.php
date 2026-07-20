@@ -67,6 +67,18 @@ class DurTest extends TestCase
         $this->assertEquals('TRE', $searchable['accessType']);
     }
 
+    public function test_scopeIndexEligible_matches_shouldBeSearchable(): void
+    {
+        $team = Team::factory()->create();
+        $active = Dur::create(['project_title' => 'Active', 'team_id' => $team->id, 'status' => Dur::STATUS_ACTIVE]);
+        $archived = Dur::create(['project_title' => 'Archived', 'team_id' => $team->id, 'status' => Dur::STATUS_ARCHIVED]);
+
+        $eligibleIds = Dur::indexEligible()->pluck('id');
+
+        $this->assertTrue($eligibleIds->contains($active->id));
+        $this->assertFalse($eligibleIds->contains($archived->id));
+    }
+
     public function test_facets_exclude_inactive_datasets(): void
     {
         $team = Team::factory()->create();

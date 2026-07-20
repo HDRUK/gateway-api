@@ -280,6 +280,30 @@ class DatasetVersion extends BaseTypesenseModel
     }
 
     /**
+     * Query-level mirror of shouldBeSearchable(), for callers that need a
+     * count/filter of indexable rows rather than a per-instance check (e.g.
+     * AdminSearchController's eligibleCount). SoftDeletes' own global scope
+     * already excludes deleted_at.
+     *
+     * "Latest non-deleted version per dataset" is expressed as a correlated
+     * subquery rather than a PHP-level loop so this stays a single query
+     * regardless of table size. Assumes `version` is unique per dataset_id
+     * (true by construction — see the version-increment logic on write),
+     * so "highest version among non-deleted siblings" is equivalent to
+     * shouldBeSearchable()'s "highest-version id among non-deleted siblings".
+     */
+    public function scopeIndexEligible(Builder $query): Builder
+    {
+        return $query
+            ->whereRaw('version = (
+                select max(dv2.version) from dataset_versions as dv2
+                where dv2.dataset_id = dataset_versions.dataset_id
+                and dv2.deleted_at is null
+            )')
+            ->whereHas('dataset');
+    }
+
+    /**
      * Material types present on the dataset (GWDM >= 2.0's
      * metadata.tissuesSampleCollection[].materialType, excluding the
      * "no samples" sentinel value), or null if the section is absent.
@@ -308,7 +332,9 @@ class DatasetVersion extends BaseTypesenseModel
         $keywords      = data_get($meta, 'metadata.summary.keywords', '');
         $dataType      = data_get($meta, 'metadata.summary.datasetType', '');
         $dataSubType   = data_get($meta, 'metadata.summary.datasetSubType', '') ?? '';
-        $conformsTo    = data_get($meta, 'metadata.accessibility.formatAndStandards.conformsTo', '');
+        // FE-facing facet key is "formatAndStandards" per the `filters` table, though the
+        // GWDM value it surfaces is the nested conformsTo array within that object.
+        $formatAndStandards = data_get($meta, 'metadata.accessibility.formatAndStandards.conformsTo', '');
         $materialTypes = $this->materialTypes($meta);
         $structural    = data_get($meta, 'metadata.structuralMetadata', []);
         if (is_string($structural)) {
@@ -336,7 +362,7 @@ class DatasetVersion extends BaseTypesenseModel
             'populationSize'                => (int) data_get($meta, 'metadata.summary.populationSize', -1),
             'geographicLocation'            => $this->spatialCoverage->pluck('region')->all(),
             'datasetDOI'                    => data_get($meta, 'metadata.summary.doiName', ''),
-            'conformsTo'                    => array_values(array_filter(explode(';,;', $conformsTo))),
+            'formatAndStandards'            => array_values(array_filter(explode(';,;', $formatAndStandards))),
             'accessService'                 => data_get($meta, 'metadata.accessibility.access.accessServiceCategory', '') ?? '',
             'containsBioSamples'            => $materialTypes !== null,
             'sampleAvailability'            => $materialTypes ?? [],
@@ -387,7 +413,7 @@ class DatasetVersion extends BaseTypesenseModel
                 ['name' => 'populationSize',               'type' => 'int64',    'optional' => true],
                 ['name' => 'geographicLocation',           'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'datasetDOI',                   'type' => 'string',   'optional' => true],
-                ['name' => 'conformsTo',                   'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'formatAndStandards',           'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'accessService',                'type' => 'string',   'facet' => true, 'optional' => true],
                 ['name' => 'containsBioSamples',           'type' => 'bool',     'facet' => true, 'optional' => true],
                 ['name' => 'sampleAvailability',           'type' => 'string[]', 'facet' => true, 'optional' => true],

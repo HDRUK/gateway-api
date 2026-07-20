@@ -284,6 +284,17 @@ class Collection extends BaseTypesenseModel
     }
 
     /**
+     * Query-level mirror of shouldBeSearchable(), for callers that need a
+     * count/filter of indexable rows rather than a per-instance check (e.g.
+     * AdminSearchController's eligibleCount). SoftDeletes' own global scope
+     * already excludes deleted_at, so only the status check is needed here.
+     */
+    public function scopeIndexEligible(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    /**
      * The literal name "collections" collides with a private property of the
      * same name on Typesense\Collections (the PHP SDK's collection registry
      * class) — its __get() magic method does `isset($this->{$name})` before

@@ -90,6 +90,14 @@ class HDRUK implements SearchProvider
         return Feature::active('TypesenseSearch');
     }
 
+    /**
+     * @return array<string, class-string>  Search entity type => Scout model class.
+     */
+    public static function typesenseModelMap(): array
+    {
+        return self::TYPESENSE_MODEL_MAP;
+    }
+
     private function modelClassForFilterType(string $filterType): ?string
     {
         foreach (self::FILTER_TYPE_MAP as $key => $config) {

@@ -71,6 +71,17 @@ class CollectionTest extends TestCase
         $this->assertEquals([], $searchable['datasetTitles']);
     }
 
+    public function test_scopeIndexEligible_matches_shouldBeSearchable(): void
+    {
+        $active = Collection::factory()->create(['status' => Collection::STATUS_ACTIVE]);
+        $archived = Collection::factory()->create(['status' => Collection::STATUS_ARCHIVED]);
+
+        $eligibleIds = Collection::indexEligible()->pluck('id');
+
+        $this->assertTrue($eligibleIds->contains($active->id));
+        $this->assertFalse($eligibleIds->contains($archived->id));
+    }
+
     public function test_publisher_name_and_data_provider_coll_are_empty_when_team_has_no_network(): void
     {
         $team = Team::factory()->create(['name' => 'Standalone Custodian']);

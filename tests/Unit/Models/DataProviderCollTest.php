@@ -50,6 +50,17 @@ class DataProviderCollTest extends TestCase
         $this->assertFalse($dataProviderColl->fresh()->shouldBeSearchable());
     }
 
+    public function test_scopeIndexEligible_matches_shouldBeSearchable(): void
+    {
+        $enabled = DataProviderColl::factory()->create(['enabled' => true]);
+        $disabled = DataProviderColl::factory()->create(['enabled' => false]);
+
+        $eligibleIds = DataProviderColl::indexEligible()->pluck('id');
+
+        $this->assertTrue($eligibleIds->contains($enabled->id));
+        $this->assertFalse($eligibleIds->contains($disabled->id));
+    }
+
     public function test_toSearchableArray_reflects_real_enabled_and_name_values(): void
     {
         $dataProviderColl = DataProviderColl::factory()->create([

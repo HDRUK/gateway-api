@@ -125,6 +125,77 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      path="/api/v2/admin/data_custodian_networks",
+     *      description="Superadmin-only listing used by the network management admin screen — unlike index(), this is not filtered to enabled=1, so disabled networks remain visible/manageable.",
+     *      tags={"Admin-DataCustodianNetworks"},
+     *      summary="DataCustodianNetworks@adminIndex",
+     *      security={{"jwt": {}}},
+     *      @OA\Parameter(
+     *          name="per_page",
+     *          in="query",
+     *          description="per page",
+     *          required=false,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="per page",
+     *          ),
+     *      ),
+     *      @OA\Response(response=200, description="Success")
+     * )
+     */
+    public function adminIndex(Request $request): JsonResponse
+    {
+        try {
+            // MySQL rejects a negative/zero LIMIT (`paginate(-1, ...)` produces
+            // invalid SQL), so unlike a plain per_page=<n> override, a
+            // non-positive value falls back to the configured default rather
+            // than being passed straight through.
+            $perPage = (int) request('per_page', Config::get('constants.per_page'));
+            if ($perPage < 1) {
+                $perPage = (int) Config::get('constants.per_page');
+            }
+            $mediaBaseUrl = Config::get('services.media.base_url');
+
+            $dpc = DataProviderColl::with(['teams'])
+                ->paginate($perPage, ['*'], 'page')
+                ->through(function ($item) use ($mediaBaseUrl) {
+                    $item->img_url = (is_null($item->img_url) || strlen(trim($item->img_url)) === 0) ? null : (preg_match('/^https?:\/\//', $item->img_url) ? $item->img_url : $mediaBaseUrl . $item->img_url);
+                    return $item;
+                });
+
+            foreach ($dpc as $data) {
+                foreach ($data['teams'] as &$team) {
+                    $team['pivot']['data_custodian_network_id'] = $team['pivot']['data_provider_coll_id'];
+                    unset($team['pivot']['data_provider_coll_id']);
+                }
+                unset($team);
+            }
+            unset($data);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'DataCustodianNetworks admin list (incl. disabled)'
+            ]);
+
+            return response()->json(
+                $dpc,
+            );
+
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
      *      path="/api/v2/data_custodian_networks/{id}",
      *      description="Return a single DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},

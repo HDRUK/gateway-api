@@ -41,6 +41,17 @@ class PublicationTest extends TestCase
         );
     }
 
+    public function test_scopeIndexEligible_matches_shouldBeSearchable(): void
+    {
+        $active = Publication::factory()->create(['status' => Publication::STATUS_ACTIVE]);
+        $archived = Publication::factory()->create(['status' => Publication::STATUS_ARCHIVED]);
+
+        $eligibleIds = Publication::indexEligible()->pluck('id');
+
+        $this->assertTrue($eligibleIds->contains($active->id));
+        $this->assertFalse($eligibleIds->contains($archived->id));
+    }
+
     public function test_dataset_titles_and_link_types_reflect_linked_active_datasets(): void
     {
         $team = Team::factory()->create(['enabled' => true]);

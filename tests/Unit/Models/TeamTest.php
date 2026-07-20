@@ -47,6 +47,17 @@ class TeamTest extends TestCase
         $this->assertTrue($team->shouldBeSearchable());
     }
 
+    public function test_scopeIndexEligible_matches_shouldBeSearchable(): void
+    {
+        $enabled = Team::factory()->create(['enabled' => true]);
+        $disabled = Team::factory()->create(['enabled' => false]);
+
+        $eligibleIds = Team::indexEligible()->pluck('id');
+
+        $this->assertTrue($eligibleIds->contains($enabled->id));
+        $this->assertFalse($eligibleIds->contains($disabled->id));
+    }
+
     public function test_name_attribute_is_not_shadowed_by_the_declared_property(): void
     {
         $team = Team::factory()->create(['name' => 'Scottish Safe Haven Network']);

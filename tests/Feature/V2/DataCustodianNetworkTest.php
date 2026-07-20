@@ -23,6 +23,68 @@ class DataCustodianNetworkTest extends TestCase
         $this->commonSetUp();
     }
 
+    public function test_admin_index_includes_disabled_networks_that_public_index_excludes(): void
+    {
+        // A disabled network is skipped by indexElasticDataCustodianNetwork
+        // rather than indexed, so no Elastic call should happen here.
+        ECC::shouldReceive("indexDocument")
+            ->times(0);
+
+        $payload = [
+            'enabled' => false,
+            'name' => 'Loki Disabled Data Provider',
+            'summary' => fake()->text(255),
+            'img_url' => 'https://doesntexist.com/img.jpeg',
+            'team_ids' => [1],
+            'service' => 'https://service.local/test',
+        ];
+
+        $response = $this->json('POST', self::TEST_URL, $payload, $this->header);
+        $response->assertStatus(201);
+        $dpsId = $response->decodeResponseJson()['data'];
+
+        $publicResponse = $this->json('GET', self::TEST_URL, [], $this->header);
+        $publicIds = collect($publicResponse->decodeResponseJson()['data'])->pluck('id');
+        $this->assertFalse($publicIds->contains($dpsId));
+
+        $adminResponse = $this->json(
+            'GET',
+            '/api/v2/admin/data_custodian_networks',
+            [],
+            $this->header
+        );
+        $adminResponse->assertStatus(200);
+        $adminIds = collect($adminResponse->decodeResponseJson()['data'])->pluck('id');
+        $this->assertTrue($adminIds->contains($dpsId));
+    }
+
+    public function test_admin_index_rejects_non_superadmin(): void
+    {
+        $response = $this->json('GET', '/api/v2/admin/data_custodian_networks');
+        $response->assertStatus(401);
+    }
+
+    public function test_admin_index_falls_back_to_default_per_page_for_non_positive_values(): void
+    {
+        // paginate() with a non-positive per_page produces invalid SQL
+        // (`LIMIT -1`), so this must fall back rather than 500.
+        $response = $this->json(
+            'GET',
+            '/api/v2/admin/data_custodian_networks?per_page=-1',
+            [],
+            $this->header
+        );
+        $response->assertStatus(200);
+
+        $response = $this->json(
+            'GET',
+            '/api/v2/admin/data_custodian_networks?per_page=0',
+            [],
+            $this->header
+        );
+        $response->assertStatus(200);
+    }
+
     public function test_get_all_data_custodian_networks_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
