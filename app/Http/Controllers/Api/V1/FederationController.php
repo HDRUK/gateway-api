@@ -106,8 +106,7 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -211,8 +210,7 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
@@ -318,7 +316,7 @@ class FederationController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $payload = [
@@ -486,7 +484,7 @@ class FederationController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $updateArray = [
@@ -655,7 +653,7 @@ class FederationController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -814,8 +812,7 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $federationNotifications = FederationHasNotification::where([
@@ -967,8 +964,7 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $checkFederation = Federation::where([
