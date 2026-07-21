@@ -32,7 +32,6 @@ use Auditor;
 use Config;
 use ElasticClientController as ECC;
 use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 
 trait IndexElastic
@@ -1067,30 +1066,14 @@ trait IndexElastic
 
     public function getMaterialTypes(array $metadata): ?array
     {
-        $materialTypes = null;
-        // Check the reconstructed envelope's own gwdmVersion, not the global config
-        // default — a dataset's actual version can diverge from that default.
+        // Resolve the handler for the envelope's own gwdmVersion (a dataset's
+        // actual version can diverge from the global config default) and let it
+        // decide how material types are represented for that version.
         $rowGwdmVersion = $metadata['gwdmVersion'] ?? Config::get('metadata.GWDM.version');
-        if (version_compare($rowGwdmVersion, '2.0', '<')) {
-            $containsTissue = ! empty($this->getValueByPossibleKeys($metadata, [
-                'metadata.coverage.biologicalsamples',
-                'metadata.coverage.physicalSampleAvailability',
-            ], ''));
-        } else {
-            $tissues = Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
-            if (! is_null($tissues)) {
-                $materialTypes = array_reduce($tissues, function ($return, $item) {
-                    if ($item['materialType'] !== 'None/not available') {
-                        $return[] = $item['materialType'];
-                    }
 
-                    return $return;
-                }, []);
-                $materialTypes = count($materialTypes) === 0 ? null : array_unique($materialTypes);
-            }
-        }
-
-        return $materialTypes;
+        return app(GwdmHandlerFactory::class)
+            ->resolve($rowGwdmVersion)
+            ->getMaterialTypes($metadata['metadata'] ?? []);
     }
 
     public function getContainsBioSamples(?array $materialTypes)
