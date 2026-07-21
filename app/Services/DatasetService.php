@@ -223,6 +223,97 @@ class DatasetService
     }
 
     /**
+     * Fast path for ?view=metadataOnly — skips all relation loading (DURs, tools,
+     * collections, publications, named entities, linkages, team DAR check) and
+     * returns only the reconstructed GWDM metadata envelope.
+     *
+     * Supports the same x-gwdm-version header and schema_model/schema_version
+     * TRASER translation as the full show path.
+     *
+     * @return array{gwdmVersion?: string, metadata?: array} empty when the dataset has no version rows
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException when the requested GWDM version has no rows
+     * @throws \InvalidArgumentException when schema_model/schema_version are mismatched
+     * @throws \RuntimeException when TRASER translation fails
+     */
+    public function getMetadataOnly(
+        Dataset $dataset,
+        ?string $outputSchemaModel = null,
+        ?string $outputSchemaVersion = null,
+    ): array {
+        if ($outputSchemaModel && ! $outputSchemaVersion) {
+            throw new \InvalidArgumentException('schema_model provided without schema_version');
+        }
+        if ($outputSchemaVersion && ! $outputSchemaModel) {
+            throw new \InvalidArgumentException('schema_version provided without schema_model');
+        }
+
+        $requestedGwdmVersion = $this->gwdmVersionContext->requestedVersion();
+
+        $allVersions = $dataset->versions()
+            ->select(['id', 'version', 'gwdm_version'])
+            ->orderBy('version', 'desc')
+            ->get();
+
+        if ($requestedGwdmVersion !== null) {
+            $row = $allVersions->firstWhere('gwdm_version', $requestedGwdmVersion);
+            if ($row === null) {
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException(
+                    "No dataset version found with GWDM version '{$requestedGwdmVersion}'."
+                );
+            }
+            $latestVersionId = $row->id;
+        } else {
+            $latestVersionId = $allVersions->first()?->id;
+        }
+
+        $translateRequested = $outputSchemaModel && $outputSchemaVersion;
+
+        // Only need linked versions when translating via TRASER.
+        $dv = $translateRequested
+            ? DatasetVersion::where('id', $latestVersionId)->with(['reducedLinkedDatasetVersions'])->first()
+            : DatasetVersion::find($latestVersionId);
+
+        if (! $dv) {
+            return [];
+        }
+
+        $envelope = $this->getReconstructedMetadataEnvelope(
+            $dataset->id,
+            $dv->version,
+            validate: $translateRequested,
+            prefetched: $dv,
+        );
+
+        if ($translateRequested) {
+            $translated = MMC::translateDataModelType(
+                json_encode($envelope),
+                $outputSchemaModel,
+                $outputSchemaVersion,
+                Config::get('metadata.GWDM.name'),
+                $envelope['gwdmVersion'],
+            );
+
+            if (! $translated['wasTranslated']) {
+                $traserError = is_array($translated['traser_message'])
+                    ? json_encode($translated['traser_message'])
+                    : ($translated['traser_message'] ?? 'unknown error');
+                throw new \RuntimeException($traserError);
+            }
+
+            return [
+                'gwdmVersion' => $envelope['gwdmVersion'],
+                'metadata' => $translated['metadata'],
+            ];
+        }
+
+        return [
+            'gwdmVersion' => $envelope['gwdmVersion'],
+            'metadata' => $envelope['metadata'],
+        ];
+    }
+
+    /**
      * Return the full reconstructed metadata envelope for a specific version of
      * a dataset. The envelope matches the snapshot shape:
      *   { gwdmVersion, metadata: {...GWDM...}, original_metadata: {...} }
@@ -962,32 +1053,41 @@ class DatasetService
         $allCoverages = SpatialCoverage::all();
         $ukCoverages = $allCoverages->filter(fn ($c) => $c->region !== 'Rest of the world');
         $worldId = $allCoverages->firstWhere('region', 'Rest of the world')?->id;
-        $matchFound = false;
+
+        // Collect the coverage IDs this version should map to, then sync the pivot
+        // (upsert desired + prune stale) so editing coverage DOWN actually removes
+        // entries rather than accumulating them.
+        $desiredIds = [];
 
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c->region))) {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version->id,
-                    'spatial_coverage_id' => (int) $c->id,
-                ]);
-                $matchFound = true;
+                $desiredIds[] = (int) $c->id;
             }
         }
 
-        if (! $matchFound) {
+        if (empty($desiredIds)) {
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
-                    DatasetVersionHasSpatialCoverage::updateOrCreate([
-                        'dataset_version_id' => (int) $version->id,
-                        'spatial_coverage_id' => (int) $c->id,
-                    ]);
+                    $desiredIds[] = (int) $c->id;
                 }
-            } else {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version->id,
-                    'spatial_coverage_id' => (int) $worldId,
-                ]);
+            } elseif ($worldId !== null) {
+                $desiredIds[] = (int) $worldId;
             }
         }
+
+        foreach ($desiredIds as $coverageId) {
+            DatasetVersionHasSpatialCoverage::updateOrCreate([
+                'dataset_version_id' => (int) $version->id,
+                'spatial_coverage_id' => $coverageId,
+            ]);
+        }
+
+        // Prune any pivot rows for this version no longer present in the metadata.
+        DatasetVersionHasSpatialCoverage::where('dataset_version_id', (int) $version->id)
+            ->when(
+                ! empty($desiredIds),
+                fn ($q) => $q->whereNotIn('spatial_coverage_id', $desiredIds),
+            )
+            ->delete();
     }
 }
