@@ -116,10 +116,10 @@ class FederationController extends Controller
             })->with(['team', 'notifications.userNotification'])->paginate($perPage, ['*'], 'page');
 
             $federations->getCollection()->transform(function ($federation) {
-                $federation->auth_secret_key = $this->decryptAuthSecretKey(
+                $federation->setAttribute('auth_secret_key', $this->decryptAuthSecretKey(
                     $federation->auth_secret_key_location,
                     $federation->auth_type
-                );
+                ));
                 return $federation;
             });
 
