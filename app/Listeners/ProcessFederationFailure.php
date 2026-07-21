@@ -15,7 +15,12 @@ class ProcessFederationFailure
         $federationId = $event->federation->id;
         $jobUuid      = $event->jobUuid;
 
-        $event->federation->update(['is_running' => 0]);
+        $event->federation->update([
+            'is_running' => 0,
+            'error' => true,
+            'error_text' => substr($event->exception->getMessage(), 0, 200),
+            'enabled' => false,
+        ]);
 
         SendEmailCustomIntegration::dispatch($federationId, $jobUuid, 'failure', $event->exception->getMessage());
 

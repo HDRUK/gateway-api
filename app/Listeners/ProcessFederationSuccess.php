@@ -15,7 +15,11 @@ class ProcessFederationSuccess
         $federationId = $event->federation->id;
         $jobUuid      = $event->jobUuid;
 
-        $event->federation->update(['is_running' => 0]);
+        $event->federation->update([
+            'is_running' => 0,
+            'error' => false,
+            'error_text' => null,
+        ]);
 
         SendEmailCustomIntegration::dispatch($federationId, $jobUuid, 'success');
 
