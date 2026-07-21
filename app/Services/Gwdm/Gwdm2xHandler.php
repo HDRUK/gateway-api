@@ -180,6 +180,18 @@ class Gwdm2xHandler extends GwdmMetadataHandler
                 $targetVersionId = $this->findTargetDataset($d);
 
                 if (! $targetVersionId) {
+                    // Store unresolved reference so afterRead() can reconstruct it from SQL.
+                    DatasetVersionHasDatasetVersion::create([
+                        'dataset_version_source_id' => $sourceVersionId,
+                        'dataset_version_target_id' => null,
+                        'linkage_type' => $key,
+                        'direct_linkage' => 1,
+                        'description' => self::LINKAGE_DESCRIPTION,
+                        'raw_url' => $d['url'] ?? null,
+                        'raw_pid' => $d['pid'] ?? null,
+                        'raw_title' => $d['title'] ?? null,
+                    ]);
+
                     continue;
                 }
 
@@ -214,6 +226,15 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             $publicationId = $this->findTargetPublication($doi);
 
             if (! $publicationId) {
+                // Store unresolved DOI so afterRead() can reconstruct it from SQL.
+                PublicationHasDatasetVersion::create([
+                    'publication_id' => null,
+                    'dataset_version_id' => $sourceVersionId,
+                    'link_type' => $linkType,
+                    'description' => self::LINKAGE_DESCRIPTION,
+                    'raw_doi' => $doi,
+                ]);
+
                 continue;
             }
 
@@ -304,9 +325,20 @@ class Gwdm2xHandler extends GwdmMetadataHandler
     public function afterRead(DatasetVersion $dv): array
     {
         $resolvedDatasets = $this->resolveDatasetLinkages($dv->id, useLatestTitle: true);
+
+        // Unresolved rows (target_id = NULL) carry the raw free-text reference captured
+        // at extraction time. resolveDatasetLinkages() intentionally excludes them (it
+        // requires an ACTIVE target dataset), so read them separately to preserve them.
+        $unresolvedDatasets = DatasetVersionHasDatasetVersion::query()
+            ->where('dataset_version_source_id', $dv->id)
+            ->where('direct_linkage', 1)
+            ->where('description', self::LINKAGE_DESCRIPTION)
+            ->whereNull('dataset_version_target_id')
+            ->get();
+
         $publications = $this->resolvePublicationLinkages($dv->id);
 
-        if (empty($resolvedDatasets) && empty($publications)) {
+        if (empty($resolvedDatasets) && $unresolvedDatasets->isEmpty() && empty($publications)) {
             return [];
         }
 
@@ -316,6 +348,13 @@ class Gwdm2xHandler extends GwdmMetadataHandler
                 'url' => config('gateway.gateway_url').'/en/dataset/'.$row->dataset_id,
                 'pid' => $row->pid,
                 'title' => $row->title,
+            ];
+        }
+        foreach ($unresolvedDatasets as $row) {
+            $datasetLinkage[$row->linkage_type][] = [
+                'url' => $row->raw_url,
+                'pid' => $row->raw_pid,
+                'title' => $row->raw_title,
             ];
         }
 
@@ -410,9 +449,13 @@ class Gwdm2xHandler extends GwdmMetadataHandler
     }
 
     /**
-     * Resolved publication linkages for the given source version, sourced from SQL.
+     * Publication linkages for the given source version, sourced from SQL.
      * Companion to resolveDatasetLinkages(); consumed by afterRead() to rebuild the
      * publicationAboutDataset / publicationUsingDataset arrays.
+     *
+     * Uses a LEFT JOIN and coalesces the resolved publication's paper_doi with the
+     * raw_doi captured at extraction time, so unresolved (free-text) DOIs survive the
+     * read the same way unresolved dataset linkages do.
      *
      * @return array<int, object{link_type: string, doi: string}>
      */
@@ -421,9 +464,9 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         return DB::select(
             'SELECT
                 publication_has_dataset_version.link_type,
-                publications.paper_doi AS doi
+                COALESCE(publications.paper_doi, publication_has_dataset_version.raw_doi) AS doi
             FROM publication_has_dataset_version
-            INNER JOIN publications
+            LEFT JOIN publications
                 ON publications.id = publication_has_dataset_version.publication_id
                AND publications.deleted_at IS NULL
             WHERE publication_has_dataset_version.dataset_version_id = ?
@@ -435,11 +478,12 @@ class Gwdm2xHandler extends GwdmMetadataHandler
 
     /**
      * Flat dataset-linkage list for the given version (frontend `linkages` attribute).
-     * Thin formatter over resolveDatasetLinkages() — see it for the selection rules.
+     * Formats resolveDatasetLinkages() and appends unresolved (free-text) rows so a
+     * linkage to a dataset not on the gateway still surfaces its raw title/url.
      */
     public function getLinkages(int $datasetVersionId): array
     {
-        return array_map(
+        $resolved = array_map(
             fn ($row) => [
                 'title' => $row->title,
                 'url' => config('gateway.gateway_url').'/en/dataset/'.$row->dataset_id,
@@ -448,6 +492,22 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             ],
             $this->resolveDatasetLinkages($datasetVersionId, useLatestTitle: true)
         );
+
+        $unresolved = DatasetVersionHasDatasetVersion::query()
+            ->where('dataset_version_source_id', $datasetVersionId)
+            ->where('direct_linkage', 1)
+            ->where('description', self::LINKAGE_DESCRIPTION)
+            ->whereNull('dataset_version_target_id')
+            ->get()
+            ->map(fn ($row) => [
+                'title' => $row->raw_title,
+                'url' => $row->raw_url,
+                'dataset_id' => null,
+                'linkage_type' => $row->linkage_type,
+            ])
+            ->all();
+
+        return array_merge($resolved, $unresolved);
     }
 
     /**
