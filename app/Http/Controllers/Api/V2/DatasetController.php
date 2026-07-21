@@ -19,7 +19,6 @@ use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\UpdateDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use App\Http\Traits\GetValueByPossibleKeys;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -187,6 +186,15 @@ class DatasetController extends Controller
                 return $this->streamStructuralMetadataExport($dataset, $id);
             }
 
+            if ($request->query('view') === 'metadataOnly') {
+                $metadata = $this->datasetService->getMetadataOnly(
+                    $dataset,
+                    $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
+                    $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
+                );
+                return response()->json(['message' => 'success', 'data' => $metadata]);
+            }
+
             $dataset = $this->datasetService->prepareForShow(
                 $dataset,
                 $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
@@ -209,7 +217,7 @@ class DatasetController extends Controller
 
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 400);
-        } catch (ModelNotFoundException $e) {
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => $e->getMessage()], 404);
         } catch (\RuntimeException $e) {
             return response()->json(['message' => 'failed to translate', 'details' => $e->getMessage()], 400);
