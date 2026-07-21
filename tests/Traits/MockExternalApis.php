@@ -7,6 +7,7 @@ use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
+use App\Services\GoogleSecretManagerService;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -1166,13 +1167,12 @@ trait MockExternalApis
         //     )
         // ]);
 
-        Http::fake([
-            config('services.gmi.url').'*' => Http::response(
-                ['message' => 'success'],
-                200,
-                ['application/json']
-            )
-        ]);
+        $this->mock(GoogleSecretManagerService::class, function ($mock) {
+            $mock->shouldReceive('createSecret')->andReturn(null);
+            $mock->shouldReceive('addSecretVersion')->andReturn(null);
+            $mock->shouldReceive('deleteSecret')->andReturn(null);
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['bearer_token' => 'fake-token']));
+        });
 
         Http::fake([
             // DELETE
