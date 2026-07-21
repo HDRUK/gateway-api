@@ -12,6 +12,14 @@ class LogRequestResponse
     protected $sensitiveFields = ['password', 'token', 'access_token', 'authorization'];
     // Max body length to log
     protected $maxBodyLength = 2048;
+    // Sensitive fields (passwords, tokens) only ever appear near the top of a
+    // request/response body in this app. Large domain payloads (e.g. full
+    // dataset search results, 1MB+) are wide AND deeply nested (structural
+    // metadata tables/columns), so an unbounded recursive walk costs 100ms+
+    // per request just to redact keys that only ever occur within a few
+    // levels of the root. Bounding depth keeps every realistic redaction
+    // target covered while capping worst-case cost regardless of body size.
+    protected $maxMaskDepth = 4;
 
     public function handle(Request $request, Closure $next)
     {
@@ -50,14 +58,14 @@ class LogRequestResponse
         return $response;
     }
 
-    protected function maskSensitive($data)
+    protected function maskSensitive($data, int $depth = 0)
     {
-        if (is_array($data)) {
+        if (is_array($data) && $depth < $this->maxMaskDepth) {
             foreach ($data as $key => &$value) {
-                if (in_array(strtolower($key), $this->sensitiveFields)) {
+                if (in_array(strtolower((string) $key), $this->sensitiveFields)) {
                     $value = '***';
                 } elseif (is_array($value)) {
-                    $value = $this->maskSensitive($value);
+                    $value = $this->maskSensitive($value, $depth + 1);
                 }
             }
         }
