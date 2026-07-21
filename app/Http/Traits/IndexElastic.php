@@ -90,6 +90,32 @@ trait IndexElastic
         );
     }
 
+    /**
+     * Preload datasets by id (with their versions) keyed by id, so callers can
+     * resolve each dataset's latest version in memory rather than issuing a
+     * Dataset::where(...)->first() + latestVersion() query per row (N+1).
+     *
+     * @param  array<int|string>  $ids
+     * @return \Illuminate\Support\Collection<int, Dataset>
+     */
+    private function preloadDatasetsById(array $ids): \Illuminate\Support\Collection
+    {
+        return Dataset::whereIn('id', array_values(array_unique($ids)))
+            ->with(['versions' => fn ($q) => $q->select('id', 'dataset_id', 'version', 'short_title')])
+            ->get()
+            ->keyBy('id');
+    }
+
+    /**
+     * Resolve a preloaded dataset's latest version from its already-loaded
+     * `versions` relation (no query), mirroring Dataset::latestVersion()'s
+     * "highest version number" semantics.
+     */
+    private function latestLoadedVersion(?Dataset $dataset): ?DatasetVersion
+    {
+        return $dataset?->versions->sortByDesc('version')->first();
+    }
+
     private function isElasticIndexable(array $envelope): bool
     {
         $version = $envelope['gwdmVersion'] ?? null;
@@ -527,9 +553,10 @@ trait IndexElastic
 
         $datasetTitles = [];
         $datasetAbstracts = [];
+        $datasetsById = $this->preloadDatasetsById($datasetIds);
         foreach ($datasetIds as $d) {
-            $datasetRow = Dataset::where(['id' => $d])->first();
-            $latestVersion = $datasetRow?->latestVersion();
+            $datasetRow = $datasetsById->get($d);
+            $latestVersion = $this->latestLoadedVersion($datasetRow);
             if (! $latestVersion) {
                 continue;
             }
@@ -666,8 +693,9 @@ trait IndexElastic
             $durMatch = $durMatch->toArray();
 
             $datasetTitles = [];
+            $datasetsById = $this->preloadDatasetsById($datasetIds);
             foreach ($datasetIds as $d) {
-                $datasetTitles[] = Dataset::where(['id' => $d])->first()->latestVersion()->short_title ?? '';
+                $datasetTitles[] = $this->latestLoadedVersion($datasetsById->get($d))?->short_title ?? '';
             }
 
             $keywords = [];
@@ -761,17 +789,26 @@ trait IndexElastic
                 'UNKNOWN' => 'Unknown',
             ];
 
+            $datasetIds = collect($datasets)->pluck('id')->all();
+            $datasetsById = $this->preloadDatasetsById($datasetIds);
+
+            // Resolve each dataset's latest version once, then batch the
+            // link-type lookup, rather than querying per row (N+1).
+            $latestVersionByDataset = [];
+            foreach ($datasetIds as $datasetId) {
+                $latestVersionByDataset[$datasetId] = $this->latestLoadedVersion($datasetsById->get($datasetId));
+            }
+
+            $linkTypeByVersionId = PublicationHasDatasetVersion::where('publication_id', (int) $id)
+                ->whereIn('dataset_version_id', collect($latestVersionByDataset)->filter()->map->id->all())
+                ->pluck('link_type', 'dataset_version_id');
+
             foreach ($datasets as $dataset) {
-                $datasetModel = Dataset::where(['id' => $dataset['id']])->first();
-                $latestVersion = $datasetModel->latestVersion();
-                $latestVersionID = $latestVersion->id;
-                $datasetTitles[] = $latestVersion->short_title ?? '';
+                $latestVersion = $latestVersionByDataset[$dataset['id']] ?? null;
+                $datasetTitles[] = $latestVersion?->short_title ?? '';
 
                 // change from 'UNKNOWN' to 'USING' - temp
-                $linkType = PublicationHasDatasetVersion::where([
-                    'publication_id' => (int) $id,
-                    'dataset_version_id' => (int) $latestVersionID,
-                ])->first()->link_type ?? 'USING';
+                $linkType = ($latestVersion ? ($linkTypeByVersionId[$latestVersion->id] ?? null) : null) ?? 'USING';
 
                 $datasetLinkTypes[] = array_key_exists($linkType, $linkTypeMappings) ? $linkTypeMappings[$linkType] : 'Unknown';
             }
