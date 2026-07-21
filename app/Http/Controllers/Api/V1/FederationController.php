@@ -115,6 +115,14 @@ class FederationController extends Controller
                 $query->where('id', $teamId);
             })->with(['team', 'notifications.userNotification'])->paginate($perPage, ['*'], 'page');
 
+            $federations->getCollection()->transform(function ($federation) {
+                $federation->setAttribute('auth_secret_key', $this->decryptAuthSecretKey(
+                    $federation->auth_secret_key_location,
+                    $federation->auth_type
+                ));
+                return $federation;
+            });
+
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'team_id' => $teamId,
@@ -210,6 +218,11 @@ class FederationController extends Controller
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->where('id', $federationId)->with(['team', 'notifications.userNotification'])->first()->toArray();
+
+            $federations['auth_secret_key'] = $this->decryptAuthSecretKey(
+                $federations['auth_secret_key_location'] ?? null,
+                $federations['auth_type'] ?? null
+            );
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -997,6 +1010,26 @@ class FederationController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function decryptAuthSecretKey(?string $secretLocation, ?string $authType): ?string
+    {
+        if (!$secretLocation || !in_array($authType, ['BEARER', 'API_KEY'])) {
+            return null;
+        }
+
+        try {
+            $payload = json_decode(app(GoogleSecretManagerService::class)->getSecret($secretLocation), true);
+        } catch (Exception $e) {
+            \Log::info('failed to retrieve federation secret ' . $secretLocation . ': ' . $e->getMessage());
+            return null;
+        }
+
+        return match ($authType) {
+            'BEARER' => $payload['bearer_token'] ?? null,
+            'API_KEY' => $payload['api_key'] ?? null,
+            default => null,
+        };
     }
 
     private function upsertFederationSecret(int $federationId, array $secretsPayload): string
