@@ -9,6 +9,7 @@ use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\Team;
 use App\Services\DatasetService;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -447,5 +448,29 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             ->get()
             ->mapWithKeys(fn (Dataset $d) => [$d->id => $d->latestMetadata?->short_title])
             ->all();
+    }
+
+    /**
+     * 2.x stores biological material types under `tissuesSampleCollection`.
+     *
+     * @param  array<string, mixed>  $metadata  inner GWDM metadata block
+     * @return array<int, string>|null
+     */
+    public function getMaterialTypes(array $metadata): ?array
+    {
+        $tissues = Arr::get($metadata, 'tissuesSampleCollection', null);
+        if (is_null($tissues)) {
+            return null;
+        }
+
+        $materialTypes = array_reduce($tissues, function ($carry, $item) {
+            if (($item['materialType'] ?? '') !== 'None/not available') {
+                $carry[] = $item['materialType'];
+            }
+
+            return $carry;
+        }, []);
+
+        return count($materialTypes) === 0 ? null : array_unique($materialTypes);
     }
 }

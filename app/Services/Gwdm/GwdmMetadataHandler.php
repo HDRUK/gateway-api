@@ -25,9 +25,7 @@ use App\Models\Team;
  */
 abstract class GwdmMetadataHandler
 {
-    public function __construct(protected readonly string $resolvedVersion)
-    {
-    }
+    public function __construct(protected readonly string $resolvedVersion) {}
 
     // ── Version identity ──────────────────────────────────────────────────────
 
@@ -50,11 +48,11 @@ abstract class GwdmMetadataHandler
      *      merging over any existing required fields so DB-derived values win.
      *   2. Call buildPublisher() and write the result into $gwdm['summary']['publisher'].
      *
-     * @param  array   $gwdm          Post-TRASER GWDM metadata object
-     * @param  Dataset $dataset       The parent dataset row (for gatewayId, pid, dates)
-     * @param  Team    $team          Owning team (for publisher fields)
-     * @param  int     $versionNumber The version number being written (1 on create)
-     * @return array                  Mutated GWDM array ready for envelope + storage
+     * @param  array  $gwdm  Post-TRASER GWDM metadata object
+     * @param  Dataset  $dataset  The parent dataset row (for gatewayId, pid, dates)
+     * @param  Team  $team  Owning team (for publisher fields)
+     * @param  int  $versionNumber  The version number being written (1 on create)
+     * @return array Mutated GWDM array ready for envelope + storage
      */
     abstract public function prepareMetadata(
         array $gwdm,
@@ -102,8 +100,8 @@ abstract class GwdmMetadataHandler
     public function buildEnvelope(array $gwdm, array $originalMetadata): array
     {
         return [
-            'gwdmVersion'       => $this->version(),
-            'metadata'          => $gwdm,
+            'gwdmVersion' => $this->version(),
+            'metadata' => $gwdm,
             'original_metadata' => $originalMetadata,
         ];
     }
@@ -121,6 +119,7 @@ abstract class GwdmMetadataHandler
         if (array_key_exists('metadata', $storedData)) {
             return $storedData['metadata'];
         }
+
         return $storedData;
     }
 
@@ -134,7 +133,7 @@ abstract class GwdmMetadataHandler
      */
     public function extractTitleFields(array $gwdm): array
     {
-        $title      = $gwdm['summary']['title'] ?? null;
+        $title = $gwdm['summary']['title'] ?? null;
         $shortTitle = $gwdm['summary']['shortTitle'] ?? $title;
 
         return [$title, $shortTitle];
@@ -198,20 +197,33 @@ abstract class GwdmMetadataHandler
     }
 
     /**
+     * Distinct biological material types for a GWDM metadata block (the inner
+     * `metadata` object). Version-specific: the base has no material-type
+     * concept and returns null; 2.x+ reads `tissuesSampleCollection`.
+     *
+     * @param  array<string, mixed>  $metadata  inner GWDM metadata block
+     * @return array<int, string>|null
+     */
+    public function getMaterialTypes(array $metadata): ?array
+    {
+        return null;
+    }
+
+    /**
      * Extract Typesense-searchable fields from a reconstructed GWDM envelope.
      * Override when a version's field shapes diverge from delimited strings.
      */
     public function toSearchableFields(array $envelope): array
     {
-        $keywords   = data_get($envelope, 'metadata.summary.keywords', '');
-        $dataType   = data_get($envelope, 'metadata.summary.datasetType', '');
+        $keywords = data_get($envelope, 'metadata.summary.keywords', '');
+        $dataType = data_get($envelope, 'metadata.summary.datasetType', '');
         $conformsTo = data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo', '');
         $structural = data_get($envelope, 'metadata.structuralMetadata', []);
 
         if (is_string($structural)) {
             $structural = json_decode($structural, true) ?? [];
         }
-        if (!is_array($structural)) {
+        if (! is_array($structural)) {
             $structural = [];
         }
 
@@ -274,13 +286,13 @@ abstract class GwdmMetadataHandler
     public function defaultValuePaths(): array
     {
         return [
-            'dataUseLimitation'   => 'metadata.accessibility.usage.dataUseLimitation',
+            'dataUseLimitation' => 'metadata.accessibility.usage.dataUseLimitation',
             'dataUseRequirements' => 'metadata.accessibility.usage.dataUseRequirements',
-            'accessRights'        => 'metadata.accessibility.access.accessRights',
-            'accessService'       => 'metadata.accessibility.access.accessService',
-            'accessRequestCost'   => 'metadata.accessibility.access.accessRequestCost',
-            'deliveryLeadTime'    => 'metadata.accessibility.access.deliveryLeadTime',
-            'formats'             => 'metadata.accessibility.formatAndStandards.formats',
+            'accessRights' => 'metadata.accessibility.access.accessRights',
+            'accessService' => 'metadata.accessibility.access.accessService',
+            'accessRequestCost' => 'metadata.accessibility.access.accessRequestCost',
+            'deliveryLeadTime' => 'metadata.accessibility.access.deliveryLeadTime',
+            'formats' => 'metadata.accessibility.formatAndStandards.formats',
         ];
     }
 
@@ -301,7 +313,7 @@ abstract class GwdmMetadataHandler
         sort($all);
 
         return array_map(fn (int $v) => [
-            'url'     => config('gateway.gateway_url') . '/dataset/' . $dataset->id . '?version=' . $this->formatVersion($v),
+            'url' => config('gateway.gateway_url').'/dataset/'.$dataset->id.'?version='.$this->formatVersion($v),
             'version' => $this->formatVersion($v),
         ], $all);
     }
