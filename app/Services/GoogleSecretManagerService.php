@@ -24,8 +24,8 @@ class GoogleSecretManagerService
 
     public function getSecret(string $secretName, string $version = 'latest'): string
     {
-        $projectId = Config::get('metadata.google_project_path');
-        $name = $this->client->secretVersionName($projectId, $secretName, $version);
+        $projectPath = Config::get('metadata.google_project_path');
+        $name = $projectPath . '/secrets/' . $secretName . '/versions/' . $version;
 
         $request = (new AccessSecretVersionRequest())->setName($name);
 
