@@ -8,6 +8,7 @@ use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\GetFederation;
+use App\Http\Requests\Federation\GetFederationHistory;
 use App\Http\Requests\Federation\RunNowFederation;
 use App\Http\Requests\Federation\UpdateFederation;
 use App\Http\Traits\LoggingContext;
@@ -18,6 +19,7 @@ use App\Jobs\TestFederation;
 use App\Models\EmailTemplate;
 use App\Models\Federation;
 use App\Models\FederationHasNotification;
+use App\Models\FederationJobRun;
 use App\Models\Notification;
 use App\Models\Role;
 use App\Models\TeamHasFederation;
@@ -1042,6 +1044,155 @@ class FederationController extends Controller
         $gsms->createSecret($auth_secret_key_location, json_encode($secretsPayload));
 
         return $auth_secret_key_location;
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/teams/{teamId}/federations/{federationId}/history",
+     *    operationId="get_federation_history",
+     *    tags={"Team-Federations"},
+     *    summary="FederationController@history",
+     *    description="Get run history for a federation",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="federationId",
+     *       in="path",
+     *       description="federation id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="federation id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="per_page",
+     *       in="query",
+     *       description="per page",
+     *       required=false,
+     *       example="25",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="per page",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="current_page", type="integer", example="1"),
+     *          @OA\Property(property="data", type="array",
+     *             @OA\Items(type="object",
+     *                @OA\Property(property="job_uuid", type="string", example="6d6b0e2e-6e4a-4a63-8f3c-2f9d9c8a1e11"),
+     *                @OA\Property(property="started_at", type="datetime", example="2025-03-13 14:00:00"),
+     *                @OA\Property(property="finished_at", type="datetime", example="2025-03-13 14:02:31"),
+     *                @OA\Property(property="status", type="string", example="failed", enum={"success", "failed", "in_progress"}),
+     *                @OA\Property(property="message", type="string", example="2 of 5 datasets failed", nullable=true),
+     *                @OA\Property(property="failed_datasets", type="array",
+     *                   @OA\Items(type="object",
+     *                      @OA\Property(property="pid", type="string", example="9c1e2f3a-...-abcdef"),
+     *                      @OA\Property(property="message", type="string", example="HDRUK/2.0.2: must NOT have additional properties"),
+     *                   ),
+     *                ),
+     *             ),
+     *          ),
+     *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations\/1\/history?page=1"),
+     *          @OA\Property(property="from", type="integer", example="1"),
+     *          @OA\Property(property="last_page", type="integer", example="1"),
+     *          @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations\/1\/history?page=1"),
+     *          @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *          @OA\Property(property="next_page_url", type="string", example="null"),
+     *          @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations\/1\/history"),
+     *          @OA\Property(property="per_page", type="integer", example="25"),
+     *          @OA\Property(property="prev_page_url", type="string", example="null"),
+     *          @OA\Property(property="to", type="integer", example="3"),
+     *          @OA\Property(property="total", type="integer", example="3"),
+     *       ),
+     *    ),
+     * )
+     */
+    public function history(GetFederationHistory $request, int $teamId, int $federationId)
+    {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $jwtUser = $request->jwtUser();
+
+        try {
+            $perPage = $request->validated('per_page', Config::get('constants.per_page'));
+            $executions = FederationJobRun::executionsForFederation($federationId, $perPage);
+
+            $executions->getCollection()->transform(function (FederationJobRun $execution) use ($federationId) {
+                $rows = FederationJobRun::latestPerPidForExecution($federationId, $execution->job_uuid);
+
+                $failed = $rows->filter(fn ($row) => $row->status === 0);
+                $pending = $rows->filter(fn ($row) => is_null($row->status));
+
+                $failedDatasets = $failed->map(fn ($row) => [
+                    'pid' => $row->pid,
+                    'message' => collect($row->errorMessages())
+                        ->map(fn ($entry) => $entry['schema'] ? "{$entry['schema']}: {$entry['message']}" : $entry['message'])
+                        ->implode('; '),
+                ])->values()->all();
+
+                $onlyFailure = count($failedDatasets) === 1 ? $failedDatasets[0] : null;
+
+                if ($onlyFailure) {
+                    $status = 'failed';
+                    $message = $onlyFailure['message'];
+                } elseif (count($failedDatasets) > 1) {
+                    $status = 'failed';
+                    $message = count($failedDatasets) . " of {$rows->count()} datasets failed";
+                } elseif ($pending->count() > 0) {
+                    $status = 'in_progress';
+                    $message = null;
+                } else {
+                    $status = 'success';
+                    $message = null;
+                }
+
+                return [
+                    'job_uuid' => $execution->job_uuid,
+                    'started_at' => $execution->started_at,
+                    'finished_at' => $execution->finished_at,
+                    'status' => $status,
+                    'message' => $message,
+                    'failed_datasets' => $failedDatasets,
+                ];
+            });
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Federation ' . $federationId . ' history',
+            ]);
+
+            return response()->json($executions);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            \Log::info($e->getMessage(), $loggingContext);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     private function getSecretsPayload(array $input)

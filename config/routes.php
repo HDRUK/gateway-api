@@ -2768,6 +2768,21 @@ return [
             'federationId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'team.federation.history',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/federations/{federationId}/history',
+        'methodController' => 'FederationController@history',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
 
     // cohort_requests
     [
