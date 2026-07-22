@@ -336,6 +336,19 @@ class HDRUKTest extends TestCase
         (new HDRUK())->search('asthma', 'datasets', []);
     }
 
+    public function test_search_sets_a_drop_tokens_threshold_so_multi_term_queries_dont_stop_at_the_first_match(): void
+    {
+        // Typesense's default (1) stops widening a query as soon as ANY result is
+        // found, so a query spanning two unrelated terms (e.g. pasted from two
+        // different datasets' metadata) would only ever surface whichever term
+        // matched best. Regression test for that behaviour.
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) => ($searches[0]['drop_tokens_threshold'] ?? null) === 50
+        );
+
+        (new HDRUK())->search('term one, term two', 'datasets', []);
+    }
+
     // -------------------------------------------------------------------------
     // Multi-select faceting — a field's own filter must not collapse its own
     // facet counts down to just the selected value(s).

@@ -158,7 +158,17 @@ class HDRUK implements SearchProvider
         $collection = $model->searchableAs();
         $q          = $query ?: '*';
 
-        $searchParams = array_merge($model->typesenseSearchParameters(), [
+        $searchParams = array_merge([
+            // Typesense's default (1) stops widening the query as soon as ANY
+            // result is found, so a query spanning multiple distinct terms
+            // (e.g. "TOWNSEND_2011_QUINTILE, AGEM Derived...", pasted from two
+            // different datasets' metadata) only ever returns hits for
+            // whichever term matched best — it never relaxes further to pick
+            // up the other term(s). Raising this lets Typesense keep dropping
+            // tokens until it has found a reasonable number of results across
+            // ALL the query's distinct terms, not just the first one matched.
+            'drop_tokens_threshold' => 15,
+        ], $model->typesenseSearchParameters(), [
             'per_page' => (int) ($params['per_page'] ?? 20),
             'page'     => (int) ($params['page'] ?? 1),
         ]);
