@@ -5,8 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
+/**
+ * @property-read string|null $started_at only populated on rows returned by executionsForFederation()
+ * @property-read string|null $finished_at only populated on rows returned by executionsForFederation()
+ */
 class FederationJobRun extends Model
 {
     use SoftDeletes;
@@ -40,18 +45,39 @@ class FederationJobRun extends Model
         'details' => 'array',
     ];
 
-    /** Latest recorded row per dataset (pid) for one federation execution. */
+    /**
+     * Latest recorded row per dataset (pid) for one federation execution.
+     *
+     * @return Collection<int, FederationJobRun>
+     */
     public static function latestPerPidForExecution(int $federationId, string $jobUuid): Collection
     {
-        $pids = static::where('federation_id', $federationId)
+        return static::where('federation_id', $federationId)
             ->where('job_uuid', $jobUuid)
-            ->select('pid')->distinct()->pluck('pid');
+            ->whereIn('id', function ($query) use ($federationId, $jobUuid) {
+                $query->selectRaw('MAX(id)')
+                    ->from((new self())->getTable())
+                    ->where('federation_id', $federationId)
+                    ->where('job_uuid', $jobUuid)
+                    ->groupBy('pid');
+            })
+            ->get();
+    }
 
-        return $pids->map(fn (string $pid) => static::where('federation_id', $federationId)
-            ->where('job_uuid', $jobUuid)
-            ->where('pid', $pid)
-            ->latest()
-            ->first());
+    /**
+     * Distinct executions (job_uuid groups) for a federation, most recent first.
+     *
+     * @return LengthAwarePaginator<int, FederationJobRun>
+     */
+    public static function executionsForFederation(int $federationId, int $perPage): LengthAwarePaginator
+    {
+        return static::where('federation_id', $federationId)
+            ->select('job_uuid')
+            ->selectRaw('MIN(created_at) as started_at')
+            ->selectRaw('MAX(created_at) as finished_at')
+            ->groupBy('job_uuid')
+            ->orderByDesc('started_at')
+            ->paginate($perPage, ['*'], 'page');
     }
 
     /**

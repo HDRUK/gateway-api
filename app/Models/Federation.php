@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Federation extends Model
 {
@@ -100,5 +101,11 @@ class Federation extends Model
     public function notifications(): BelongsToMany
     {
         return $this->belongsToMany(Notification::class, 'federation_has_notifications');
+    }
+
+    /** @return HasMany<FederationJobRun, $this> */
+    public function jobRuns(): HasMany
+    {
+        return $this->hasMany(FederationJobRun::class, 'federation_id');
     }
 }
