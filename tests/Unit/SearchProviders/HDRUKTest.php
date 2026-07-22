@@ -343,7 +343,7 @@ class HDRUKTest extends TestCase
         // different datasets' metadata) would only ever surface whichever term
         // matched best. Regression test for that behaviour.
         $this->mockTypesenseServiceExpectingSearches(
-            fn ($searches) => ($searches[0]['drop_tokens_threshold'] ?? null) === 50
+            fn ($searches) => ($searches[0]['drop_tokens_threshold'] ?? null) === 15
         );
 
         (new HDRUK())->search('term one, term two', 'datasets', []);
