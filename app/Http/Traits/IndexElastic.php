@@ -965,7 +965,19 @@ trait IndexElastic
 
     public function deleteDataProviderCollFromElastic(string $id)
     {
-        $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATAPROVIDERCOLL);
+        try {
+            $this->deleteFromElastic($id, ECC::ELASTIC_NAME_DATAPROVIDERCOLL);
+        } catch (Exception $e) {
+            // Elastic is being incrementally replaced by Typesense for this
+            // entity, so a broken/unreachable Elastic cluster shouldn't block
+            // deletion of the underlying record — log and move on rather
+            // than re-throwing (mirrors indexElasticDataCustodianNetwork()).
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function getMaterialTypes(array $metadata): array|null
@@ -1011,10 +1023,17 @@ trait IndexElastic
         try {
             $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
                 ->with('teams')
-                ->where([
-                    'id' => $dataCustodianNetworkId,
-                    'enabled' => 1,
-            ])->first();
+                ->where('id', $dataCustodianNetworkId)
+                ->first();
+
+            // A disabled (or since-deleted) network shouldn't be searchable —
+            // skip indexing rather than crashing on a null $dpc below, which
+            // happened whenever this ran right after creating/disabling a
+            // network with enabled=false (the query used to filter on
+            // enabled=1 here too, so it always came back empty in that case).
+            if (!$dpc || !$dpc->enabled) {
+                return null;
+            }
 
             $teamsResult = $this->getInfoTeams($dpc);
 
@@ -1065,7 +1084,11 @@ trait IndexElastic
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e->getMessage());
+            // Elastic is being incrementally replaced by Typesense for this
+            // entity, so a broken/unreachable Elastic cluster (e.g. bad
+            // local credentials) shouldn't block create/update/delete of the
+            // underlying record — log and move on rather than re-throwing.
+            return null;
         }
     }
 

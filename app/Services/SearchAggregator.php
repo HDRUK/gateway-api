@@ -35,6 +35,7 @@ class SearchAggregator
                 $providerResult = $provider->search($query, $type, $params);
 
                 $results[$provider->getShortName()] = [
+                    'source'        => $providerResult['source'] ?? null,
                     'provider_logo' => $provider->getProviderLogo(),
                     'about'         => $provider->getProviderBlurb(),
                     'hits'          => $providerResult['hits'],
@@ -76,6 +77,7 @@ class SearchAggregator
                 $providerResult = $provider->search($query, $type, $params);
 
                 $results[$provider->getShortName()] = [
+                    'source'        => $providerResult['source'] ?? null,
                     'provider_logo' => $provider->getProviderLogo(),
                     'about'         => $provider->getProviderBlurb(),
                     'hits'          => $providerResult['hits'],

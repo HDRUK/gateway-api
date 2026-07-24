@@ -123,6 +123,24 @@ class DatasetHydratorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Soft-deleted team — regression test for the "Attempt to read property
+    // id on null" crash on $model->team->id when the owning team was
+    // soft-deleted but the dataset itself remains active.
+    // -------------------------------------------------------------------------
+
+    public function test_drops_hit_whose_team_has_been_soft_deleted(): void
+    {
+        [$dataset] = $this->createDatasetWithSnapshotVersion('Orphaned Team Dataset');
+        $dataset->team->delete();
+
+        $hit = $this->makeHit((string)$dataset->id);
+
+        $results = (new DatasetHydrator())->hydrate([$hit]);
+
+        $this->assertEmpty($results, 'Hit whose team was soft-deleted should be dropped, not crash');
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 

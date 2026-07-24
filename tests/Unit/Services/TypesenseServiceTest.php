@@ -6,6 +6,7 @@ use Tests\TestCase;
 use Mockery;
 use Mockery\MockInterface;
 use App\Services\TypesenseService;
+use Illuminate\Support\Facades\Http;
 use Typesense\Client;
 use Typesense\Collection;
 use Typesense\Collections;
@@ -303,6 +304,155 @@ class TypesenseServiceTest extends TestCase
         $mockCollection->shouldReceive('retrieve')->once()->andReturn(['name' => 'dataset_versions']);
 
         $this->assertEquals(0, $service->documentCount('dataset_versions'));
+    }
+
+    // -------------------------------------------------------------------------
+    // facetCounts
+    // -------------------------------------------------------------------------
+
+    public function test_facetCounts_maps_typesense_facet_counts_to_es_bucket_shape(): void
+    {
+        ['service' => $service, 'mockCollections' => $mockCollections, 'mockCollection' => $mockCollection, 'mockDocuments' => $mockDocuments] = $this->makeService();
+
+        $mockCollections->shouldReceive('offsetGet')->with('dataset_versions')->andReturn($mockCollection);
+        $mockDocuments->shouldReceive('search')
+            ->once()
+            ->with([
+                'q' => '*',
+                'facet_by' => 'dataType',
+                'per_page' => 0,
+                'max_facet_values' => 250,
+            ])
+            ->andReturn([
+                'facet_counts' => [
+                    [
+                        'field_name' => 'dataType',
+                        'counts' => [
+                            ['value' => 'Health and disease', 'count' => 1220],
+                            ['value' => 'Registry', 'count' => 69],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $result = $service->facetCounts('dataset_versions', ['dataType']);
+
+        $this->assertEquals([
+            'dataType' => [
+                'buckets' => [
+                    ['key' => 'Health and disease', 'doc_count' => 1220],
+                    ['key' => 'Registry', 'doc_count' => 69],
+                ],
+            ],
+        ], $result);
+    }
+
+    public function test_facetCounts_returns_empty_array_for_no_fields(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        $this->assertEquals([], $service->facetCounts('dataset_versions', []));
+    }
+
+    // -------------------------------------------------------------------------
+    // Stop word sets
+    // -------------------------------------------------------------------------
+
+    public function test_withStopwords_merges_default_set_id_before_options(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        $result = $service->withStopwords(['query_by' => 'title']);
+
+        $this->assertEquals(
+            ['stopwords' => TypesenseService::DEFAULT_STOPWORDS_SET_ID, 'query_by' => 'title'],
+            $result
+        );
+    }
+
+    public function test_withStopwords_lets_caller_override_set_id(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        $result = $service->withStopwords(['stopwords' => 'custom_set']);
+
+        $this->assertEquals(['stopwords' => 'custom_set'], $result);
+    }
+
+    public function test_upsertStopwordsSet_puts_stopwords_and_locale_to_the_rest_api(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        Http::fake([
+            '*/stopwords/common_stopwords' => Http::response(['stopwords' => ['id' => 'common_stopwords']], 200),
+        ]);
+
+        $result = $service->upsertStopwordsSet('common_stopwords', ['a', 'the'], 'en');
+
+        Http::assertSent(function ($request) {
+            return $request->method() === 'PUT'
+                && str_ends_with($request->url(), '/stopwords/common_stopwords')
+                && $request['stopwords'] === ['a', 'the']
+                && $request['locale'] === 'en';
+        });
+
+        $this->assertEquals(['stopwords' => ['id' => 'common_stopwords']], $result);
+    }
+
+    public function test_createDefaultStopwordsSet_upserts_the_default_set_id_and_wordlist(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        Http::fake([
+            '*/stopwords/*' => Http::response(['stopwords' => ['id' => TypesenseService::DEFAULT_STOPWORDS_SET_ID]], 200),
+        ]);
+
+        $service->createDefaultStopwordsSet();
+
+        Http::assertSent(function ($request) {
+            return str_ends_with($request->url(), '/stopwords/' . TypesenseService::DEFAULT_STOPWORDS_SET_ID)
+                && $request['stopwords'] === TypesenseService::DEFAULT_STOPWORDS;
+        });
+    }
+
+    public function test_getStopwordsSet_retrieves_a_named_set(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        Http::fake([
+            '*/stopwords/common_stopwords' => Http::response(['stopwords' => ['id' => 'common_stopwords', 'stopwords' => ['a']]], 200),
+        ]);
+
+        $result = $service->getStopwordsSet('common_stopwords');
+
+        Http::assertSent(fn ($request) => $request->method() === 'GET');
+        $this->assertEquals(['stopwords' => ['id' => 'common_stopwords', 'stopwords' => ['a']]], $result);
+    }
+
+    public function test_listStopwordsSets_retrieves_all_sets(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        Http::fake([
+            '*/stopwords' => Http::response(['stopwords' => []], 200),
+        ]);
+
+        $service->listStopwordsSets();
+
+        Http::assertSent(fn ($request) => $request->method() === 'GET' && str_ends_with($request->url(), '/stopwords'));
+    }
+
+    public function test_deleteStopwordsSet_removes_a_named_set(): void
+    {
+        ['service' => $service] = $this->makeService();
+
+        Http::fake([
+            '*/stopwords/common_stopwords' => Http::response(['id' => 'common_stopwords'], 200),
+        ]);
+
+        $service->deleteStopwordsSet('common_stopwords');
+
+        Http::assertSent(fn ($request) => $request->method() === 'DELETE');
     }
 
     // -------------------------------------------------------------------------

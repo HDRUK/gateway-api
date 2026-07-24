@@ -96,6 +96,12 @@ class DatasetHydrator
                 ? $this->trimPayload($metadata)
                 : $metadata;
 
+            if (!$model->team) {
+                \Log::warning('No team found for dataset id=' . $model->id . ', team_id=' . $model->team_id . ' — likely soft-deleted');
+                unset($hits[$i]);
+                continue;
+            }
+
             $hits[$i]['isCohortDiscovery'] = $model->is_cohort_discovery;
             $hits[$i]['dataProviderColl'] = $dataProviderCollsByTeam->get($model->team_id, []);
             $hits[$i]['team'] = [
