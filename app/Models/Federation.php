@@ -69,6 +69,8 @@ class Federation extends Model
         'tested',
         'pid',
         'is_running',
+        'error',
+        'error_text',
     ];
 
     /**
@@ -86,6 +88,7 @@ class Federation extends Model
         'enabled' => 'boolean',
         'tested' => 'boolean',
         'is_running' => 'boolean',
+        'error' => 'boolean',
     ];
 
     /** @return BelongsToMany<Team, $this> */

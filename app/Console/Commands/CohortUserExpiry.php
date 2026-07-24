@@ -200,7 +200,7 @@ class CohortUserExpiry extends Command
 
         if ($expiryField === 'nhse_sde_request_expire_at') {
             $basedOnUpdatedAt = $cohort->nhse_sde_updated_at
-                ? $cohort->nhse_sde_updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'))
+                ? $cohort->nhse_sde_updated_at->copy()->addDays((int) Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days'))
                 : null;
         } else {
             $basedOnUpdatedAt = $cohort->updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'));

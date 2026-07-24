@@ -4,15 +4,25 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use MetadataManagementController as MMC;
+use App\Context\GwdmVersionContext;
+use App\Context\OutputSchemaContext;
 use App\Http\Controllers\Controller;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Services\Gwdm\GwdmHandlerFactory;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
 class FormHydrationController extends Controller
 {
+    public function __construct(
+        private readonly OutputSchemaContext $outputSchemaContext,
+        private readonly GwdmVersionContext $gwdmVersionContext,
+        private readonly GwdmHandlerFactory $gwdmHandlerFactory,
+    ) {
+    }
+
     /**
      * @OA\Get(
      *      path="/api/v1/form_hydration/schema",
@@ -57,8 +67,14 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $model   = $request->input(
+            'model',
+            $this->outputSchemaContext->schemaModel() ?? Config::get('form_hydration.schema.model')
+        );
+        $version = $request->input(
+            'version',
+            $this->outputSchemaContext->schemaVersion() ?? Config::get('form_hydration.schema.latest_version')
+        );
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
 
@@ -127,8 +143,14 @@ class FormHydrationController extends Controller
      */
     public function onboardingFormHydration(Request $request): JsonResponse
     {
-        $model = $request->input('model', Config::get('form_hydration.schema.model'));
-        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $model   = $request->input(
+            'model',
+            $this->outputSchemaContext->schemaModel() ?? Config::get('form_hydration.schema.model')
+        );
+        $version = $request->input(
+            'version',
+            $this->outputSchemaContext->schemaVersion() ?? Config::get('form_hydration.schema.latest_version')
+        );
         $dataTypes = $request->input('dataTypes', '');
         $teamId = $request->input('team_id', null);
 
@@ -170,34 +192,39 @@ class FormHydrationController extends Controller
 
             $datasets = $datasets->toArray();
 
+            // Paths are owned by the GWDM handler for the active version — see
+            // GwdmMetadataHandler::defaultValuePaths().
+            $gwdmVersion = $this->gwdmVersionContext->targetVersion();
+            $paths = $this->gwdmHandlerFactory->resolve($gwdmVersion)->defaultValuePaths();
+
             $datasetDefaultValues['Data use limitation'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.usage.dataUseLimitation',
+                $paths['dataUseLimitation'] ?? null,
                 $datasets,
                 true
             );
             $datasetDefaultValues['Data use requirements'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.usage.dataUseRequirements',
+                $paths['dataUseRequirements'] ?? null,
                 $datasets,
                 true
             );
             $datasetDefaultValues['Access rights'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.accessRights',
+                $paths['accessRights'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Access service description'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.accessService',
+                $paths['accessService'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Access request cost'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.accessRequestCost',
+                $paths['accessRequestCost'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Time to dataset access'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.access.deliveryLeadTime',
+                $paths['deliveryLeadTime'] ?? null,
                 $datasets
             );
             $datasetDefaultValues['Format'] = $this->mostCommonValue(
-                'metadata.metadata.accessibility.formatAndStandards.formats',
+                $paths['formats'] ?? null,
                 $datasets,
                 true
             );
@@ -216,11 +243,17 @@ class FormHydrationController extends Controller
         ];
     }
 
-    private function mostCommonValue(string $path, array $datasets, bool $isArray = false): mixed
+    private function mostCommonValue(?string $path, array $datasets, bool $isArray = false): mixed
     {
+        if ($path === null) {
+            return $isArray ? [] : null;
+        }
+
         $values = array();
         foreach ($datasets as $dataset) {
-            $v = $this->getValueFromPath($dataset, $path);
+            // $dataset['metadata'] holds the raw dataset_versions.metadata envelope;
+            // handler-owned paths are relative to that envelope (see defaultValuePaths()).
+            $v = $this->getValueFromPath($dataset, 'metadata.' . $path);
             $values[] = is_scalar($v) ? (string)$v : '';
         }
 

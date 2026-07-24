@@ -14,6 +14,7 @@ use Laravel\Pennant\Feature;
 class SearchController extends Controller
 {
     private const FEATURE_FLAG = 'V2_SearchAggregation';
+    private const TYPESENSE_FEATURE_FLAG = 'TypesenseSearch';
 
     public function __construct(protected SearchAggregator $aggregator)
     {
@@ -112,5 +113,15 @@ class SearchController extends Controller
                 'pending' => $stillPending,
             ],
         ]);
+    }
+
+    public function searchTypesense(Search $request): JsonResponse
+    {
+        // TODO: Stub only for now
+        if (!Feature::active(self::TYPESENSE_FEATURE_FLAG)) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+
+        return response()->json(['message' => 'OK'], 200);
     }
 }

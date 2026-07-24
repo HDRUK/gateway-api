@@ -100,4 +100,27 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Output schema defaults
+    |--------------------------------------------------------------------------
+    | The TRASER translation target for each partner. These are used as the
+    | fallback when no x-schema-model / x-schema-version header is sent.
+    | Per-request headers always take priority over these defaults.
+    |
+    | 'model'   — schema model name passed to TRASER (e.g. 'HDRUK', 'CRUK')
+    | 'version' — schema version string; null lets TRASER use its own default
+    |
+    | Note: the internal storage format is always GWDM — that is managed
+    | separately by GwdmVersionContext and is unrelated to this section.
+    */
+    'schema' => [
+
+        'HDRUK' => ['model' => 'HDRUK', 'version' => env('HDRUK_CURRENT_VERSION', '4.0.0')],
+        'CRUK'  => ['model' => 'CRUK',  'version' => '1.1.0'],
+        // PRUK schema version is not yet finalised — placeholder until confirmed.
+        'PRUK'  => ['model' => 'PRUK',  'version' => '0.0.0'],
+
+    ],
+
 ];

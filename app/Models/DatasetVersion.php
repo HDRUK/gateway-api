@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Model;
 use App\Observers\DatasetVersionObserver;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * )
  */
 #[ObservedBy(DatasetVersionObserver::class)]
-class DatasetVersion extends Model
+class DatasetVersion extends BaseTypesenseModel
 {
     use HasFactory;
     use SoftDeletes;
@@ -76,6 +77,10 @@ class DatasetVersion extends Model
         // from the reconstructed GWDM metadata at write time.
         'title',
         'short_title',
+        // Queryable GWDM schema version for this row (see migration
+        // 2026_06_17_000001). Replaces reading from metadata->gwdmVersion, which
+        // is absent on delta rows and unindexed on all rows.
+        'gwdm_version',
     ];
 
     /**
@@ -238,9 +243,7 @@ class DatasetVersion extends Model
             'dataset_version_source_id',
             'dataset_version_target_id',
             'linkage_type',
-        )->selectRaw("dataset_versions.id, dataset_versions.dataset_id,
-        JSON_UNQUOTE(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) as title,
-        short_title as shortTitle");
+        )->selectRaw('dataset_versions.id, dataset_versions.dataset_id, title, short_title as shortTitle');
     }
 
     public function dataset(): BelongsTo
@@ -248,5 +251,119 @@ class DatasetVersion extends Model
         return $this->belongsTo(Dataset::class, 'dataset_id', 'id')
             ->where('status', 'ACTIVE')
             ->select(['id', 'status']);
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        if ($this->deleted_at !== null) {
+            return false;
+        }
+
+        // Only the latest (highest version number) non-deleted version per dataset
+        // is indexed — this ensures one Typesense document per dataset with no duplicates.
+        $latestId = static::where('dataset_id', $this->dataset_id)
+            ->whereNull('deleted_at')
+            ->orderByDesc('version')
+            ->value('id');
+
+        if ($this->id !== $latestId) {
+            return false;
+        }
+
+        // The dataset() relationship already scopes to status=ACTIVE,
+        // so null here means the parent is deleted, draft, or archived.
+        if ($this->relationLoaded('dataset')) {
+            return $this->dataset !== null;
+        }
+
+        return Dataset::where('id', $this->dataset_id)
+            ->where('status', 'ACTIVE')
+            ->exists();
+    }
+
+    public function toSearchableArray(): array
+    {
+        $meta = $this->metadata ?? [];
+
+        $keywords   = data_get($meta, 'metadata.summary.keywords', '');
+        $dataType   = data_get($meta, 'metadata.summary.datasetType', '');
+        $conformsTo = data_get($meta, 'metadata.accessibility.formatAndStandards.conformsTo', '');
+        $structural = data_get($meta, 'metadata.structuralMetadata', []);
+        if (is_string($structural)) {
+            $structural = json_decode($structural, true) ?? [];
+        }
+        if (!is_array($structural)) {
+            $structural = [];
+        }
+
+        return [
+            'id'                            => (string) $this->id,
+            'dataset_id'                    => (string) $this->dataset_id,
+            'title'                         => $this->title ?? '',
+            'shortTitle'                    => $this->short_title ?? '',
+            'abstract'                      => data_get($meta, 'metadata.summary.abstract', ''),
+            'description'                   => data_get($meta, 'metadata.summary.description', ''),
+            'keywords'                      => array_values(array_filter(explode(';,;', $keywords))),
+            'publisherName'                 => data_get(
+                $meta,
+                'metadata.summary.publisher.name',
+                data_get($meta, 'metadata.summary.publisher.publisherName', '')
+            ),
+            'dataType'                      => array_values(array_filter(explode(';,;', $dataType))),
+            'populationSize'                => (int) data_get($meta, 'metadata.summary.populationSize', -1),
+            'geographicLocation'            => $this->spatialCoverage->pluck('region')->all(),
+            'datasetDOI'                    => data_get($meta, 'metadata.summary.doiName', ''),
+            'conformsTo'                    => array_values(array_filter(explode(';,;', $conformsTo))),
+            'structuralTableNames'          => collect($structural)
+                                                ->pluck('name')
+                                                ->filter(fn ($v) => is_string($v) && $v !== '')
+                                                ->values()->all(),
+            'structuralColumnNames'         => collect($structural)
+                                                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('name'))
+                                                ->filter(fn ($v) => is_string($v) && $v !== '')
+                                                ->values()->all(),
+            'structuralColumnDescriptions'  => collect($structural)
+                                                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('description'))
+                                                ->filter(fn ($v) => is_string($v) && $v !== '')
+                                                ->values()->all(),
+        ];
+    }
+
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['spatialCoverage', 'dataset']);
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by' => 'title,shortTitle,abstract,keywords,publisherName,structuralTableNames,structuralColumnNames,structuralColumnDescriptions',
+            'query_by_weights' => '5,4,3,2,2,1,1,1',
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                ['name' => 'id',                           'type' => 'string'],
+                ['name' => 'dataset_id',                   'type' => 'string'],
+                ['name' => 'title',                        'type' => 'string',   'infix' => true, 'optional' => true],
+                ['name' => 'shortTitle',                   'type' => 'string',   'infix' => true, 'optional' => true],
+                ['name' => 'abstract',                     'type' => 'string',   'optional' => true],
+                ['name' => 'description',                  'type' => 'string',   'optional' => true],
+                ['name' => 'keywords',                     'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'publisherName',                'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'dataType',                     'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'populationSize',               'type' => 'int64',    'optional' => true],
+                ['name' => 'geographicLocation',           'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'datasetDOI',                   'type' => 'string',   'optional' => true],
+                ['name' => 'conformsTo',                   'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'structuralTableNames',         'type' => 'string[]', 'optional' => true],
+                ['name' => 'structuralColumnNames',        'type' => 'string[]', 'optional' => true],
+                ['name' => 'structuralColumnDescriptions', 'type' => 'string[]', 'optional' => true],
+            ],
+        ];
     }
 }

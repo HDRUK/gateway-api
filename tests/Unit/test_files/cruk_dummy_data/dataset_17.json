@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Head and Neck Squamous Cell Carcinoma Radiotherapy Registry",
             "abstract": "Registry data analyzing swallowing preservation and toxicity in patients receiving intensity-modulated radiotherapy for HNSCC.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/06hnscc",
-                "name": "Head & Neck Oncology Collaborative",
-                "logo": "https://hnoc.org/logo.png",
-                "contactPoint": [
-                    "registry@hnoc.org"
-                ],
-                "description": "https://hnoc.org/about"
-            },
-            "funders": "National Institutes of Health",
-            "populationSize": 1800,
-            "keywords": [
-                "HNSCC",
-                "Cancer",
-                "Radiotherapy",
-                "Toxicity",
-                "Dysphagia"
-            ],
-            "doiName": "10.2001/data.06",
             "contactPoint": "registry@hnoc.org",
-            "datasetAliases": [
-                "HNSCC IMRT Toxicity"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data analyzing swallowing preservation and toxicity in patients receiving intensity-modulated radiotherapy for HNSCC. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://hnoc.org/rt_protocol.pdf"
-            ]
+            "keywords": "HNSCC;,;Cancer;,;Radiotherapy;,;Toxicity;,;Dysphagia",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 1800,
+            "description": "Other data types:\n- RT Dose Volumes (application/dicom-rt): Radiation dose distributions",
+            "doiName": "10.2001/data.06",
+            "shortTitle": "Head and Neck Squamous Cell Carcinoma Radiotherapy Registry",
+            "title": "Head and Neck Squamous Cell Carcinoma Radiotherapy Registry",
+            "leadResearcher": "Dr. T. Davies",
+            "leadResearchInstitute": "Radiation Oncology Institute",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Head & Neck Oncology Collaborative",
+                "gatewayId": "https://ror.org/06hnscc",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 45,
-            "typicalAgeRangeMax": 80,
-            "datasetCompleteness": "https://hnoc.org/completeness"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-01-01",
-                "timeLag": "6 months",
-                "endDate": "2023-12-31",
-                "distributionReleaseDate": "2024-06-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Head & Neck Oncology Collaborative",
+                "dataProcessor": "Head & Neck Oncology Collaborative",
+                "accessRights": "https://www.hnoc.org/terms",
+                "accessService": "https://www.hnoc.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Head & Neck Oncology Collaborative",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Radiotherapy Fractions",
                 "measuredValue": 63000,
                 "observationDate": "2023-12-31",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "White - British",
-                    "count": 50
-                },
-                {
-                    "bin": "Asian or Asian British",
-                    "count": 25
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 15
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 5
-                },
-                {
-                    "bin": "Not stated",
-                    "count": 5
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "17_000",
-                "projectGrantName": "Functional Outcomes Post-IMRT",
-                "leadResearcher": "Dr. T. Davies",
-                "leadResearchInstitute": "Radiation Oncology Institute",
-                "grantNumber": "NIH-666",
-                "projectGrantStartDate": "2019-01-01",
-                "projectGrantEndDate": "2024-12-31",
-                "projectGrantScope": "RT dose distributions and swallowing assessments"
-            }
-        ],
-        "erd": "https://github.com/hnoc/schema.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Toxicity_Assessments",
-                    "description": "Longitudinal dysphagia and xerostomia scores",
-                    "columns": [
-                        {
-                            "name": "dysphagia_grade",
-                            "dataType": "list",
-                            "description": "list of CTCAE dysphagia grades",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[Grade_2]",
-                                    "description": "Symptomatic, altered eating habits",
-                                    "frequency": 650
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 1800
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://hnoc.org/synthetic"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "RT Dose Volumes",
-                "description": "Radiation dose distributions",
-                "format": "DICOM-RT"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National Radiation Oncology Audit",
-                    "pid": "NROA-06",
-                    "url": "https://hdg.org/dataset/06"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/hnscc.2023.01"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/hnscc.2023.02"
-            ],
-            "tools": [
-                "https://github.com/topics/radiomics"
-            ],
-            "investigations": [
-                "HNOC-601-A"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/hnscc.2022",
-                    "title": "Thyroid Cancer Radiotherapy Data",
-                    "pid": "TCRD-06"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Not Applicable",
-            "platform": "Clinical Data"
-        },
-        "icons": [
-            "Radiotherapy",
-            "Clinical Data"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_0",
@@ -234,6 +162,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "17_000",
+                "projectGrantName": "Functional Outcomes Post-IMRT",
+                "leadResearcher": "Dr. T. Davies",
+                "leadResearchInstitute": "Radiation Oncology Institute",
+                "grantNumber": "NIH-666",
+                "projectGrantStartDate": "2019-01-01",
+                "projectGrantEndDate": "2024-12-31",
+                "projectGrantScope": "RT dose distributions and swallowing assessments"
+            }
+        ],
+        "icons": [
+            "Radiotherapy",
+            "Clinical Data"
+        ],
+        "erd": {
+            "image": "https://github.com/hnoc/schema.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

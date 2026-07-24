@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Observers\PublicationHasDatasetVersionObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 
+/**
+ * Populated by the join select in Gwdm2xHandler::afterRead() (publications.paper_doi):
+ * @property-read string|null $paper_doi
+ */
 #[ObservedBy([PublicationHasDatasetVersionObserver::class])]
 class PublicationHasDatasetVersion extends Model
 {

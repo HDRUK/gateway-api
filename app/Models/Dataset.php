@@ -107,6 +107,8 @@ class Dataset extends Model
 
     protected $casts = [
         'is_cohort_discovery' => 'boolean',
+        'created'             => 'datetime',
+        'updated'             => 'datetime',
     ];
 
     protected static array $sortableColumns = [
@@ -182,13 +184,28 @@ class Dataset extends Model
 
     /**
      * The very latest version of a DatasetVersion object that corresponds to this dataset.
-     **/
-    public function latestVersion(?array $fields = null): DatasetVersion | null
+     *
+     * When $gwdmVersion is provided, returns the latest row with that gwdm_version;
+     * falls back to the overall latest if no matching row exists.
+     */
+    public function latestVersion(?array $fields = null, ?string $gwdmVersion = null): DatasetVersion|null
     {
-        $version = DatasetVersion::where('dataset_id', $this->id)
-            ->select(['version','id'])
-            ->latest('version')
-            ->first();
+        $version = null;
+
+        if ($gwdmVersion) {
+            $version = DatasetVersion::where('dataset_id', $this->id)
+                ->where('gwdm_version', $gwdmVersion)
+                ->select(['version', 'id'])
+                ->latest('version')
+                ->first();
+        }
+
+        if (!$version) {
+            $version = DatasetVersion::where('dataset_id', $this->id)
+                ->select(['version', 'id'])
+                ->latest('version')
+                ->first();
+        }
 
         if (!$version) {
             return null;
@@ -202,30 +219,34 @@ class Dataset extends Model
         )->findOrFail($version->id);
     }
 
-    public function latestVersionID(int $datasetId): null|int
+    public function latestVersionID(int $datasetId, ?string $gwdmVersion = null): null|int
     {
-        $result = DB::select(
-            '
-                SELECT 
-                    dv.id,
-                    dv.version
-                FROM dataset_versions dv
-                WHERE
-                    dv.dataset_id = :dataset_id
-                ORDER BY
-                    version DESC
-                LIMIT 1
-            ',
-            [
-                'dataset_id' => $datasetId,
-            ]
-        );
+        if ($gwdmVersion) {
+            $result = DB::select(
+                'SELECT dv.id
+                 FROM dataset_versions dv
+                 WHERE dv.dataset_id = :dataset_id
+                   AND dv.gwdm_version = :gwdm_version
+                   AND dv.deleted_at IS NULL
+                 ORDER BY version DESC
+                 LIMIT 1',
+                ['dataset_id' => $datasetId, 'gwdm_version' => $gwdmVersion]
+            );
 
-        if (count($result) > 0) {
-            return $result[0]->id;
+            return count($result) > 0 ? $result[0]->id : null;
         }
 
-        return null;
+        $result = DB::select(
+            'SELECT dv.id
+             FROM dataset_versions dv
+             WHERE dv.dataset_id = :dataset_id
+               AND dv.deleted_at IS NULL
+             ORDER BY version DESC
+             LIMIT 1',
+            ['dataset_id' => $datasetId]
+        );
+
+        return count($result) > 0 ? $result[0]->id : null;
     }
 
     /** @return HasOne<DatasetVersion, $this> */

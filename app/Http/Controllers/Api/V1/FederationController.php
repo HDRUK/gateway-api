@@ -25,11 +25,11 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Models\User;
 use App\Services\GatewayMetadataIngestionService;
+use App\Services\GoogleSecretManagerService;
 use Auditor;
 use Config;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class FederationController extends Controller
 {
@@ -114,6 +114,14 @@ class FederationController extends Controller
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->with(['team', 'notifications.userNotification'])->paginate($perPage, ['*'], 'page');
+
+            $federations->getCollection()->transform(function ($federation) {
+                $federation->setAttribute('auth_secret_key', $this->decryptAuthSecretKey(
+                    $federation->auth_secret_key_location,
+                    $federation->auth_type
+                ));
+                return $federation;
+            });
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -210,6 +218,11 @@ class FederationController extends Controller
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->where('id', $federationId)->with(['team', 'notifications.userNotification'])->first()->toArray();
+
+            $federations['auth_secret_key'] = $this->decryptAuthSecretKey(
+                $federations['auth_secret_key_location'] ?? null,
+                $federations['auth_type'] ?? null
+            );
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -327,18 +340,14 @@ class FederationController extends Controller
 
             if ($secrets_payload) {
                 $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federation->id;
-                $payload = [
-                    "path" => config('gateway.google_application_project_path'),
-                    "secret_id" => $auth_secret_key_location,
-                    "payload" => json_encode($secrets_payload)
-                ];
-                $response = Http::withHeaders($loggingContext)->post(config('services.gmi.url') . '/federation', $payload);
 
-                if (!$response->successful()) {
+                try {
+                    app(GoogleSecretManagerService::class)->createSecret($auth_secret_key_location, json_encode($secrets_payload));
+                } catch (Exception $e) {
                     Federation::where('id', $federation->id)->delete();
                     return response()->json([
                         'message' => 'failed to save secrets for this federation',
-                        'details' => $response->json(),
+                        'details' => $e->getMessage(),
                     ], 400);
                 }
 
@@ -496,22 +505,16 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if ($secrets_payload) {
-                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
-                $payload = [
-                    "path" => config('gateway.google_application_project_path'),
-                    "secret_id" => $auth_secret_key_location,
-                    "payload" => json_encode($secrets_payload)
-                ];
-
-                $response = Http::withHeaders($loggingContext)->patch(config('services.gmi.url') . '/federation', $payload);
-
-                if (!$response->successful()) {
+                try {
+                    $auth_secret_key_location = $this->upsertFederationSecret($federationId, $secrets_payload);
+                } catch (Exception $e) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
-                        'details' => $response->json(),
+                        'details' => $e->getMessage(),
                     ], 400);
                 }
 
+                Federation::where('id', $federationId)->update(["auth_secret_key_location" => $auth_secret_key_location]);
             }
 
             $federationNotifications = FederationHasNotification::where([
@@ -673,22 +676,16 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if ($secrets_payload) {
-                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
-                $payload = [
-                    "path" => config('gateway.google_application_project_path'),
-                    "secret_id" => $auth_secret_key_location,
-                    "payload" => json_encode($secrets_payload)
-                ];
-
-                $response = Http::withHeaders($loggingContext)->patch(config('services.gmi.url') . '/federation', $payload);
-
-                if (!$response->successful()) {
+                try {
+                    $auth_secret_key_location = $this->upsertFederationSecret($federationId, $secrets_payload);
+                } catch (Exception $e) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
-                        'details' => $response->json(),
+                        'details' => $e->getMessage(),
                     ], 400);
                 }
 
+                Federation::where('id', $federationId)->update(["auth_secret_key_location" => $auth_secret_key_location]);
             }
 
             if (array_key_exists('notifications', $input)) {
@@ -828,6 +825,15 @@ class FederationController extends Controller
             foreach ($federationNotifications as $federationNotification) {
                 Notification::where('id', $federationNotification)->delete();
                 FederationHasNotification::where('notification_id', $federationNotification)->delete();
+            }
+
+            $federation = Federation::where('id', $federationId)->first();
+            if ($federation && $federation->auth_secret_key_location) {
+                try {
+                    app(GoogleSecretManagerService::class)->deleteSecret($federation->auth_secret_key_location);
+                } catch (Exception $e) {
+                    \Log::info('failed to delete federation secret: ' . $e->getMessage(), $loggingContext);
+                }
             }
 
             Federation::where('id', $federationId)->delete();
@@ -1004,6 +1010,42 @@ class FederationController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function decryptAuthSecretKey(?string $secretLocation, ?string $authType): ?string
+    {
+        if (!$secretLocation || !in_array($authType, ['BEARER', 'API_KEY'])) {
+            return null;
+        }
+
+        try {
+            $payload = json_decode(app(GoogleSecretManagerService::class)->getSecret($secretLocation), true);
+        } catch (Exception $e) {
+            \Log::info('failed to retrieve federation secret ' . $secretLocation . ': ' . $e->getMessage());
+            return null;
+        }
+
+        return match ($authType) {
+            'BEARER' => $payload['bearer_token'] ?? null,
+            'API_KEY' => $payload['api_key'] ?? null,
+            default => null,
+        };
+    }
+
+    private function upsertFederationSecret(int $federationId, array $secretsPayload): string
+    {
+        $federation = Federation::where('id', $federationId)->first();
+        $gsms = app(GoogleSecretManagerService::class);
+
+        if ($federation->auth_secret_key_location) {
+            $gsms->addSecretVersion($federation->auth_secret_key_location, json_encode($secretsPayload));
+            return $federation->auth_secret_key_location;
+        }
+
+        $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
+        $gsms->createSecret($auth_secret_key_location, json_encode($secretsPayload));
+
+        return $auth_secret_key_location;
     }
 
     private function getSecretsPayload(array $input)

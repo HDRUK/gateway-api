@@ -7,6 +7,7 @@ use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\SortManager;
 use App\Models\Traits\EntityCounter;
 use App\Observers\CollectionObserver;
+use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
@@ -43,7 +44,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * )
  */
 #[ObservedBy([CollectionObserver::class])]
-class Collection extends Model
+class Collection extends BaseTypesenseModel
 {
     use HasFactory;
     use Notifiable;
@@ -52,7 +53,6 @@ class Collection extends Model
     use DatasetFetch;
     use SortManager;
     use EntityCounter;
-
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
@@ -276,4 +276,39 @@ class Collection extends Model
         )->withPivot('role');
     }
 
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'          => (string) $this->id,
+            'name'        => $this->name ?? '',
+            'description' => $this->description ?? '',
+            'status'      => $this->status ?? '',
+        ];
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by'         => 'name,description,status',
+            'query_by_weights' => '5,4,1',
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                [ 'name' => 'id',           'type' => 'string', ],
+                [ 'name' => 'name',         'type' => 'string', 'infix' => true ],
+                [ 'name' => 'description',  'type' => 'string' ],
+                [ 'name' => 'status',       'type' => 'string' ],
+            ],
+        ];
+    }
 }

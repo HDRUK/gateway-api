@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 /**
  * @property string|null $short_title
  * @property int $target_dataset_id
+ *
+ * Populated by the join select in Gwdm2xHandler::afterRead() (d.id as dataset_id, d.pid):
+ * @property-read int|null $dataset_id
+ * @property-read string|null $pid
  */
 class DatasetVersionHasDatasetVersion extends Model
 {

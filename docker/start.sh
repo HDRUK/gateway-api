@@ -15,6 +15,19 @@ else
     echo "running in prod mode"
 fi
 
+if [ "$APP_ENV" = "local" ] || [ "$APP_ENV" = "dev" ]; then
+    echo 'running in dev mode'
+    php artisan migrate
+else
+    echo "running in prod mode"
+    php artisan migrate --force
+fi
+
+# Run pending deployment steps (run-once, forward-only data fixes/seeding).
+# Must run after migrations so the deployment_steps table and schema exist.
+echo "Running deployment steps..."
+php artisan deploy:run
+
 # Add workers option if OCTANE_WORKERS is set
 if [ -n "$OCTANE_WORKERS" ]; then
     base_command="$base_command --workers=${OCTANE_WORKERS}"

@@ -157,6 +157,13 @@ class MetadataManagementController
                 'application/json'
             )->post($urlString);
 
+            if ($response->status() !== 200) {
+                \Log::warning('GWDM validation rejected by TRASER', array_merge($loggingContext, [
+                    'status'   => $response->status(),
+                    'response' => $response->body(),
+                ]));
+            }
+
             return ($response->status() === 200);
         } catch (Exception $e) {
             \Log::info($e->getMessage(), $loggingContext);

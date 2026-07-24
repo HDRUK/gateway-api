@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Context\OutputSchemaContext;
 use App\Context\PartnerContext;
 use App\Services\DatasetService;
 use App\Http\Traits\CheckAccess;
@@ -18,6 +19,7 @@ use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\UpdateDataset;
 use App\Exports\DatasetStructuralMetadataExport;
 use App\Http\Traits\GetValueByPossibleKeys;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -32,6 +34,7 @@ class DatasetController extends Controller
     public function __construct(
         private readonly DatasetService $datasetService,
         private readonly PartnerContext $partnerContext,
+        private readonly OutputSchemaContext $outputSchemaContext,
     ) {
     }
 
@@ -186,8 +189,8 @@ class DatasetController extends Controller
 
             $dataset = $this->datasetService->prepareForShow(
                 $dataset,
-                $request->query('schema_model'),
-                $request->query('schema_version'),
+                $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
+                $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
             );
 
             Auditor::log([
@@ -206,6 +209,8 @@ class DatasetController extends Controller
 
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 400);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
         } catch (\RuntimeException $e) {
             return response()->json(['message' => 'failed to translate', 'details' => $e->getMessage()], 400);
         } catch (Exception $e) {

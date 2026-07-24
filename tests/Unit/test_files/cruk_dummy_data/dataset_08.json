@@ -15,168 +15,96 @@
             ]
         },
         "summary": {
-            "title": "Hepatocellular Carcinoma TACE Response Registry",
             "abstract": "Registry data evaluating the efficacy and tumor response rates of transarterial chemoembolization in patients with intermediate-stage hepatocellular carcinoma.",
-            "dataCustodian": {
-                "identifier": "https://ror.org/099777k66",
-                "name": "Global Liver Institute",
-                "logo": "https://www.globalliver.org/assets/logo.png",
-                "contactPoint": [
-                    "data-hub@globalliver.org"
-                ],
-                "description": "https://www.globalliver.org/about"
-            },
-            "funders": "Liver Cancer Foundation\nNational Institutes of Health",
-            "populationSize": 2150,
-            "keywords": [
-                "Liver",
-                "Cancer",
-                "HCC",
-                "TACE",
-                "Interventional Radiology"
-            ],
-            "doiName": "10.1200/data.77",
             "contactPoint": "registry@globalliver.org",
-            "datasetAliases": [
-                "HCC Embolization Cohort"
-            ]
-        },
-        "documentation": {
-            "description": "Registry data evaluating the efficacy and tumor response rates of transarterial chemoembolization in patients with intermediate-stage hepatocellular carcinoma. This is a synthetic description generated for testing purposes.",
-            "inPipeline": "Available",
-            "associatedMedia": [
-                "https://globalliver.org/protocols/tace_registry.pdf"
-            ]
+            "keywords": "Liver;,;Cancer;,;HCC;,;TACE;,;Interventional Radiology",
+            "controlledKeywords": null,
+            "datasetType": null,
+            "datasetSubType": null,
+            "populationSize": 2150,
+            "description": "Other data types:\n- Hepatic Arteriograms (application/dicom): Digital subtraction angiography (DSA) images captured during TACE",
+            "doiName": "10.1200/data.77",
+            "shortTitle": "Hepatocellular Carcinoma TACE Response Registry",
+            "title": "Hepatocellular Carcinoma TACE Response Registry",
+            "leadResearcher": "Dr. Wei Chen",
+            "leadResearchInstitute": "Hepatic Oncology Center",
+            "datasetAliases": null,
+            "publisher": {
+                "name": "Global Liver Institute",
+                "gatewayId": "https://ror.org/099777k66",
+                "rorId": null
+            },
+            "inPipeline": null,
+            "funders": null
         },
         "coverage": {
-            "typicalAgeRangeMin": 40,
-            "typicalAgeRangeMax": 85,
-            "datasetCompleteness": "https://globalliver.org/hcc/metrics"
+            "typicalAgeRange": null,
+            "spatial": null,
+            "pathway": null,
+            "followUp": null,
+            "datasetCompleteness": null
         },
         "provenance": {
+            "origin": null,
             "temporal": {
-                "publishingFrequency": "Annual",
-                "startDate": "2018-01-01",
-                "timeLag": "6 months",
-                "endDate": "2023-12-31",
-                "distributionReleaseDate": "2024-06-01"
+                "timeLag": "Other",
+                "accrualPeriodicity": null,
+                "startDate": null,
+                "endDate": null,
+                "distributionReleaseDate": null
             }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Other",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Global Liver Institute",
+                "dataProcessor": "Global Liver Institute",
+                "accessRights": "https://www.globalliver.org/terms",
+                "accessService": "https://www.globalliver.org/data-access",
+                "accessRequestCost": "Varies",
+                "accessServiceCategory": null
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Return to database or resource",
+                "resourceCreator": {
+                    "name": "Global Liver Institute",
+                    "gatewayId": null,
+                    "rorId": null
+                }
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OTHER",
+                "conformsTo": "OTHER",
+                "languages": "en",
+                "formats": "CSV;,;JSON"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": null,
+            "associatedMedia": null,
+            "tools": null,
+            "investigations": null,
+            "syntheticDataWebLink": null,
+            "publicationAboutDataset": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
                 "observedNode": "Interventional Procedures",
                 "measuredValue": 4300,
                 "observationDate": "2023-12-31",
-                "measuredProperty": "Count"
+                "measuredProperty": "Count",
+                "disambiguatingDescription": null
             }
         ],
-        "demographicFrequency": {
-            "ethnicity": [
-                {
-                    "bin": "Asian or Asian British - Chinese",
-                    "count": 44
-                },
-                {
-                    "bin": "White - British",
-                    "count": 32
-                },
-                {
-                    "bin": "Black or Black British",
-                    "count": 11
-                },
-                {
-                    "bin": "Asian or Asian British - Indian",
-                    "count": 6
-                },
-                {
-                    "bin": "Mixed",
-                    "count": 4
-                }
-            ]
-        },
-        "projectGrants": [
-            {
-                "pid": "08_000",
-                "projectGrantName": "Predictors of Complete Response Post-TACE",
-                "leadResearcher": "Dr. Wei Chen",
-                "leadResearchInstitute": "Hepatic Oncology Center",
-                "grantNumber": "LCF-881, NIH-R01-554",
-                "projectGrantStartDate": "2019-04-01",
-                "projectGrantEndDate": "2024-03-31",
-                "projectGrantScope": "Post-procedure MRI, alpha-fetoprotein kinetics, and survival data"
-            }
-        ],
-        "erd": "https://github.com/GlobalLiver/hcc_db/blob/main/docs/erd.png",
-        "structuralMetadata": {
-            "tables": [
-                {
-                    "name": "Tumor_Response",
-                    "description": "mRECIST criteria measurements post-procedure",
-                    "columns": [
-                        {
-                            "name": "mrecist_status",
-                            "dataType": "list",
-                            "description": "list of categorical modified RECIST assessment outcomes",
-                            "sensitive": true,
-                            "values": [
-                                {
-                                    "name": "[Objective_Response]",
-                                    "description": "Complete or partial response per mRECIST",
-                                    "frequency": 1200
-                                }
-                            ]
-                        }
-                    ],
-                    "size": 2150
-                }
-            ],
-            "syntheticDataWebLink": [
-                "https://globalliver.org/datasets/synthetic_hcc"
-            ]
-        },
-        "otherDataTypes": [
-            {
-                "title": "Hepatic Arteriograms",
-                "description": "Digital subtraction angiography (DSA) images captured during TACE",
-                "format": "DICOM"
-            }
-        ],
-        "enrichmentAndLinkage": {
-            "derivedFrom": [
-                {
-                    "title": "National Hepatobiliary Tumor Audit",
-                    "pid": "NHTA-01",
-                    "url": "https://healthdatagateway.org/en/dataset/505"
-                }
-            ],
-            "publicationUsingDataset": [
-                "10.1016/j.jhep.2022.11.021"
-            ],
-            "publicationAboutDataset": [
-                "10.1016/j.jhep.2022.11.022"
-            ],
-            "tools": [
-                "https://github.com/topics/hcc-radiomics"
-            ],
-            "investigations": [
-                "GLI-202-TACE"
-            ],
-            "similarToDatasets": [
-                {
-                    "url": "10.1016/j.jhep.2021.04.015",
-                    "title": "Advanced HCC Systemic Therapy Registry",
-                    "pid": "AHCC-SYS"
-                }
-            ]
-        },
-        "omics": {
-            "assay": "Circulating Tumor DNA Sequencing",
-            "platform": "Guardant360"
-        },
-        "icons": [
-            "Interventional Radiology",
-            "Clinical Data"
-        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
         "datasetFilters": [
             {
                 "id": "0_0_0_1_7",
@@ -220,6 +148,27 @@
                 "primaryGroup": "data-type",
                 "description": ""
             }
-        ]
+        ],
+        "projectGrants": [
+            {
+                "pid": "08_000",
+                "projectGrantName": "Predictors of Complete Response Post-TACE",
+                "leadResearcher": "Dr. Wei Chen",
+                "leadResearchInstitute": "Hepatic Oncology Center",
+                "grantNumber": "LCF-881, NIH-R01-554",
+                "projectGrantStartDate": "2019-04-01",
+                "projectGrantEndDate": "2024-03-31",
+                "projectGrantScope": "Post-procedure MRI, alpha-fetoprotein kinetics, and survival data"
+            }
+        ],
+        "icons": [
+            "Interventional Radiology",
+            "Clinical Data"
+        ],
+        "erd": {
+            "image": "https://github.com/GlobalLiver/hcc_db/blob/main/docs/erd.png",
+            "description": null
+        },
+        "structuralMetadata": null
     }
 }

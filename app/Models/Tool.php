@@ -6,6 +6,7 @@ use App\Http\Traits\DatasetFetch;
 use App\Models\Traits\EntityCounter;
 use App\Models\Traits\SortManager;
 use App\Observers\ToolObserver;
+use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,7 +45,7 @@ use Illuminate\Notifications\Notifiable;
  * )
  */
 #[ObservedBy([ToolObserver::class])]
-class Tool extends Model
+class Tool extends BaseTypesenseModel
 {
     use HasFactory;
     use Notifiable;
@@ -225,5 +226,43 @@ class Tool extends Model
             'dataset_versions.dataset_id',
             Dataset::where('status', 'ACTIVE')->select('id')
         );
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'                 => (string) $this->id,
+            'name'               => $this->name ?? '',
+            'description'        => $this->description ?? '',
+            'tech_stack'         => $this->tech_stack ?? '',
+            'associated_authors' => $this->associated_authors ?? '',
+        ];
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'query_by'         => 'name,description,tech_stack,associated_authors',
+            'query_by_weights' => '5,4,1,2',
+        ];
+    }
+
+    public function typesenseCollectionSchema(): array
+    {
+        return [
+            'name' => $this->searchableAs(),
+            'fields' => [
+                [ 'name' => 'id',                   'type' => 'string', ],
+                [ 'name' => 'name',                 'type' => 'string', 'infix' => true, ],
+                [ 'name' => 'description',          'type' => 'string', ],
+                [ 'name' => 'tech_stack',           'type' => 'string', 'optional' => true, ],
+                [ 'name' => 'associated_authors',   'type' => 'string', 'optional' => true, ],
+            ],
+        ];
     }
 }
