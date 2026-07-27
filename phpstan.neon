@@ -8,6 +8,8 @@ parameters:
     # Level 9 is the highest level
     level: 3
 
+    checkModelProperties: true
+
     ignoreErrors:
         - '#Call to an undefined method Laravel\\Socialite\\Contracts\\Provider::with\(\)#'
 
