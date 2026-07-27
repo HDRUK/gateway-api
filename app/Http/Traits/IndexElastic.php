@@ -73,9 +73,11 @@ trait IndexElastic
      *
      * @return array The reconstructed envelope, or [] when the dataset has no versions.
      */
-    private function reconstructedLatestEnvelope(Dataset $dataset): array
+    private function reconstructedLatestEnvelope(Dataset $dataset, ?DatasetVersion $version = null): array
     {
-        $version = $dataset->latestVersion();
+        // Callers pass in an already-resolved version to avoid a second
+        // latestVersion() call. Must be a full row (patch + metadata loaded).
+        $version ??= $dataset->latestVersion();
 
         if (! $version) {
             return [];
@@ -152,15 +154,14 @@ trait IndexElastic
                 // throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
             }
 
-            $metadata = $this->reconstructedLatestEnvelope($datasetMatch);
+            $latestVersion = $datasetMatch->latestVersion();
+            $metadata = $this->reconstructedLatestEnvelope($datasetMatch, $latestVersion);
 
             if (! $this->isElasticIndexable($metadata)) {
                 $this->deleteDatasetFromElastic($datasetId);
 
                 return null;
             }
-
-            $latestVersion = $datasetMatch->latestVersion();
 
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
@@ -379,7 +380,7 @@ trait IndexElastic
 
                 $latestVersion = $dataset->latestVersion();
                 if ($latestVersion) {
-                    $metadata = $this->reconstructedLatestEnvelope($dataset);
+                    $metadata = $this->reconstructedLatestEnvelope($dataset, $latestVersion);
 
                     if ($this->isElasticIndexable($metadata)) {
                         $datasetVersionIds[] = $latestVersion->id;
@@ -629,11 +630,13 @@ trait IndexElastic
         $datasetTitles = [];
         $locations = [];
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
+            $datasets = Dataset::where('team_id', $team['id'])
+                ->with(['versions' => fn ($q) => $q->select('id', 'dataset_id', 'version', 'short_title')])
+                ->get();
 
             foreach ($datasets as $dataset) {
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages ?? []);
-                $datasetTitles[] = $dataset->latestVersion()?->short_title ?? '';
+                $datasetTitles[] = $this->latestLoadedVersion($dataset)?->short_title ?? '';
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (! in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
@@ -922,7 +925,7 @@ trait IndexElastic
                 ->all();
 
             $datasets = Dataset::whereIn('id', $datasetIDs)
-                ->with('versions')
+                ->with(['versions' => fn ($q) => $q->select('id', 'dataset_id', 'version', 'short_title')])
                 ->get();
 
             $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
@@ -938,7 +941,7 @@ trait IndexElastic
                 $datasetTitles[] = '_Can be used with any dataset';
             } else {
                 foreach ($datasets as $dataset) {
-                    $datasetTitles[] = $dataset->latestVersion()?->short_title ?? '';
+                    $datasetTitles[] = $this->latestLoadedVersion($dataset)?->short_title ?? '';
                 }
                 usort($datasetTitles, 'strcasecmp');
             }
@@ -1219,11 +1222,12 @@ trait IndexElastic
         $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
         $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
-        $metadataSummary = $this->reconstructedLatestEnvelope($dataset)['metadata']['summary'] ?? [];
+        $latestVersion = $dataset->latestVersion();
+        $metadataSummary = $this->reconstructedLatestEnvelope($dataset, $latestVersion)['metadata']['summary'] ?? [];
 
         // title/short_title are populated columns on every write; only fall back
         // to the reconstructed envelope for legacy pre-migration rows.
-        $title = $dataset->latestVersion()?->title
+        $title = $latestVersion?->title
             ?? $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
         $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
         $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');

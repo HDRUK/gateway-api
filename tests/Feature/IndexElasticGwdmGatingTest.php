@@ -29,7 +29,7 @@ class IndexElasticGwdmGatingTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->commonSetUp();
         $this->disableObservers();
@@ -65,7 +65,12 @@ class IndexElasticGwdmGatingTest extends TestCase
         $fakeFactory->shouldReceive('resolve')->andReturn($fakeHandler);
         app()->instance(GwdmHandlerFactory::class, $fakeFactory);
 
-        $job = new IndexDataset((string) $datasetId);
+        // Partial-mock so we can assert the deindex path actually fired.
+        $job = Mockery::mock(IndexDataset::class, [(string) $datasetId])->makePartial();
+        $job->shouldReceive('deleteDatasetFromElastic')
+            ->once()
+            ->with((string) $datasetId);
+
         $params = $job->reindexElastic((string) $datasetId, true);
 
         $this->assertNull($params, 'a non-indexable version must skip building an ES document');

@@ -471,6 +471,7 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             return $carry;
         }, []);
 
-        return count($materialTypes) === 0 ? null : array_unique($materialTypes);
+        // array_values() so array_unique()'s gapped keys don't serialise as a JSON object.
+        return count($materialTypes) === 0 ? null : array_values(array_unique($materialTypes));
     }
 }

@@ -33,23 +33,47 @@ class DatasetHydrator
         // Batch-load DataProviderColl memberships (replaces 2 queries per result)
         $dataProviderCollsByTeam = DataProviderCollLoader::forTeamIds($teamIds);
 
-        // Collect PIDs that need resolving (replaces 1 query per PID-format gatewayId)
+        // Reconstruct each model's latest metadata once, keyed by dataset id, then
+        // reuse it for both the PID-collection and hydration passes. Delta rows
+        // carry no metadata column, so this must reconstruct (passing the loaded
+        // row as `prefetched` keeps snapshots query-free and reads off TRASER).
+        $metadataByDatasetId = [];
         $pidsToResolve = [];
         foreach ($models as $model) {
             $latestVersion = $model->latestMetadata;
             if (! $latestVersion) {
                 continue;
             }
-            $gatewayId = Arr::get($latestVersion->metadata, 'metadata.summary.publisher.gatewayId');
+
+            if ($latestVersion->patch !== null) {
+                $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+                    $model->id,
+                    $latestVersion->version,
+                    false,
+                    $latestVersion,
+                );
+                $metadata = $envelope['metadata'] ?? null;
+            } else {
+                $metadata = $latestVersion->metadata['metadata'] ?? null;
+            }
+
+            if (! $metadata) {
+                continue;
+            }
+
+            $metadataByDatasetId[$model->id] = $metadata;
+
+            $gatewayId = Arr::get($metadata, 'summary.publisher.gatewayId');
             if ($gatewayId && str_contains((string) $gatewayId, '-')) {
                 $pidsToResolve[] = $gatewayId;
             }
         }
+
         $teamsByPid = ! empty($pidsToResolve)
             ? Team::whereIn('pid', array_unique($pidsToResolve))->get()->keyBy('pid')
             : collect();
 
-        // Hydrate hits in O(1) per result using keyed collection
+        // Hydrate hits in O(1) per result using keyed collections
         foreach ($hits as $i => $hit) {
             $model = $models[(int) $hit['_id']] ?? null;
             if (! $model) {
@@ -67,14 +91,7 @@ class DatasetHydrator
                 continue;
             }
 
-            // Delta rows (patch !== null) store no metadata — reconstruct from the nearest snapshot.
-            if ($latestVersion->patch !== null) {
-                $envelope = app(DatasetService::class)->getVersion($model, $latestVersion->version);
-                $metadata = $envelope['metadata'] ?? null;
-            } else {
-                $metadata = $latestVersion->metadata['metadata'] ?? null;
-            }
-
+            $metadata = $metadataByDatasetId[$model->id] ?? null;
             if (! $metadata) {
                 \Log::warning('Missing metadata structure for dataset version id='.$latestVersion->id.', dataset id='.$model->id);
                 unset($hits[$i]);
@@ -97,12 +114,13 @@ class DatasetHydrator
             $hits[$i]['_source']['updated_at'] = $model->updated_at;
 
             $hits[$i]['metadata'] = strtolower($viewType) === 'mini'
-                ? $this->trimPayload($metadata)
+                ? $this->trimPayload($metadata, $latestVersion->gwdm_version)
                 : $metadata;
 
-            if (!$model->team) {
-                \Log::warning('No team found for dataset id=' . $model->id . ', team_id=' . $model->team_id . ' — likely soft-deleted');
+            if (! $model->team) {
+                \Log::warning('No team found for dataset id='.$model->id.', team_id='.$model->team_id.' — likely soft-deleted');
                 unset($hits[$i]);
+
                 continue;
             }
 
@@ -124,9 +142,9 @@ class DatasetHydrator
         return array_values($hits);
     }
 
-    private function trimPayload(array $metadata): array
+    private function trimPayload(array $metadata, ?string $gwdmVersion = null): array
     {
-        $materialTypes = $this->getMaterialTypes($metadata);
+        $materialTypes = $this->getMaterialTypes($metadata, $gwdmVersion);
         $containsBioSamples = ! empty($materialTypes);
         $hasTechnicalMetadata = (bool) count(Arr::get($metadata, 'structuralMetadata') ?? []);
 
@@ -146,10 +164,11 @@ class DatasetHydrator
         return $metadata;
     }
 
-    private function getMaterialTypes(array $metadata): ?array
+    private function getMaterialTypes(array $metadata, ?string $gwdmVersion = null): ?array
     {
+        // Resolve against the row's own GWDM version, not the app default.
         return app(GwdmHandlerFactory::class)
-            ->resolve(Config::get('metadata.GWDM.version'))
+            ->resolve($gwdmVersion ?? Config::get('metadata.GWDM.version'))
             ->getMaterialTypes($metadata);
     }
 }

@@ -35,8 +35,7 @@ class DatasetService
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
-    ) {
-    }
+    ) {}
 
     public function list(
         ?string $filterStatus,
@@ -1076,19 +1075,22 @@ class DatasetService
             }
         }
 
-        foreach ($desiredIds as $coverageId) {
-            DatasetVersionHasSpatialCoverage::updateOrCreate([
-                'dataset_version_id' => (int) $version->id,
-                'spatial_coverage_id' => $coverageId,
-            ]);
-        }
+        // Upsert + prune atomically so a reader never sees a partial pivot.
+        DB::transaction(function () use ($desiredIds, $version) {
+            foreach ($desiredIds as $coverageId) {
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version->id,
+                    'spatial_coverage_id' => $coverageId,
+                ]);
+            }
 
-        // Prune any pivot rows for this version no longer present in the metadata.
-        DatasetVersionHasSpatialCoverage::where('dataset_version_id', (int) $version->id)
-            ->when(
-                ! empty($desiredIds),
-                fn ($q) => $q->whereNotIn('spatial_coverage_id', $desiredIds),
-            )
-            ->delete();
+            // Prune any pivot rows for this version no longer present in the metadata.
+            DatasetVersionHasSpatialCoverage::where('dataset_version_id', (int) $version->id)
+                ->when(
+                    ! empty($desiredIds),
+                    fn ($q) => $q->whereNotIn('spatial_coverage_id', $desiredIds),
+                )
+                ->delete();
+        });
     }
 }

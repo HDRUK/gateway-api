@@ -25,7 +25,7 @@ class DatasetSpatialCoverageTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->commonSetUp();
     }
@@ -103,6 +103,87 @@ class DatasetSpatialCoverageTest extends TestCase
             'England',
             $regionsV2,
             'allSpatialCoverages must reflect only the latest version, not a union across versions',
+        );
+    }
+
+    private function updateCoverage(int $datasetId, string $spatial): void
+    {
+        $team = Team::first();
+        $user = User::first();
+
+        $metadata = $this->getMetadataV2p0();
+        $metadata['metadata']['coverage']['spatial'] = $spatial;
+
+        $this->setGwdmHeader('2.0');
+        $this->service()->update(
+            Dataset::find($datasetId),
+            ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
+            $user->id,
+            $team->id,
+            Dataset::ORIGIN_MANUAL,
+            false,
+            $team,
+        );
+    }
+
+    /** mapCoverage() path (b): "united kingdom" expands to every UK region. */
+    public function test_united_kingdom_maps_to_all_uk_regions(): void
+    {
+        $this->disableObservers();
+
+        $metadata = $this->getMetadataV2p0();
+        $metadata['metadata']['coverage']['spatial'] = 'United Kingdom';
+        [$datasetId] = $this->createDataset($metadata);
+
+        $regions = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
+
+        foreach (['England', 'Northern Ireland', 'Scotland', 'Wales'] as $ukRegion) {
+            $this->assertContains($ukRegion, $regions, "'united kingdom' must map to {$ukRegion}");
+        }
+        $this->assertNotContains('Rest of the world', $regions);
+    }
+
+    /** mapCoverage() path (c): unrecognised coverage falls back to "Rest of the world". */
+    public function test_unrecognised_coverage_falls_back_to_rest_of_the_world(): void
+    {
+        $this->disableObservers();
+
+        $metadata = $this->getMetadataV2p0();
+        $metadata['metadata']['coverage']['spatial'] = 'Atlantis';
+        [$datasetId] = $this->createDataset($metadata);
+
+        $regions = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
+
+        $this->assertSame(['Rest of the world'], $regions);
+    }
+
+    /**
+     * Transition from the UK catch-all (4 regions) down to a single region: the
+     * latest-version coverage must be exactly the new region, with the extra UK
+     * regions and any world fallback gone (prune-back behaviour).
+     */
+    public function test_narrowing_from_catch_all_to_single_region_prunes_extras(): void
+    {
+        $this->disableObservers();
+
+        // v1: United Kingdom -> all four UK regions.
+        $metadata = $this->getMetadataV2p0();
+        $metadata['metadata']['coverage']['spatial'] = 'United Kingdom';
+        [$datasetId] = $this->createDataset($metadata);
+
+        $this->assertGreaterThan(
+            1,
+            count(collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all()),
+        );
+
+        // v2: England only.
+        $this->updateCoverage($datasetId, 'England');
+
+        $regions = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
+        $this->assertSame(
+            ['England'],
+            $regions,
+            'narrowing to a single region must leave only that region on the latest version',
         );
     }
 }
