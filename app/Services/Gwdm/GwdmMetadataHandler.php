@@ -26,7 +26,9 @@ use Illuminate\Support\Carbon;
  */
 abstract class GwdmMetadataHandler
 {
-    public function __construct(protected readonly string $resolvedVersion) {}
+    public function __construct(protected readonly string $resolvedVersion)
+    {
+    }
 
     // ── Version identity ──────────────────────────────────────────────────────
 
@@ -237,17 +239,17 @@ abstract class GwdmMetadataHandler
         return [
             'abstract' => data_get($envelope, 'metadata.summary.abstract', ''),
             'description' => data_get($envelope, 'metadata.summary.description', ''),
-            'keywords' => array_values(array_filter(explode(';,;', $keywords))),
+            'keywords' => $this->normalizeDelimited($keywords),
             'publisherName' => data_get(
                 $envelope,
                 'metadata.summary.publisher.name',
                 data_get($envelope, 'metadata.summary.publisher.publisherName', '')
             ),
-            'dataType' => array_values(array_filter(explode(';,;', $dataType))),
-            'dataSubType' => array_values(array_filter(explode(';,;', $dataSubType))),
+            'dataType' => $this->normalizeDelimited($dataType),
+            'dataSubType' => $this->normalizeDelimited($dataSubType),
             'populationSize' => (int) data_get($envelope, 'metadata.summary.populationSize', -1),
             'datasetDOI' => data_get($envelope, 'metadata.summary.doiName', ''),
-            'formatAndStandards' => array_values(array_filter(explode(';,;', $formatAndStandards))),
+            'formatAndStandards' => $this->normalizeDelimited($formatAndStandards),
             'accessService' => data_get($envelope, 'metadata.accessibility.access.accessServiceCategory', '') ?? '',
             'containsBioSamples' => $materialTypes !== null,
             'sampleAvailability' => array_values($materialTypes ?? []),

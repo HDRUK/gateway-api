@@ -17,7 +17,7 @@ class GwdmHandlerMaterialTypesTest extends TestCase
 
     private function factory(): GwdmHandlerFactory
     {
-        return new GwdmHandlerFactory;
+        return new GwdmHandlerFactory();
     }
 
     public function test_1x_handler_returns_null_even_when_tissues_present(): void
