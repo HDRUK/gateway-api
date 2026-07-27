@@ -34,9 +34,9 @@ class DatasetHydrator
         $dataProviderCollsByTeam = DataProviderCollLoader::forTeamIds($teamIds);
 
         // Reconstruct each model's latest metadata once, keyed by dataset id, then
-        // reuse it for both the PID-collection and hydration passes. Delta rows
-        // carry no metadata column, so this must reconstruct (passing the loaded
-        // row as `prefetched` keeps snapshots query-free and reads off TRASER).
+        // reuse it for both the PID-collection and hydration passes. Passing the
+        // loaded row as `prefetched` keeps snapshots query-free (and delta rows,
+        // whose metadata column is empty, get reconstructed from the snapshot).
         $metadataByDatasetId = [];
         $pidsToResolve = [];
         foreach ($models as $model) {
@@ -45,17 +45,13 @@ class DatasetHydrator
                 continue;
             }
 
-            if ($latestVersion->patch !== null) {
-                $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
-                    $model->id,
-                    $latestVersion->version,
-                    false,
-                    $latestVersion,
-                );
-                $metadata = $envelope['metadata'] ?? null;
-            } else {
-                $metadata = $latestVersion->metadata['metadata'] ?? null;
-            }
+            $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+                $model->id,
+                $latestVersion->version,
+                false,
+                $latestVersion,
+            );
+            $metadata = $envelope['metadata'] ?? null;
 
             if (! $metadata) {
                 continue;

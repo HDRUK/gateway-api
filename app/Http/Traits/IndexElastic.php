@@ -32,7 +32,6 @@ use Auditor;
 use Config;
 use ElasticClientController as ECC;
 use Exception;
-use Illuminate\Support\Carbon;
 
 trait IndexElastic
 {
@@ -117,6 +116,18 @@ trait IndexElastic
         return $dataset?->versions->sortByDesc('version')->first();
     }
 
+    /**
+     * Metadata-derived Elastic fields for a reconstructed envelope, resolved
+     * through the version-appropriate GWDM handler. Keeps all GWDM path
+     * knowledge in the handlers rather than scattered across this trait.
+     */
+    private function elasticFieldsFor(array $envelope): array
+    {
+        return app(GwdmHandlerFactory::class)
+            ->resolve($envelope['gwdmVersion'] ?? Config::get('metadata.GWDM.version'))
+            ->toElasticFields($envelope);
+    }
+
     private function isElasticIndexable(array $envelope): bool
     {
         $version = $envelope['gwdmVersion'] ?? null;
@@ -163,46 +174,30 @@ trait IndexElastic
                 return null;
             }
 
-            // inject relationships via Local functions
-            $materialTypes = $this->getMaterialTypes($metadata);
-            $containsBioSamples = $this->getContainsBioSamples($materialTypes);
+            // Metadata-derived fields come from the version-appropriate GWDM handler.
+            $fields = $this->elasticFieldsFor($metadata);
+            // short_title/title are populated columns on every write (see DatasetVersion);
+            // only fall back to the envelope for legacy pre-migration rows where they're null.
+            $fields['shortTitle'] = $fields['shortTitle'] ?? $latestVersion->short_title;
+            $fields['title'] = $fields['title'] ?? $latestVersion->title;
+
             $projectGrants = $this->projectGrantsForDataset($datasetMatch->id);
 
-            $toIndex = [
-                'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
-                'keywords' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], '')),
-                'description' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.description'], ''),
-                // short_title/title are populated columns on every write (see DatasetVersion);
-                // only fall back to the envelope for legacy pre-migration rows where they're null.
-                'shortTitle' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '') ?? $latestVersion->short_title,
-                'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], '') ?? $latestVersion->title,
-                'populationSize' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.populationSize'], -1),
-                'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
-                'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
-                'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
-                'dataType' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
-                'dataSubType' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], '')),
-                'containsBioSamples' => $containsBioSamples,
-                'sampleAvailability' => $materialTypes,
-                'conformsTo' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
-                'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
+            // Relationship/DB-derived fields (not visible to the handler) merged on top.
+            $toIndex = array_merge($fields, [
                 'named_entities' => array_map(fn ($entity) => $entity['name'], $datasetMatch->allNamedEntities),
                 'collectionName' => array_map(fn ($collection) => $collection['name'], $datasetMatch->allCollections),
                 'dataUseTitles' => array_map(fn ($dur) => $dur['project_title'], $datasetMatch->allDurs),
                 'geographicLocation' => array_map(fn ($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
-                'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], null),
-                'datasetDOI' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.doiName'], ''),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
-                'formatAndStandards' => $this->formatAndStandard($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'isCohortDiscovery' => $datasetMatch->is_cohort_discovery,
-                'datasetAliases' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetAliases'], ''),
                 // Project grants (for search & filtering)
                 'projectGrants' => $projectGrants,
                 'projectGrantNames' => array_values(array_unique(array_filter(array_map(
                     fn (array $g) => $g['projectGrantName'] ?? null,
                     $projectGrants
                 )))),
-            ];
+            ]);
 
             $params = [
                 'index' => ECC::ELASTIC_NAME_DATASET,
@@ -235,32 +230,6 @@ trait IndexElastic
 
             throw new Exception($e->getMessage());
         }
-    }
-
-    private function formatAndStandard(string|array|null $value): ?array
-    {
-        $items = $this->normalizeDelimitedList($value);
-
-        return $items === [] ? null : $items;
-    }
-
-    /**
-     * Normalise GWDM delimited strings (;,;) or arrays into a flat list for indexing.
-     *
-     * @param  string|array<int, string>|null  $value
-     * @return array<int, string>
-     */
-    private function normalizeDelimitedList(string|array|null $value): array
-    {
-        if (is_array($value)) {
-            return array_values(array_filter($value, fn ($item) => $item !== '' && $item !== null));
-        }
-
-        if ($value === '' || $value === null) {
-            return [];
-        }
-
-        return array_values(array_filter(explode(';,;', (string) $value)));
     }
 
     /**
@@ -383,10 +352,10 @@ trait IndexElastic
                     $metadata = $this->reconstructedLatestEnvelope($dataset, $latestVersion);
 
                     if ($this->isElasticIndexable($metadata)) {
+                        $fields = $this->elasticFieldsFor($metadata);
                         $datasetVersionIds[] = $latestVersion->id;
-                        $datasetTitles[] = $latestVersion->short_title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '');
-                        $types = $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''));
-                        foreach ($types as $t) {
+                        $datasetTitles[] = $latestVersion->short_title ?? $fields['shortTitle'];
+                        foreach ($fields['dataType'] as $t) {
                             if (! in_array($t, $dataTypes)) {
                                 $dataTypes[] = $t;
                             }
@@ -566,8 +535,9 @@ trait IndexElastic
                 continue;
             }
 
-            $datasetTitles[] = $latestVersion->short_title ?? $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], '');
-            $datasetAbstracts[] = $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], '');
+            $fields = $this->elasticFieldsFor($metadata);
+            $datasetTitles[] = $latestVersion->short_title ?? $fields['shortTitle'];
+            $datasetAbstracts[] = $fields['abstract'];
         }
 
         $keywords = [];
@@ -1079,27 +1049,6 @@ trait IndexElastic
         }
     }
 
-    public function getMaterialTypes(array $metadata): ?array
-    {
-        // Resolve the handler for the envelope's own gwdmVersion (a dataset's
-        // actual version can diverge from the global config default) and let it
-        // decide how material types are represented for that version.
-        $rowGwdmVersion = $metadata['gwdmVersion'] ?? Config::get('metadata.GWDM.version');
-
-        return app(GwdmHandlerFactory::class)
-            ->resolve($rowGwdmVersion)
-            ->getMaterialTypes($metadata['metadata'] ?? []);
-    }
-
-    public function getContainsBioSamples(?array $materialTypes)
-    {
-        if ($materialTypes === null) {
-            return false;
-        }
-
-        return count($materialTypes) > 0;
-    }
-
     /**
      * Insert tool document into elastic index
      *
@@ -1223,14 +1172,11 @@ trait IndexElastic
         $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
         $latestVersion = $dataset->latestVersion();
-        $metadataSummary = $this->reconstructedLatestEnvelope($dataset, $latestVersion)['metadata']['summary'] ?? [];
+        $envelope = $this->reconstructedLatestEnvelope($dataset, $latestVersion);
 
         // title/short_title are populated columns on every write; only fall back
         // to the reconstructed envelope for legacy pre-migration rows.
-        $title = $latestVersion?->title
-            ?? $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+        $title = $latestVersion?->title ?? $this->elasticFieldsFor($envelope)['title'];
 
         $this->datasets[] = [
             'title' => $title,

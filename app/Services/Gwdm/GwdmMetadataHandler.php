@@ -5,6 +5,7 @@ namespace App\Services\Gwdm;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
+use Illuminate\Support\Carbon;
 
 /**
  * Per-version metadata lifecycle handler.
@@ -263,6 +264,62 @@ abstract class GwdmMetadataHandler
                 ->filter(fn ($v) => is_string($v) && $v !== '')
                 ->values()->all(),
         ];
+    }
+
+    /**
+     * Extract the metadata-derived fields for the Elasticsearch dataset index
+     * from a reconstructed GWDM envelope. Relationship/DB-derived fields
+     * (named entities, collections, spatial coverage, project grants, etc.) are
+     * NOT here — the handler only sees the envelope; the caller merges those in.
+     *
+     * Override when a version's field shapes diverge.
+     */
+    public function toElasticFields(array $envelope): array
+    {
+        $materialTypes = $this->getMaterialTypes(data_get($envelope, 'metadata', []) ?? []);
+        $conformsTo = $this->normalizeDelimited(data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo') ?? '');
+
+        return [
+            'abstract' => data_get($envelope, 'metadata.summary.abstract') ?? '',
+            'keywords' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.keywords') ?? ''),
+            'description' => data_get($envelope, 'metadata.summary.description') ?? '',
+            'shortTitle' => data_get($envelope, 'metadata.summary.shortTitle') ?? '',
+            'title' => data_get($envelope, 'metadata.summary.title') ?? '',
+            'populationSize' => data_get($envelope, 'metadata.summary.populationSize') ?? -1,
+            'publisherName' => data_get($envelope, 'metadata.summary.publisher.name')
+                ?? data_get($envelope, 'metadata.summary.publisher.publisherName') ?? '',
+            'startDate' => data_get($envelope, 'metadata.provenance.temporal.startDate'),
+            'endDate' => data_get($envelope, 'metadata.provenance.temporal.endDate') ?? Carbon::now()->addYears(5),
+            'dataType' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.datasetType') ?? ''),
+            'dataSubType' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.datasetSubType') ?? ''),
+            'containsBioSamples' => $materialTypes !== null && count($materialTypes) > 0,
+            'sampleAvailability' => $materialTypes,
+            'conformsTo' => $conformsTo,
+            'hasTechnicalMetadata' => (bool) count((array) (data_get($envelope, 'metadata.structuralMetadata') ?? [])),
+            'accessService' => data_get($envelope, 'metadata.accessibility.access.accessServiceCategory'),
+            'datasetDOI' => data_get($envelope, 'metadata.summary.doiName') ?? '',
+            'formatAndStandards' => $conformsTo === [] ? null : $conformsTo,
+            'datasetAliases' => data_get($envelope, 'metadata.summary.datasetAliases') ?? '',
+        ];
+    }
+
+    /**
+     * Normalise a GWDM delimited string (";,;") or array into a flat, non-empty list.
+     *
+     * @param  string|array<int, mixed>|null  $value
+     * @return array<int, mixed>
+     */
+    protected function normalizeDelimited(string|array|null $value): array
+    {
+        if (is_array($value)) {
+            return array_values(array_filter($value, fn ($item) => $item !== '' && $item !== null));
+        }
+
+        if ($value === '' || $value === null) {
+            return [];
+        }
+
+        return array_values(array_filter(explode(';,;', $value)));
     }
 
     /**
