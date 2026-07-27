@@ -8,6 +8,7 @@ use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\GetFederation;
+use App\Http\Requests\Federation\GetFederationHistory;
 use App\Http\Requests\Federation\RunNowFederation;
 use App\Http\Requests\Federation\UpdateFederation;
 use App\Http\Traits\LoggingContext;
@@ -18,6 +19,7 @@ use App\Jobs\TestFederation;
 use App\Models\EmailTemplate;
 use App\Models\Federation;
 use App\Models\FederationHasNotification;
+use App\Models\FederationJobRun;
 use App\Models\Notification;
 use App\Models\Role;
 use App\Models\TeamHasFederation;
@@ -25,11 +27,11 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Models\User;
 use App\Services\GatewayMetadataIngestionService;
+use App\Services\GoogleSecretManagerService;
 use Auditor;
 use Config;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class FederationController extends Controller
 {
@@ -106,14 +108,21 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->with(['team', 'notifications.userNotification'])->paginate($perPage, ['*'], 'page');
+
+            $federations->getCollection()->transform(function ($federation) {
+                $federation->setAttribute('auth_secret_key', $this->decryptAuthSecretKey(
+                    $federation->auth_secret_key_location,
+                    $federation->auth_type
+                ));
+                return $federation;
+            });
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -203,13 +212,17 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $federations = Federation::whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->where('id', $federationId)->with(['team', 'notifications.userNotification'])->first()->toArray();
+
+            $federations['auth_secret_key'] = $this->decryptAuthSecretKey(
+                $federations['auth_secret_key_location'] ?? null,
+                $federations['auth_type'] ?? null
+            );
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -305,7 +318,7 @@ class FederationController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $payload = [
@@ -327,18 +340,14 @@ class FederationController extends Controller
 
             if ($secrets_payload) {
                 $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federation->id;
-                $payload = [
-                    "path" => config('gateway.google_application_project_path'),
-                    "secret_id" => $auth_secret_key_location,
-                    "payload" => json_encode($secrets_payload)
-                ];
-                $response = Http::withHeaders($loggingContext)->post(config('services.gmi.url') . '/federation', $payload);
 
-                if (!$response->successful()) {
+                try {
+                    app(GoogleSecretManagerService::class)->createSecret($auth_secret_key_location, json_encode($secrets_payload));
+                } catch (Exception $e) {
                     Federation::where('id', $federation->id)->delete();
                     return response()->json([
                         'message' => 'failed to save secrets for this federation',
-                        'details' => $response->json(),
+                        'details' => $e->getMessage(),
                     ], 400);
                 }
 
@@ -477,7 +486,7 @@ class FederationController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $updateArray = [
@@ -496,22 +505,16 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if ($secrets_payload) {
-                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
-                $payload = [
-                    "path" => config('gateway.google_application_project_path'),
-                    "secret_id" => $auth_secret_key_location,
-                    "payload" => json_encode($secrets_payload)
-                ];
-
-                $response = Http::withHeaders($loggingContext)->patch(config('services.gmi.url') . '/federation', $payload);
-
-                if (!$response->successful()) {
+                try {
+                    $auth_secret_key_location = $this->upsertFederationSecret($federationId, $secrets_payload);
+                } catch (Exception $e) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
-                        'details' => $response->json(),
+                        'details' => $e->getMessage(),
                     ], 400);
                 }
 
+                Federation::where('id', $federationId)->update(["auth_secret_key_location" => $auth_secret_key_location]);
             }
 
             $federationNotifications = FederationHasNotification::where([
@@ -652,7 +655,7 @@ class FederationController extends Controller
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -673,22 +676,16 @@ class FederationController extends Controller
 
             $secrets_payload = $this->getSecretsPayload($input);
             if ($secrets_payload) {
-                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
-                $payload = [
-                    "path" => config('gateway.google_application_project_path'),
-                    "secret_id" => $auth_secret_key_location,
-                    "payload" => json_encode($secrets_payload)
-                ];
-
-                $response = Http::withHeaders($loggingContext)->patch(config('services.gmi.url') . '/federation', $payload);
-
-                if (!$response->successful()) {
+                try {
+                    $auth_secret_key_location = $this->upsertFederationSecret($federationId, $secrets_payload);
+                } catch (Exception $e) {
                     return response()->json([
                         'message' => 'something gone wrong with updating federation secret key',
-                        'details' => $response->json(),
+                        'details' => $e->getMessage(),
                     ], 400);
                 }
 
+                Federation::where('id', $federationId)->update(["auth_secret_key_location" => $auth_secret_key_location]);
             }
 
             if (array_key_exists('notifications', $input)) {
@@ -817,8 +814,7 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $federationNotifications = FederationHasNotification::where([
@@ -828,6 +824,15 @@ class FederationController extends Controller
             foreach ($federationNotifications as $federationNotification) {
                 Notification::where('id', $federationNotification)->delete();
                 FederationHasNotification::where('notification_id', $federationNotification)->delete();
+            }
+
+            $federation = Federation::where('id', $federationId)->first();
+            if ($federation && $federation->auth_secret_key_location) {
+                try {
+                    app(GoogleSecretManagerService::class)->deleteSecret($federation->auth_secret_key_location);
+                } catch (Exception $e) {
+                    \Log::info('failed to delete federation secret: ' . $e->getMessage(), $loggingContext);
+                }
             }
 
             Federation::where('id', $federationId)->delete();
@@ -961,8 +966,7 @@ class FederationController extends Controller
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $checkFederation = Federation::where([
@@ -992,6 +996,191 @@ class FederationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+            \Log::info($e->getMessage(), $loggingContext);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function decryptAuthSecretKey(?string $secretLocation, ?string $authType): ?string
+    {
+        if (!$secretLocation || !in_array($authType, ['BEARER', 'API_KEY'])) {
+            return null;
+        }
+
+        try {
+            $payload = json_decode(app(GoogleSecretManagerService::class)->getSecret($secretLocation), true);
+        } catch (Exception $e) {
+            \Log::info('failed to retrieve federation secret ' . $secretLocation . ': ' . $e->getMessage());
+            return null;
+        }
+
+        return match ($authType) {
+            'BEARER' => $payload['bearer_token'] ?? null,
+            'API_KEY' => $payload['api_key'] ?? null,
+            default => null,
+        };
+    }
+
+    private function upsertFederationSecret(int $federationId, array $secretsPayload): string
+    {
+        $federation = Federation::where('id', $federationId)->first();
+        $gsms = app(GoogleSecretManagerService::class);
+
+        if ($federation->auth_secret_key_location) {
+            $gsms->addSecretVersion($federation->auth_secret_key_location, json_encode($secretsPayload));
+            return $federation->auth_secret_key_location;
+        }
+
+        $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
+        $gsms->createSecret($auth_secret_key_location, json_encode($secretsPayload));
+
+        return $auth_secret_key_location;
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/teams/{teamId}/federations/{federationId}/history",
+     *    operationId="get_federation_history",
+     *    tags={"Team-Federations"},
+     *    summary="FederationController@history",
+     *    description="Get run history for a federation",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="federationId",
+     *       in="path",
+     *       description="federation id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="federation id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="per_page",
+     *       in="query",
+     *       description="per page",
+     *       required=false,
+     *       example="25",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="per page",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="current_page", type="integer", example="1"),
+     *          @OA\Property(property="data", type="array",
+     *             @OA\Items(type="object",
+     *                @OA\Property(property="job_uuid", type="string", example="6d6b0e2e-6e4a-4a63-8f3c-2f9d9c8a1e11"),
+     *                @OA\Property(property="started_at", type="datetime", example="2025-03-13 14:00:00"),
+     *                @OA\Property(property="finished_at", type="datetime", example="2025-03-13 14:02:31"),
+     *                @OA\Property(property="status", type="string", example="failed", enum={"success", "failed", "in_progress"}),
+     *                @OA\Property(property="message", type="string", example="2 of 5 datasets failed", nullable=true),
+     *                @OA\Property(property="failed_datasets", type="array",
+     *                   @OA\Items(type="object",
+     *                      @OA\Property(property="pid", type="string", example="9c1e2f3a-...-abcdef"),
+     *                      @OA\Property(property="message", type="string", example="HDRUK/2.0.2: must NOT have additional properties"),
+     *                   ),
+     *                ),
+     *             ),
+     *          ),
+     *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations\/1\/history?page=1"),
+     *          @OA\Property(property="from", type="integer", example="1"),
+     *          @OA\Property(property="last_page", type="integer", example="1"),
+     *          @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations\/1\/history?page=1"),
+     *          @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *          @OA\Property(property="next_page_url", type="string", example="null"),
+     *          @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations\/1\/history"),
+     *          @OA\Property(property="per_page", type="integer", example="25"),
+     *          @OA\Property(property="prev_page_url", type="string", example="null"),
+     *          @OA\Property(property="to", type="integer", example="3"),
+     *          @OA\Property(property="total", type="integer", example="3"),
+     *       ),
+     *    ),
+     * )
+     */
+    public function history(GetFederationHistory $request, int $teamId, int $federationId)
+    {
+        $loggingContext = $this->getLoggingContext($request);
+        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
+
+        $jwtUser = $request->jwtUser();
+
+        try {
+            $perPage = $request->validated('per_page', Config::get('constants.per_page'));
+            $executions = FederationJobRun::executionsForFederation($federationId, $perPage);
+
+            $executions->getCollection()->transform(function (FederationJobRun $execution) use ($federationId) {
+                $rows = FederationJobRun::latestPerPidForExecution($federationId, $execution->job_uuid);
+
+                $failed = $rows->filter(fn ($row) => $row->status === 0);
+                $pending = $rows->filter(fn ($row) => is_null($row->status));
+
+                $failedDatasets = $failed->map(fn ($row) => [
+                    'pid' => $row->pid,
+                    'message' => collect($row->errorMessages())
+                        ->map(fn ($entry) => $entry['schema'] ? "{$entry['schema']}: {$entry['message']}" : $entry['message'])
+                        ->implode('; '),
+                ])->values()->all();
+
+                $onlyFailure = count($failedDatasets) === 1 ? $failedDatasets[0] : null;
+
+                if ($onlyFailure) {
+                    $status = 'failed';
+                    $message = $onlyFailure['message'];
+                } elseif (count($failedDatasets) > 1) {
+                    $status = 'failed';
+                    $message = count($failedDatasets) . " of {$rows->count()} datasets failed";
+                } elseif ($pending->count() > 0) {
+                    $status = 'in_progress';
+                    $message = null;
+                } else {
+                    $status = 'success';
+                    $message = null;
+                }
+
+                return [
+                    'job_uuid' => $execution->job_uuid,
+                    'started_at' => $execution->started_at,
+                    'finished_at' => $execution->finished_at,
+                    'status' => $status,
+                    'message' => $message,
+                    'failed_datasets' => $failedDatasets,
+                ];
+            });
+
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Federation ' . $federationId . ' history',
+            ]);
+
+            return response()->json($executions);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

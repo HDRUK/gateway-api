@@ -6,6 +6,7 @@ use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\DataAccessApplication;
 use App\Observers\DataAccessApplicationObserver;
 use Config;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 use Laravel\Pennant\Feature;
@@ -66,5 +67,9 @@ class AppServiceProvider extends ServiceProvider
         DataAccessApplication::observe(DataAccessApplicationObserver::class);
 
         Feature::resolveScopeUsing(fn ($driver) => null);
+
+        Request::macro('jwtUser', function () {
+            return $this->input('jwt_user', []);
+        });
     }
 }

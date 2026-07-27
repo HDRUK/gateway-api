@@ -45,6 +45,7 @@ class DeferredProviderSearch implements ShouldQueue
         Cache::put(
             "search:deferred:{$this->token}:result:{$provider->getShortName()}",
             [
+                'source'        => $result['source'] ?? null,
                 'provider_logo' => $provider->getProviderLogo(),
                 'about'         => $provider->getProviderBlurb(),
                 'hits'          => $result['hits'],

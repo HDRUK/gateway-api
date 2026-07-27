@@ -6,6 +6,8 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Filter;
+use App\SearchProviders\HDRUK;
+use App\Services\TypesenseService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -83,23 +85,44 @@ class FilterController extends Controller
         try {
             $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
 
-            $urlString = config('gateway.search_service_url') . '/filters';
+            [$typesenseFiltersByCollection, $unfacetableIndices, $elasticIndices] =
+                $this->partitionFiltersByProvider($filters);
 
-            $response = Http::withBody(
-                json_encode(['filters' => $filters]),
-                'application/json'
-            )->post($urlString);
+            // Legacy Elasticsearch path — only used while TypesenseSearch is inactive.
+            if (!empty($elasticIndices)) {
+                $elasticFilters = array_map(fn ($i) => $filters[$i], $elasticIndices);
 
-            $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
+                $urlString = config('gateway.search_service_url') . '/filters';
 
-            foreach ($filters as $i => $f) {
-                $type = $f['type'];
-                $keys = $f['keys'];
-                if (isset($filterBuckets[$i][$type][$keys])) {
-                    $filters[$i]['buckets'] = $filterBuckets[$i][$type][$keys]['buckets'];
-                } else {
-                    $filters[$i]['buckets'] = [];
+                $response = Http::withBody(
+                    json_encode(['filters' => $elasticFilters]),
+                    'application/json'
+                )->post($urlString);
+
+                $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
+
+                foreach ($elasticIndices as $position => $i) {
+                    $type = $filters[$i]['type'];
+                    $keys = $filters[$i]['keys'];
+                    $filters[$i]['buckets'] = $filterBuckets[$position][$type][$keys]['buckets'] ?? [];
                 }
+            }
+
+            // Typesense path — facet-ready fields, grouped by collection so each
+            // collection is queried once regardless of how many filters use it.
+            foreach ($typesenseFiltersByCollection as $collection => $indices) {
+                $fields = array_values(array_unique(array_map(fn ($i) => $filters[$i]['keys'], $indices)));
+                $facets = app(TypesenseService::class)->facetCounts($collection, $fields);
+
+                foreach ($indices as $i) {
+                    $filters[$i]['buckets'] = $facets[$filters[$i]['keys']]['buckets'] ?? [];
+                }
+            }
+
+            // Typesense is active but this field isn't flattened/faceted yet —
+            // no Elasticsearch fallback while the feature is on, so no buckets.
+            foreach ($unfacetableIndices as $i) {
+                $filters[$i]['buckets'] = [];
             }
 
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -121,6 +144,42 @@ class FilterController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Splits filter row indices into: a Typesense group (keyed by collection
+     * name, for fields already flattened/facet-enabled there), an
+     * "unfacetable" group (Typesense is active but this field isn't indexed
+     * as a facet yet — resolves to empty buckets, no Elasticsearch call), and
+     * a legacy Elasticsearch group used only while TypesenseSearch is off.
+     *
+     * Elasticsearch is never queried while the feature flag is active — that
+     * legacy service isn't guaranteed to be running once Typesense takes over.
+     *
+     * @return array{0: array<string, int[]>, 1: int[], 2: int[]}
+     */
+    private function partitionFiltersByProvider(array $filters): array
+    {
+        $provider = app(HDRUK::class);
+
+        if (!$provider->isTypesenseEnabled()) {
+            return [[], [], array_keys($filters)];
+        }
+
+        $typesenseFiltersByCollection = [];
+        $unfacetableIndices = [];
+
+        foreach ($filters as $i => $f) {
+            $collection = $provider->collectionForFacetableFilter($f['type'], $f['keys']);
+
+            if ($collection !== null) {
+                $typesenseFiltersByCollection[$collection][] = $i;
+            } else {
+                $unfacetableIndices[] = $i;
+            }
+        }
+
+        return [$typesenseFiltersByCollection, $unfacetableIndices, []];
     }
 
     /**
@@ -177,19 +236,31 @@ class FilterController extends Controller
         try {
             $filter = Filter::findOrFail($id);
             if ($filter) {
-                $urlString = config('gateway.search_service_url') . '/filters';
+                $provider = app(HDRUK::class);
 
-                $response = Http::withBody(
-                    json_encode(['filters' => [$filter->toArray()]]),
-                    'application/json'
-                )->post($urlString);
+                if ($provider->isTypesenseEnabled()) {
+                    // No Elasticsearch fallback while the feature is active —
+                    // an unfaceted field simply resolves to no buckets.
+                    $collection = $provider->collectionForFacetableFilter($filter->type, $filter->keys);
 
-                $filterBuckets = isset($response->json()['filters'][0]) ?
-                    $response->json()['filters'][0] : [];
-                if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
-                    $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
+                    $filter['buckets'] = $collection !== null
+                        ? (app(TypesenseService::class)->facetCounts($collection, [$filter->keys])[$filter->keys]['buckets'] ?? [])
+                        : [];
                 } else {
-                    $filter['buckets'] = [];
+                    $urlString = config('gateway.search_service_url') . '/filters';
+
+                    $response = Http::withBody(
+                        json_encode(['filters' => [$filter->toArray()]]),
+                        'application/json'
+                    )->post($urlString);
+
+                    $filterBuckets = isset($response->json()['filters'][0]) ?
+                        $response->json()['filters'][0] : [];
+                    if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
+                        $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
+                    } else {
+                        $filter['buckets'] = [];
+                    }
                 }
 
                 Auditor::log([

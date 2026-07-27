@@ -1,3 +1,26 @@
+## [2.46.0](https://github.com/HDRUK/gateway-api/compare/v2.45.0...v2.46.0) (2026-07-24)
+
+### ✨ Features
+
+* **GAT-9018:** add queryable gwdm_version column to dataset_versions (#1698) ([e4d5d97](https://github.com/HDRUK/gateway-api/commit/e4d5d97cdc66071f1e323f5e2a6e62c5e4b5e19f)), closes [GAT-9018](undefinedGAT-9018)
+* **GAT-9075:** Typesense service and mocks initial commit (#1688) ([a776889](https://github.com/HDRUK/gateway-api/commit/a776889011f271cd412f4bae5b5a4aa9018d96d6)), closes [GAT-9075](undefinedGAT-9075)
+* **GAT-9076:** Feature flag for Typesense (#1689) ([f46dbc7](https://github.com/HDRUK/gateway-api/commit/f46dbc72b3e520c3c022590107224a216ebef1e0)), closes [GAT-9076](undefinedGAT-9076)
+* **GAT-9078:** groundwork changes for Typesense usage (#1690) ([3a45a51](https://github.com/HDRUK/gateway-api/commit/3a45a511340412b6b3474073b9eead99d79f02bb)), closes [GAT-9078](undefinedGAT-9078)
+* **GAT-9079:** Begins to flesh out collection schema for searchable models (#1693) ([77680ed](https://github.com/HDRUK/gateway-api/commit/77680ed287a7e0c6a42acb20e8561608a83afdf7)), closes [GAT-9079](undefinedGAT-9079)
+* **GAT-9149:** Prevents AppCheck returning a NoSQL vulnerability inc… (#1694) ([27135b2](https://github.com/HDRUK/gateway-api/commit/27135b2351e12b092a51a593fb62a70545ca00d7)), closes [GAT-9149](undefinedGAT-9149) [NoSQL](undefinedoSQL)
+* **GAT-9212:** GWDM version context + handler hierarchy + DatasetService Rearrange (#1699) ([b0874f9](https://github.com/HDRUK/gateway-api/commit/b0874f9ec1391a7e564456aca18e53ed8dc48991)), closes [GAT-9212](undefinedGAT-9212)
+* **GAT-9230:** record error and disable after final job failure ([879309d](https://github.com/HDRUK/gateway-api/commit/879309d0144006c63fb4c3f2419ad98787ede356)), closes [GAT-9230](undefinedGAT-9230) [those](undefinedose)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** Align CRUK dummy dataset fixtures with GWDM 2.1 schema. (#1686) ([9cf09e8](https://github.com/HDRUK/gateway-api/commit/9cf09e846486b82aeda4a162addcee9aa4ecabda)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-8925:** Fix incorrect config read on cohort expiry command (#1692) ([ecedbfc](https://github.com/HDRUK/gateway-api/commit/ecedbfcd26967e553b4b07f529b6786d1f66827c))
+* **GAT-9140:** added condition to take cloud-db backup before the release (#1696) ([9a67566](https://github.com/HDRUK/gateway-api/commit/9a67566447416f73b9ef8a4d92822eb39221091f)), closes [GAT-9140](undefinedGAT-9140)
+* **GAT-9222:** dataset-version linkage cleanup (#1704) ([248c5de](https://github.com/HDRUK/gateway-api/commit/248c5de73835288209c4e2a3bb06ac3102d7c141)), closes [GAT-9222](undefinedGAT-9222)
+* **GAT-9247:** Correctly parse auth_secret_key to return when listing integration in FE (#1708) ([6c3df93](https://github.com/HDRUK/gateway-api/commit/6c3df938adc472df79a2e02ebf1a4430524ed24b)), closes [GAT-9247](undefinedGAT-9247)
+* **GAT-9247:** Fixes GSM failure while calling old service no longer … (#1707) ([7d9e732](https://github.com/HDRUK/gateway-api/commit/7d9e7321d29dc2a0fc6f1e07e3426c24c587e30d))
+* **GAT-9247:** properly form the path to avoid local credentials (#1709) ([a0ab378](https://github.com/HDRUK/gateway-api/commit/a0ab3785733bc65256309719d1324706451f8831)), closes [GAT-9247](undefinedGAT-9247)
+
 ## [2.45.0](https://github.com/HDRUK/gateway-api/compare/v2.44.0...v2.45.0) (2026-07-06)
 
 ### ✨ Features

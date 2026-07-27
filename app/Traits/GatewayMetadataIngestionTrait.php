@@ -21,7 +21,7 @@ trait GatewayMetadataIngestionTrait
 {
     use MetadataVersioning;
 
-    public function pullCatalogueList(Federation|array $federation, GoogleSecretManagerService $gsms): Collection
+    public function pullCatalogueList(Federation|array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
         if (!is_array($federation)) {
             return $this->getCatalogueFromFederationModel($federation, $gsms);

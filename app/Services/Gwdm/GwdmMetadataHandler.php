@@ -217,7 +217,13 @@ abstract class GwdmMetadataHandler
     {
         $keywords = data_get($envelope, 'metadata.summary.keywords', '');
         $dataType = data_get($envelope, 'metadata.summary.datasetType', '');
-        $conformsTo = data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo', '');
+        $dataSubType = data_get($envelope, 'metadata.summary.datasetSubType', '') ?? '';
+        // FE-facing facet key is "formatAndStandards" per the `filters` table, though the
+        // GWDM value it surfaces is the nested conformsTo array within that object.
+        $formatAndStandards = data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo', '');
+        // Material types are version-specific (base = none); getMaterialTypes() dispatches
+        // to the right handler. Backs containsBioSamples (bool) and sampleAvailability (list).
+        $materialTypes = $this->getMaterialTypes(data_get($envelope, 'metadata', []) ?? []);
         $structural = data_get($envelope, 'metadata.structuralMetadata', []);
 
         if (is_string($structural)) {
@@ -237,9 +243,13 @@ abstract class GwdmMetadataHandler
                 data_get($envelope, 'metadata.summary.publisher.publisherName', '')
             ),
             'dataType' => array_values(array_filter(explode(';,;', $dataType))),
+            'dataSubType' => array_values(array_filter(explode(';,;', $dataSubType))),
             'populationSize' => (int) data_get($envelope, 'metadata.summary.populationSize', -1),
             'datasetDOI' => data_get($envelope, 'metadata.summary.doiName', ''),
-            'conformsTo' => array_values(array_filter(explode(';,;', $conformsTo))),
+            'formatAndStandards' => array_values(array_filter(explode(';,;', $formatAndStandards))),
+            'accessService' => data_get($envelope, 'metadata.accessibility.access.accessServiceCategory', '') ?? '',
+            'containsBioSamples' => $materialTypes !== null,
+            'sampleAvailability' => array_values($materialTypes ?? []),
             'structuralTableNames' => collect($structural)
                 ->pluck('name')
                 ->filter(fn ($v) => is_string($v) && $v !== '')

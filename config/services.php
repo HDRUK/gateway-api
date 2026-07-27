@@ -105,10 +105,6 @@ return [
         'url' => env('TRASER_SERVICE_URL', 'http://localhost:8002'),
     ],
 
-    'gmi' => [
-        'url' => env('GMI_SERVICE_URL', ''),
-    ],
-
     'mjml' => [
         'render_url' => env('MJML_RENDER_URL', ''),
     ],

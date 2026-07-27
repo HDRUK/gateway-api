@@ -11,8 +11,10 @@ use App\Models\Base\BaseTypesenseModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Services\Search\DataProviderCollLoader;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -281,13 +283,70 @@ class Collection extends BaseTypesenseModel
         return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
     }
 
+    /**
+     * Query-level mirror of shouldBeSearchable(), for callers that need a
+     * count/filter of indexable rows rather than a per-instance check (e.g.
+     * AdminSearchController's eligibleCount). SoftDeletes' own global scope
+     * already excludes deleted_at, so only the status check is needed here.
+     */
+    public function scopeIndexEligible(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    /**
+     * The literal name "collections" collides with a private property of the
+     * same name on Typesense\Collections (the PHP SDK's collection registry
+     * class) — its __get() magic method does `isset($this->{$name})` before
+     * checking its own internal cache array, so a Scout collection literally
+     * named "collections" causes the SDK to return its own empty private
+     * array instead of a Collection instance, breaking every retrieve()/
+     * create() call with "Call to a member function retrieve() on array".
+     * Suffixed to sidestep the collision; unrelated to any other model here.
+     */
+    public function searchableAs(): string
+    {
+        return config('scout.prefix') . 'entity_collections';
+    }
+
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['team', 'datasetVersions']);
+    }
+
+    private function facetPublisherName(): string
+    {
+        return $this->team?->getAttribute('name') ?? '';
+    }
+
+    private function facetDatasetTitles(): array
+    {
+        return $this->datasetVersions
+            ->pluck('short_title')
+            ->filter(fn ($title) => is_string($title) && $title !== '')
+            ->unique()->values()->all();
+    }
+
+    private function facetDataProviderColl(): array
+    {
+        if ($this->team_id === null) {
+            return [];
+        }
+
+        return DataProviderCollLoader::forTeamIds([$this->team_id])
+            ->get($this->team_id, []);
+    }
+
     public function toSearchableArray(): array
     {
         return [
-            'id'          => (string) $this->id,
-            'name'        => $this->name ?? '',
-            'description' => $this->description ?? '',
-            'status'      => $this->status ?? '',
+            'id'               => (string) $this->id,
+            'name'             => $this->name ?? '',
+            'description'      => $this->description ?? '',
+            'status'           => $this->status ?? '',
+            'publisherName'    => $this->facetPublisherName(),
+            'datasetTitles'    => $this->facetDatasetTitles(),
+            'dataProviderColl' => array_column($this->facetDataProviderColl(), 'name'),
         ];
     }
 
@@ -304,10 +363,13 @@ class Collection extends BaseTypesenseModel
         return [
             'name' => $this->searchableAs(),
             'fields' => [
-                [ 'name' => 'id',           'type' => 'string', ],
-                [ 'name' => 'name',         'type' => 'string', 'infix' => true ],
-                [ 'name' => 'description',  'type' => 'string' ],
-                [ 'name' => 'status',       'type' => 'string' ],
+                [ 'name' => 'id',               'type' => 'string', ],
+                [ 'name' => 'name',             'type' => 'string', 'infix' => true ],
+                [ 'name' => 'description',      'type' => 'string' ],
+                [ 'name' => 'status',           'type' => 'string' ],
+                [ 'name' => 'publisherName',    'type' => 'string', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'datasetTitles',    'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'dataProviderColl', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
             ],
         ];
     }

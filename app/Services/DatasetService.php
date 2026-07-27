@@ -35,7 +35,8 @@ class DatasetService
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
-    ) {}
+    ) {
+    }
 
     public function list(
         ?string $filterStatus,

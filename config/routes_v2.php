@@ -1096,6 +1096,18 @@ return [
 
      // Data Custodian Networks
     [
+        'name' => 'admin_data_custodian_networks.get',
+        'method' => 'get',
+        'path' => '/admin/data_custodian_networks',
+        'methodController' => 'DataCustodianNetworksController@adminIndex',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
         'name' => 'data_custodian_networks.get',
         'method' => 'get',
         'path' => '/data_custodian_networks',
