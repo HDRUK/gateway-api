@@ -39,7 +39,7 @@ class Gwdm1xHandler extends GwdmMetadataHandler
         }
 
         return [
-            'publisherId' => (string) $team->id,
+            'publisherId'   => (string) $team->id,
             'publisherName' => $team->name,
         ];
     }
@@ -47,11 +47,11 @@ class Gwdm1xHandler extends GwdmMetadataHandler
     public function buildRequiredBlock(Dataset $dataset, int $versionNumber): array
     {
         return [
-            'gatewayId' => strval($dataset->id),
+            'gatewayId'  => strval($dataset->id),
             'gatewayPid' => $dataset->pid,
-            'issued' => $dataset->created,
-            'modified' => $dataset->updated,
-            'revisions' => $this->buildRevisions($dataset, $versionNumber),
+            'issued'     => $dataset->created,
+            'modified'   => $dataset->updated,
+            'revisions'  => $this->buildRevisions($dataset, $versionNumber),
             // No 'version' field — not part of GWDM < 1.1 schema
         ];
     }
@@ -60,7 +60,7 @@ class Gwdm1xHandler extends GwdmMetadataHandler
     {
         $required = $this->buildRequiredBlock($dataset, $versionNumber);
         // DB-derived values win over whatever TRASER returned for the same keys
-        $gwdm['required'] = array_merge($gwdm['required'] ?? [], $required);
+        $gwdm['required']             = array_merge($gwdm['required'] ?? [], $required);
         $gwdm['summary']['publisher'] = $this->buildPublisher($team, $gwdm['summary']['publisher'] ?? []);
 
         return $gwdm;
