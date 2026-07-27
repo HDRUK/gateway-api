@@ -141,6 +141,7 @@ class FederationTest extends TestCase
                     'deleted_at',
                     'tested',
                     'notifications',
+                    'last_run_at',
                 ],
             ],
             'first_page_url',
