@@ -65,4 +65,13 @@ class Gwdm1xHandler extends GwdmMetadataHandler
 
         return $gwdm;
     }
+
+    /**
+     * Legacy GWDM (< 1.1) has no tissuesSampleCollection section, so no
+     * material types are exposed.
+     */
+    public function getMaterialTypes(array $metadata): ?array
+    {
+        return null;
+    }
 }

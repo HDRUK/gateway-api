@@ -2,19 +2,14 @@
 
 namespace App\Http\Traits;
 
-use Auditor;
-use Config;
-use Exception;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
 use App\Models\Collection;
 use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasDur;
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasTool;
-use App\Models\DataProviderColl;
-use App\Models\DataProviderCollHasTeam;
 use App\Models\Dur;
 use App\Models\DurHasDatasetVersion;
 use App\Models\License;
@@ -31,27 +26,127 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
+use App\Services\DatasetService;
+use App\Services\Gwdm\GwdmHandlerFactory;
+use Auditor;
+use Config;
 use ElasticClientController as ECC;
+use Exception;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 trait IndexElastic
 {
     use GetValueByPossibleKeys;
 
     private $datasets = [];
+
     private $durs = [];
+
     private $tools = [];
+
     private $publications = [];
+
     private $collections = [];
+
+    /**
+     * Single named resolution point for DatasetService within this trait.
+     *
+     * Constructor injection isn't viable here: IndexElastic is a trait consumed
+     * by ~20 unrelated controllers/jobs/observers, so there is no single
+     * constructor to inject into without a much larger refactor.
+     */
+    private function datasetService(): DatasetService
+    {
+        return app(DatasetService::class);
+    }
+
+    /**
+     * Reconstruct the full GWDM envelope for a dataset's latest version.
+     *
+     * DatasetVersion->metadata cannot be read directly for indexing: delta rows
+     * store an empty metadata blob, and GWDM 3.0 rows omit the `metadata` key
+     * entirely (their data lives in dedicated SQL tables). Funnelling through
+     * DatasetService::getReconstructedMetadataEnvelope() yields a complete
+     * {gwdmVersion, metadata, original_metadata} envelope for every schema
+     * version and every snapshot/delta storage shape. Validation is skipped —
+     * data is validated at write time.
+     *
+     * @return array The reconstructed envelope, or [] when the dataset has no versions.
+     */
+    private function reconstructedLatestEnvelope(Dataset $dataset, ?DatasetVersion $version = null): array
+    {
+        // Callers pass in an already-resolved version to avoid a second
+        // latestVersion() call. Must be a full row (patch + metadata loaded).
+        $version ??= $dataset->latestVersion();
+
+        if (! $version) {
+            return [];
+        }
+
+        return $this->datasetService()->getReconstructedMetadataEnvelope(
+            $dataset->id,
+            $version->version,
+            false,
+            $version,
+        );
+    }
+
+    /**
+     * Preload datasets by id (with their versions) keyed by id, so callers can
+     * resolve each dataset's latest version in memory rather than issuing a
+     * Dataset::where(...)->first() + latestVersion() query per row (N+1).
+     *
+     * @param  array<int|string>  $ids
+     * @return EloquentCollection<int, Dataset>
+     */
+    private function preloadDatasetsById(array $ids): EloquentCollection
+    {
+        return Dataset::whereIn('id', array_values(array_unique($ids)))
+            ->with(['versions' => fn ($q) => $q->select('id', 'dataset_id', 'version', 'short_title')])
+            ->get()
+            ->keyBy('id');
+    }
+
+    /**
+     * Resolve a preloaded dataset's latest version from its already-loaded
+     * `versions` relation (no query), mirroring Dataset::latestVersion()'s
+     * "highest version number" semantics.
+     */
+    private function latestLoadedVersion(?Dataset $dataset): ?DatasetVersion
+    {
+        return $dataset?->versions->sortByDesc('version')->first();
+    }
+
+    /**
+     * Metadata-derived Elastic fields for a reconstructed envelope, resolved
+     * through the version-appropriate GWDM handler. Keeps all GWDM path
+     * knowledge in the handlers rather than scattered across this trait.
+     */
+    private function elasticFieldsFor(array $envelope): array
+    {
+        return app(GwdmHandlerFactory::class)
+            ->resolve($envelope['gwdmVersion'] ?? Config::get('metadata.GWDM.version'))
+            ->toElasticFields($envelope);
+    }
+
+    private function isElasticIndexable(array $envelope): bool
+    {
+        $version = $envelope['gwdmVersion'] ?? null;
+
+        if ($version === null) {
+            return true; // shouldnt hit here, but perserve original behaviour if
+        }
+
+        return app(GwdmHandlerFactory::class)->resolve($version)->supportsElasticIndexing();
+    }
 
     /**
      * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
      *
-     * @param string $datasetId The dataset id from the DB.
-     * @param bool $returnParams Optional flag to return parameters.
-     *
-     * @return null|array
+     * @param  string  $datasetId  The dataset id from the DB.
+     * @param  bool  $returnParams  Optional flag to return parameters.
      */
-    public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true): null|array
+    public function reindexElastic(string $datasetId, bool $returnParams = false, bool $activeCheck = true): ?array
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
@@ -71,59 +166,54 @@ trait IndexElastic
                 // throw new \Exception("Error: DatasetVersion is missing for dataset ID=$datasetId.");
             }
 
-            $metadata = $datasetMatch->latestVersion()->metadata;
+            $latestVersion = $datasetMatch->latestVersion();
+            $metadata = $this->reconstructedLatestEnvelope($datasetMatch, $latestVersion);
 
-            // inject relationships via Local functions
-            $materialTypes = $this->getMaterialTypes($metadata);
-            $containsBioSamples = $this->getContainsBioSamples($materialTypes);
+            if (! $this->isElasticIndexable($metadata)) {
+                $this->deleteDatasetFromElastic($datasetId);
+
+                return null;
+            }
+
+            // Metadata-derived fields come from the version-appropriate GWDM handler.
+            $fields = $this->elasticFieldsFor($metadata);
+            // short_title/title are populated columns on every write (see DatasetVersion);
+            // only fall back to the envelope for legacy pre-migration rows where they're null.
+            $fields['shortTitle'] = $fields['shortTitle'] ?? $latestVersion->short_title;
+            $fields['title'] = $fields['title'] ?? $latestVersion->title;
+
             $projectGrants = $this->projectGrantsForDataset($datasetMatch->id);
 
-            $toIndex = [
-                'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
-                'keywords' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], '')),
-                'description' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.description'], ''),
-                'shortTitle' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], ''),
-                'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''),
-                'populationSize' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.populationSize'], -1),
-                'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
-                'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
-                'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(5)),
-                'dataType' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], '')),
-                'dataSubType' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetSubType'], '')),
-                'containsBioSamples' => $containsBioSamples,
-                'sampleAvailability' => $materialTypes,
-                'conformsTo' => $this->normalizeDelimitedList($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
-                'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
-                'named_entities' =>  array_map(fn ($entity) => $entity['name'], $datasetMatch->allNamedEntities),
+            // Relationship/DB-derived fields (not visible to the handler) merged on top.
+            $toIndex = array_merge($fields, [
+                'named_entities' => array_map(fn ($entity) => $entity['name'], $datasetMatch->allNamedEntities),
                 'collectionName' => array_map(fn ($collection) => $collection['name'], $datasetMatch->allCollections),
                 'dataUseTitles' => array_map(fn ($dur) => $dur['project_title'], $datasetMatch->allDurs),
                 'geographicLocation' => array_map(fn ($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
-                'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], null),
-                'datasetDOI' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.doiName'], ''),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
-                'formatAndStandards' => $this->formatAndStandard($this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'isCohortDiscovery' => $datasetMatch->is_cohort_discovery,
-                'datasetAliases' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetAliases'], ''),
                 // Project grants (for search & filtering)
                 'projectGrants' => $projectGrants,
                 'projectGrantNames' => array_values(array_unique(array_filter(array_map(
                     fn (array $g) => $g['projectGrantName'] ?? null,
                     $projectGrants
                 )))),
-            ];
+            ]);
 
             $params = [
                 'index' => ECC::ELASTIC_NAME_DATASET,
                 'id' => $datasetMatch->id,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
 
             if ($returnParams) {
                 unset($metadata);
+
                 return $params;
             }
             ECC::indexDocument($params);
+
             return null;
 
         } catch (Exception $e) {
@@ -135,38 +225,12 @@ trait IndexElastic
 
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
             throw new Exception($e->getMessage());
         }
-    }
-
-    private function formatAndStandard(string|array|null $value): ?array
-    {
-        $items = $this->normalizeDelimitedList($value);
-
-        return $items === [] ? null : $items;
-    }
-
-    /**
-     * Normalise GWDM delimited strings (;,;) or arrays into a flat list for indexing.
-     *
-     * @param  string|array<int, string>|null  $value
-     * @return array<int, string>
-     */
-    private function normalizeDelimitedList(string|array|null $value): array
-    {
-        if (is_array($value)) {
-            return array_values(array_filter($value, fn ($item) => $item !== '' && $item !== null));
-        }
-
-        if ($value === '' || $value === null) {
-            return [];
-        }
-
-        return array_values(array_filter(explode(';,;', (string) $value)));
     }
 
     /**
@@ -220,7 +284,7 @@ trait IndexElastic
             ]
         );
 
-        if (!count($rows)) {
+        if (! count($rows)) {
             return [];
         }
 
@@ -251,12 +315,10 @@ trait IndexElastic
     /**
      * Calls a re-indexing of Elastic search when a data provider id is given.
      *
-     * @param string $teamId The team id from the DB.
-     * @param bool $returnParams Optional flag to return parameters.
-     *
-     * @return null|array
+     * @param  string  $teamId  The team id from the DB.
+     * @param  bool  $returnParams  Optional flag to return parameters.
      */
-    public function reindexElasticDataProvider(string $teamId, bool $returnParams = false): null|array
+    public function reindexElasticDataProvider(string $teamId, bool $returnParams = false): ?array
     {
         try {
             $datasets = Dataset::where([
@@ -281,20 +343,23 @@ trait IndexElastic
             foreach ($datasets as $dataset) {
                 $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages);
                 foreach ($dataset['spatialCoverage'] as $loc) {
-                    if (!in_array($loc['region'], $locations)) {
+                    if (! in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
                     }
                 }
 
                 $latestVersion = $dataset->latestVersion();
                 if ($latestVersion) {
-                    $datasetVersionIds[] = $latestVersion->id;
-                    $metadata = $latestVersion->metadata;
-                    $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                    $types = explode(';,;', $metadata['metadata']['summary']['datasetType']);
-                    foreach ($types as $t) {
-                        if (!in_array($t, $dataTypes)) {
-                            $dataTypes[] = $t;
+                    $metadata = $this->reconstructedLatestEnvelope($dataset, $latestVersion);
+
+                    if ($this->isElasticIndexable($metadata)) {
+                        $fields = $this->elasticFieldsFor($metadata);
+                        $datasetVersionIds[] = $latestVersion->id;
+                        $datasetTitles[] = $latestVersion->short_title ?? $fields['shortTitle'];
+                        foreach ($fields['dataType'] as $t) {
+                            if (! in_array($t, $dataTypes)) {
+                                $dataTypes[] = $t;
+                            }
                         }
                     }
                 }
@@ -362,13 +427,14 @@ trait IndexElastic
                 'index' => 'dataprovider',
                 'id' => $teamId,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
             if ($returnParams) {
                 return $params;
             }
 
             ECC::indexDocument($params);
+
             return null;
 
         } catch (Exception $e) {
@@ -441,14 +507,12 @@ trait IndexElastic
     /**
      * Insert collection document into elastic index
      *
-     * @param integer $collectionId
-     * @param bool $returnParams Optional flag to return parameters.
-     * @return null|array
+     * @param  bool  $returnParams  Optional flag to return parameters.
      */
-    public function indexElasticCollections(int $collectionId, bool $returnParams = false): null|array
+    public function indexElasticCollections(int $collectionId, bool $returnParams = false): ?array
     {
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
-        $datasets = $collection->allDatasets  ?? [];
+        $datasets = $collection->allDatasets ?? [];
 
         $datasetIds = array_map(function ($dataset) {
             return $dataset['id'];
@@ -457,18 +521,27 @@ trait IndexElastic
         $collection = $collection->toArray();
         $team = $collection['team'];
 
-        $datasetTitles = array();
-        $datasetAbstracts = array();
+        $datasetTitles = [];
+        $datasetAbstracts = [];
+        $datasetsById = $this->preloadDatasetsById($datasetIds);
         foreach ($datasetIds as $d) {
-            $metadata = Dataset::where(['id' => $d])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
+            $datasetRow = $datasetsById->get($d);
+            $latestVersion = $this->latestLoadedVersion($datasetRow);
+            if (! $latestVersion) {
+                continue;
+            }
+
+            $metadata = $this->reconstructedLatestEnvelope($datasetRow);
+            if (! $this->isElasticIndexable($metadata)) {
+                continue;
+            }
+
+            $fields = $this->elasticFieldsFor($metadata);
+            $datasetTitles[] = $latestVersion->short_title ?? $fields['shortTitle'];
+            $datasetAbstracts[] = $fields['abstract'];
         }
 
-        $keywords = array();
+        $keywords = [];
         foreach ($collection['keywords'] as $k) {
             $keywords[] = $k['name'];
         }
@@ -491,25 +564,26 @@ trait IndexElastic
                 'datasetTitles' => $datasetTitles,
                 'datasetAbstracts' => $datasetAbstracts,
                 'keywords' => $keywords,
-                'dataProviderColl' => $dataProviderColl
+                'dataProviderColl' => $dataProviderColl,
             ];
             $params = [
                 'index' => ECC::ELASTIC_NAME_COLLECTION,
                 'id' => $collectionId,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
 
             if ($returnParams) {
                 return $params;
             }
             ECC::indexDocument($params);
+
             return null;
 
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -519,26 +593,23 @@ trait IndexElastic
 
     /**
      * Insert data provider document into elastic index
-     *
-     * @param integer $id
-     * @return void
      */
     private function indexElasticDataProviderColl(int $id): void
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
-
-        $datasetTitles = array();
-        $locations = array();
+        $datasetTitles = [];
+        $locations = [];
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
+            $datasets = Dataset::where('team_id', $team['id'])
+                ->with(['versions' => fn ($q) => $q->select('id', 'dataset_id', 'version', 'short_title')])
+                ->get();
 
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
-                $metadata = $dataset['versions'][0];
-                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+                $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages ?? []);
+                $datasetTitles[] = $this->latestLoadedVersion($dataset)?->short_title ?? '';
                 foreach ($dataset['spatialCoverage'] as $loc) {
-                    if (!in_array($loc['region'], $locations)) {
+                    if (! in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
                     }
                 }
@@ -556,7 +627,7 @@ trait IndexElastic
                 'index' => ECC::ELASTIC_NAME_DATAPROVIDERCOLL,
                 'id' => $id,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
 
             ECC::indexDocument($params);
@@ -564,7 +635,7 @@ trait IndexElastic
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -575,12 +646,10 @@ trait IndexElastic
     /**
      * Calls a re-indexing of Elastic search when a data use is created or updated
      *
-     * @param string $id The dur id from the DB
-     * @param bool $returnParams Optional flag to return parameters.
-     *
-     * @return null|array
+     * @param  string  $id  The dur id from the DB
+     * @param  bool  $returnParams  Optional flag to return parameters.
      */
-    public function indexElasticDur(string $id, bool $returnParams = false): null|array
+    public function indexElasticDur(string $id, bool $returnParams = false): ?array
     {
         try {
 
@@ -588,7 +657,7 @@ trait IndexElastic
                 ->with(['keywords', 'team', 'sector'])
                 ->first();
 
-            $datasets = $durMatch->allDatasets  ?? [];
+            $datasets = $durMatch->allDatasets ?? [];
 
             $datasetIds = array_map(function ($dataset) {
                 return $dataset['id'];
@@ -596,23 +665,20 @@ trait IndexElastic
 
             $durMatch = $durMatch->toArray();
 
-            $datasetTitles = array();
+            $datasetTitles = [];
+            $datasetsById = $this->preloadDatasetsById($datasetIds);
             foreach ($datasetIds as $d) {
-                $metadata = Dataset::where(['id' => $d])
-                    ->first()
-                    ->latestVersion()
-                    ->metadata;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                $datasetTitles[] = $this->latestLoadedVersion($datasetsById->get($d))?->short_title ?? '';
             }
 
-            $keywords = array();
+            $keywords = [];
             foreach ($durMatch['keywords'] as $k) {
                 $keywords[] = $k['name'];
             }
 
             $sector = ($durMatch['sector'] != null) ? Sector::where(
                 [
-                    'id' => $durMatch['sector']
+                    'id' => $durMatch['sector'],
                 ]
             )->first()->name : null;
 
@@ -642,7 +708,7 @@ trait IndexElastic
                 'index' => ECC::ELASTIC_NAME_DUR,
                 'id' => $id,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
 
             if ($returnParams) {
@@ -650,12 +716,13 @@ trait IndexElastic
             }
 
             ECC::indexDocument($params);
+
             return null;
 
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -666,12 +733,10 @@ trait IndexElastic
     /**
      * Calls a re-indexing of Elastic search when a publication is created or updated
      *
-     * @param string $id The publication id from the DB
-     * @param bool $returnParams Optional flag to return parameters.
-     *
-     * @return null|array
+     * @param  string  $id  The publication id from the DB
+     * @param  bool  $returnParams  Optional flag to return parameters.
      */
-    public function indexElasticPublication(string $id, bool $returnParams = false): null|array
+    public function indexElasticPublication(string $id, bool $returnParams = false): ?array
     {
         try {
             $pubMatch = Publication::where(['id' => $id])->with(['keywords:id,name'])->first();
@@ -697,26 +762,36 @@ trait IndexElastic
                 'UNKNOWN' => 'Unknown',
             ];
 
+            $datasetIds = collect($datasets)->pluck('id')->all();
+            $datasetsById = $this->preloadDatasetsById($datasetIds);
+
+            // Resolve each dataset's latest version once, then batch the
+            // link-type lookup, rather than querying per row (N+1).
+            $latestVersionByDataset = [];
+            foreach ($datasetIds as $datasetId) {
+                $latestVersionByDataset[$datasetId] = $this->latestLoadedVersion($datasetsById->get($datasetId));
+            }
+
+            $linkTypeByVersionId = PublicationHasDatasetVersion::where('publication_id', (int) $id)
+                ->whereIn('dataset_version_id', collect($latestVersionByDataset)->filter()->map->id->all())
+                ->pluck('link_type', 'dataset_version_id');
+
             foreach ($datasets as $dataset) {
-                $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
-                $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
-                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                $latestVersion = $latestVersionByDataset[$dataset['id']] ?? null;
+                $datasetTitles[] = $latestVersion?->short_title ?? '';
 
                 // change from 'UNKNOWN' to 'USING' - temp
-                $linkType = PublicationHasDatasetVersion::where([
-                    'publication_id' => (int)$id,
-                    'dataset_version_id' => (int)$latestVersionID
-                ])->first()->link_type ?? 'USING';
+                $linkType = ($latestVersion ? ($linkTypeByVersionId[$latestVersion->id] ?? null) : null) ?? 'USING';
 
-                $datasetLinkTypes[] =  array_key_exists($linkType, $linkTypeMappings) ? $linkTypeMappings[$linkType] : 'Unknown';
+                $datasetLinkTypes[] = array_key_exists($linkType, $linkTypeMappings) ? $linkTypeMappings[$linkType] : 'Unknown';
             }
 
             // Split string to array of strings
-            $publicationTypes = explode(",", $pubMatch['publication_type']);
+            $publicationTypes = explode(',', $pubMatch['publication_type']);
 
             // replace any empty strings with Research articles
             foreach ($publicationTypes as $i => $value) {
-                if ($value === "") {
+                if ($value === '') {
                     $publicationTypes[$i] = 'Research articles';
                 }
             }
@@ -737,19 +812,20 @@ trait IndexElastic
                 'index' => ECC::ELASTIC_NAME_PUBLICATION,
                 'id' => $id,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
             if ($returnParams) {
                 return $params;
             }
 
             ECC::indexDocument($params);
+
             return null;
 
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -760,11 +836,9 @@ trait IndexElastic
     /**
      * Insert tool document into elastic index
      *
-     * @param integer $toolId
-     * @param bool $returnParams Optional flag to return parameters.
-     * @return null|array
+     * @param  bool  $returnParams  Optional flag to return parameters.
      */
-    public function indexElasticTools(int $toolId, bool $returnParams = false): null|array
+    public function indexElasticTools(int $toolId, bool $returnParams = false): ?array
     {
         try {
             $tool = Tool::where('id', $toolId)
@@ -822,7 +896,7 @@ trait IndexElastic
                 ->all();
 
             $datasets = Dataset::whereIn('id', $datasetIDs)
-                ->with('versions')
+                ->with(['versions' => fn ($q) => $q->select('id', 'dataset_id', 'version', 'short_title')])
                 ->get();
 
             $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
@@ -833,13 +907,12 @@ trait IndexElastic
                 ->pluck('name')
                 ->all();
 
-            $datasetTitles = array();
+            $datasetTitles = [];
             if ($tool->any_dataset) {
                 $datasetTitles[] = '_Can be used with any dataset';
             } else {
                 foreach ($datasets as $dataset) {
-                    $dataset_version = $dataset['versions'][0];
-                    $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
+                    $datasetTitles[] = $this->latestLoadedVersion($dataset)?->short_title ?? '';
                 }
                 usort($datasetTitles, 'strcasecmp');
             }
@@ -858,14 +931,14 @@ trait IndexElastic
                 'datasetTitles' => $datasetTitles,
                 'dataProviderColl' => $dataProviderColl,
                 'dataProvider' => $tool['team']['name'] ?? null,
-                'resultsInsights' => $tool['results_insights']
+                'resultsInsights' => $tool['results_insights'],
             ];
 
             $params = [
                 'index' => ECC::ELASTIC_NAME_TOOL,
                 'id' => $toolId,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
 
             if ($returnParams) {
@@ -873,12 +946,13 @@ trait IndexElastic
             }
 
             ECC::indexDocument($params);
+
             return null;
 
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -889,9 +963,7 @@ trait IndexElastic
     /**
      * Reindex in bulk
      *
-     * @param array $ids
-     * @param callable $indexer Name of single index to call to get parameters
-     * @return void
+     * @param  callable  $indexer  Name of single index to call to get parameters
      */
     public function reindexElasticBulk(array $ids, callable $indexer): void
     {
@@ -911,10 +983,8 @@ trait IndexElastic
      * Calls a delete on the document in ElasticSearch index when a dataset is
      * deleted
      *
-     * @param string $id The id of the dataset to be deleted
-     * @param string $indexType index type: dataset, publication
-     *
-     * @return void
+     * @param  string  $id  The id of the dataset to be deleted
+     * @param  string  $indexType  index type: dataset, publication
      */
     public function deleteFromElastic(string $id, string $indexType): void
     {
@@ -923,7 +993,7 @@ trait IndexElastic
             $params = [
                 'index' => $indexType,
                 'id' => $id,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
 
             ECC::deleteDocument($params);
@@ -974,51 +1044,18 @@ trait IndexElastic
             // than re-throwing (mirrors indexElasticDataCustodianNetwork()).
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
         }
     }
 
-    public function getMaterialTypes(array $metadata): array|null
-    {
-        $materialTypes = null;
-        if (version_compare(Config::get('metadata.GWDM.version'), "2.0", "<")) {
-            $containsTissue = !empty($this->getValueByPossibleKeys($metadata, [
-                'metadata.coverage.biologicalsamples',
-                'metadata.coverage.physicalSampleAvailability',
-            ], ''));
-        } else {
-            $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
-            if (!is_null($tissues)) {
-                $materialTypes = array_reduce($tissues, function ($return, $item) {
-                    if ($item['materialType'] !== 'None/not available') {
-                        $return[] = $item['materialType'];
-                    }
-                    return $return;
-                }, []);
-                $materialTypes = count($materialTypes) === 0 ? null : array_unique($materialTypes);
-            }
-        }
-        return $materialTypes;
-    }
-
-    public function getContainsBioSamples(?array $materialTypes)
-    {
-        if ($materialTypes === null) {
-            return false;
-        }
-        return count($materialTypes) > 0;
-    }
-
     /**
      * Insert tool document into elastic index
      *
-     * @param integer $dataCustodianNetworkId
-     * @param bool $returnParams Optional flag to return parameters.
-     * @return null|array
+     * @param  bool  $returnParams  Optional flag to return parameters.
      */
-    public function indexElasticDataCustodianNetwork(int $dataCustodianNetworkId, bool $returnParams = false): null|array
+    public function indexElasticDataCustodianNetwork(int $dataCustodianNetworkId, bool $returnParams = false): ?array
     {
         try {
             $dpc = DataProviderColl::select('id', 'name', 'img_url', 'enabled', 'url', 'service', 'summary')
@@ -1031,7 +1068,7 @@ trait IndexElastic
             // happened whenever this ran right after creating/disabling a
             // network with enabled=false (the query used to filter on
             // enabled=1 here too, so it always came back empty in that case).
-            if (!$dpc || !$dpc->enabled) {
+            if (! $dpc || ! $dpc->enabled) {
                 return null;
             }
 
@@ -1068,7 +1105,7 @@ trait IndexElastic
                 'index' => ECC::ELASTIC_NAME_DATACUSTODIANNETWORK,
                 'id' => $dataCustodianNetworkId,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => 'application/json',
             ];
 
             if ($returnParams) {
@@ -1076,11 +1113,12 @@ trait IndexElastic
             }
 
             ECC::indexDocument($params);
+
             return null;
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this).'@'.__FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
 
@@ -1120,6 +1158,7 @@ trait IndexElastic
         foreach ($datasetIds as $datasetId) {
             $datasetResources = $this->checkingDataset($datasetId);
         }
+
         return true;
     }
 
@@ -1133,18 +1172,12 @@ trait IndexElastic
         $publicationIds = array_column($dataset->allActivePublications, 'id') ?? [];
         $toolIds = array_column($dataset->allActiveTools, 'id') ?? [];
 
-        $version = $dataset->latestVersion();
-        $withLinks = DatasetVersion::where('id', $version['id'])
-            ->with(['linkedDatasetVersions'])
-            ->first();
+        $latestVersion = $dataset->latestVersion();
+        $envelope = $this->reconstructedLatestEnvelope($dataset, $latestVersion);
 
-        $dataset->setAttribute('versions', [$withLinks]);
-
-        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
-
-        $title = $this->getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = $this->getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = $this->getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+        // title/short_title are populated columns on every write; only fall back
+        // to the reconstructed envelope for legacy pre-migration rows.
+        $title = $latestVersion?->title ?? $this->elasticFieldsFor($envelope)['title'];
 
         $this->datasets[] = [
             'title' => $title,
@@ -1159,7 +1192,7 @@ trait IndexElastic
             'durs' => $durIds,
             'publications' => $publicationIds,
             'tools' => $toolIds,
-            'collections' => $collectionIds
+            'collections' => $collectionIds,
         ];
 
         return $datasetResources;
@@ -1170,21 +1203,22 @@ trait IndexElastic
         $collectionNames = [];
 
         $collectionHasDurs = CollectionHasDur::where([
-                'dur_id' => $durId,
-            ])
+            'dur_id' => $durId,
+        ])
             ->select('collection_id')
             ->get()
             ->toArray();
 
-        if (!count($collectionHasDurs)) {
+        if (! count($collectionHasDurs)) {
             return $collectionNames;
         }
         $collectionIds = convertArrayToArrayWithKeyName($collectionHasDurs, 'collection_id');
         $collectionNames = Collection::where('status', Collection::STATUS_ACTIVE)
-                            ->whereIn('id', $collectionIds)
-                            ->select('name')
-                            ->get()
-                            ->toArray();
+            ->whereIn('id', $collectionIds)
+            ->select('name')
+            ->get()
+            ->toArray();
+
         return convertArrayToArrayWithKeyName($collectionNames, 'name');
     }
 }
