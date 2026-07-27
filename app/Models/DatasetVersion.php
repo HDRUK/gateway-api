@@ -312,6 +312,19 @@ class DatasetVersion extends BaseTypesenseModel
      * Backs both containsBioSamples (boolean) and sampleAvailability
      * (the material type list itself) — same source, two views.
      */
+    /**
+     * Normalises a GWDM field that is usually a ';,;'-delimited string but is
+     * sometimes stored as a JSON array (seen in some imported metadata).
+     */
+    private function splitDelimited(mixed $value): array
+    {
+        if (is_array($value)) {
+            return array_values(array_filter($value, fn ($v) => $v !== null && $v !== ''));
+        }
+
+        return array_values(array_filter(explode(';,;', $value ?? '')));
+    }
+
     private function materialTypes(array $meta): ?array
     {
         $tissues = data_get($meta, 'metadata.tissuesSampleCollection', null);
@@ -353,18 +366,18 @@ class DatasetVersion extends BaseTypesenseModel
             'shortTitle'                    => $this->short_title ?? '',
             'abstract'                      => data_get($meta, 'metadata.summary.abstract', ''),
             'description'                   => data_get($meta, 'metadata.summary.description', ''),
-            'keywords'                      => array_values(array_filter(explode(';,;', $keywords))),
+            'keywords'                      => $this->splitDelimited($keywords),
             'publisherName'                 => data_get(
                 $meta,
                 'metadata.summary.publisher.name',
                 data_get($meta, 'metadata.summary.publisher.publisherName', '')
             ),
-            'dataType'                      => array_values(array_filter(explode(';,;', $dataType))),
-            'dataSubType'                   => array_values(array_filter(explode(';,;', $dataSubType))),
+            'dataType'                      => $this->splitDelimited($dataType),
+            'dataSubType'                   => $this->splitDelimited($dataSubType),
             'populationSize'                => (int) data_get($meta, 'metadata.summary.populationSize', -1),
             'geographicLocation'            => $this->spatialCoverage->pluck('region')->all(),
             'datasetDOI'                    => data_get($meta, 'metadata.summary.doiName', ''),
-            'formatAndStandards'            => array_values(array_filter(explode(';,;', $formatAndStandards))),
+            'formatAndStandards'            => $this->splitDelimited($formatAndStandards),
             'accessService'                 => data_get($meta, 'metadata.accessibility.access.accessServiceCategory', '') ?? '',
             'containsBioSamples'            => $materialTypes !== null,
             'sampleAvailability'            => $materialTypes ?? [],
