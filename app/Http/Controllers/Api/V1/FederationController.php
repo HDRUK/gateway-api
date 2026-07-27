@@ -85,6 +85,7 @@ class FederationController extends Controller
      *                   @OA\Property(property="tested", type="boolean", example="0"),
      *                   @OA\Property(property="is_running", type="boolean", example="0"),
      *                   @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="last_run_at", type="datetime", example="2026-07-25 09:12:04", nullable=true),
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations?page=1"),
@@ -116,11 +117,15 @@ class FederationController extends Controller
                 $query->where('id', $teamId);
             })->with(['team', 'notifications.userNotification'])->paginate($perPage, ['*'], 'page');
 
-            $federations->getCollection()->transform(function ($federation) {
+            $federationIds = $federations->getCollection()->map(fn ($federation) => $federation->id)->all();
+            $lastRunTimes = $federationIds === [] ? collect() : FederationJobRun::latestRunTimesForFederationIds($federationIds);
+
+            $federations->getCollection()->transform(function ($federation) use ($lastRunTimes) {
                 $federation->setAttribute('auth_secret_key', $this->decryptAuthSecretKey(
                     $federation->auth_secret_key_location,
                     $federation->auth_type
                 ));
+                $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id));
                 return $federation;
             });
 
