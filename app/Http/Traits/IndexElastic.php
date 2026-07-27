@@ -32,6 +32,7 @@ use Auditor;
 use Config;
 use ElasticClientController as ECC;
 use Exception;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 trait IndexElastic
 {
@@ -96,9 +97,9 @@ trait IndexElastic
      * Dataset::where(...)->first() + latestVersion() query per row (N+1).
      *
      * @param  array<int|string>  $ids
-     * @return \Illuminate\Support\Collection<int, Dataset>
+     * @return EloquentCollection<int, Dataset>
      */
-    private function preloadDatasetsById(array $ids): \Illuminate\Support\Collection
+    private function preloadDatasetsById(array $ids): EloquentCollection
     {
         return Dataset::whereIn('id', array_values(array_unique($ids)))
             ->with(['versions' => fn ($q) => $q->select('id', 'dataset_id', 'version', 'short_title')])
