@@ -34,7 +34,7 @@ class GwdmHandlerElasticFieldsTest extends TestCase
 
     public function test_extracts_metadata_fields_from_the_envelope(): void
     {
-        $fields = (new GwdmHandlerFactory)->resolve('2.0')->toElasticFields($this->envelope());
+        $fields = (new GwdmHandlerFactory())->resolve('2.0')->toElasticFields($this->envelope());
 
         $this->assertStringStartsWith('Publications that mention HDR-UK', $fields['abstract']);
         $this->assertSame('HDR UK Papers & Preprints', $fields['shortTitle']);
@@ -47,7 +47,7 @@ class GwdmHandlerElasticFieldsTest extends TestCase
 
     public function test_material_types_come_through_as_a_json_list(): void
     {
-        $fields = (new GwdmHandlerFactory)->resolve('2.0')->toElasticFields($this->envelope());
+        $fields = (new GwdmHandlerFactory())->resolve('2.0')->toElasticFields($this->envelope());
 
         $this->assertTrue($fields['containsBioSamples']);
         $this->assertContains('Blood', $fields['sampleAvailability']);
@@ -58,7 +58,7 @@ class GwdmHandlerElasticFieldsTest extends TestCase
     public function test_missing_fields_fall_back_to_defaults(): void
     {
         // Empty envelope -> every metadata path is absent.
-        $fields = (new GwdmHandlerFactory)->resolve('2.0')->toElasticFields([]);
+        $fields = (new GwdmHandlerFactory())->resolve('2.0')->toElasticFields([]);
 
         $this->assertSame('', $fields['abstract']);
         $this->assertSame([], $fields['dataType']);

@@ -26,7 +26,9 @@ use Illuminate\Support\Carbon;
  */
 abstract class GwdmMetadataHandler
 {
-    public function __construct(protected readonly string $resolvedVersion) {}
+    public function __construct(protected readonly string $resolvedVersion)
+    {
+    }
 
     // ── Version identity ──────────────────────────────────────────────────────
 

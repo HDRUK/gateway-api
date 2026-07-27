@@ -47,7 +47,7 @@ class DatasetHydratorTest extends TestCase
 
         $hit = $this->makeHit((string) $dataset->id);
 
-        $results = (new DatasetHydrator)->hydrate([$hit]);
+        $results = (new DatasetHydrator())->hydrate([$hit]);
 
         $this->assertCount(1, $results, 'Expected one hydrated hit for a snapshot dataset');
         $this->assertEquals('Snapshot Title', $results[0]['metadata']['summary']['title']);
@@ -73,7 +73,7 @@ class DatasetHydratorTest extends TestCase
 
         $hit = $this->makeHit((string) $dataset->id);
 
-        $results = (new DatasetHydrator)->hydrate([$hit]);
+        $results = (new DatasetHydrator())->hydrate([$hit]);
 
         $this->assertCount(1, $results, 'DatasetHydrator dropped a delta-versioned dataset — reconstruction is broken');
         $this->assertEquals(
@@ -89,7 +89,7 @@ class DatasetHydratorTest extends TestCase
 
         $hit = $this->makeHit((string) $dataset->id);
 
-        $results = (new DatasetHydrator)->hydrate([$hit]);
+        $results = (new DatasetHydrator())->hydrate([$hit]);
 
         $this->assertCount(1, $results);
         $this->assertEquals('V3 Title', $results[0]['metadata']['summary']['title']);
@@ -138,7 +138,7 @@ class DatasetHydratorTest extends TestCase
             'short_title' => 'Updated via Delta',
         ]);
 
-        $results = (new DatasetHydrator)->hydrate([$this->makeHit((string) $dataset->id)]);
+        $results = (new DatasetHydrator())->hydrate([$this->makeHit((string) $dataset->id)]);
 
         $this->assertCount(1, $results);
         $this->assertSame(
@@ -165,7 +165,7 @@ class DatasetHydratorTest extends TestCase
 
         \DB::flushQueryLog();
         \DB::enableQueryLog();
-        $results = (new DatasetHydrator)->hydrate($hits);
+        $results = (new DatasetHydrator())->hydrate($hits);
         $queryCount = count(\DB::getQueryLog());
         \DB::disableQueryLog();
 
@@ -186,7 +186,7 @@ class DatasetHydratorTest extends TestCase
     {
         $hit = $this->makeHit('99999');
 
-        $results = (new DatasetHydrator)->hydrate([$hit]);
+        $results = (new DatasetHydrator())->hydrate([$hit]);
 
         $this->assertEmpty($results, 'Hit for a non-existent dataset should be dropped');
     }
@@ -195,7 +195,7 @@ class DatasetHydratorTest extends TestCase
     {
         [$dataset] = $this->createDatasetWithSnapshotVersion('Real Dataset');
 
-        $results = (new DatasetHydrator)->hydrate([
+        $results = (new DatasetHydrator())->hydrate([
             $this->makeHit((string) $dataset->id),
             $this->makeHit('99999'),
         ]);
@@ -217,7 +217,7 @@ class DatasetHydratorTest extends TestCase
 
         $hit = $this->makeHit((string) $dataset->id);
 
-        $results = (new DatasetHydrator)->hydrate([$hit]);
+        $results = (new DatasetHydrator())->hydrate([$hit]);
 
         $this->assertEmpty($results, 'Hit whose team was soft-deleted should be dropped, not crash');
     }
