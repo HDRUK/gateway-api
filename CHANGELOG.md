@@ -1,3 +1,17 @@
+## [2.47.0](https://github.com/HDRUK/gateway-api/compare/v2.46.0...v2.47.0) (2026-07-28)
+
+### ✨ Features
+
+* **GAT-9143:** #3 - Prevent string/array typed keywords crashing TS indexing. (#1717) ([72e4f0f](https://github.com/HDRUK/gateway-api/commit/72e4f0fb31485ec8396f20029b7e02d3055235aa)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9143:** Implements the first migration tests to typesense migration. Datasets and Tools. (#1697) ([2bb2389](https://github.com/HDRUK/gateway-api/commit/2bb23898502857bc3c24b3a2f35ee177bbf16215)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9231:** add federation run-history API endpoint ([19c6ba2](https://github.com/HDRUK/gateway-api/commit/19c6ba2fcfa55672db13d5086e6acbca8c95502b)), closes [GAT-9231](undefinedGAT-9231)
+* **GAT-9231:** extract job-run history fetch/parse onto FederationJobRun ([397a2d0](https://github.com/HDRUK/gateway-api/commit/397a2d0a2ef551ba21c6e50243ca25c7e526e905)), closes [GAT-9231](undefinedGAT-9231)
+
+### 🐛 Bug Fixes
+
+* **GAT-9246:** IndexElastic and Typesense metadata loading fixes (#1714) ([e2e5c01](https://github.com/HDRUK/gateway-api/commit/e2e5c016606ac9c688ec676a1b6b73cc54217087))
+* **GAT-9247:** Fix for programmatically created/run federations (#1712) ([006f43d](https://github.com/HDRUK/gateway-api/commit/006f43d512be3ef3a7aa07ec650d188106d674fd))
+
 ## [2.46.0](https://github.com/HDRUK/gateway-api/compare/v2.45.0...v2.46.0) (2026-07-24)
 
 ### ✨ Features
