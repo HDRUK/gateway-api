@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
+use App\Models\Publication;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\DatasetService;
@@ -286,5 +288,37 @@ class DatasetVersionLinkageTest extends TestCase
         [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
 
         $this->assertSame([], $this->handler()->afterRead(DatasetVersion::find($sourceVersionId)));
+    }
+
+    /**
+     * A version with a publication linkage but NO dataset linkage must emit
+     * datasetLinkage as null, not []. An empty PHP array encodes to `[]`, which
+     * fails GWDM validation ("datasetLinkage must be object or null") — this is the
+     * regression behind the failed reconstruction of publication-only datasets.
+     */
+    public function test_after_read_emits_null_dataset_linkage_when_only_publication_linked(): void
+    {
+        $this->disableObservers();
+
+        [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+
+        // A publication link (but deliberately no dataset-to-dataset linkage rows).
+        $publication = Publication::factory()->create(['paper_doi' => '10.1371/journal.pone.0338652']);
+        PublicationHasDatasetVersion::create([
+            'publication_id' => $publication->id,
+            'dataset_version_id' => $sourceVersionId,
+            'link_type' => 'USING',
+            'description' => Gwdm2xHandler::LINKAGE_DESCRIPTION,
+        ]);
+
+        $linkage = $this->handler()->afterRead(DatasetVersion::find($sourceVersionId))['linkage'];
+
+        // Publication link present, so afterRead does NOT fall through to [].
+        $this->assertSame(['10.1371/journal.pone.0338652'], $linkage['publicationUsingDataset']);
+        // The key fix: no dataset links → null, never an empty array.
+        $this->assertNull($linkage['datasetLinkage']);
+
+        // And the encoded shape is a JSON null (object-or-null), not a `[]` array.
+        $this->assertStringContainsString('"datasetLinkage":null', json_encode($linkage));
     }
 }
