@@ -331,9 +331,17 @@ class DatasetVersion extends BaseTypesenseModel
         ]);
     }
 
+    /**
+     * @param  Builder<DatasetVersion>  $query
+     * @return Builder<DatasetVersion>
+     */
     public function makeAllSearchableUsing(Builder $query): Builder
     {
-        return $query->with(['spatialCoverage', 'dataset']);
+        // Pre-filter to indexable rows at the DB level (single correlated
+        // subquery) instead of pulling every historical version through the
+        // chunk and eager-loads only to be discarded by shouldBeSearchable()'s
+        // per-row query. See scopeIndexEligible() for the equivalence.
+        return $query->indexEligible()->with(['spatialCoverage', 'dataset']);
     }
 
     public function typesenseSearchParameters(): array

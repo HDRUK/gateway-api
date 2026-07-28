@@ -30,7 +30,7 @@ class ReindexTypesenseEntity implements ShouldQueue
      */
     public function __construct(string $entity)
     {
-        $this->onQueue('enrichment');
+        $this->onQueue('indexing');
         $this->timeout = config('jobs.default_timeout', 600);
         $this->tries = config('jobs.ntries', 2);
         $this->entity = $entity;
