@@ -316,7 +316,11 @@ class Gwdm2xHandler extends GwdmMetadataHandler
 
         return [
             'linkage' => [
-                'datasetLinkage' => $datasetLinkage,
+                // GWDM schema requires datasetLinkage to be an object or null.
+                // An empty PHP array JSON-encodes to `[]`, which fails validation,
+                // so collapse the no-linkages case to null. A populated linkage has
+                // string keys (linkage_type) and correctly encodes to an object.
+                'datasetLinkage' => empty($datasetLinkage) ? null : $datasetLinkage,
                 'publicationAboutDataset' => $aboutDataset,
                 'publicationUsingDataset' => $usingDataset,
             ],
