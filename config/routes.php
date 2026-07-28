@@ -188,6 +188,44 @@ return [
         ],
     ],
     [
+        'name' => 'admin_search.status',
+        'method' => 'get',
+        'path' => '/admin/search/status',
+        'methodController' => 'AdminSearchController@status',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin_search.reindex',
+        'method' => 'post',
+        'path' => '/admin/search/reindex',
+        'methodController' => 'AdminSearchController@reindex',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin_search.feature',
+        'method' => 'post',
+        'path' => '/admin/search/feature',
+        'methodController' => 'AdminSearchController@toggleFeature',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
         'name' => 'widgets',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets',
@@ -2758,6 +2796,21 @@ return [
         'method' => 'get',
         'path' => '/teams/{teamId}/federations/{federationId}/run',
         'methodController' => 'FederationController@runNow',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,integrations.metadata',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'federationId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.federation.history',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/federations/{federationId}/history',
+        'methodController' => 'FederationController@history',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

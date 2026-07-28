@@ -52,7 +52,12 @@ class TestFederation implements ShouldQueue
 
     public function handle(): array
     {
-        $this->gsms = new GoogleSecretManagerService();
+        // Resolved via the container (not `new`) so it can be mocked in tests
+        // and to match ProcessFederation's identical pattern — real GCP
+        // Application Default Credentials are only ever needed for BEARER/
+        // API_KEY federations, but the client's constructor tries to resolve
+        // them unconditionally, so this must stay mockable even for NO_AUTH.
+        $this->gsms = app(GoogleSecretManagerService::class);
 
         $testCall = $this->pullCatalogueList($this->federation->toArray(), $this->gsms);
         if (is_array($testCall)) {

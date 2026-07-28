@@ -5,6 +5,7 @@ namespace App\Services\Gwdm;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
+use Illuminate\Support\Carbon;
 
 /**
  * Per-version metadata lifecycle handler.
@@ -50,11 +51,11 @@ abstract class GwdmMetadataHandler
      *      merging over any existing required fields so DB-derived values win.
      *   2. Call buildPublisher() and write the result into $gwdm['summary']['publisher'].
      *
-     * @param  array   $gwdm          Post-TRASER GWDM metadata object
-     * @param  Dataset $dataset       The parent dataset row (for gatewayId, pid, dates)
-     * @param  Team    $team          Owning team (for publisher fields)
-     * @param  int     $versionNumber The version number being written (1 on create)
-     * @return array                  Mutated GWDM array ready for envelope + storage
+     * @param  array  $gwdm  Post-TRASER GWDM metadata object
+     * @param  Dataset  $dataset  The parent dataset row (for gatewayId, pid, dates)
+     * @param  Team  $team  Owning team (for publisher fields)
+     * @param  int  $versionNumber  The version number being written (1 on create)
+     * @return array Mutated GWDM array ready for envelope + storage
      */
     abstract public function prepareMetadata(
         array $gwdm,
@@ -102,8 +103,8 @@ abstract class GwdmMetadataHandler
     public function buildEnvelope(array $gwdm, array $originalMetadata): array
     {
         return [
-            'gwdmVersion'       => $this->version(),
-            'metadata'          => $gwdm,
+            'gwdmVersion' => $this->version(),
+            'metadata' => $gwdm,
             'original_metadata' => $originalMetadata,
         ];
     }
@@ -121,6 +122,7 @@ abstract class GwdmMetadataHandler
         if (array_key_exists('metadata', $storedData)) {
             return $storedData['metadata'];
         }
+
         return $storedData;
     }
 
@@ -134,7 +136,7 @@ abstract class GwdmMetadataHandler
      */
     public function extractTitleFields(array $gwdm): array
     {
-        $title      = $gwdm['summary']['title'] ?? null;
+        $title = $gwdm['summary']['title'] ?? null;
         $shortTitle = $gwdm['summary']['shortTitle'] ?? $title;
 
         return [$title, $shortTitle];
@@ -190,6 +192,139 @@ abstract class GwdmMetadataHandler
     }
 
     /**
+     * Whether datasets on this GWDM version should be indexed into Elasticsearch.
+     */
+    public function supportsElasticIndexing(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Distinct biological material types for a GWDM metadata block (the inner
+     * `metadata` object). Version-specific: the base has no material-type
+     * concept and returns null; 2.x+ reads `tissuesSampleCollection`.
+     *
+     * @param  array<string, mixed>  $metadata  inner GWDM metadata block
+     * @return array<int, string>|null
+     */
+    public function getMaterialTypes(array $metadata): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Extract Typesense-searchable fields from a reconstructed GWDM envelope.
+     * Override when a version's field shapes diverge from delimited strings.
+     */
+    public function toSearchableFields(array $envelope): array
+    {
+        $keywords = data_get($envelope, 'metadata.summary.keywords', '');
+        $dataType = data_get($envelope, 'metadata.summary.datasetType', '');
+        $dataSubType = data_get($envelope, 'metadata.summary.datasetSubType', '') ?? '';
+        // FE-facing facet key is "formatAndStandards" per the `filters` table, though the
+        // GWDM value it surfaces is the nested conformsTo array within that object.
+        $formatAndStandards = data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo', '');
+        // Material types are version-specific (base = none); getMaterialTypes() dispatches
+        // to the right handler. Backs containsBioSamples (bool) and sampleAvailability (list).
+        $materialTypes = $this->getMaterialTypes(data_get($envelope, 'metadata', []) ?? []);
+        $structural = data_get($envelope, 'metadata.structuralMetadata', []);
+
+        if (is_string($structural)) {
+            $structural = json_decode($structural, true) ?? [];
+        }
+        if (! is_array($structural)) {
+            $structural = [];
+        }
+
+        return [
+            'abstract' => data_get($envelope, 'metadata.summary.abstract', ''),
+            'description' => data_get($envelope, 'metadata.summary.description', ''),
+            'keywords' => $this->normalizeDelimited($keywords),
+            'publisherName' => data_get(
+                $envelope,
+                'metadata.summary.publisher.name',
+                data_get($envelope, 'metadata.summary.publisher.publisherName', '')
+            ),
+            'dataType' => $this->normalizeDelimited($dataType),
+            'dataSubType' => $this->normalizeDelimited($dataSubType),
+            'populationSize' => (int) data_get($envelope, 'metadata.summary.populationSize', -1),
+            'datasetDOI' => data_get($envelope, 'metadata.summary.doiName', ''),
+            'formatAndStandards' => $this->normalizeDelimited($formatAndStandards),
+            'accessService' => data_get($envelope, 'metadata.accessibility.access.accessServiceCategory', '') ?? '',
+            'containsBioSamples' => $materialTypes !== null,
+            'sampleAvailability' => array_values($materialTypes ?? []),
+            'structuralTableNames' => collect($structural)
+                ->pluck('name')
+                ->filter(fn ($v) => is_string($v) && $v !== '')
+                ->values()->all(),
+            'structuralColumnNames' => collect($structural)
+                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('name'))
+                ->filter(fn ($v) => is_string($v) && $v !== '')
+                ->values()->all(),
+            'structuralColumnDescriptions' => collect($structural)
+                ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('description'))
+                ->filter(fn ($v) => is_string($v) && $v !== '')
+                ->values()->all(),
+        ];
+    }
+
+    /**
+     * Extract the metadata-derived fields for the Elasticsearch dataset index
+     * from a reconstructed GWDM envelope. Relationship/DB-derived fields
+     * (named entities, collections, spatial coverage, project grants, etc.) are
+     * NOT here — the handler only sees the envelope; the caller merges those in.
+     *
+     * Override when a version's field shapes diverge.
+     */
+    public function toElasticFields(array $envelope): array
+    {
+        $materialTypes = $this->getMaterialTypes(data_get($envelope, 'metadata', []) ?? []);
+        $conformsTo = $this->normalizeDelimited(data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo') ?? '');
+
+        return [
+            'abstract' => data_get($envelope, 'metadata.summary.abstract') ?? '',
+            'keywords' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.keywords') ?? ''),
+            'description' => data_get($envelope, 'metadata.summary.description') ?? '',
+            'shortTitle' => data_get($envelope, 'metadata.summary.shortTitle') ?? '',
+            'title' => data_get($envelope, 'metadata.summary.title') ?? '',
+            'populationSize' => data_get($envelope, 'metadata.summary.populationSize') ?? -1,
+            'publisherName' => data_get($envelope, 'metadata.summary.publisher.name')
+                ?? data_get($envelope, 'metadata.summary.publisher.publisherName') ?? '',
+            'startDate' => data_get($envelope, 'metadata.provenance.temporal.startDate'),
+            'endDate' => data_get($envelope, 'metadata.provenance.temporal.endDate') ?? Carbon::now()->addYears(5),
+            'dataType' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.datasetType') ?? ''),
+            'dataSubType' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.datasetSubType') ?? ''),
+            'containsBioSamples' => $materialTypes !== null && count($materialTypes) > 0,
+            'sampleAvailability' => $materialTypes,
+            'conformsTo' => $conformsTo,
+            'hasTechnicalMetadata' => (bool) count((array) (data_get($envelope, 'metadata.structuralMetadata') ?? [])),
+            'accessService' => data_get($envelope, 'metadata.accessibility.access.accessServiceCategory'),
+            'datasetDOI' => data_get($envelope, 'metadata.summary.doiName') ?? '',
+            'formatAndStandards' => $conformsTo === [] ? null : $conformsTo,
+            'datasetAliases' => data_get($envelope, 'metadata.summary.datasetAliases') ?? '',
+        ];
+    }
+
+    /**
+     * Normalise a GWDM delimited string (";,;") or array into a flat, non-empty list.
+     *
+     * @param  string|array<int, mixed>|null  $value
+     * @return array<int, mixed>
+     */
+    protected function normalizeDelimited(string|array|null $value): array
+    {
+        if (is_array($value)) {
+            return array_values(array_filter($value, fn ($item) => $item !== '' && $item !== null));
+        }
+
+        if ($value === '' || $value === null) {
+            return [];
+        }
+
+        return array_values(array_filter(explode(';,;', $value)));
+    }
+
+    /**
      * Return the flat dataset-linkage list for a version (the frontend
      * `linkages` attribute: {title, url, dataset_id, linkage_type}).
      *
@@ -220,13 +355,13 @@ abstract class GwdmMetadataHandler
     public function defaultValuePaths(): array
     {
         return [
-            'dataUseLimitation'   => 'metadata.accessibility.usage.dataUseLimitation',
+            'dataUseLimitation' => 'metadata.accessibility.usage.dataUseLimitation',
             'dataUseRequirements' => 'metadata.accessibility.usage.dataUseRequirements',
-            'accessRights'        => 'metadata.accessibility.access.accessRights',
-            'accessService'       => 'metadata.accessibility.access.accessService',
-            'accessRequestCost'   => 'metadata.accessibility.access.accessRequestCost',
-            'deliveryLeadTime'    => 'metadata.accessibility.access.deliveryLeadTime',
-            'formats'             => 'metadata.accessibility.formatAndStandards.formats',
+            'accessRights' => 'metadata.accessibility.access.accessRights',
+            'accessService' => 'metadata.accessibility.access.accessService',
+            'accessRequestCost' => 'metadata.accessibility.access.accessRequestCost',
+            'deliveryLeadTime' => 'metadata.accessibility.access.deliveryLeadTime',
+            'formats' => 'metadata.accessibility.formatAndStandards.formats',
         ];
     }
 
@@ -247,7 +382,7 @@ abstract class GwdmMetadataHandler
         sort($all);
 
         return array_map(fn (int $v) => [
-            'url'     => config('gateway.gateway_url') . '/dataset/' . $dataset->id . '?version=' . $this->formatVersion($v),
+            'url' => config('gateway.gateway_url').'/dataset/'.$dataset->id.'?version='.$this->formatVersion($v),
             'version' => $this->formatVersion($v),
         ], $all);
     }

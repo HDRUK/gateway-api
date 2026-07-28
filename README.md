@@ -1,4 +1,4 @@
-# HDR UK Gateway - API (Laravel)
+# HDR UK Gateway - API (Laravel).
 
 Welcome to the HDR UK Gateway API, a Laravel application that powers the Gateway.
 

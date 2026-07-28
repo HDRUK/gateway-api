@@ -102,18 +102,13 @@ class SendEmailCustomIntegration implements ShouldQueue
 
     public function getFederationHistory(): array
     {
-        $pids = $this->getUniquePid();
+        $latestAttempts = FederationJobRun::latestPerPidForExecution($this->federationId, $this->jobUuid);
 
         $integrationSuccess = '<ul>';
         $integrationErrors  = '<ul>';
         $successCount       = 0;
 
-        foreach ($pids as $pid) {
-            $latestAttempt = FederationJobRun::where('job_uuid', $this->jobUuid)
-                ->where('pid', $pid)
-                ->latest()
-                ->first();
-
+        foreach ($latestAttempts as $latestAttempt) {
             if ($latestAttempt->status === 1) {
                 $details = data_get($latestAttempt, 'details.message', '');
                 $integrationSuccess .= "<li>PID: {$latestAttempt->pid} - {$details}</li>";
@@ -121,8 +116,9 @@ class SendEmailCustomIntegration implements ShouldQueue
             }
 
             if ($latestAttempt->status === 0) {
-                $details = data_get($latestAttempt, 'details.message', []);
-                $error   = is_array($details) ? $this->getErrors($details) : (string) $details;
+                $error = collect($latestAttempt->errorMessages())
+                    ->map(fn ($entry) => $entry['schema'] ? "{$entry['schema']}  - {$entry['message']}<br>" : $entry['message'])
+                    ->implode('');
                 $integrationErrors .= "<li>PID - {$latestAttempt->pid}:<br>{$error}</li>";
             }
         }
@@ -185,27 +181,4 @@ class SendEmailCustomIntegration implements ShouldQueue
         return '<ul>' . collect($users)->map(fn ($user) => "<li>{$user->name}</li>")->implode('') . '</ul>';
     }
 
-    public function getUniquePid(): array
-    {
-        return FederationJobRun::select('pid')
-            ->where('job_uuid', $this->jobUuid)
-            ->where('federation_id', $this->federationId)
-            ->distinct()
-            ->pluck('pid')
-            ->toArray();
-    }
-
-    public function getErrors(array $errors): string
-    {
-        $string = '';
-
-        foreach ($errors as $err) {
-            $stringSchema = "{$err['name']}/{$err['version']}";
-            foreach ($err['errors'] as $item) {
-                $string .= "{$stringSchema}  - {$item['message']}<br>";
-            }
-        }
-
-        return $string;
-    }
 }

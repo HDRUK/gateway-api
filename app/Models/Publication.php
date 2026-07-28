@@ -7,6 +7,7 @@ use App\Models\Base\BaseTypesenseModel;
 use App\Models\Traits\SortManager;
 use App\Models\Traits\EntityCounter;
 use App\Observers\PublicationObserver;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -104,7 +105,7 @@ class Publication extends BaseTypesenseModel
     /**
      * Retrieve versions associated with this publication.
      */
-    public function versions()
+    public function versions(): BelongsToMany
     {
         return $this->belongsToMany(
             DatasetVersion::class,
@@ -112,6 +113,7 @@ class Publication extends BaseTypesenseModel
             'publication_id',
             'dataset_version_id'
         )
+        ->withPivot('link_type')
         ->whereNull('publication_has_dataset_version.deleted_at')
         ->whereIn(
             'dataset_versions.dataset_id',
@@ -171,6 +173,62 @@ class Publication extends BaseTypesenseModel
         return $this->status === self::STATUS_ACTIVE && $this->deleted_at === null;
     }
 
+    /**
+     * Query-level mirror of shouldBeSearchable(), for callers that need a
+     * count/filter of indexable rows rather than a per-instance check (e.g.
+     * AdminSearchController's eligibleCount). SoftDeletes' own global scope
+     * already excludes deleted_at, so only the status check is needed here.
+     */
+    public function scopeIndexEligible(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    public function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('versions');
+    }
+
+    // Mirrors legacy indexElasticPublication(): publication_type is a
+    // comma-delimited string column; empty segments display as
+    // "Research articles" rather than being dropped.
+    private function facetPublicationTypes(): array
+    {
+        $types = array_map(
+            fn ($type) => $type === '' ? 'Research articles' : $type,
+            explode(',', $this->publication_type ?? '')
+        );
+
+        return array_values(array_unique($types));
+    }
+
+    private function facetDatasetTitles(): array
+    {
+        return $this->versions
+            ->pluck('title')
+            ->filter(fn ($title) => is_string($title) && $title !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    // Database link_type is USING/ABOUT/UNKNOWN; the FE displays these
+    // translated labels rather than the raw enum (see indexElasticPublication()).
+    private const LINK_TYPE_LABELS = [
+        'USING'   => 'Using a dataset',
+        'ABOUT'   => 'About a dataset',
+        'UNKNOWN' => 'Unknown',
+    ];
+
+    private function facetDatasetLinkTypes(): array
+    {
+        return $this->versions
+            ->map(fn ($version) => self::LINK_TYPE_LABELS[$version->getAttribute('pivot')?->getAttribute('link_type')] ?? 'Unknown')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     public function toSearchableArray(): array
     {
         return [
@@ -181,6 +239,9 @@ class Publication extends BaseTypesenseModel
             'publication_type' => $this->publication_type ?? '',
             'journal_name'     => $this->journal_name ?? '',
             'abstract'         => $this->abstract ?? '',
+            'publicationType'  => $this->facetPublicationTypes(),
+            'datasetTitles'    => $this->facetDatasetTitles(),
+            'datasetLinkTypes' => $this->facetDatasetLinkTypes(),
         ];
     }
 
@@ -204,6 +265,9 @@ class Publication extends BaseTypesenseModel
                 [ 'name' => 'publication_type', 'type' => 'string', 'optional' => true ],
                 [ 'name' => 'journal_name',     'type' => 'string', 'infix' => true ],
                 [ 'name' => 'abstract',         'type' => 'string', 'infix' => true, 'optional' => true ],
+                [ 'name' => 'publicationType',  'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'datasetTitles',    'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'datasetLinkTypes', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
             ],
         ];
     }

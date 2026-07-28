@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
             TeamUserHasRoleSeeder::class,
             FederationSeeder::class,
             TeamHasFederationSeeder::class,
+            FederationJobRunSeeder::class,
             NamedEntitiesSeeder::class,
             DatasetVersionHasNamedEntitiesSeeder::class,
             CohortRequestSeeder::class,

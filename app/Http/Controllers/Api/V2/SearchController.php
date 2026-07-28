@@ -36,6 +36,14 @@ class SearchController extends Controller
         $only   = $request->input('providers') ?? [];
         $params = $request->except(['query', 'type', 'providers']);
 
+        // LS - Debug code to avoid spamming external parties while developing
+        //
+        // if (env('EXTERNAL_SEARCHES_ENABLED', true) === false) {
+        //     $only = [
+        //         'HDRUK',
+        //     ];
+        // }
+
         $immediateResults  = $this->aggregator->searchImmediate($query, $type, $params, $only);
         $deferredProviders = $this->aggregator->getDeferredProviders($type, $only);
 

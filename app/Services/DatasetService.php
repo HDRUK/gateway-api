@@ -963,32 +963,44 @@ class DatasetService
         $allCoverages = SpatialCoverage::all();
         $ukCoverages = $allCoverages->filter(fn ($c) => $c->region !== 'Rest of the world');
         $worldId = $allCoverages->firstWhere('region', 'Rest of the world')?->id;
-        $matchFound = false;
+
+        // Collect the coverage IDs this version should map to, then sync the pivot
+        // (upsert desired + prune stale) so editing coverage DOWN actually removes
+        // entries rather than accumulating them.
+        $desiredIds = [];
 
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c->region))) {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version->id,
-                    'spatial_coverage_id' => (int) $c->id,
-                ]);
-                $matchFound = true;
+                $desiredIds[] = (int) $c->id;
             }
         }
 
-        if (! $matchFound) {
+        if (empty($desiredIds)) {
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
-                    DatasetVersionHasSpatialCoverage::updateOrCreate([
-                        'dataset_version_id' => (int) $version->id,
-                        'spatial_coverage_id' => (int) $c->id,
-                    ]);
+                    $desiredIds[] = (int) $c->id;
                 }
-            } else {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version->id,
-                    'spatial_coverage_id' => (int) $worldId,
-                ]);
+            } elseif ($worldId !== null) {
+                $desiredIds[] = (int) $worldId;
             }
         }
+
+        // Upsert + prune atomically so a reader never sees a partial pivot.
+        DB::transaction(function () use ($desiredIds, $version) {
+            foreach ($desiredIds as $coverageId) {
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version->id,
+                    'spatial_coverage_id' => $coverageId,
+                ]);
+            }
+
+            // Prune any pivot rows for this version no longer present in the metadata.
+            DatasetVersionHasSpatialCoverage::where('dataset_version_id', (int) $version->id)
+                ->when(
+                    ! empty($desiredIds),
+                    fn ($q) => $q->whereNotIn('spatial_coverage_id', $desiredIds),
+                )
+                ->delete();
+        });
     }
 }
