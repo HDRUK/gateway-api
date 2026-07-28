@@ -352,6 +352,15 @@ class Team extends BaseTypesenseModel
         return $this->hasMany(Dataset::class);
     }
 
+    /** @return BelongsToMany<DataProviderColl, $this> */
+    public function dataProviderColls(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DataProviderColl::class,
+            'data_provider_coll_has_teams'
+        );
+    }
+
     public function shouldBeSearchable(): bool
     {
         return (bool) $this->getAttribute('enabled') && $this->deleted_at === null;
