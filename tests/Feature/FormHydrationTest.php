@@ -161,7 +161,7 @@ class FormHydrationTest extends TestCase
                     "statusCode" => "200",
                 ];
             });
-        MMC::shouldReceive("validateDataModelType")->andReturn(true);
+        MMC::shouldReceive("validateDataModelType")->andReturn(null);
         MMC::makePartial();
 
         // Create the new team
