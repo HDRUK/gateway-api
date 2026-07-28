@@ -88,6 +88,7 @@ return [
         'redis:default'     => 60,
         'redis:enrichment'  => 300,
         'redis:federation'  => 60,
+        'redis:indexing'    => 30,
     ],
 
     /*
@@ -235,6 +236,19 @@ return [
             'timeout' => 150,
             'nice' => 10,
         ],
+        'supervisor-indexing' => [
+            'connection' => 'redis',
+            'queue' => ['indexing'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            'timeout' => 660,  // covers ReindexTypesenseEntity ($timeout=600)
+            'nice' => 10,
+        ],
     ],
 
     'environments' => [
@@ -255,6 +269,11 @@ return [
                 'balanceCooldown' => 3,
             ],
             'supervisor-federation' => [
+                'maxProcesses' => 5,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+            'supervisor-indexing' => [
                 'maxProcesses' => 5,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
@@ -282,6 +301,11 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
+            'supervisor-indexing' => [
+                'maxProcesses' => 3,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
         ],
 
         'dev' => [
@@ -297,6 +321,9 @@ return [
             'supervisor-federation' => [
                 'maxProcesses' => 2,
             ],
+            'supervisor-indexing' => [
+                'maxProcesses' => 3,
+            ],
         ],
 
         'local' => [
@@ -311,6 +338,9 @@ return [
             ],
             'supervisor-federation' => [
                 'maxProcesses' => 2,
+            ],
+            'supervisor-indexing' => [
+                'maxProcesses' => 3,
             ],
         ],
     ],
