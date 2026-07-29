@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use App\Jobs\SendEmailCustomIntegration;
 use App\Jobs\SendEmailJob;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\EmailTemplate;
 use App\Models\FederationJobRun;
 use Illuminate\Support\Facades\Queue;
@@ -472,5 +474,83 @@ class SendEmailCustomIntegrationTest extends TestCase
 
         $this->assertSame(0, $result['success_count']);
         $this->assertStringNotContainsString('ZZZ', $result['integration_success']);
+    }
+    
+    private function makeDatasetWithTitle(string $pid, string $title): Dataset
+    {
+        $dataset = Dataset::factory()->create([
+            'pid'    => $pid,
+            'status' => Dataset::STATUS_ACTIVE,
+        ]);
+
+        DatasetVersion::create([
+            'dataset_id'  => $dataset->id,
+            'version'     => 1,
+            'patch'       => null,
+            'metadata'    => ['gwdmVersion' => config('metadata.GWDM.version'), 'metadata' => []],
+            'title'       => $title,
+            'short_title' => $title,
+        ]);
+
+        return $dataset;
+    }
+
+    public function test_history_includes_dataset_title_for_successful_pid_when_available(): void
+    {
+        $this->makeDatasetWithTitle('TITLED-OK', 'My Dataset Title');
+
+        FederationJobRun::create([
+            'team_id'       => self::TEAM_ID,
+            'federation_id' => self::FEDERATION_ID,
+            'job_uuid'      => self::JOB_UUID,
+            'pid'           => 'TITLED-OK',
+            'status'        => 1,
+            'details'       => ['message' => 'Synced OK'],
+            'job_attempts'  => 1,
+        ]);
+
+        $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'success');
+        $result = $job->getFederationHistory();
+
+        $this->assertStringContainsString('My Dataset Title (PID: TITLED-OK)', $result['integration_success']);
+    }
+
+    public function test_history_includes_dataset_title_for_failed_pid_when_dataset_already_exists(): void
+    {
+        $this->makeDatasetWithTitle('TITLED-ERR', 'Existing Dataset');
+
+        FederationJobRun::create([
+            'team_id'       => self::TEAM_ID,
+            'federation_id' => self::FEDERATION_ID,
+            'job_uuid'      => self::JOB_UUID,
+            'pid'           => 'TITLED-ERR',
+            'status'        => 0,
+            'details'       => ['message' => 'update failed validation'],
+            'job_attempts'  => 1,
+        ]);
+
+        $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
+        $result = $job->getFederationHistory();
+
+        $this->assertStringContainsString('Existing Dataset (PID: TITLED-ERR)', $result['integration_errors']);
+    }
+
+    public function test_history_falls_back_to_pid_only_when_no_dataset_exists_for_failed_pid(): void
+    {
+        FederationJobRun::create([
+            'team_id'       => self::TEAM_ID,
+            'federation_id' => self::FEDERATION_ID,
+            'job_uuid'      => self::JOB_UUID,
+            'pid'           => 'NEW-PID-NO-DATASET',
+            'status'        => 0,
+            'details'       => ['message' => 'translation failed'],
+            'job_attempts'  => 1,
+        ]);
+
+        $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
+        $result = $job->getFederationHistory();
+
+        $this->assertStringContainsString('PID - NEW-PID-NO-DATASET', $result['integration_errors']);
+        $this->assertStringNotContainsString('(PID:', $result['integration_errors']);
     }
 }
