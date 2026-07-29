@@ -1,3 +1,10 @@
+## [2.47.1](https://github.com/HDRUK/gateway-api/compare/v2.47.0...v2.47.1) (2026-07-29)
+
+### 🐛 Bug Fixes
+
+* **GAT-9337:** emit datasetLinkage as null when a version has no dataset links ([1bf91e6](https://github.com/HDRUK/gateway-api/commit/1bf91e6adbc48d8ecf8109d7479b1b15704950c8)), closes [GAT-9337](undefinedGAT-9337)
+* **GAT-9337:** Hot fix to main for dataset linkages (#1723) ([146b50d](https://github.com/HDRUK/gateway-api/commit/146b50dc820543f6328884ae3927c0d43580761b))
+
 ## [2.47.0](https://github.com/HDRUK/gateway-api/compare/v2.46.0...v2.47.0) (2026-07-28)
 
 ### ✨ Features
