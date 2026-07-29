@@ -35,13 +35,10 @@ trait GatewayMetadataIngestionTrait
         $url = $federation->endpoint_baseurl . $federation->endpoint_datasets;
         $this->log('info', "calling REMOTE collection @ {$url}");
 
-        $response = Http::get(
-            $url,
-            [
-                $this->determineAuthType($federation, $gsms),
-                'Accept' => 'application/json',
-            ]
-        );
+        $response = Http::withHeaders(array_merge(
+            $this->determineAuthType($federation, $gsms),
+            ['Accept' => 'application/json'],
+        ))->get($url);
         $this->log('info', "response from REMOTE collection: status={$response->status()}, body=" . json_encode($response->body()));
 
         if ($response->status() === 200) {
@@ -55,10 +52,9 @@ trait GatewayMetadataIngestionTrait
 
     private function getCatalogueFromFederationArray(array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
-        $response = Http::get(
-            $federation['endpoint_baseurl'] . $federation['endpoint_datasets'],
+        $response = Http::withHeaders(
             $this->determineAuthType($federation, $gsms)
-        );
+        )->get($federation['endpoint_baseurl'] . $federation['endpoint_datasets']);
         if ($response->status() === 200) {
             return collect($response->json()['items'])->keyBy('persistentId');
         }
