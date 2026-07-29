@@ -1,3 +1,9 @@
+## [2.47.2](https://github.com/HDRUK/gateway-api/compare/v2.47.1...v2.47.2) (2026-07-29)
+
+### 🐛 Bug Fixes
+
+* **GAT-9999:** Hotfix to stop typesense hot indexing when the feature… (#1729) ([24228a2](https://github.com/HDRUK/gateway-api/commit/24228a2eb1c47f5bb7aded3b0e89dc837a6c92d3))
+
 ## [2.47.1](https://github.com/HDRUK/gateway-api/compare/v2.47.0...v2.47.1) (2026-07-29)
 
 ### 🐛 Bug Fixes
