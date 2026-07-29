@@ -311,7 +311,14 @@ class Collection extends BaseTypesenseModel
 
     public function makeAllSearchableUsing(Builder $query): Builder
     {
-        return $query->with(['team.dataProviderColls', 'datasetVersions']);
+        // datasetVersions carries the full GWDM metadata/patch JSON blobs by
+        // default; facetDatasetTitles() only reads short_title, so restrict
+        // the eager load to avoid hydrating that payload for every version
+        // linked to every collection in the chunk.
+        return $query->with([
+            'team.dataProviderColls',
+            'datasetVersions:id,dataset_id,short_title',
+        ]);
     }
 
     private function facetPublisherName(): string
