@@ -158,6 +158,12 @@ class DatasetController extends Controller
      *       description="Alternative output schema version.",
      *       @OA\Schema(type="string")
      *    ),
+     *    @OA\Parameter(
+     *       name="validate_output",
+     *       in="query",
+     *       description="Set to false to skip TRASER output validation of the reconstructed metadata (debugging escape hatch).",
+     *       @OA\Schema(type="boolean", default=true)
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -191,6 +197,7 @@ class DatasetController extends Controller
                 $dataset,
                 $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
                 $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
+                validateOutput: $request->boolean('validate_output', true),
             );
 
             Auditor::log([

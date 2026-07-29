@@ -488,7 +488,7 @@ class TeamTest extends TestCase
         $this->assertEquals($content['data']['member_of'], 'HUB');
         $this->assertEquals($content['data']['name'], $updateTeamName);
 
-        MMC::shouldReceive("validateDataModelType")->andReturn(true);
+        MMC::shouldReceive("validateDataModelType")->andReturn(null);
 
         $responseGetDataset = $this->json(
             'GET',

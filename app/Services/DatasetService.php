@@ -107,6 +107,7 @@ class DatasetService
         Dataset $dataset,
         ?string $outputSchemaModel = null,
         ?string $outputSchemaVersion = null,
+        bool $validateOutput = true,
     ): Dataset|string {
         $dataset->loadMissing('team');
 
@@ -180,7 +181,7 @@ class DatasetService
             $envelope = $this->getReconstructedMetadataEnvelope(
                 $dataset->id,
                 $withLinks->version,
-                validate: $translateRequested,
+                validate: $translateRequested && $validateOutput,
                 prefetched: $withLinks,
             );
 
@@ -194,10 +195,16 @@ class DatasetService
                 );
 
                 if (! $translated['wasTranslated']) {
-                    $traserError = is_array($translated['traser_message'])
-                        ? json_encode($translated['traser_message'])
-                        : ($translated['traser_message'] ?? 'unknown error');
-                    throw new \RuntimeException($traserError);
+                    $this->logTranslationFailure('prepareForShow', $translated, json_encode($envelope), [
+                        'dataset_id' => $dataset->id,
+                        'dataset_pid' => $dataset->pid,
+                        'version' => $withLinks->version,
+                        'output_schema_model' => $outputSchemaModel,
+                        'output_schema_version' => $outputSchemaVersion,
+                        'gwdm_version' => $envelope['gwdmVersion'],
+                    ]);
+
+                    throw new \RuntimeException($this->formatTraserError($translated));
                 }
 
                 $withLinks->metadata = ['metadata' => $translated['metadata']];
@@ -312,6 +319,15 @@ class DatasetService
         );
 
         if (! $traserResponse['wasTranslated']) {
+            $this->logTranslationFailure('create', $traserResponse, json_encode($payload), [
+                'team_id' => $team->id,
+                'team_pid' => $team->pid,
+                'status' => $input['status'] ?? null,
+                'input_schema' => $inputSchema,
+                'input_version' => $inputVersion,
+                'target_gwdm_version' => $targetGwdmVersion,
+            ]);
+
             return ['translated' => false, 'response' => $traserResponse];
         }
 
@@ -433,7 +449,17 @@ class DatasetService
         );
 
         if (! $traserResponse['wasTranslated']) {
-            throw new \RuntimeException('metadata is in an unknown format and cannot be processed');
+            $this->logTranslationFailure('update', $traserResponse, json_encode($payload), [
+                'dataset_id' => $dataset->id,
+                'dataset_pid' => $dataset->pid,
+                'team_id' => $teamId,
+                'status' => $input['status'] ?? null,
+                'input_schema' => $inputSchema,
+                'input_version' => $inputVersion,
+                'target_gwdm_version' => $targetGwdmVersion,
+            ]);
+
+            throw new \RuntimeException('metadata is in an unknown format and cannot be processed: '.$this->formatTraserError($traserResponse));
         }
 
         $versionNumber = $dataset->lastMetadataVersionNumber()->version;
@@ -518,7 +544,17 @@ class DatasetService
         );
 
         if (! $traserResponse['wasTranslated']) {
-            throw new \RuntimeException('metadata is in an unknown format and cannot be processed');
+            $this->logTranslationFailure('updateV2', $traserResponse, json_encode($payload), [
+                'dataset_id' => $dataset->id,
+                'dataset_pid' => $dataset->pid,
+                'team_id' => $teamId,
+                'status' => $input['status'] ?? null,
+                'input_schema' => $inputSchema,
+                'input_version' => $inputVersion,
+                'target_gwdm_version' => $targetGwdmVersion,
+            ]);
+
+            throw new \RuntimeException('metadata is in an unknown format and cannot be processed: '.$this->formatTraserError($traserResponse));
         }
 
         $versionNumber = $dataset->lastMetadataVersionNumber()->version;
@@ -737,14 +773,20 @@ class DatasetService
         // TRASER a hard dependency for all dataset show requests.
         if ($validate) {
             $metadataJson = json_encode(['metadata' => $gwdm]);
-            $isValid = MMC::validateDataModelType($metadataJson, Config::get('metadata.GWDM.name'), $storedVersion);
-            if (! $isValid) {
+            $validationErrors = MMC::validateDataModelType($metadataJson, Config::get('metadata.GWDM.name'), $storedVersion);
+            if ($validationErrors !== null) {
                 \Log::warning('GWDM read validation failed', [
                     'dataset_id' => $datasetId,
+                    'dataset_version_id' => $row->id ?? null,
                     'version' => $targetVersion,
                     'gwdm_version' => $storedVersion,
+                    'validation_errors' => $validationErrors,
+                    'payload' => $metadataJson,
                 ]);
-                throw new \RuntimeException("Reconstructed GWDM for version {$storedVersion} failed schema validation.");
+
+                throw new \RuntimeException(
+                    "Reconstructed GWDM for version {$storedVersion} failed schema validation: ".json_encode($validationErrors)
+                );
             }
         }
 
@@ -917,6 +959,40 @@ class DatasetService
                 Config::get('ted.use_partial')
             );
         }
+    }
+
+    /**
+     * Flatten a TRASER response's error detail into a loggable/throwable string.
+     *
+     * On a failed translation MMC::translateDataModelType returns the TRASER error
+     * body under 'traser_message' — an array (decoded JSON) or a string. Falls back
+     * to 'unknown error' when neither is present.
+     */
+    private function formatTraserError(array $traserResponse): string
+    {
+        $message = $traserResponse['traser_message'] ?? null;
+
+        if (is_array($message)) {
+            return json_encode($message);
+        }
+
+        return $message ?? 'unknown error';
+    }
+
+    /**
+     * Emit a structured warning when TRASER translation fails, capturing the real
+     * error body and status, the exact payload that was sent for translation, and
+     * caller-supplied context. Without this the cause of a failed translate — and
+     * the data that triggered it — is invisible in the logs.
+     */
+    private function logTranslationFailure(string $method, array $traserResponse, ?string $payload = null, array $context = []): void
+    {
+        \Log::warning('GWDM translation failed', array_merge([
+            'method' => $method,
+            'status_code' => $traserResponse['statusCode'] ?? null,
+            'traser_message' => $this->formatTraserError($traserResponse),
+            'payload' => $payload,
+        ], $context));
     }
 
     /**

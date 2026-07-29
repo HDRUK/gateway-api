@@ -1152,7 +1152,7 @@ trait MockExternalApis
                    "statusCode" => "200",
                ];
            });
-        MMC::shouldReceive("validateDataModelType")->andReturn(true);
+        MMC::shouldReceive("validateDataModelType")->andReturn(null);
         MMC::makePartial();
 
         $this->dataset_store = [];

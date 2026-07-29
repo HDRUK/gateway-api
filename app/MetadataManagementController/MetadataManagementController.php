@@ -124,9 +124,9 @@ class MetadataManagementController
      * @param string $input_schema The schema to validate against
      * @param string $input_version The schema version to validate against
      *
-     * @return bool
+     * @return array|null The TRASER error body when invalid; null when valid
      */
-    public function validateDataModelType(string &$dataset, string $input_schema, string $input_version): bool
+    public function validateDataModelType(string &$dataset, string $input_schema, string $input_version): ?array
     {
         $loggingContext = $this->getLoggingContext(\request());
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
@@ -157,14 +157,18 @@ class MetadataManagementController
                 'application/json'
             )->post($urlString);
 
-            if ($response->status() !== 200) {
-                \Log::warning('GWDM validation rejected by TRASER', array_merge($loggingContext, [
-                    'status'   => $response->status(),
-                    'response' => $response->body(),
-                ]));
+            if ($response->status() === 200) {
+                return null;
             }
 
-            return ($response->status() === 200);
+            \Log::warning('GWDM validation rejected by TRASER', array_merge($loggingContext, [
+                'status'   => $response->status(),
+                'response' => $response->body(),
+            ]));
+
+            $body = $response->json();
+
+            return is_array($body) ? $body : ['error' => $response->body()];
         } catch (Exception $e) {
             \Log::info($e->getMessage(), $loggingContext);
             throw new MMCException($e->getMessage());
