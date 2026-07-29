@@ -59,7 +59,10 @@ class TestFederation implements ShouldQueue
         // them unconditionally, so this must stay mockable even for NO_AUTH.
         $this->gsms = app(GoogleSecretManagerService::class);
 
-        $testCall = $this->pullCatalogueList($this->federation->toArray(), $this->gsms);
+        $federationArray = $this->federation->toArray();
+        $federationArray['auth_secret_key'] = $this->federation->getAttribute('auth_secret_key');
+
+        $testCall = $this->pullCatalogueList($federationArray, $this->gsms);
         if (is_array($testCall)) {
             // Failure
             return $testCall;
