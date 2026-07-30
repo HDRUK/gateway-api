@@ -39,6 +39,21 @@ class HDRUK implements SearchProvider
         'data_custodians'         => ['type' => 'dataProvider',     'enabledOnly' => false],
     ];
 
+    // Fixed log-scale buckets matching the production Elasticsearch range aggregation.
+    // Keys and range boundaries are intentionally identical so the FE renders identically.
+    private const POPULATION_SIZE_BUCKETS = [
+        ['key' => 'Unreported',         'from' => -1,        'to' => 1],
+        ['key' => '1.0-10.0',           'from' => 1,         'to' => 10],
+        ['key' => '10.0-100.0',         'from' => 10,        'to' => 100],
+        ['key' => '100.0-1000.0',       'from' => 100,       'to' => 1000],
+        ['key' => '1000.0-10000.0',     'from' => 1000,      'to' => 10000],
+        ['key' => '10000.0-100000.0',   'from' => 10000,     'to' => 100000],
+        ['key' => '100000.0-1000000.0', 'from' => 100000,    'to' => 1000000],
+        ['key' => '1000000.0-1.0E7',    'from' => 1000000,   'to' => 10000000],
+        ['key' => '1.0E7-1.0E8',        'from' => 10000000,  'to' => 100000000],
+        ['key' => '1.0E8-1.0E9',        'from' => 100000000, 'to' => 1000000000],
+    ];
+
     private const TYPESENSE_MODEL_MAP = [
         'datasets'                => \App\Models\DatasetVersion::class,
         'tools'                   => \App\Models\Tool::class,
@@ -167,7 +182,11 @@ class HDRUK implements SearchProvider
             // up the other term(s). Raising this lets Typesense keep dropping
             // tokens until it has found a reasonable number of results across
             // ALL the query's distinct terms, not just the first one matched.
-            'drop_tokens_threshold' => 15,
+            'drop_tokens_threshold'            => 15,
+            // Typesense truncates facet values to 100 chars by default —
+            // the FE then sends the truncated string as a filter value, which
+            // never matches the full stored value. 0 = no truncation.
+            'facet_value_truncation_threshold' => 0,
         ], $model->typesenseSearchParameters(), [
             'per_page' => (int) ($params['per_page'] ?? 20),
             'page'     => (int) ($params['page'] ?? 1),
@@ -197,14 +216,57 @@ class HDRUK implements SearchProvider
 
             $searches[] = array_merge(
                 [
-                    'collection' => $collection,
-                    'q'          => $q,
-                    'query_by'   => $searchParams['query_by'],
-                    'facet_by'   => $field,
-                    'per_page'   => 0,
+                    'collection'                       => $collection,
+                    'q'                                => $q,
+                    'query_by'                         => $searchParams['query_by'],
+                    'facet_by'                         => $field,
+                    'per_page'                         => 0,
+                    // Keep truncation off so bucket keys match the stored values
+                    // — see TypesenseService::facetCounts() for the same fix.
+                    'facet_value_truncation_threshold' => 0,
                 ],
                 $exclusionFilterBy !== '' ? ['filter_by' => $exclusionFilterBy] : []
             );
+        }
+
+        // Date range aggregations: find the earliest startDate and latest endDate
+        // across the current (non-date-filtered) result set, so the FE year picker
+        // knows the full span of available data. We exclude any active date range
+        // clauses from these queries so the picker isn't constrained by its own filter.
+        $nonDateClauses    = array_diff_key($clauses, ['startDate' => null, 'endDate' => null]);
+        $nonDateFilterBy   = implode(' && ', $nonDateClauses);
+        $startDateMinIdx   = count($searches);
+        $searches[]        = array_merge(
+            ['collection' => $collection, 'q' => '*', 'query_by' => $searchParams['query_by'], 'sort_by' => 'startDate:asc', 'per_page' => 1],
+            ['filter_by' => ($nonDateFilterBy !== '' ? $nonDateFilterBy . ' && ' : '') . 'startDate:>0']
+        );
+        $endDateMaxIdx     = count($searches);
+        $searches[]        = array_merge(
+            ['collection' => $collection, 'q' => '*', 'query_by' => $searchParams['query_by'], 'sort_by' => 'endDate:desc', 'per_page' => 1],
+            ['filter_by' => ($nonDateFilterBy !== '' ? $nonDateFilterBy . ' && ' : '') . 'endDate:>0']
+        );
+
+        // Population size histogram: one count query per fixed log-scale bucket so the
+        // FE slider and histogram bars match the production Elasticsearch range aggregation.
+        // We exclude the active populationSize clause (if any) so multi-select works —
+        // the same pattern as self-filtered string facets above.
+        $popBucketStartIdx = null;
+        if ($type === 'datasets') {
+            $nonPopClauses     = array_diff_key($clauses, ['populationSize' => null]);
+            $nonPopFilterBy    = implode(' && ', $nonPopClauses);
+            $popBucketStartIdx = count($searches);
+
+            foreach (self::POPULATION_SIZE_BUCKETS as $bucket) {
+                $bucketFilter = "populationSize:>={$bucket['from']} && populationSize:<{$bucket['to']}";
+                $fullFilter   = $nonPopFilterBy !== '' ? $nonPopFilterBy . ' && ' . $bucketFilter : $bucketFilter;
+                $searches[]   = [
+                    'collection' => $collection,
+                    'q'          => $q,
+                    'query_by'   => $searchParams['query_by'],
+                    'per_page'   => 0,
+                    'filter_by'  => $fullFilter,
+                ];
+            }
         }
 
         $multiResult = app(\App\Services\TypesenseService::class)->multiSearch($searches);
@@ -212,7 +274,7 @@ class HDRUK implements SearchProvider
         $result      = $results[0] ?? [];
 
         $facetCounts = $result['facet_counts'] ?? [];
-        foreach (array_slice($results, 1) as $i => $exclusionResult) {
+        foreach (array_slice($results, 1, count($selfFilteredFields)) as $i => $exclusionResult) {
             $field = $selfFilteredFields[$i];
             $facetCounts = array_values(array_filter(
                 $facetCounts,
@@ -223,6 +285,25 @@ class HDRUK implements SearchProvider
             }
         }
 
+        $dateRangeAggs = $this->buildDateRangeAggregations(
+            $results[$startDateMinIdx]['hits'][0]['document'] ?? null,
+            $results[$endDateMaxIdx]['hits'][0]['document'] ?? null,
+        );
+
+        $popSizeAgg = [];
+        if ($popBucketStartIdx !== null) {
+            $buckets = [];
+            foreach (self::POPULATION_SIZE_BUCKETS as $i => $bucket) {
+                $buckets[] = [
+                    'key'       => $bucket['key'],
+                    'from'      => $bucket['from'],
+                    'to'        => $bucket['to'],
+                    'doc_count' => $results[$popBucketStartIdx + $i]['found'] ?? 0,
+                ];
+            }
+            $popSizeAgg = ['populationSize' => ['buckets' => $buckets]];
+        }
+
         $elasticHits = $this->mapHitsToElastic($result['hits'] ?? [], $type);
         $hydrated    = $this->hydrate($elasticHits, $type, $params['view_type'] ?? 'full');
         $sorted      = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
@@ -231,7 +312,7 @@ class HDRUK implements SearchProvider
             'source'       => 'typesense',
             'hits'         => $sorted,
             'total'        => $result['found'] ?? 0,
-            'aggregations' => $this->mapFacetsToAggregations($facetCounts),
+            'aggregations' => array_merge($this->mapFacetsToAggregations($facetCounts), $dateRangeAggs, $popSizeAgg),
             'ids'          => array_column($elasticHits, '_id'),
         ];
     }
@@ -302,6 +383,9 @@ class HDRUK implements SearchProvider
     /**
      * Convert Typesense facet_counts to the ES aggregations shape the frontend expects:
      * { fieldName: { buckets: [{ key, doc_count }] } }
+     *
+     * Date range aggregations (startDate/endDate) are handled separately by
+     * buildDateRangeAggregations() using dedicated min/max queries — not facets.
      */
     private function mapFacetsToAggregations(array $facetCounts): array
     {
@@ -309,11 +393,45 @@ class HDRUK implements SearchProvider
         foreach ($facetCounts as $facet) {
             $aggs[$facet['field_name']] = [
                 'buckets' => array_map(fn ($c) => [
-                    'key'       => $c['value'],
+                    'key'       => (string) $c['value'],
                     'doc_count' => $c['count'],
                 ], $facet['counts'] ?? []),
             ];
         }
+        return $aggs;
+    }
+
+    /**
+     * Build ES-style min/max date aggregations from the documents returned by
+     * the dedicated startDate:asc / endDate:desc sort queries.
+     *
+     * The FE date picker expects:
+     *   startDate: { value: <ms_timestamp>, value_as_string: "YYYY-MM-DDT..." }
+     *   endDate:   { value: <ms_timestamp>, value_as_string: "YYYY-MM-DDT..." }
+     *
+     * Typesense stores timestamps in seconds; ES returns them in milliseconds,
+     * so we multiply by 1000 for compatibility.
+     */
+    private function buildDateRangeAggregations(?array $startDoc, ?array $endDoc): array
+    {
+        $aggs = [];
+
+        if ($startDoc !== null && isset($startDoc['startDate'])) {
+            $ts = (int) $startDoc['startDate'];
+            $aggs['startDate'] = [
+                'value'           => $ts * 1000,
+                'value_as_string' => gmdate('Y-m-d\TH:i:s.000\Z', $ts),
+            ];
+        }
+
+        if ($endDoc !== null && isset($endDoc['endDate'])) {
+            $ts = (int) $endDoc['endDate'];
+            $aggs['endDate'] = [
+                'value'           => $ts * 1000,
+                'value_as_string' => gmdate('Y-m-d\TH:i:s.000\Z', $ts),
+            ];
+        }
+
         return $aggs;
     }
 
@@ -324,9 +442,9 @@ class HDRUK implements SearchProvider
      * singular Filter model type (e.g. 'dataset'), same as
      * FILTER_TYPE_MAP/collectionForFacetableFilter, not the plural service
      * key used elsewhere in this class. Only known facet fields are
-     * forwarded to avoid leaking arbitrary input into the filter. Fields not
-     * yet supporting array-of-string values (e.g. populationSize's range
-     * object) are silently ignored rather than erroring.
+     * forwarded to avoid leaking arbitrary input into the filter. Fields with
+     * non-array filter shapes (e.g. populationSize's {from,to,includeUnreported}
+     * object) are handled after this loop by dedicated clause builders.
      *
      * Keeping this keyed by field (rather than one joined string) lets
      * searchViaTypesense() build a "every filter except this field's own"
@@ -342,6 +460,17 @@ class HDRUK implements SearchProvider
         $clauses     = [];
 
         foreach ($fields as $field) {
+            // Date-range fields carry a {from, to} object — normalizeFilterValues()
+            // would return [] for any associative array, so check these first to
+            // prevent the empty-values guard below from skipping them entirely.
+            if ($this->isDateRangeField($type, $field)) {
+                $clause = $this->buildDateRangeClause($field, $typeFilters[$field] ?? null);
+                if ($clause !== null) {
+                    $clauses[$field] = $clause;
+                }
+                continue;
+            }
+
             $isBoolean = $this->isBooleanFacetField($type, $field);
             $values    = $this->normalizeFilterValues($typeFilters[$field] ?? null);
 
@@ -374,7 +503,127 @@ class HDRUK implements SearchProvider
             $clauses[$field] = $field . ':=[' . implode(',', $quoted) . ']';
         }
 
+        // populationSize sends a {from, to, includeUnreported} object — not an array
+        // of string values — so it lives outside the filterable_map loop.
+        $popRaw = $typeFilters['populationSize'] ?? null;
+        if (is_array($popRaw)) {
+            $clause = $this->buildPopulationSizeClause($popRaw);
+            if ($clause !== null) {
+                $clauses['populationSize'] = $clause;
+            }
+        }
+
         return $clauses;
+    }
+
+    /**
+     * Date range fields are stored as int64 Unix timestamps in Typesense.
+     * They are filtered with >= / <= operators, not the string-array syntax.
+     */
+    private function isDateRangeField(string $type, string $field): bool
+    {
+        $modelClass = self::TYPESENSE_MODEL_MAP[$type] ?? null;
+        if ($modelClass === null) {
+            return false;
+        }
+
+        $fieldDef = collect((new $modelClass())->typesenseCollectionSchema()['fields'] ?? [])
+            ->firstWhere('name', $field);
+
+        return ($fieldDef['type'] ?? null) === 'int64'
+            && in_array($field, ['startDate', 'endDate'], true);
+    }
+
+    /**
+     * Builds a Typesense range clause for a date field.
+     *
+     * The FE sends a {from, to} object where either key may be absent:
+     *   filters.dataset.startDate = { from: "2020-01-01", to: "2023-12-31" }
+     *
+     * Coverage overlap semantics: show datasets whose sample period overlaps
+     * the selected window, i.e. dataset.startDate <= to AND dataset.endDate >= from.
+     *
+     *   startDate filter → dataset.startDate:<=toTimestamp
+     *   endDate   filter → dataset.endDate:>=fromTimestamp
+     */
+    private function buildDateRangeClause(string $field, mixed $raw): ?string
+    {
+        if (!is_array($raw) || empty($raw)) {
+            return null;
+        }
+
+        $parts = [];
+
+        if ($field === 'startDate' && !empty($raw['to'])) {
+            // Overlap: dataset's start must be on or before the query's upper bound.
+            $ts = strtotime($this->yearToDate((string) $raw['to'], 'to'));
+            if ($ts !== false) {
+                $parts[] = "startDate:<={$ts}";
+            }
+        }
+
+        if ($field === 'endDate' && !empty($raw['from'])) {
+            // Overlap: dataset's end must be on or after the query's lower bound.
+            $ts = strtotime($this->yearToDate((string) $raw['from'], 'from'));
+            if ($ts !== false) {
+                $parts[] = "endDate:>={$ts}";
+            }
+        }
+
+        return !empty($parts) ? implode(' && ', $parts) : null;
+    }
+
+    /**
+     * Builds a Typesense filter_by clause for the populationSize range filter.
+     *
+     * The FE sends: { from: int, to: int, includeUnreported: bool }
+     * Any key may be absent. `includeUnreported` ORs in `populationSize:=-1`
+     * so datasets without a recorded size appear alongside the range results.
+     *
+     * Only produces a clause when there is something to constrain — if neither
+     * from/to nor includeUnreported=false is present, null is returned (no filter).
+     */
+    private function buildPopulationSizeClause(array $raw): ?string
+    {
+        $from              = isset($raw['from']) && is_numeric($raw['from']) ? (int) $raw['from'] : null;
+        $to                = isset($raw['to'])   && is_numeric($raw['to']) ? (int) $raw['to'] : null;
+        $includeUnreported = (bool) ($raw['includeUnreported'] ?? true);
+
+        $rangeParts = [];
+        if ($from !== null) {
+            $rangeParts[] = "populationSize:>={$from}";
+        }
+        if ($to !== null) {
+            $rangeParts[] = "populationSize:<={$to}";
+        }
+
+        // No range set → nothing to constrain. includeUnreported only modifies
+        // range semantics; it doesn't filter standalone (default FE state is
+        // {includeUnreported: false} with no slider position, which must return
+        // all datasets — not exclude the 600+ with no recorded population size).
+        if (empty($rangeParts)) {
+            return null;
+        }
+
+        $rangeClause = implode(' && ', $rangeParts);
+
+        return $includeUnreported
+            ? "({$rangeClause}) || populationSize:=-1"
+            : $rangeClause;
+    }
+
+    /**
+     * Expand a bare 4-digit year string (e.g. "2026") to a full ISO date so
+     * strtotime() doesn't misread it as a time ("20:26" today). For the upper
+     * bound use the last day of the year; for the lower bound the first day.
+     */
+    private function yearToDate(string $value, string $bound): string
+    {
+        if (preg_match('/^\d{4}$/', trim($value))) {
+            return $bound === 'from' ? "{$value}-01-01" : "{$value}-12-31";
+        }
+
+        return $value;
     }
 
     /**

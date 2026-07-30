@@ -253,6 +253,10 @@ abstract class GwdmMetadataHandler
             'accessService' => data_get($envelope, 'metadata.accessibility.access.accessServiceCategory', '') ?? '',
             'containsBioSamples' => $materialTypes !== null,
             'sampleAvailability' => array_values($materialTypes ?? []),
+            'startDate' => $this->dateToTimestamp(data_get($envelope, 'metadata.provenance.temporal.startDate')),
+            'endDate'   => $this->dateToTimestamp(data_get($envelope, 'metadata.provenance.temporal.endDate')),
+            'startYear' => $this->dateToYear(data_get($envelope, 'metadata.provenance.temporal.startDate')),
+            'endYear'   => $this->dateToYear(data_get($envelope, 'metadata.provenance.temporal.endDate')),
             'structuralTableNames' => collect($structural)
                 ->pluck('name')
                 ->filter(fn ($v) => is_string($v) && $v !== '')
@@ -390,5 +394,20 @@ abstract class GwdmMetadataHandler
     protected function formatVersion(int $version): string
     {
         return "{$version}.0.0";
+    }
+
+    protected function dateToTimestamp(mixed $value): ?int
+    {
+        if (empty($value)) {
+            return null;
+        }
+        $ts = strtotime((string) $value);
+        return $ts !== false ? $ts : null;
+    }
+
+    protected function dateToYear(mixed $value): ?int
+    {
+        $ts = $this->dateToTimestamp($value);
+        return $ts !== null ? (int) date('Y', $ts) : null;
     }
 }
