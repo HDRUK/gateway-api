@@ -39,9 +39,8 @@ class HDRUKTest extends TestCase
     {
         $provider = new HDRUK();
 
-        // collectionName is a real Filter row but is cross-entity (Collection
-        // linked via a pivot) and not yet flattened into DatasetVersion.
-        $this->assertNull($provider->collectionForFacetableFilter('dataset', 'collectionName'));
+        // 'nonExistentField' has no matching schema entry on DatasetVersion.
+        $this->assertNull($provider->collectionForFacetableFilter('dataset', 'nonExistentField'));
     }
 
     public function test_returns_collection_name_for_each_data_custodian_facet_field(): void
@@ -92,6 +91,52 @@ class HDRUKTest extends TestCase
         $provider = new HDRUK();
 
         $this->assertNull($provider->collectionForFacetableFilter('dataProviderColl', 'publisherNames'));
+    }
+
+    // -------------------------------------------------------------------------
+    // collectionForFacetableFilter — tier-3 fields now in DatasetVersion
+    // -------------------------------------------------------------------------
+
+    public function test_returns_collection_for_collectionNames_filter_field(): void
+    {
+        $provider = new HDRUK();
+
+        $this->assertEquals(
+            (new DatasetVersion())->searchableAs(),
+            $provider->collectionForFacetableFilter('dataset', 'collectionNames')
+        );
+    }
+
+    public function test_returns_collection_for_dataProviderColl_filter_field(): void
+    {
+        $provider = new HDRUK();
+
+        $this->assertEquals(
+            (new DatasetVersion())->searchableAs(),
+            $provider->collectionForFacetableFilter('dataset', 'dataProviderColl')
+        );
+    }
+
+    public function test_returns_collection_for_dataUseTitles_filter_field(): void
+    {
+        $provider = new HDRUK();
+
+        $this->assertEquals(
+            (new DatasetVersion())->searchableAs(),
+            $provider->collectionForFacetableFilter('dataset', 'dataUseTitles')
+        );
+    }
+
+    /**
+     * The old test comment said "not yet flattened" — that is now stale.
+     * collectionNames (plural) IS a facet field; collectionName (singular,
+     * no 's') is the wrong key and correctly returns null.
+     */
+    public function test_returns_null_for_collectionName_singular_which_is_not_a_facet_field(): void
+    {
+        $provider = new HDRUK();
+
+        $this->assertNull($provider->collectionForFacetableFilter('dataset', 'collectionName'));
     }
 
     // -------------------------------------------------------------------------
@@ -149,7 +194,7 @@ class HDRUKTest extends TestCase
     public function test_search_ignores_filters_nested_under_a_different_type(): void
     {
         $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
-            count($searches) === 1 && !array_key_exists('filter_by', $searches[0]));
+            !array_key_exists('filter_by', $searches[0]));
 
         (new HDRUK())->search('asthma', 'datasets', [
             'filters' => [
@@ -160,14 +205,15 @@ class HDRUKTest extends TestCase
         ]);
     }
 
-    public function test_search_ignores_structured_filter_values_it_does_not_support_yet(): void
+    public function test_search_ignores_populationSize_filter_with_no_active_range(): void
     {
+        // {includeUnreported: false} alone is the FE default state (slider not
+        // moved). It must not produce a filter clause — doing so would silently
+        // exclude the 600+ datasets where population size is not reported even
+        // before the user has interacted with the slider.
         $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
-            count($searches) === 1 && !array_key_exists('filter_by', $searches[0]));
+            !array_key_exists('filter_by', $searches[0]));
 
-        // populationSize isn't in TYPESENSE_FILTERABLE_MAP yet, and even if it
-        // were, its {includeUnreported} shape isn't an array of strings —
-        // this must not throw, just produce no filter clause.
         (new HDRUK())->search('asthma', 'datasets', [
             'filters' => [
                 'dataset' => [
@@ -283,7 +329,7 @@ class HDRUKTest extends TestCase
     public function test_search_applies_no_filter_when_flat_boolean_param_is_absent(): void
     {
         $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
-            count($searches) === 1 && !array_key_exists('filter_by', $searches[0]));
+            !array_key_exists('filter_by', $searches[0]));
 
         (new HDRUK())->search('asthma', 'datasets', [
             'dataType' => '',
@@ -358,8 +404,9 @@ class HDRUKTest extends TestCase
     {
         // Reproduces the reported bug: selecting "SAIL" for publisherName
         // must not shrink publisherName's own facet options down to SAIL.
+        // 1 main + 1 exclusion for publisherName + 12 fixed extra (2 date range + 10 pop buckets) = 14
         $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
-            count($searches) === 2
+            count($searches) === 14
             && ($searches[0]['filter_by'] ?? null) === 'publisherName:=[`SAIL`]'
             && ($searches[1]['facet_by'] ?? null) === 'publisherName'
             && ($searches[1]['per_page'] ?? null) === 0
@@ -376,11 +423,12 @@ class HDRUKTest extends TestCase
         // dataType's clause (and vice versa) — only the field's own clause
         // is dropped from its own exclusion query.
         $this->mockTypesenseServiceExpectingSearches(function ($searches) {
-            if (count($searches) !== 3) {
+            // 1 main + 2 exclusions (one per filtered field) + 12 fixed extra = 15
+            if (count($searches) !== 15) {
                 return false;
             }
 
-            $byFacet = collect($searches)->skip(1)->keyBy('facet_by');
+            $byFacet = collect($searches)->skip(1)->take(2)->keyBy('facet_by');
 
             return ($searches[0]['filter_by'] ?? null) === 'publisherName:=[`SAIL`] && dataType:=[`Registry`]'
                 && ($byFacet['publisherName']['filter_by'] ?? null) === 'dataType:=[`Registry`]'
@@ -401,10 +449,105 @@ class HDRUKTest extends TestCase
     {
         // dataType has no active filter of its own, so it needs no exclusion
         // query — only publisherName (the filtered field) does.
-        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => count($searches) === 2);
+        // 1 main + 1 exclusion + 12 fixed extra (2 date range + 10 pop buckets) = 14.
+        // If dataType had wrongly also got an exclusion, count would be 15.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => count($searches) === 14);
 
         (new HDRUK())->search('asthma', 'datasets', [
             'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Date range filters — startDate/endDate carry a {from, to} object, not an
+    // array of strings. The ordering bug in buildFilterClauses() meant these
+    // were always silently dropped before the isDateRangeField check ran.
+    // -------------------------------------------------------------------------
+
+    public function test_search_builds_startDate_clause_from_to_bound(): void
+    {
+        // Overlap semantics: dataset covers query window when
+        // dataset.startDate <= query.to
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) =>
+            str_contains($searches[0]['filter_by'] ?? '', 'startDate:<=')
+        );
+
+        (new HDRUK())->search('*', 'datasets', [
+            'filters' => ['dataset' => ['startDate' => ['to' => '2023-12-31']]],
+        ]);
+    }
+
+    public function test_search_builds_endDate_clause_from_from_bound(): void
+    {
+        // Overlap semantics: dataset covers query window when
+        // dataset.endDate >= query.from
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) =>
+            str_contains($searches[0]['filter_by'] ?? '', 'endDate:>=')
+        );
+
+        (new HDRUK())->search('*', 'datasets', [
+            'filters' => ['dataset' => ['endDate' => ['from' => '2020-01-01']]],
+        ]);
+    }
+
+    public function test_search_includes_correct_timestamps_in_date_range_clauses(): void
+    {
+        $toTs   = strtotime('2023-12-31');
+        $fromTs = strtotime('2020-01-01');
+
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === "startDate:<={$toTs} && endDate:>={$fromTs}"
+        );
+
+        (new HDRUK())->search('*', 'datasets', [
+            'filters' => ['dataset' => [
+                'startDate' => ['to' => '2023-12-31'],
+                'endDate'   => ['from' => '2020-01-01'],
+            ]],
+        ]);
+    }
+
+    public function test_search_ignores_startDate_filter_when_to_bound_is_absent(): void
+    {
+        // A {from} bound only makes no sense for startDate overlap — no clause.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('*', 'datasets', [
+            'filters' => ['dataset' => ['startDate' => ['from' => '2020-01-01']]],
+        ]);
+    }
+
+    public function test_search_ignores_endDate_filter_when_from_bound_is_absent(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('*', 'datasets', [
+            'filters' => ['dataset' => ['endDate' => ['to' => '2023-12-31']]],
+        ]);
+    }
+
+    public function test_search_ignores_date_filter_when_value_is_not_an_array(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('*', 'datasets', [
+            'filters' => ['dataset' => ['startDate' => '2023-12-31']],
+        ]);
+    }
+
+    public function test_search_ignores_date_filter_when_value_is_empty_array(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('*', 'datasets', [
+            'filters' => ['dataset' => ['startDate' => []]],
         ]);
     }
 

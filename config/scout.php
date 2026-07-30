@@ -69,7 +69,10 @@ return [
     */
 
     'chunk' => [
-        'searchable' => 500,
+        // DatasetVersion imports eager-load several relationships per row
+        // (dataset, team.dataProviderColls, linkedCollections, linkedDurs,
+        // spatialCoverage) — 500 rows at once exhausts the 128 MB CLI limit.
+        'searchable' => 100,
         'unsearchable' => 500,
     ],
 
