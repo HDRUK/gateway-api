@@ -34,6 +34,7 @@ class DataAccessTemplateController extends Controller
      *      description="List of DAR templates",
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@index",
+     *      operationId="fetch_dar_templates",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="with_questions",
@@ -140,6 +141,7 @@ class DataAccessTemplateController extends Controller
      *      description="Return a single DAR template",
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@show",
+     *      operationId="fetch_dar_template",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -296,11 +298,12 @@ class DataAccessTemplateController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/ap1/v1/dar/templates/{id}/download",
+     *      path="/api/v1/dar/templates/{id}/download",
      *      summary="Download the template for a file based DAR application",
      *      description="Download the template for a file based DAR application",
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@downloadFile",
+     *      operationId="download_dar_template_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -376,6 +379,7 @@ class DataAccessTemplateController extends Controller
      *      description="Creates a new DAR template",
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@store",
+     *      operationId="create_dar_template",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -466,6 +470,7 @@ class DataAccessTemplateController extends Controller
      *      description="Update a system DAR template",
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@update",
+     *      operationId="update_dar_template",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -577,6 +582,7 @@ class DataAccessTemplateController extends Controller
      *      description="Edit a system DAR template",
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@update",
+     *      operationId="patch_dar_template",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -711,6 +717,7 @@ class DataAccessTemplateController extends Controller
      *      description="Delete a system DAR template",
      *      tags={"DataAccessTemplate"},
      *      summary="DataAccessTemplate@destroy",
+     *      operationId="delete_dar_template",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

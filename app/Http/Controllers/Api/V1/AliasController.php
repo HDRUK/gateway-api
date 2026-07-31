@@ -25,7 +25,7 @@ class AliasController extends Controller
      *    summary="List of aliases",
      *    description="Returns a list of aliases",
      *    tags={"Alias"},
-     *    operationId="AliasController@index",
+     *    operationId="fetch_all_aliases",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
      *       response=200,
@@ -81,7 +81,7 @@ class AliasController extends Controller
      *      summary="Return a single alias",
      *      description="Return a single alias",
      *      tags={"Alias"},
-     *      operationId="AliasController@show",
+     *      operationId="fetch_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -156,6 +156,7 @@ class AliasController extends Controller
      *      description="Creates a new alias",
      *      tags={"Alias"},
      *      summary="AliasController@store",
+     *      operationId="create_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -233,6 +234,7 @@ class AliasController extends Controller
      *      description="Update a alias",
      *      tags={"Alias"},
      *      summary="AliasController@update",
+     *      operationId="update_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -323,6 +325,7 @@ class AliasController extends Controller
      *      description="Edit a alias",
      *      tags={"Alias"},
      *      summary="AliasController@edit",
+     *      operationId="edit_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -416,6 +419,7 @@ class AliasController extends Controller
      *      description="Delete an alias",
      *      tags={"Alias"},
      *      summary="AliasController@destroy",
+     *      operationId="delete_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

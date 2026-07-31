@@ -364,6 +364,7 @@ class DurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v2/dur/template",
+     *    operationId="export_dur_template_v2",
      *    tags={"Data Use Registers"},
      *    summary="DurController@exportTemplate",
      *    description="Export Dur upload template",

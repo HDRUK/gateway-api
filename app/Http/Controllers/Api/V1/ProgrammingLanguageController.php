@@ -27,6 +27,7 @@ class ProgrammingLanguageController extends Controller
      *      description="Returns a list of programming languages enabled on the system",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@index",
+     *      operationId="fetch_all_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -84,6 +85,7 @@ class ProgrammingLanguageController extends Controller
      *      description="Return a single system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@show",
+     *      operationId="fetch_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -156,6 +158,7 @@ class ProgrammingLanguageController extends Controller
      *      description="Creates a new system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@store",
+     *      operationId="create_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -224,6 +227,7 @@ class ProgrammingLanguageController extends Controller
      *      description="Update a system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@update",
+     *      operationId="update_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -310,6 +314,7 @@ class ProgrammingLanguageController extends Controller
      *      description="Edit a system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@update",
+     *      operationId="edit_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -399,6 +404,7 @@ class ProgrammingLanguageController extends Controller
      *      description="Delete a system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@destroy",
+     *      operationId="delete_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

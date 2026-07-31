@@ -563,6 +563,7 @@ class CollectionController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/teams/{teamId}/collections/{id}",
+     *    operationId="update_team_collections",
      *    deprecated=true,
      *    tags={"Collections"},
      *    summary="Update a collection",
@@ -725,6 +726,7 @@ class CollectionController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/teams/{teamId}/collections/{id}",
+     *    operationId="edit_team_collections",
      *    deprecated=true,
      *    tags={"Collections"},
      *    summary="Edit a collection",
@@ -947,6 +949,7 @@ class CollectionController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/teams/{teamId}/collections/{id}",
+     *    operationId="delete_team_collections",
      *    deprecated=true,
      *    tags={"Collections"},
      *    summary="Delete a collection",

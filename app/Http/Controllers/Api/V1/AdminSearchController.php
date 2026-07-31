@@ -25,6 +25,7 @@ class AdminSearchController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v1/admin/search/status",
+     *     operationId="fetch_admin_search_status",
      *     summary="Get Typesense collection status for every onboarded search entity",
      *     tags={"Admin-Search"},
      *     security={{"jwt": {}}},
@@ -75,6 +76,7 @@ class AdminSearchController extends Controller
     /**
      * @OA\Post(
      *     path="/api/v1/admin/search/reindex",
+     *     operationId="create_admin_search_reindex",
      *     summary="Queue a drop+recreate+import of a search entity's Typesense collection",
      *     tags={"Admin-Search"},
      *     security={{"jwt": {}}},
@@ -130,6 +132,7 @@ class AdminSearchController extends Controller
     /**
      * @OA\Post(
      *     path="/api/v1/admin/search/feature",
+     *     operationId="update_admin_search_feature",
      *     summary="Activate or deactivate a search-related Pennant feature flag",
      *     tags={"Admin-Search"},
      *     security={{"jwt": {}}},

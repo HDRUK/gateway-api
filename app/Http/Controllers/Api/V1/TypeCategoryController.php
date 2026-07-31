@@ -27,6 +27,7 @@ class TypeCategoryController extends Controller
      *      description="Returns a list of type categories enabled on the system",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@index",
+     *      operationId="fetch_all_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -85,6 +86,7 @@ class TypeCategoryController extends Controller
      *      description="Return a single system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@show",
+     *      operationId="fetch_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -152,6 +154,7 @@ class TypeCategoryController extends Controller
      *      description="Creates a new system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@store",
+     *      operationId="create_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -222,6 +225,7 @@ class TypeCategoryController extends Controller
      *      description="Update a system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@update",
+     *      operationId="update_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -310,6 +314,7 @@ class TypeCategoryController extends Controller
      *      description="Edit a system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@update",
+     *      operationId="edit_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -399,6 +404,7 @@ class TypeCategoryController extends Controller
      *      description="Delete a system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@destroy",
+     *      operationId="delete_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

@@ -33,6 +33,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions",
+     *      operationId="fetch_question_bank_questions",
      *      summary="List of question bank questions",
      *      description="List of question bank questions",
      *      tags={"QuestionBank"},
@@ -191,6 +192,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/standard",
+     *      operationId="fetch_standard_question_bank_questions",
      *      summary="List of standard question bank questions",
      *      description="List of standard question bank questions",
      *      tags={"QuestionBank"},
@@ -350,6 +352,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/custom",
+     *      operationId="fetch_custom_question_bank_questions",
      *      summary="List of custom question bank questions",
      *      description="List of custom question bank questions",
      *      tags={"QuestionBank"},
@@ -509,6 +512,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/archived",
+     *      operationId="fetch_archived_question_bank_questions",
      *      summary="List of archived question bank questions",
      *      description="List of archived question bank questions",
      *      tags={"QuestionBank"},
@@ -667,6 +671,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/{id}",
+     *      operationId="fetch_question_bank_question",
      *      summary="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
      *      description="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
      *      tags={"QuestionBank"},
@@ -768,6 +773,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/version/{id}",
+     *      operationId="fetch_question_bank_question_version",
      *      summary="Return a single system question bank question version",
      *      description="Return a single system question bank question version",
      *      tags={"QuestionBank"},
@@ -852,6 +858,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/questions",
+     *      operationId="create_question_bank_question",
      *      summary="Create a new system question bank question with FE-helpful input format",
      *      description="Create a new system question bank question with FE-helpful input format",
      *      tags={"QuestionBank"},
@@ -981,6 +988,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Put(
      *      path="/api/v1/questions/{id}",
+     *      operationId="update_question_bank_question",
      *      summary="Update a system question bank question - children and their version are updated through parents",
      *      description="Update a system question bank question - children and their versions are updated through parents",
      *      tags={"QuestionBank"},
@@ -1107,6 +1115,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v1/questions/{id}",
+     *      operationId="edit_question_bank_question",
      *      summary="Edit a system question bank question - use this for parents and children separately",
      *      description="Edit a system question bank question - use this for parents and children separately",
      *      tags={"QuestionBank"},
@@ -1276,6 +1285,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v1/questions/{id}/{status}",
+     *      operationId="update_question_bank_question_status",
      *      summary="Lock, unlock, archive or unarchive a question bank question",
      *      description="Lock, unlock, archive or unarchive a question bank question",
      *      tags={"QuestionBank"},
@@ -1387,6 +1397,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/questions/{id}",
+     *      operationId="delete_question_bank_question",
      *      summary="Delete a system question bank question",
      *      description="Delete a system question bank question",
      *      tags={"QuestionBank"},
@@ -1504,6 +1515,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/{id}/files/{fileId}",
+     *      operationId="download_question_bank_question_file",
      *      summary="Download a file attached to a question bank question",
      *      description="Download a system question bank question",
      *      tags={"QuestionBank"},

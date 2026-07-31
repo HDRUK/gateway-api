@@ -37,6 +37,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_networks",
      *      path="/api/v2/data_custodian_networks",
      *      description="Returns a list of DataCustodianNetworks enabled on the system",
      *      tags={"DataCustodianNetworks"},
@@ -116,6 +117,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_admin_data_custodian_networks",
      *      path="/api/v2/admin/data_custodian_networks",
      *      description="Superadmin-only listing used by the network management admin screen — unlike index(), this is not filtered to enabled=1, so disabled networks remain visible/manageable.",
      *      tags={"Admin-DataCustodianNetworks"},
@@ -187,6 +189,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      description="Return a single DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
@@ -267,6 +270,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_custodians_summary",
      *      path="/api/v2/data_custodian_networks/{id}/custodians_summary",
      *      description="Return a single DataCustodianNetwork - custodians summary",
      *      tags={"DataCustodianNetworks"},
@@ -351,6 +355,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_datasets_summary",
      *      path="/api/v2/data_custodian_networks/{id}/datasets_summary",
      *      description="Return a single DataCustodianNetwork - summary of datasets",
      *      tags={"DataCustodianNetworks"},
@@ -455,6 +460,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_entities_summary",
      *      path="/api/v2/data_custodian_networks/{id}/entities_summary",
      *      description="Return a single DataCustodianNetwork - summary of entities",
      *      tags={"DataCustodianNetworks"},
@@ -1141,6 +1147,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_info",
      *      path="/api/v2/data_custodian_networks/{id}/info",
      *      description="Return a single DataCustodianNetwork - basic information",
      *      tags={"DataCustodianNetworks"},
@@ -1221,6 +1228,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Post(
+     *      operationId="create_data_custodian_network",
      *      path="/api/v2/data_custodian_networks",
      *      description="Creates a new DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
@@ -1318,6 +1326,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Put(
+     *      operationId="update_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      description="Update a DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
@@ -1420,6 +1429,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Patch(
+     *      operationId="edit_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Edit a DataCustodianNetwork",
      *      description="Edit a DataCustodianNetwork",
@@ -1523,6 +1533,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Delete(
+     *      operationId="delete_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Delete a DataCustodianNetwork",
      *      description="Delete a DataCustodianNetwork",

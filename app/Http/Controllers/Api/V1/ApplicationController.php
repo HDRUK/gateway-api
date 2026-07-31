@@ -244,6 +244,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/applications",
+     *    operationId="create_applications",
      *    summary="Create application",
      *    description="Creates application",
      *    tags={"Application"},
@@ -378,6 +379,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/applications/{id}",
+     *    operationId="update_applications",
      *    tags={"Application"},
      *    summary="Update application",
      *    description="Update application",
@@ -511,6 +513,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/applications/{id}",
+     *    operationId="edit_applications",
      *    tags={"Application"},
      *    summary="Edit application",
      *    description="Edit application",
@@ -634,6 +637,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/applications/{id}",
+     *    operationId="delete_applications",
      *    tags={"Application"},
      *    summary="Delete application",
      *    description="Delete application",
@@ -720,6 +724,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/applications/{id}/clientid",
+     *    operationId="patch_applications_client_id",
      *    tags={"Application"},
      *    summary="Generate Client ID application",
      *    description="Generate Client ID application",

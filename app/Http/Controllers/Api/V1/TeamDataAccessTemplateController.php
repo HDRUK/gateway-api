@@ -26,6 +26,7 @@ class TeamDataAccessTemplateController extends Controller
      *      description="List of dar templates belonging to a team",
      *      tags={"TeamDataAccessTemplate"},
      *      summary="TeamDataAccessTemplateController@index",
+     *      operationId="fetch_team_dar_templates",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -212,6 +213,7 @@ class TeamDataAccessTemplateController extends Controller
      *      description="Delete a file associated with a DAR template",
      *      tags={"TeamDataAccessTemplate"},
      *      summary="TeamDataAccessTemplateController@destroyFile",
+     *      operationId="delete_team_dar_template_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",

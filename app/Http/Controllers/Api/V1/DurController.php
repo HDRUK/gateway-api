@@ -567,6 +567,7 @@ class DurController extends Controller
      * @OA\Put(
      *    path="/api/v1/dur/{id}",
      *    deprecated=true,
+     *    operationId="update_dur",
      *    tags={"Data Use Registers"},
      *    summary="Update a dur by id",
      *    description="Update a dur",
@@ -810,6 +811,7 @@ class DurController extends Controller
      * @OA\Patch(
      *    path="/api/v1/dur/{id}",
      *    deprecated=true,
+     *    operationId="edit_dur",
      *    tags={"Data Use Registers"},
      *    summary="Edit a dur",
      *    description="Edit a dur",
@@ -1095,6 +1097,7 @@ class DurController extends Controller
      * @OA\Delete(
      *    path="/api/v1/dur/{id}",
      *    deprecated=true,
+     *    operationId="delete_dur",
      *    tags={"Data Use Registers"},
      *    summary="Delete a dur",
      *    description="Delete a dur",
@@ -1458,6 +1461,7 @@ class DurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/dur/template",
+     *    operationId="export_dur_template",
      *    tags={"Data Use Registers"},
      *    summary="DurController@exportTemplate",
      *    description="Export Dur upload template",

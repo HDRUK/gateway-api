@@ -34,6 +34,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_provider_colls",
      *      path="/api/v1/data_provider_colls",
      *      summary="List of DataProviderColl's",
      *      description="Returns a list of DataProviderColls enabled on the system",
@@ -112,6 +113,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Return a single DataProviderColl",
      *      description="Return a single DataProviderColl",
@@ -194,6 +196,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_provider_coll_summary",
      *      path="/api/v1/data_provider_colls/{id}/summary",
      *      description="Return a single DataProviderColl - summary",
      *      tags={"DataProviderColl"},
@@ -346,6 +349,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Post(
+     *      operationId="create_data_provider_coll",
      *      path="/api/v1/data_provider_colls",
      *      summary="Create a new DataProviderColl",
      *      description="Creates a new DataProviderColl",
@@ -444,6 +448,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Put(
+     *      operationId="update_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Update a DataProviderColl",
      *      description="Update a DataProviderColl",
@@ -556,6 +561,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Patch(
+     *      operationId="edit_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Edit a DataProviderColl",
      *      description="Edit a DataProviderColl",
@@ -668,6 +674,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Delete(
+     *      operationId="delete_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Delete a DataProviderColl",
      *      description="Delete a DataProviderColl",

@@ -22,6 +22,7 @@ class CategoryController extends Controller
      *      description="Returns a list of categories enabled on the system",
      *      tags={"Category"},
      *      summary="Category@index",
+     *      operationId="fetch_all_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="per_page",
@@ -84,6 +85,7 @@ class CategoryController extends Controller
      *      description="Return a single tool category",
      *      tags={"Category"},
      *      summary="Category@show",
+     *      operationId="fetch_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -153,6 +155,7 @@ class CategoryController extends Controller
      *      description="Creates a new tool category",
      *      tags={"Category"},
      *      summary="Category@store",
+     *      operationId="create_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -221,6 +224,7 @@ class CategoryController extends Controller
      *      description="Update a tool category",
      *      tags={"Category"},
      *      summary="Category@update",
+     *      operationId="update_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -307,6 +311,7 @@ class CategoryController extends Controller
      *      description="Edit a tool category",
      *      tags={"Category"},
      *      summary="Category@update",
+     *      operationId="edit_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -396,6 +401,7 @@ class CategoryController extends Controller
      *      description="Delete a tool category",
      *      tags={"Category"},
      *      summary="Category@destroy",
+     *      operationId="delete_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
