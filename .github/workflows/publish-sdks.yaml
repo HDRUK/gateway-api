@@ -70,11 +70,21 @@ jobs:
           path: sdks
 
       - name: Checkout ${{ matrix.repo }}
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ matrix.repo }}
-          token: ${{ secrets.SDK_PUSH_TOKEN }}
-          path: target
+        env:
+          GH_TOKEN: ${{ secrets.SDK_PUSH_TOKEN }}
+        run: |
+          mkdir -p target
+          cd target
+          git init -q
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${{ matrix.repo }}.git"
+          # A brand-new repo has no commits/branches yet, so there's nothing to fetch —
+          # fall back to starting a fresh main branch in that case rather than failing.
+          if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+            git fetch -q --depth=1 origin main
+            git checkout -q main
+          else
+            git checkout -q -b main
+          fi
 
       - name: Sync generated SDK into target repo
         run: rsync -a --delete --exclude '.git' "sdks/${{ matrix.lang }}/" target/
@@ -91,5 +101,5 @@ jobs:
           fi
           git commit -m "chore: regenerate SDK for ${{ env.SDK_VERSION }}"
           git tag "${{ env.SDK_VERSION }}"
-          git push origin HEAD
+          git push origin HEAD:main
           git push origin "${{ env.SDK_VERSION }}"
