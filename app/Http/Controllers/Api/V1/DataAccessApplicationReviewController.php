@@ -48,6 +48,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Return all reviews on a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@index",
+     *      operationId="fetch_team_dar_application_reviews",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="team_id",
@@ -140,6 +141,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Return all reviews on a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@index",
+     *      operationId="fetch_user_dar_application_reviews",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -235,6 +237,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Download a file associated with a DAR application review",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@downloadFile",
+     *      operationId="fetch_team_dar_application_review_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -358,6 +361,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Download a file associated with a DAR application review",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@downloadUserFile",
+     *      operationId="fetch_user_dar_application_review_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -473,6 +477,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Create a new review comment on a question in a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@store",
+     *      operationId="create_team_dar_application_question_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="team_id",
@@ -587,6 +592,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Create a new review comment on a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@storeGlobal",
+     *      operationId="create_team_dar_application_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="team_id",
@@ -689,6 +695,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Update a review comment on a question in a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@update",
+     *      operationId="update_team_dar_application_question_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="team_id",
@@ -822,6 +829,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Update a review comment on a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@updateGlobal",
+     *      operationId="update_team_dar_application_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="team_id",
@@ -944,6 +952,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="User endpoint to update a review comment on a question in a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@userUpdate",
+     *      operationId="update_user_dar_application_question_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -1076,6 +1085,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="User endpoint to update a review comment on a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@userUpdateGlobal",
+     *      operationId="update_user_dar_application_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -1200,6 +1210,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Delete a review from a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@destroy",
+     *      operationId="delete_team_dar_application_question_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="team_id",
@@ -1317,6 +1328,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Delete a review from a DAR application",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@destroyGlobal",
+     *      operationId="delete_team_dar_application_review",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="team_id",
@@ -1423,6 +1435,7 @@ class DataAccessApplicationReviewController extends Controller
      *      description="Delete a file associated with a DAR review",
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@destroyFile",
+     *      operationId="delete_team_dar_application_review_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",

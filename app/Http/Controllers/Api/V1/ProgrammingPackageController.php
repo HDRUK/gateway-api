@@ -27,6 +27,7 @@ class ProgrammingPackageController extends Controller
      *      description="Returns a list of programming packages enabled on the system",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@index",
+     *      operationId="fetch_all_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -78,6 +79,7 @@ class ProgrammingPackageController extends Controller
      *      description="Return a single system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@show",
+     *      operationId="fetch_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -150,6 +152,7 @@ class ProgrammingPackageController extends Controller
      *      description="Creates a new system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@store",
+     *      operationId="create_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -218,6 +221,7 @@ class ProgrammingPackageController extends Controller
      *      description="Update a system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@update",
+     *      operationId="update_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -304,6 +308,7 @@ class ProgrammingPackageController extends Controller
      *      description="Edit a system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@update",
+     *      operationId="edit_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -393,6 +398,7 @@ class ProgrammingPackageController extends Controller
      *      description="Delete a system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@destroy",
+     *      operationId="delete_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

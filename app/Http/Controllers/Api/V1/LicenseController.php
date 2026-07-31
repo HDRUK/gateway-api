@@ -32,6 +32,7 @@ class LicenseController extends Controller
      *      description="Returns a list of licenses available",
      *      tags={"License"},
      *      summary="License@index",
+     *      operationId="fetch_all_licenses",
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -94,6 +95,7 @@ class LicenseController extends Controller
      *      description="Return a single license",
      *      tags={"License"},
      *      summary="License@show",
+     *      operationId="fetch_licenses",
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -155,6 +157,7 @@ class LicenseController extends Controller
      *      description="Creates a new license",
      *      tags={"License"},
      *      summary="License@store",
+     *      operationId="create_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -231,6 +234,7 @@ class LicenseController extends Controller
      *      description="Update a tool license",
      *      tags={"License"},
      *      summary="License@update",
+     *      operationId="update_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -325,6 +329,7 @@ class LicenseController extends Controller
      *      description="Edit a tool license",
      *      tags={"License"},
      *      summary="License@edit",
+     *      operationId="edit_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -423,6 +428,7 @@ class LicenseController extends Controller
      *      description="Delete a License",
      *      tags={"License"},
      *      summary="License@destroy",
+     *      operationId="delete_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

@@ -207,6 +207,7 @@ class TeamWidgetController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}/widgets/data",
+     *      operationId="fetch_widget_data_sources",
      *      tags={"Widgets"},
      *      summary="WidgetController@getWidgetData",
      *      description="Fetch lightweight data (id, name, etc.) for multiple teams across datasets, tools, collections, and DURS",
@@ -761,6 +762,7 @@ class TeamWidgetController extends Controller
     /**
      * @OA\Patch(
      *     path="/api/v1/teams/{teamId}/widgets/{id}",
+     *     operationId="update_widget",
      *     tags={"Widgets"},
      *     summary="Update an existing widget",
      *     description="Updates an existing widget for a given team ID",

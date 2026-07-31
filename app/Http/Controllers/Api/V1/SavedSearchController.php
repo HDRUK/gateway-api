@@ -30,6 +30,7 @@ class SavedSearchController extends Controller
      *      description="Returns a list of saved searches enabled on the system",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@index",
+     *      operationId="fetch_all_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="per_page",
@@ -101,6 +102,7 @@ class SavedSearchController extends Controller
      *      description="Return a single saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@show",
+     *      operationId="fetch_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -175,6 +177,7 @@ class SavedSearchController extends Controller
      *      description="Creates a new saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@store",
+     *      operationId="create_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -275,6 +278,7 @@ class SavedSearchController extends Controller
      *      description="Update a saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@update",
+     *      operationId="update_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -391,6 +395,7 @@ class SavedSearchController extends Controller
      *      description="Edit a saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@update",
+     *      operationId="edit_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -506,6 +511,7 @@ class SavedSearchController extends Controller
      *      description="Delete a saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@destroy",
+     *      operationId="delete_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

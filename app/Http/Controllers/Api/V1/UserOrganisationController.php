@@ -14,6 +14,7 @@ class UserOrganisationController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/users/organisations",
+     *      operationId="fetch_user_organisations",
      *      summary="Return a distinct list of all organisations which users belong to",
      *      description="Return a distinct list of all organisations which users belong to",
      *      tags={"UserOrganisation"},

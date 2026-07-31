@@ -34,6 +34,7 @@ class KeywordController extends Controller
      *      description="Returns a list of keywords",
      *      tags={"Keyword"},
      *      summary="KeywordController@index",
+     *      operationId="fetch_all_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="per_page",
@@ -108,6 +109,7 @@ class KeywordController extends Controller
      *      description="Return a single keyword",
      *      tags={"Keyword"},
      *      summary="KeywordController@show",
+     *      operationId="fetch_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -177,6 +179,7 @@ class KeywordController extends Controller
      *      description="Creates a new keyword",
      *      tags={"Keyword"},
      *      summary="KeywordController@store",
+     *      operationId="create_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -260,6 +263,7 @@ class KeywordController extends Controller
      *      description="Update a keyword by id",
      *      tags={"Keyword"},
      *      summary="KeywordController@update",
+     *      operationId="update_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -346,6 +350,7 @@ class KeywordController extends Controller
      *      description="Edit a keyword by id",
      *      tags={"Keyword"},
      *      summary="KeywordController@update",
+     *      operationId="edit_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -434,6 +439,7 @@ class KeywordController extends Controller
      *      description="Delete a keyword by id",
      *      tags={"Keyword"},
      *      summary="KeywordController@destroy",
+     *      operationId="delete_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

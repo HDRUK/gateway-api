@@ -370,6 +370,7 @@ class CollectionController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v2/collections/{id}",
+     *    operationId="update_collections_v2",
      *    tags={"Collections"},
      *    summary="Update a collection",
      *    description="Update a collection owned by an individual",
@@ -518,6 +519,7 @@ class CollectionController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v2/collections/{id}",
+     *    operationId="edit_collections_v2",
      *    tags={"Collections"},
      *    summary="Edit a collection",
      *    description="Edit a collection",
@@ -739,6 +741,7 @@ class CollectionController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v2/collections/{id}",
+     *    operationId="delete_collections_v2",
      *    tags={"Collections"},
      *    summary="Delete a collection",
      *    description="Delete a collection",

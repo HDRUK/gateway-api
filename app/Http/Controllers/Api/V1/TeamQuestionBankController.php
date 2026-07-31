@@ -20,6 +20,7 @@ class TeamQuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}/questions/section/{sectionId}",
+     *      operationId="fetch_team_question_bank_questions_by_section",
      *      summary="List of question bank questions by section",
      *      description="List of question bank questions by section",
      *      tags={"QuestionBank"},

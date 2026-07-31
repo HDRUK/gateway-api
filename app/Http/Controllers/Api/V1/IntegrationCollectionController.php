@@ -397,6 +397,7 @@ class IntegrationCollectionController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/integrations/collections/{id}",
+     *    operationId="update_collections_integrations",
      *    tags={"Integration Collections"},
      *    summary="Update a collection",
      *    description="Update a collection",
@@ -556,6 +557,7 @@ class IntegrationCollectionController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/integrations/collections/{id}",
+     *    operationId="edit_collections_integrations",
      *    tags={"Integration Collections"},
      *    summary="Edit a collection",
      *    description="Edit a collection",
@@ -718,6 +720,7 @@ class IntegrationCollectionController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/integrations/collections/{id}",
+     *    operationId="delete_collections_integrations",
      *    tags={"Integration Collections"},
      *    summary="Delete a collection",
      *    description="Delete a collection",

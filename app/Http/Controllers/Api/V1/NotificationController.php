@@ -31,6 +31,7 @@ class NotificationController extends Controller
      *      description="Returns a list of notifications enabled on the system",
      *      tags={"Notification"},
      *      summary="Notification@index",
+     *      operationId="fetch_all_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -83,6 +84,7 @@ class NotificationController extends Controller
      *      description="Return a single notification",
      *      tags={"Notification"},
      *      summary="Notification@show",
+     *      operationId="fetch_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -162,6 +164,7 @@ class NotificationController extends Controller
      *      description="Creates a new notification",
      *      tags={"Notification"},
      *      summary="Notification@store",
+     *      operationId="create_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -237,6 +240,7 @@ class NotificationController extends Controller
      *      description="Update a notification",
      *      tags={"Notification"},
      *      summary="Notification@update",
+     *      operationId="update_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -330,6 +334,7 @@ class NotificationController extends Controller
      *      description="Edit a notification",
      *      tags={"Notification"},
      *      summary="Notification@edit",
+     *      operationId="edit_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -426,6 +431,7 @@ class NotificationController extends Controller
      *      description="Delete a notification",
      *      tags={"Notification"},
      *      summary="Notification@destroy",
+     *      operationId="delete_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

@@ -323,6 +323,7 @@ class ReviewController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/reviews/{id}",
+     *    operationId="update_reviews",
      *    tags={"Reviews"},
      *    summary="Update a review",
      *    description="Update a review",
@@ -431,6 +432,7 @@ class ReviewController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/reviews/{id}",
+     *    operationId="edit_reviews",
      *    tags={"Reviews"},
      *    summary="Edit a review",
      *    description="Edit a review",
@@ -542,6 +544,7 @@ class ReviewController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/reviews/{id}",
+     *    operationId="delete_reviews",
      *    tags={"Reviews"},
      *    summary="Delete a review",
      *    description="Delete a review",

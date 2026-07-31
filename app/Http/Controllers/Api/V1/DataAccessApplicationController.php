@@ -38,6 +38,7 @@ class DataAccessApplicationController extends Controller
      *      description="Creates a new DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@store",
+     *      operationId="create_dar_applications",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -212,6 +213,7 @@ class DataAccessApplicationController extends Controller
      *      description="Delete a system DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroy",
+     *      operationId="delete_dar_applications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -286,6 +288,7 @@ class DataAccessApplicationController extends Controller
      *      description="Delete a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroyFile",
+     *      operationId="delete_dar_application_files",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

@@ -44,6 +44,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="List of dar applications belonging to a team",
      *      tags={"TeamDataAccessApplication"},
      *      summary="TeamDataAccessApplicationController@index",
+     *      operationId="fetch_team_dar_applications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -215,6 +216,7 @@ class TeamDataAccessApplicationController extends Controller
      *    path="/api/v1/teams/{teamId}/dar/applications/count",
      *    tags={"TeamDataAccessApplication"},
      *    summary="TeamDataAccessApplicationController@allCounts",
+     *    operationId="count_team_dar_applications",
      *    description="Get Counts for all status fields in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -278,6 +280,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return a single DAR application",
      *      tags={"TeamDataAccessApplication"},
      *      summary="TeamDataAccessApplicationController@show",
+     *      operationId="fetch_team_dar_application",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -383,6 +386,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Get header information about a specific DAR",
      *      tags={"TeamDataAccessApplication"},
      *      summary="TeamDataAccessApplicationController@showHeader",
+     *      operationId="fetch_team_dar_application_header",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -486,6 +490,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Returns a DAR form as a CSV with attached files as a zip",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@download",
+     *      operationId="fetch_team_dar_application_download_zip",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -637,6 +642,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return a list of files associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@showFiles",
+     *      operationId="fetch_team_dar_application_files",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -744,6 +750,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Download a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@downloadFile",
+     *      operationId="fetch_team_dar_application_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -852,6 +859,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return answers from a single DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@showAnswers",
+     *      operationId="fetch_team_dar_application_answers",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -940,6 +948,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return the status history of a single DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@status",
+     *      operationId="fetch_team_dar_application_status_history",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -1033,6 +1042,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Edit a system DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@update",
+     *      operationId="update_team_dar_application",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",
@@ -1179,6 +1189,7 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Delete a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroyFile",
+     *      operationId="delete_team_dar_application_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="teamId",

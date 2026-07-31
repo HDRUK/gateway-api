@@ -14,6 +14,7 @@ class CustomerSatisfactionController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/csat",
+     *      operationId="create_csat",
      *      tags={"CustomerSatisfaction"},
      *      summary="Create Customer Satisfaction Score",
      *      description="Creates a customer satisfaction score between 0 and 5",
@@ -80,6 +81,7 @@ class CustomerSatisfactionController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v1/csat/{id}",
+     *      operationId="edit_csat",
      *      tags={"CustomerSatisfaction"},
      *      summary="Update Customer Satisfaction Description",
      *      description="Update a description for a satisfaction score entry",

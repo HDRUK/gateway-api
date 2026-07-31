@@ -43,6 +43,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="List of dar applications belonging to a user",
      *      tags={"UserDataAccessApplication"},
      *      summary="UserDataAccessApplicationController@index",
+     *      operationId="fetch_user_dar_applications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -130,6 +131,7 @@ class UserDataAccessApplicationController extends Controller
      *    path="/api/v1/users/{userId}/dar/applications/count/{field}",
      *    tags={"UserDataAccessApplication"},
      *    summary="UserDataAccessApplicationController@count",
+     *    operationId="count_user_dar_applications_by_field",
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -211,6 +213,7 @@ class UserDataAccessApplicationController extends Controller
      *    path="/api/v1/users/{userId}/dar/applications/count",
      *    tags={"UserDataAccessApplication"},
      *    summary="UserDataAccessApplicationController@allCounts",
+     *    operationId="count_all_user_dar_applications",
      *    description="Get Counts for all status fields in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -279,6 +282,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Return a DAR application belonging to the user",
      *      tags={"UserDataAccessApplication"},
      *      summary="UserDataAccessApplicationController@show",
+     *      operationId="fetch_user_dar_application_details",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -385,6 +389,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Get header information about a specific DAR",
      *      tags={"UserDataAccessApplication"},
      *      summary="UserDataAccessApplicationController@showHeader",
+     *      operationId="fetch_user_dar_application_header",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -455,6 +460,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Return answers from the user's DAR application",
      *      tags={"UserDataAccessApplication"},
      *      summary="UserDataAccessApplicationController@showAnswers",
+     *      operationId="fetch_user_dar_application_answers",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -546,6 +552,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Return a list of files associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@showFiles",
+     *      operationId="fetch_user_dar_application_files",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -646,6 +653,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Download a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@downloadFile",
+     *      operationId="fetch_user_dar_application_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -742,6 +750,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Update a system DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@update",
+     *      operationId="update_user_dar_application",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -871,6 +880,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Add answers to the user's DAR application",
      *      tags={"UserDataAccessApplication"},
      *      summary="UserDataAccessApplication@storeAnswers",
+     *      operationId="create_user_dar_application_answers",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -991,6 +1001,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Edit a system DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@update",
+     *      operationId="patch_user_dar_application",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",
@@ -1124,6 +1135,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Delete a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroyFile",
+     *      operationId="delete_user_dar_application_file",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -1265,6 +1277,7 @@ class UserDataAccessApplicationController extends Controller
      *      description="Delete a users DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroy",
+     *      operationId="delete_user_dar_application",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="userId",

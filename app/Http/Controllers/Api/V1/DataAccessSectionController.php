@@ -27,6 +27,7 @@ class DataAccessSectionController extends Controller
      *      description="List of DAR sections",
      *      tags={"DataAccessSection"},
      *      summary="DataAccessSection@index",
+     *      operationId="fetch_dar_sections",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="per_page",
@@ -114,6 +115,7 @@ class DataAccessSectionController extends Controller
      *      description="Return a single DAR section",
      *      tags={"DataAccessSection"},
      *      summary="DataAccessSection@show",
+     *      operationId="fetch_dar_section",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -196,6 +198,7 @@ class DataAccessSectionController extends Controller
      *      description="Creates a new DAR section",
      *      tags={"DataAccessSection"},
      *      summary="DataAccessSection@store",
+     *      operationId="create_dar_section",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -268,6 +271,7 @@ class DataAccessSectionController extends Controller
      *      description="Update a system DAR section",
      *      tags={"DataAccessSection"},
      *      summary="DataAccessSection@update",
+     *      operationId="update_dar_section",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -369,6 +373,7 @@ class DataAccessSectionController extends Controller
      *      description="Edit a system DAR section",
      *      tags={"DataAccessSection"},
      *      summary="DataAccessSection@update",
+     *      operationId="patch_dar_section",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -471,6 +476,7 @@ class DataAccessSectionController extends Controller
      *      description="Delete a system DAR section",
      *      tags={"DataAccessSection"},
      *      summary="DataAccessSection@destroy",
+     *      operationId="delete_dar_section",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

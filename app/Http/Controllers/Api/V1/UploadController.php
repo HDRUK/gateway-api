@@ -19,6 +19,7 @@ class UploadController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/files",
+     *      operationId="create_files",
      *      summary="Upload a file to the gateway-api",
      *      description="Upload a file to the gateway-api via scanning sub-service",
      *      tags={"Upload"},
@@ -159,6 +160,7 @@ class UploadController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/files/{uuid}",
+     *      operationId="fetch_files",
      *      summary="Get the scanning status of an upload",
      *      description="Get the scanning status of an upload",
      *      tags={"Upload"},
@@ -231,6 +233,7 @@ class UploadController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/files/processed/{uuid}/download",
+     *      operationId="fetch_files_processed_content",
      *      summary="Get the content of a processed file",
      *      description="Get the content of a processed file",
      *      tags={"Upload"},
@@ -314,6 +317,7 @@ class UploadController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/files/processed/{id}",
+     *      operationId="delete_files_processed",
      *      summary="Delete a processed file",
      *      description="Delete a processed file",
      *      tags={"Upload"},
