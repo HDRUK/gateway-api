@@ -236,7 +236,7 @@ class UploadController extends Controller
      *      tags={"Upload"},
      *      summary="Upload@content",
      *      @OA\Parameter(
-     *         name="id",
+     *         name="uuid",
      *         in="path",
      *         description="upload id",
      *         required=true,

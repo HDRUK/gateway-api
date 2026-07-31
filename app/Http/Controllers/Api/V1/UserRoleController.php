@@ -246,17 +246,6 @@ class UserRoleController extends Controller
      *          description="user id",
      *       ),
      *    ),
-     *    @OA\Parameter(
-     *       name="userId",
-     *       in="path",
-     *       description="user id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="user id",
-     *       ),
-     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",

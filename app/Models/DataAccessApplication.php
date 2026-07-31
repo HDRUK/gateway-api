@@ -14,6 +14,35 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
+/**
+ * @OA\Schema(
+ *   schema="DataAccessApplication",
+ *   description="A Data Access Application (DAR) record managed by the Gateway",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="applicant_id", type="integer", example=42),
+ *   @OA\Property(property="project_title", type="string", nullable=true, example="An investigation into cardiovascular outcomes"),
+ *   @OA\Property(property="project_id", type="string", nullable=true, example="43"),
+ *   @OA\Property(property="application_type", type="string", example="FORM"),
+ *   @OA\Property(
+ *     property="submission_status",
+ *     type="string",
+ *     enum={"DRAFT","SUBMITTED","FEEDBACK"},
+ *     example="DRAFT"
+ *   ),
+ *   @OA\Property(
+ *     property="approval_status",
+ *     type="string",
+ *     enum={"APPROVED","APPROVED_COMMENTS","REJECTED","WITHDRAWN"},
+ *     nullable=true,
+ *     example="APPROVED"
+ *   ),
+ *   @OA\Property(property="is_joint", type="boolean", example=false),
+ *   @OA\Property(property="status_review_id", type="integer", nullable=true, example=12),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ *   @OA\Property(property="deleted_at", type="string", format="date-time", nullable=true, example=null),
+ * )
+ */
 class DataAccessApplication extends Model
 {
     use HasFactory;

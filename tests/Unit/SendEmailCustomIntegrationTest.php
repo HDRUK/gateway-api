@@ -475,7 +475,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $this->assertSame(0, $result['success_count']);
         $this->assertStringNotContainsString('ZZZ', $result['integration_success']);
     }
-    
+
     private function makeDatasetWithTitle(string $pid, string $title): Dataset
     {
         $dataset = Dataset::factory()->create([

@@ -1,0 +1,95 @@
+name: Publish SDKs
+run-name: ${{ github.actor }} triggered SDK publish for ${{ github.event.release.tag_name || 'manual run' }}
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to stamp into the generated SDKs (e.g. 1.2.3)'
+        required: true
+        default: '0.0.0-manual'
+
+env:
+  SDK_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Composer install
+        run: composer install
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java (required by openapi-generator-cli)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Generate SDKs
+        run: scripts/generate-sdks.sh --version "${{ env.SDK_VERSION }}"
+
+      - name: Upload generated SDKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdks
+          path: sdks/
+          retention-days: 7
+
+  publish:
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        include:
+          - lang: python
+            repo: HDRUK/gateway-api-python-sdk
+          - lang: csharp
+            repo: HDRUK/gateway-api-csharp-sdk
+    steps:
+      - name: Download generated SDKs
+        uses: actions/download-artifact@v4
+        with:
+          name: sdks
+          path: sdks
+
+      - name: Checkout ${{ matrix.repo }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.SDK_PUSH_TOKEN }}
+          path: target
+
+      - name: Sync generated SDK into target repo
+        run: rsync -a --delete --exclude '.git' "sdks/${{ matrix.lang }}/" target/
+
+      - name: Commit and push
+        working-directory: target
+        run: |
+          git config user.name "hdruk-bot"
+          git config user.email "bot@hdruk.ac.uk"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes for ${{ matrix.lang }} SDK — skipping commit"
+            exit 0
+          fi
+          git commit -m "chore: regenerate SDK for ${{ env.SDK_VERSION }}"
+          git tag "${{ env.SDK_VERSION }}"
+          git push origin HEAD
+          git push origin "${{ env.SDK_VERSION }}"

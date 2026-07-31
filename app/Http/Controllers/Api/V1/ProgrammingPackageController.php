@@ -34,13 +34,7 @@ class ProgrammingPackageController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/ProgrammingPackage")
      *              )
      *          )
      *      )
@@ -101,13 +95,7 @@ class ProgrammingPackageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingPackage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -263,13 +251,7 @@ class ProgrammingPackageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingPackage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -354,13 +336,7 @@ class ProgrammingPackageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingPackage")
      *          ),
      *      ),
      *      @OA\Response(

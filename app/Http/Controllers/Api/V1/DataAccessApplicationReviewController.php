@@ -50,6 +50,17 @@ class DataAccessApplicationReviewController extends Controller
      *      summary="DataAccessApplicationReview@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="team_id",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -65,24 +76,7 @@ class DataAccessApplicationReviewController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="application_id", type="integer", example="1"),
-     *                  @OA\Property(property="question_id", type="integer", example="1"),
-     *                  @OA\Property(property="comments", type="array", @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="user_id", type="integer", example="123"),
-     *                      @OA\Property(property="team_id", type="integer", example="123"),
-     *                      @OA\Property(property="review_id", type="integer", example="123"),
-     *                      @OA\Property(property="comment", type="string", example="A comment"),
-     *                  )),
-     *              )
+     *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/DataAccessApplicationReview")),
      *          ),
      *      ),
      *      @OA\Response(
@@ -148,6 +142,17 @@ class DataAccessApplicationReviewController extends Controller
      *      summary="DataAccessApplicationReview@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -163,24 +168,7 @@ class DataAccessApplicationReviewController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="application_id", type="integer", example="1"),
-     *                  @OA\Property(property="question_id", type="integer", example="1"),
-     *                  @OA\Property(property="comments", type="array", @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="user_id", type="integer", example="123"),
-     *                      @OA\Property(property="team_id", type="integer", example="123"),
-     *                      @OA\Property(property="review_id", type="integer", example="123"),
-     *                      @OA\Property(property="comment", type="string", example="A comment"),
-     *                  )),
-     *              )
+     *              @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/DataAccessApplicationReview")),
      *          ),
      *      ),
      *      @OA\Response(
@@ -487,6 +475,17 @@ class DataAccessApplicationReviewController extends Controller
      *      summary="DataAccessApplicationReview@store",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="team_id",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -590,6 +589,17 @@ class DataAccessApplicationReviewController extends Controller
      *      summary="DataAccessApplicationReview@storeGlobal",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="team_id",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -681,6 +691,17 @@ class DataAccessApplicationReviewController extends Controller
      *      summary="DataAccessApplicationReview@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="team_id",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -733,15 +754,7 @@ class DataAccessApplicationReviewController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="application_id", type="integer", example="1"),
-     *                  @OA\Property(property="question_id", type="integer", example="1"),
-     *                  @OA\Property(property="comments", type="array", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplicationReview"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -811,6 +824,17 @@ class DataAccessApplicationReviewController extends Controller
      *      summary="DataAccessApplicationReview@updateGlobal",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="team_id",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -852,15 +876,7 @@ class DataAccessApplicationReviewController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="application_id", type="integer", example="1"),
-     *                  @OA\Property(property="question_id", type="integer", example="1"),
-     *                  @OA\Property(property="comments", type="array", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplicationReview"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -993,15 +1009,7 @@ class DataAccessApplicationReviewController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="application_id", type="integer", example="1"),
-     *                  @OA\Property(property="question_id", type="integer", example="1"),
-     *                  @OA\Property(property="comments", type="array", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplicationReview"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -1122,15 +1130,7 @@ class DataAccessApplicationReviewController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="application_id", type="integer", example="1"),
-     *                  @OA\Property(property="question_id", type="integer", example="1"),
-     *                  @OA\Property(property="comments", type="array", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplicationReview"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -1201,6 +1201,17 @@ class DataAccessApplicationReviewController extends Controller
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="team_id",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -1307,6 +1318,17 @@ class DataAccessApplicationReviewController extends Controller
      *      tags={"DataAccessApplicationReview"},
      *      summary="DataAccessApplicationReview@destroyGlobal",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="team_id",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",

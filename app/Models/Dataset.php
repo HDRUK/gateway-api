@@ -298,7 +298,7 @@ class Dataset extends Model
     /**
      * @param array<int, string> $pids
      * @return array<string, string|null>
-     * 
+     *
      */
     public static function titlesForPids(array $pids): array
     {

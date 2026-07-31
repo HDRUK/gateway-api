@@ -28,6 +28,17 @@ class TeamDataAccessTemplateController extends Controller
      *      summary="TeamDataAccessTemplateController@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *        name="published",
      *        in="query",
      *        description="Template publication status to filter by (true, false)",
@@ -202,6 +213,17 @@ class TeamDataAccessTemplateController extends Controller
      *      tags={"TeamDataAccessTemplate"},
      *      summary="TeamDataAccessTemplateController@destroyFile",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",

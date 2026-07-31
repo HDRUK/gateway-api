@@ -103,11 +103,7 @@ class IntegrationDatasetController extends Controller
      *          @OA\Property(
      *             property="data",
      *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Dataset")
      *          )
      *       )
      *    )
@@ -291,12 +287,7 @@ class IntegrationDatasetController extends Controller
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             ref="#/components/schemas/Dataset"
      *          ),
      *       ),
      *    ),
@@ -419,7 +410,7 @@ class IntegrationDatasetController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -703,7 +694,7 @@ class IntegrationDatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -712,7 +703,7 @@ class IntegrationDatasetController extends Controller
      *          description="Created",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
+     *              @OA\Property(property="data", ref="#/components/schemas/Dataset")
      *          )
      *      ),
      *      @OA\Response(
@@ -886,6 +877,17 @@ class IntegrationDatasetController extends Controller
      *    summary="IntegrationDatasetController@edit",
      *    description="Patch dataset by id",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dataset id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
      *    @OA\Parameter(
      *       name="unarchive",
      *       in="query",
@@ -1116,7 +1118,7 @@ class IntegrationDatasetController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),

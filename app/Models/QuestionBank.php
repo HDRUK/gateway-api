@@ -12,6 +12,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @OA\Schema(
+ *   schema="QuestionBank",
+ *   description="A question bank question record managed by the Gateway",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="section_id", type="integer", example=3),
+ *   @OA\Property(property="user_id", type="integer", example=42),
+ *   @OA\Property(property="locked", type="boolean", example=false),
+ *   @OA\Property(property="archived", type="boolean", example=false),
+ *   @OA\Property(property="archived_date", type="string", format="date-time", nullable=true, example="2024-06-01T08:00:00Z"),
+ *   @OA\Property(property="force_required", type="boolean", example=false),
+ *   @OA\Property(property="allow_guidance_override", type="boolean", example=false),
+ *   @OA\Property(property="is_child", type="boolean", example=false),
+ *   @OA\Property(
+ *     property="question_type",
+ *     type="string",
+ *     enum={"STANDARD","CUSTOM"},
+ *     example="STANDARD"
+ *   ),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 class QuestionBank extends Model
 {
     use HasFactory;

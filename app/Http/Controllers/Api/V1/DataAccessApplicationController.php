@@ -48,8 +48,8 @@ class DataAccessApplicationController extends Controller
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="project_title", type="string", example="A DAR project"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
-     *              @OA\Property(property="dataset_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items(type="integer")),
+     *              @OA\Property(property="dataset_ids", type="array", @OA\Items(type="integer")),
      *          ),
      *      ),
      *      @OA\Response(

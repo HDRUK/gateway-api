@@ -114,11 +114,7 @@ class DatasetController extends Controller
      *          @OA\Property(
      *             property="data",
      *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Dataset")
      *          )
      *       )
      *    )
@@ -380,12 +376,7 @@ class DatasetController extends Controller
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             ref="#/components/schemas/Dataset"
      *          ),
      *       ),
      *    ),
@@ -631,7 +622,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="mongo_id", type="string", example="456"),
      *             @OA\Property(property="mongo_pid", type="string", example="def789"),
      *             @OA\Property(property="datasetid", type="string", example="xyz1011"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -759,7 +750,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -927,6 +918,17 @@ class DatasetController extends Controller
      *    summary="DatasetController@edit",
      *    description="Patch dataset by id",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dataset id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
      *    @OA\Parameter(
      *       name="unarchive",
      *       in="query",
@@ -1165,7 +1167,7 @@ class DatasetController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
