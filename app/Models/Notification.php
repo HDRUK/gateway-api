@@ -10,6 +10,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @OA\Schema(
+ *   schema="Notification",
+ *   description="A notification preference/subscription record",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="user_id", type="integer", nullable=true, example=42),
+ *   @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
+ *   @OA\Property(property="message", type="string", nullable=true, example="your message here"),
+ *   @OA\Property(property="opt_in", type="boolean", example=true),
+ *   @OA\Property(property="enabled", type="boolean", example=true),
+ *   @OA\Property(property="email", type="string", nullable=true, example="john@example.com"),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2023-04-19T12:00:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2023-04-19T12:00:00Z"),
+ *   @OA\Property(property="deleted_at", type="string", format="date-time", nullable=true, example=null),
+ * )
+ */
 class Notification extends Model
 {
     use HasFactory;

@@ -38,19 +38,7 @@ class LicenseController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                      @OA\Property(property="label", type="string", example="Available upon request"),
-     *                      @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                      @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                      @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                      @OA\Property(property="verified", type="boolean", example="1"),
-     *                      @OA\Property(property="origin", type="string", example="HDR"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/License")
      *              ),
      *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/licenses?page=1"),
      *              @OA\Property(property="from", type="integer", example="1"),
@@ -122,19 +110,7 @@ class LicenseController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                  @OA\Property(property="label", type="string", example="Available upon request"),
-     *                  @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                  @OA\Property(property="verified", type="boolean", example="1"),
-     *                  @OA\Property(property="origin", type="string", example="HDR"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/License")
      *          ),
      *      ),
      *      @OA\Response(
@@ -292,19 +268,7 @@ class LicenseController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                  @OA\Property(property="label", type="string", example="Available upon request"),
-     *                  @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                  @OA\Property(property="verified", type="boolean", example="1"),
-     *                  @OA\Property(property="origin", type="string", example="HDR"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/License")
      *          ),
      *      ),
      *      @OA\Response(
@@ -398,19 +362,7 @@ class LicenseController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                  @OA\Property(property="label", type="string", example="Available upon request"),
-     *                  @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                  @OA\Property(property="verified", type="boolean", example="1"),
-     *                  @OA\Property(property="origin", type="string", example="HDR"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/License")
      *          ),
      *      ),
      *      @OA\Response(

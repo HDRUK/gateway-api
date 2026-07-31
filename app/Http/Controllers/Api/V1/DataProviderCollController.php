@@ -362,9 +362,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="enabled", type="boolean", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -473,9 +471,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -586,9 +582,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),

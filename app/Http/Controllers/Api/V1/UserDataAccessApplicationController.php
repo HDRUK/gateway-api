@@ -44,38 +44,24 @@ class UserDataAccessApplicationController extends Controller
      *      tags={"UserDataAccessApplication"},
      *      summary="UserDataAccessApplicationController@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                      @OA\Property(property="project_title", type="string", example="A project"),
-     *                      @OA\Property(property="user", type="array", @OA\Items(
-     *                          @OA\Property(property="name", type="string", example="A User"),
-     *                          @OA\Property(property="organisation", type="string", example="An origanisation"),
-     *                      )),
-     *                      @OA\Property(property="datasets", type="array", @OA\Items(
-     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
-     *                          @OA\Property(property="dataset_id", type="integer", example="1"),
-     *                          @OA\Property(property="dataset_title", type="string", example="A dataset"),
-     *                          @OA\Property(property="custodian", type="array", @OA\Items(
-     *                              @OA\Property(property="name", type="string", example="A Custodian"),
-     *                          )),
-     *                      )),
-     *                      @OA\Property(property="teams", type="array", @OA\Items(
-     *                          @OA\Property(property="team_id", type="integer", example="1"),
-     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
-     *                          @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                          @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *                      )),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/DataAccessApplication")
      *              )
      *          )
      *      )
@@ -147,6 +133,17 @@ class UserDataAccessApplicationController extends Controller
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="User id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="User id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
      *       name="field",
      *       in="path",
      *       description="name of the field to perform a count on",
@@ -216,6 +213,17 @@ class UserDataAccessApplicationController extends Controller
      *    summary="UserDataAccessApplicationController@allCounts",
      *    description="Get Counts for all status fields in the model",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="User id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="User id",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -299,21 +307,7 @@ class UserDataAccessApplicationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                  @OA\Property(property="project_title", type="string", example="A DAR project"),
-     *                  @OA\Property(property="questions", type="array", @OA\Items()),
-     *                  @OA\Property(property="teams", type="array", @OA\Items(
-     *                      @OA\Property(property="team_id", type="integer", example="1"),
-     *                      @OA\Property(property="dar_application_id", type="integer", example="1"),
-     *                      @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                      @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *                  )),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplication")
      *          ),
      *      ),
      *      @OA\Response(
@@ -392,44 +386,34 @@ class UserDataAccessApplicationController extends Controller
      *      tags={"UserDataAccessApplication"},
      *      summary="UserDataAccessApplicationController@showHeader",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                  @OA\Property(property="project_title", type="string", example="A project"),
-     *                  @OA\Property(property="application_type", type="string", example="A project"),
-     *                  @OA\Property(property="project_id", type="integer", example="43"),
-     *                  @OA\Property(property="is_joint", type="boolean", example="false"),
-     *                  @OA\Property(property="approval_status", type="string", example="FEEDBACK"),
-     *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                  @OA\Property(property="status_review_id", type="integer", example="1"),
-     *                  @OA\Property(property="days_since_submission", type="integer", example="1"),
-     *                  @OA\Property(property="primary_applicant", type="array", @OA\Items(
-     *                      @OA\Property(property="name", type="string", example="A User"),
-     *                      @OA\Property(property="organisation", type="string", example="An origanisation"),
-     *                  )),
-     *                  @OA\Property(property="datasets", type="array", @OA\Items(
-     *                      @OA\Property(property="dar_application_id", type="integer", example="1"),
-     *                      @OA\Property(property="dataset_id", type="integer", example="1"),
-     *                      @OA\Property(property="dataset_title", type="string", example="A dataset"),
-     *                      @OA\Property(property="custodian", type="array", @OA\Items(
-     *                          @OA\Property(property="name", type="string", example="A Custodian"),
-     *                      )),
-     *                  )),
-     *                  @OA\Property(property="teams", type="array", @OA\Items(
-     *                      @OA\Property(property="team_id", type="integer", example="1"),
-     *                      @OA\Property(property="dar_application_id", type="integer", example="1"),
-     *                      @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                      @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *                  )),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplication")
      *          )
      *      )
      * )
@@ -760,6 +744,17 @@ class UserDataAccessApplicationController extends Controller
      *      summary="DataAccessApplication@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -779,7 +774,7 @@ class UserDataAccessApplicationController extends Controller
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items(type="integer")),
      *              @OA\Property(property="answers", type="array", @OA\Items(
      *                  @OA\Property(property="question_id", type="integer", example="123"),
      *                  @OA\Property(property="answer", type="object",
@@ -800,11 +795,7 @@ class UserDataAccessApplicationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplication")
      *          ),
      *      ),
      *      @OA\Response(
@@ -1002,6 +993,17 @@ class UserDataAccessApplicationController extends Controller
      *      summary="DataAccessApplication@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         description="User id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="User id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
      *         name="id",
      *         in="path",
      *         description="DAR application id",
@@ -1020,7 +1022,7 @@ class UserDataAccessApplicationController extends Controller
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="project_title", type="string", example="A DAR project"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items(type="integer")),
      *          ),
      *      ),
      *      @OA\Response(
@@ -1035,12 +1037,7 @@ class UserDataAccessApplicationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                  @OA\Property(property="project_title", type="string", example="A DAR project"),
-     *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplication")
      *          ),
      *      ),
      *      @OA\Response(

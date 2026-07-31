@@ -83,7 +83,7 @@ class DatasetController extends Controller
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(property="data", type="array", example="[]", @OA\Items(type="array", @OA\Items()))
+     *          @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Dataset"))
      *       )
      *    )
      * )
@@ -163,7 +163,7 @@ class DatasetController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(property="data", type="array", example="[]", @OA\Items(type="array", @OA\Items()))
+     *          @OA\Property(property="data", ref="#/components/schemas/Dataset")
      *       )
      *    ),
      *    @OA\Response(response=401, description="Unauthorized",
@@ -244,7 +244,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
      *             @OA\Property(property="mongo_id", type="string", example="456"),
      *             @OA\Property(property="mongo_pid", type="string", example="def789"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -342,7 +342,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -423,7 +423,7 @@ class DatasetController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),

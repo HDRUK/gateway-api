@@ -57,8 +57,8 @@ class UserController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="current_page", type="integer", example="1"),
-     *             @OA\Property(property="data", type="array", example="[]",
-     *                @OA\Items(type="array",@OA\Items()),
+     *             @OA\Property(property="data", type="array",
+     *                @OA\Items(ref="#/components/schemas/User"),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/users?page=1"),
      *          @OA\Property(property="from", type="integer", example="1"),
@@ -170,12 +170,7 @@ class UserController extends Controller
      *          ),
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             ref="#/components/schemas/User"
      *          ),
      *       ),
      *    ),
@@ -402,12 +397,7 @@ class UserController extends Controller
      *          ),
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             ref="#/components/schemas/User"
      *          ),
      *       ),
      *    ),
@@ -609,12 +599,7 @@ class UserController extends Controller
      *          ),
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             ref="#/components/schemas/User"
      *          ),
      *       ),
      *    ),
@@ -892,7 +877,7 @@ class UserController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="api/v1/users/{id}",
+     *    path="/api/v1/users/{id}",
      *    operationId="delete_users",
      *    tags={"Users"},
      *    summary="UserController@destroy",

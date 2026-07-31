@@ -9,6 +9,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @OA\Schema(
+ *   schema="DataCustodianNetwork",
+ *   description="A data custodian network (data provider collection) record managed by the Gateway",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="enabled", type="boolean", example=true),
+ *   @OA\Property(property="name", type="string", example="Example Data Custodian Network"),
+ *   @OA\Property(property="summary", type="string", nullable=true, example="A network of data custodians"),
+ *   @OA\Property(property="img_url", type="string", nullable=true, example="https://example.com/logo.png"),
+ *   @OA\Property(property="url", type="string", nullable=true, example="https://example.com"),
+ *   @OA\Property(property="service", type="string", nullable=true, example="ACCESS"),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 class DataProviderColl extends BaseTypesenseModel
 {
     use HasFactory;

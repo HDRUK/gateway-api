@@ -33,10 +33,7 @@ class AliasController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string"),
      *          @OA\Property(property="data", type="array",
-     *             @OA\Items(
-     *                @OA\Property(property="id", type="integer", example="123"),
-     *                @OA\Property(property="name", type="string", example="something"),
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Alias")
      *          )
      *       )
      *    )
@@ -102,10 +99,7 @@ class AliasController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="alias", type="string", example="something")
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Alias")
      *          ),
      *      ),
      *      @OA\Response(
@@ -271,10 +265,7 @@ class AliasController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="name", type="string", example="xxx")
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Alias")
      *          ),
      *      ),
      *      @OA\Response(
@@ -364,10 +355,7 @@ class AliasController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="name", type="string", example="something")
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Alias")
      *          ),
      *      ),
      *      @OA\Response(

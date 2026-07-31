@@ -357,7 +357,11 @@ class TeamWidgetTest extends TestCase
         $widget = Widget::factory()->create(['team_id' => $this->team->id]);
 
         WidgetAnalytic::insert([
-            ['widget_id' => $widget->id, 'team_id' => $this->team->id, 'event_type' => WidgetAnalytic::EVENT_PAGE_VIEW, 'entity_id' => null, 'entity_type' => null, 'source_domain' => null, 'created_at' => now()->subMonths(1)],
+            // subMonths() overflows on the 29th-31st (e.g. Jul 31 - 1 month = "Jun 31" -> rolls
+            // forward to Jul 1, still July), which silently collapsed both rows into one period.
+            // subMonthsNoOverflow() clamps to the last valid day instead, so this actually lands
+            // in the previous month every time.
+            ['widget_id' => $widget->id, 'team_id' => $this->team->id, 'event_type' => WidgetAnalytic::EVENT_PAGE_VIEW, 'entity_id' => null, 'entity_type' => null, 'source_domain' => null, 'created_at' => now()->subMonthsNoOverflow(1)],
             ['widget_id' => $widget->id, 'team_id' => $this->team->id, 'event_type' => WidgetAnalytic::EVENT_PAGE_VIEW, 'entity_id' => null, 'entity_type' => null, 'source_domain' => null, 'created_at' => now()],
         ]);
 

@@ -38,15 +38,7 @@ class NotificationController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                      @OA\Property(property="notification_type", type="string", example="someType"),
-     *                      @OA\Property(property="message", type="string", example="some message"),
-     *                      @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/Notification")
      *              )
      *          )
      *      )
@@ -108,16 +100,7 @@ class NotificationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="notification_type", type="string", example="someType"),
-     *                  @OA\Property(property="message", type="string", example="some message"),
-     *                  @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="email", type="string", example="john@example.com"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Notification")
      *          ),
      *      ),
      *      @OA\Response(
@@ -290,15 +273,7 @@ class NotificationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
-     *                  @OA\Property(property="message", type="string", example="your message here"),
-     *                  @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                  @OA\Property(property="email", type="string", example="john@example.com"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Notification")
      *          ),
      *      ),
      *      @OA\Response(
@@ -390,15 +365,7 @@ class NotificationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
-     *                  @OA\Property(property="message", type="string", example="your message here"),
-     *                  @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                  @OA\Property(property="email", type="string", example="john@example.com"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Notification")
      *          ),
      *      ),
      *      @OA\Response(

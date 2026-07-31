@@ -59,16 +59,7 @@ class DataCustodianNetworksController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="summary", type="string", example="Summary"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="service", type="string", example="https://example"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/DataCustodianNetwork")
      *              )
      *          )
      *      )
@@ -217,16 +208,7 @@ class DataCustodianNetworksController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataCustodianNetwork")
      *          ),
      *      ),
      *      @OA\Response(
@@ -1254,9 +1236,7 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="enabled", type="boolean", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -1364,9 +1344,7 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -1382,16 +1360,7 @@ class DataCustodianNetworksController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataCustodianNetwork")
      *          ),
      *      ),
      *      @OA\Response(
@@ -1477,9 +1446,7 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -1495,16 +1462,7 @@ class DataCustodianNetworksController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataCustodianNetwork")
      *          ),
      *      ),
      *      @OA\Response(

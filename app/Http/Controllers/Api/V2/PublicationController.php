@@ -60,11 +60,7 @@ class PublicationController extends Controller
      *          @OA\Property(
      *             property="data",
      *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Publication")
      *          ),
      *       ),
      *    ),
@@ -142,15 +138,7 @@ class PublicationController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *      @OA\Response(

@@ -43,16 +43,7 @@ class SavedSearchController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                      @OA\Property(property="search_endpoint", type="string", example="datasets"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/SavedSearch")
      *              )
      *          )
      *      )
@@ -127,15 +118,8 @@ class SavedSearchController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                  @OA\Property(property="search_endpoint", type="string", example="datasets"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(ref="#/components/schemas/SavedSearch")
      *              )
      *          ),
      *      ),
@@ -331,16 +315,7 @@ class SavedSearchController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                  @OA\Property(property="search_endpoint", type="string", example="datasets"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/SavedSearch")
      *          ),
      *      ),
      *      @OA\Response(
@@ -454,15 +429,7 @@ class SavedSearchController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/SavedSearch")
      *          ),
      *      ),
      *      @OA\Response(

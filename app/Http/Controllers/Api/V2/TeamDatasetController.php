@@ -68,6 +68,13 @@ class TeamDatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
+     *       name="status",
+     *         in="path",
+     *         description="Status of the dataset (active, draft, or archived). Defaults to active if not provided.",
+     *         required=true,
+     *         @OA\Schema( type="string", enum={"active", "draft", "archived"}, default="active" )
+     *     ),
+     *    @OA\Parameter(
      *       name="sort",
      *       in="query",
      *       description="Field and direction (colon separated) to sort by (default: 'created:desc') ... <br/> <br/>
@@ -98,11 +105,7 @@ class TeamDatasetController extends Controller
      *          @OA\Property(
      *             property="data",
      *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Dataset")
      *          )
      *       )
      *    )
@@ -324,15 +327,7 @@ class TeamDatasetController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Dataset"),
      *       ),
      *    ),
      *      @OA\Response(
@@ -446,7 +441,7 @@ class TeamDatasetController extends Controller
      *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
      *             @OA\Property(property="mongo_id", type="string", example="456"),
      *             @OA\Property(property="mongo_pid", type="string", example="def789"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -579,7 +574,7 @@ class TeamDatasetController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -756,7 +751,7 @@ class TeamDatasetController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),

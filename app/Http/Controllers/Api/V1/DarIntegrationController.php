@@ -201,6 +201,17 @@ class DarIntegrationController extends Controller
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@store",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="dar integration id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="dar integration id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="DarIntegration definition",
