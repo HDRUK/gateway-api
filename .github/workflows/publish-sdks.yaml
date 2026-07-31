@@ -62,6 +62,14 @@ jobs:
             repo: HDRUK/gateway-api-python-sdk
           - lang: csharp
             repo: HDRUK/gateway-api-csharp-sdk
+          - lang: java
+            repo: HDRUK/gateway-api-java-sdk
+          - lang: go
+            repo: HDRUK/gateway-api-go-sdk
+          - lang: rust
+            repo: HDRUK/gateway-api-rust-sdk
+          - lang: typescript
+            repo: HDRUK/gateway-api-typescript-sdk
     steps:
       - name: Download generated SDKs
         uses: actions/download-artifact@v4
