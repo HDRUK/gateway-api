@@ -354,6 +354,7 @@ class DatasetVersion extends BaseTypesenseModel
             'title'              => $this->title ?? '',
             'shortTitle'         => $this->short_title ?? '',
             'geographicLocation' => $this->spatialCoverage->pluck('region')->all(),
+            'partnerContext'      => $this->dataset?->partner_context ?? 'HDRUK',
             'isCohortDiscovery'  => (bool) ($this->dataset?->is_cohort_discovery ?? false),
             'dataProviderColl'   => $this->dataset?->team?->dataProviderColls?->pluck('name')->all() ?? [],
             'collectionNames'    => $this->relationLoaded('linkedCollections')
@@ -379,7 +380,7 @@ class DatasetVersion extends BaseTypesenseModel
             'spatialCoverage',
             // Override the default dataset() select to include team_id so the
             // nested team.dataProviderColls load can resolve.
-            'dataset' => fn ($q) => $q->select(['id', 'status', 'is_cohort_discovery', 'team_id'])
+            'dataset' => fn ($q) => $q->select(['id', 'status', 'is_cohort_discovery', 'team_id', 'partner_context'])
                 ->with('team.dataProviderColls:id,name'),
             'linkedCollections',
             'linkedDurs',
@@ -420,6 +421,7 @@ class DatasetVersion extends BaseTypesenseModel
                 ['name' => 'dataProviderColl',              'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'collectionNames',              'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'dataUseTitles',                'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'partnerContext',                'type' => 'string',   'optional' => true],
                 ['name' => 'startDate',                    'type' => 'int64',    'optional' => true],
                 ['name' => 'endDate',                      'type' => 'int64',    'optional' => true],
                 // Year-level facets for the FE date-range year picker. Stored
