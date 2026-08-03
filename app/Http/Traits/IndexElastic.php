@@ -192,6 +192,7 @@ trait IndexElastic
                 'geographicLocation' => array_map(fn ($spatialCoverage) => $spatialCoverage['region'], $datasetMatch->allSpatialCoverages),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
                 'isCohortDiscovery' => $datasetMatch->is_cohort_discovery,
+                'partnerContext' => $datasetMatch->partner_context,
                 // Project grants (for search & filtering)
                 'projectGrants' => $projectGrants,
                 'projectGrantNames' => array_values(array_unique(array_filter(array_map(
