@@ -162,7 +162,8 @@ class DatasetService
             throw new \InvalidArgumentException('schema_version provided without schema_model');
         }
 
-        $translateRequested = $outputSchemaModel && $outputSchemaVersion;
+        // TODO: Turn off translation
+        $translateRequested = false;
 
         // Reduced relation set is sufficient for the TRASER path (metadata is replaced
         // entirely by the translation result). No-translation path needs the full graph.
@@ -182,7 +183,7 @@ class DatasetService
             $envelope = $this->getReconstructedMetadataEnvelope(
                 $dataset->id,
                 $withLinks->version,
-                validate: false,
+                validate: $translateRequested,
                 prefetched: $withLinks,
             );
 
