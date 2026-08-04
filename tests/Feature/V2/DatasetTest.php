@@ -717,11 +717,10 @@ class DatasetTest extends TestCase
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
         */
-        // Loki - For Calum. Removed per GAT-9374
-        // $this->assertArrayHasKey(
-        //     'reduced_linked_dataset_versions',
-        //     $respArrayActive['data']['versions'][0]
-        // );
+        $this->assertArrayHasKey(
+            'reduced_linked_dataset_versions',
+            $respArrayActive['data']['versions'][0]
+        );
 
         // get one active dataset via V2 teams endpoint
         $responseGetAll = $this->json('GET', $this->team_datasets_url($teamId), [], $this->header);
