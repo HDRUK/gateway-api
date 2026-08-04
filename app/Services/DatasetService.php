@@ -162,11 +162,14 @@ class DatasetService
             throw new \InvalidArgumentException('schema_version provided without schema_model');
         }
 
-        $translateRequested = $outputSchemaModel && $outputSchemaVersion;
+        // Loki - For Calum. Tweaked per GAT-9374
+        $translateRequested = false; //$outputSchemaModel && $outputSchemaVersion;
 
         // Reduced relation set is sufficient for the TRASER path (metadata is replaced
         // entirely by the translation result). No-translation path needs the full graph.
-        $loadRelation = $translateRequested ? 'reducedLinkedDatasetVersions' : 'linkedDatasetVersions';
+
+        // Loki - For Calum. Tweaked per GAT-9374
+        $loadRelation = 'linkedDatasetVersions'; //$translateRequested ? 'reducedLinkedDatasetVersions' : 'linkedDatasetVersions';
 
         $withLinks = DatasetVersion::where('id', $latestVersionId)
             ->with([$loadRelation])
