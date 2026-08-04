@@ -1,3 +1,5 @@
+## [2.47.4](https://github.com/HDRUK/gateway-api/compare/v2.47.3...v2.47.4) (2026-08-04)
+
 ## [2.47.3](https://github.com/HDRUK/gateway-api/compare/v2.47.2...v2.47.3) (2026-08-04)
 
 ### 🐛 Bug Fixes
