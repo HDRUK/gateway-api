@@ -162,14 +162,11 @@ class DatasetService
             throw new \InvalidArgumentException('schema_version provided without schema_model');
         }
 
-        // Loki - For Calum. Tweaked per GAT-9374
-        $translateRequested = false; //$outputSchemaModel && $outputSchemaVersion;
+        $translateRequested = $outputSchemaModel && $outputSchemaVersion;
 
         // Reduced relation set is sufficient for the TRASER path (metadata is replaced
         // entirely by the translation result). No-translation path needs the full graph.
-
-        // Loki - For Calum. Tweaked per GAT-9374
-        $loadRelation = 'linkedDatasetVersions'; //$translateRequested ? 'reducedLinkedDatasetVersions' : 'linkedDatasetVersions';
+        $loadRelation = $translateRequested ? 'reducedLinkedDatasetVersions' : 'linkedDatasetVersions';
 
         $withLinks = DatasetVersion::where('id', $latestVersionId)
             ->with([$loadRelation])
@@ -180,12 +177,10 @@ class DatasetService
             // storage strategy: 2.x reads from the JSON blob; 3.0 reads from SQL tables.
             // Validation runs only when TRASER translation is requested so that TRASER
             // is not a hard dependency for every read.
-
-            // TODO: Validation set to false because otherwise we force everything through TRASER validation.
             $envelope = $this->getReconstructedMetadataEnvelope(
                 $dataset->id,
                 $withLinks->version,
-                validate: false,
+                validate: $translateRequested,
                 prefetched: $withLinks,
             );
 
