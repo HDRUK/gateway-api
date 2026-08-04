@@ -4,6 +4,7 @@ namespace App\SearchProviders;
 
 use Auditor;
 use Http;
+use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
 use App\Services\Search\FilterCache;
 use App\Services\Search\CollectionHydrator;
@@ -13,7 +14,6 @@ use App\Services\Search\DatasetHydrator;
 use App\Services\Search\DataUseHydrator;
 use App\Services\Search\PublicationHydrator;
 use App\Services\Search\ToolHydrator;
-use App\Context\PartnerContext;
 use Laravel\Pennant\Feature;
 
 class HDRUK implements SearchProvider
@@ -64,6 +64,15 @@ class HDRUK implements SearchProvider
         'data_custodian_networks' => \App\Models\DataProviderColl::class,
         'data_custodians'         => \App\Models\Team::class,
     ];
+
+    public function __construct(private readonly ?PartnerContext $partnerContext = null)
+    {
+    }
+
+    private function resolvePartnerContext(): PartnerContext
+    {
+        return $this->partnerContext ?? app(PartnerContext::class);
+    }
 
     public function isDeferred(): bool
     {
@@ -338,6 +347,12 @@ class HDRUK implements SearchProvider
 
         if ($query !== '') {
             $input['query'] = $query;
+        }
+
+        if ($filterConfig['type'] === 'dataset') {
+            $partner = $this->resolvePartnerContext()->getPartner();
+            $shouldScope = $partner !== 'HDRUK' || !config('partners.allow_cross_context_read', true);
+            $input['partnerContext'] = $shouldScope ? $partner : null;
         }
 
         $response = Http::post($this->getSearchURI($type), $input);

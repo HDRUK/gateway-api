@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
+use Illuminate\Support\Facades\Http;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use MetadataManagementController as MMC;
@@ -35,6 +36,60 @@ class SearchTest extends TestCase
 
         $this->metadata = $this->getMetadata();
     }
+
+    public function test_dataset_search_sends_partner_context_when_scoping_applies(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_SEARCH . '/datasets',
+            ['query' => 'asthma'],
+            ['Accept' => 'application/json', 'x-partner-context' => 'CRUK'],
+        );
+        $response->assertStatus(200);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/search/datasets')
+                && $request['partnerContext'] === 'CRUK';
+        });
+    }
+
+    public function test_dataset_search_omits_partner_context_for_hdruk_with_cross_context_read(): void
+    {
+        Config::set('partners.allow_cross_context_read', true);
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_SEARCH . '/datasets',
+            ['query' => 'asthma'],
+            ['Accept' => 'application/json', 'x-partner-context' => 'HDRUK'],
+        );
+        $response->assertStatus(200);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/search/datasets')
+                && array_key_exists('partnerContext', $request->data())
+                && $request['partnerContext'] === null;
+        });
+    }
+
+    public function test_dataset_search_scopes_partner_context_for_hdruk_when_cross_context_read_disabled(): void
+    {
+        Config::set('partners.allow_cross_context_read', false);
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL_SEARCH . '/datasets',
+            ['query' => 'asthma'],
+            ['Accept' => 'application/json', 'x-partner-context' => 'HDRUK'],
+        );
+        $response->assertStatus(200);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/search/datasets')
+                && $request['partnerContext'] === 'HDRUK';
+        });
+    }
+
 
     /**
      * Search using a query with success
