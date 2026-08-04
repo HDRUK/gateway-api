@@ -16,7 +16,6 @@ use App\Http\Requests\Search\PublicationSearch;
 use App\Http\Requests\Search\Search;
 use App\Http\Traits\LoggingContext;
 use App\Http\Traits\PaginateFromArray;
-use App\Models\Dataset;
 use App\Models\Dur;
 use App\Models\License;
 use Auditor;
@@ -154,6 +153,10 @@ class SearchController extends Controller
         try {
             $input['aggs'] = FilterCache::get('dataset', enabledOnly: true);
 
+            $partner = $this->partnerContext->getPartner();
+            $shouldScope = $partner !== 'HDRUK' || !config('partners.allow_cross_context_read', true);
+            $input['partnerContext'] = $shouldScope ? $partner : null;
+
             $urlString = config('gateway.search_service_url') . '/search/datasets';
             $response = Http::withHeaders($loggingContext)->post($urlString, $input);
 
@@ -174,10 +177,7 @@ class SearchController extends Controller
                 ], 404);
             }
 
-            $datasetsArray = $this->filterDatasetHitsForPartner(
-                $response['hits']['hits'],
-                $this->partnerContext->getPartner(),
-            );
+            $datasetsArray = $response['hits']['hits'];
             $totalResults = count($datasetsArray);
             $matchedIds = array_column($datasetsArray, '_id');
 
@@ -1479,38 +1479,6 @@ class SearchController extends Controller
         }
 
         return $resultArray;
-    }
-
-    /**
-     * Keep only Elasticsearch hits whose dataset is visible in the active partner context.
-     * Only ACTIVE datasets are indexed in search, so we align with that here.
-     *
-     * @param  array<int, array<string, mixed>>  $hits
-     * @return array<int, array<string, mixed>>
-     */
-    private function filterDatasetHitsForPartner(array $hits, string $partnerContext): array
-    {
-        if ($hits === []) {
-            return $hits;
-        }
-
-        $shouldFilter = $partnerContext !== 'HDRUK'
-            || !config('partners.allow_cross_context_read', true);
-
-        if (!$shouldFilter) {
-            return $hits;
-        }
-
-        $allowedIds = Dataset::query()
-            ->forPartnerContext($partnerContext)
-            ->where('status', Dataset::STATUS_ACTIVE)
-            ->pluck('id')
-            ->flip();
-
-        return array_values(array_filter(
-            $hits,
-            fn (array $hit) => isset($allowedIds[(int) $hit['_id']])
-        ));
     }
 
     private function isDoi(string $query): bool
