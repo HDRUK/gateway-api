@@ -68,7 +68,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Get(
-     *   path="/api/v1/users/{userId}/features",
+     *   path="/api/v1/features/users/{userId}",
      *   operationId="FeatureIndexForUser",
      *   tags={"Feature"},
      *   summary="List feature flags and their resolved values for a user",

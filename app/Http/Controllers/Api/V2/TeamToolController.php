@@ -44,6 +44,7 @@ class TeamToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v2/teams/{teamId}/tools/status/{status}",
      *     operationId="fetch_all_tool_by_team_and_status_v2",
      *     tags={"Tools"},
@@ -149,6 +150,7 @@ class TeamToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/tools/count/{field}",
      *    operationId="count_team_unique_fields_tools_v2",
      *    tags={"Tools"},
@@ -218,6 +220,7 @@ class TeamToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/tools/{id}",
      *    operationId="fetch_tools_by_team_and_by_id_v2",
      *    tags={"Tools"},

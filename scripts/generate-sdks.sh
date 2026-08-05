@@ -37,6 +37,9 @@ PACKAGE_VERSION="${VERSION#v}"
 echo "==> Regenerating OpenAPI spec (php artisan l5-swagger:generate)"
 php artisan l5-swagger:generate
 
+echo "==> Stripping internal-only endpoints (x-internal) from the spec"
+php artisan app:strip-internal-endpoints
+
 SPEC="storage/api-docs/api-docs.json"
 OUT_DIR="sdks"
 rm -rf "$OUT_DIR"

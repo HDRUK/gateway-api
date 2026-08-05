@@ -37,7 +37,8 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v2/users/{userId}/publications/{status}",
+     *      x={"internal"="true"},
+     *     path="/api/v2/users/{userId}/publications/status/{status}",
      *     operationId="fetch_all_publications_by_user_and_status_v2",
      *     tags={"Publication"},
      *     summary="UserPublicationController@indexStatus",
@@ -140,6 +141,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/count/{field}",
      *    operationId="count_user_unique_fields_publication_v2",
      *    tags={"Publication"},
@@ -209,6 +211,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="fetch_publications_by_user_and_by_id_v2",
      *    tags={"Publication"},
@@ -303,6 +306,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications",
      *    operationId="create_publications_v2_by_user_id",
      *    tags={"Publication"},
@@ -438,6 +442,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="update_publications_v2_by_user_id",
      *    tags={"Publication"},
@@ -595,6 +600,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="edit_publications_v2_by_user_id",
      *    tags={"Publication"},
@@ -756,6 +762,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="delete_publications_v2_by_user_id",
      *    tags={"Publication"},

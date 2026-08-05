@@ -36,6 +36,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/users",
      *    operationId="fetch_all_users",
      *    tags={"Users"},
@@ -142,6 +143,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="fetch_users",
      *    tags={"Users"},
@@ -355,6 +357,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="update_users",
      *    tags={"Users"},
@@ -796,6 +799,7 @@ class UserController extends Controller
     }
     /**
  * @OA\Post(
+     *      x={"internal"="true"},
  *     path="/api/v1/users/{id}/resend-secondary-verification",
  *     operationId="resendSecondaryVerificationEmail",
  *     tags={"Users"},

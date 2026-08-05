@@ -22,6 +22,7 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories",
      *      summary="List of system type categories",
      *      description="Returns a list of type categories enabled on the system",
@@ -81,6 +82,7 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Return a single system type category",
      *      description="Return a single system type category",

@@ -33,6 +33,7 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/applications",
      *      summary="Create a new DAR application",
      *      description="Creates a new DAR application",

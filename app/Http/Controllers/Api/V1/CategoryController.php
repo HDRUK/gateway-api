@@ -17,6 +17,7 @@ class CategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories",
      *      summary="List of tool categories",
      *      description="Returns a list of categories enabled on the system",
@@ -80,6 +81,7 @@ class CategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Return a single tool category",
      *      description="Return a single tool category",
@@ -150,6 +152,7 @@ class CategoryController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories",
      *      summary="Create a new tool category",
      *      description="Creates a new tool category",
@@ -219,6 +222,7 @@ class CategoryController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Update a tool category",
      *      description="Update a tool category",
@@ -306,6 +310,7 @@ class CategoryController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Edit a tool category",
      *      description="Edit a tool category",
@@ -396,6 +401,7 @@ class CategoryController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Delete a tool category",
      *      description="Delete a tool category",

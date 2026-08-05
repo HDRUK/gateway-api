@@ -23,6 +23,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/count",
      *     operationId="fetch_dar_my_applications_v3",
      *     tags={"TeamDashboard"},
@@ -77,6 +78,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/status",
      *     operationId="fetch_dar_applications_current_status_v3",
      *     tags={"TeamDashboard"},
@@ -131,6 +133,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/average-time",
      *     operationId="fetch_dar_applications_average_time_to_approval_v3",
      *     tags={"TeamDashboard"},
@@ -185,6 +188,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/required-actions",
      *     operationId="fetch_dar_applications_required_actions_v3",
      *     tags={"TeamDashboard"},
@@ -239,6 +243,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/timeline",
      *     operationId="fetch_dar_applications_application_timeline_v3",
      *     tags={"TeamDashboard"},
@@ -293,6 +298,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/export/csv",
      *     operationId="fetch_dar_applications_dashboard_export_csv_v3",
      *     tags={"TeamDashboard"},
@@ -359,6 +365,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/timeline/export/csv",
      *     operationId="fetch_dar_applications_dashboard_timeline_export_csv_v3",
      *     tags={"TeamDashboard"},
@@ -419,6 +426,7 @@ class DataAccessDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dar/dashboard/required-actions/export/csv",
      *     operationId="fetch_dar_applications_dashboard_required_actions_export_csv_v3",
      *     tags={"TeamDashboard"},

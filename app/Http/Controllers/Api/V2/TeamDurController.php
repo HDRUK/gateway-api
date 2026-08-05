@@ -40,6 +40,7 @@ class TeamDurController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/dur/status/{status}",
      *    operationId="fetch_all_team_dur_status",
      *    tags={"Data Use Registers"},
@@ -201,6 +202,7 @@ class TeamDurController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/dur/count/{field}",
      *    operationId="count_team_unique_fields_dur_v2",
      *    tags={"Data Use Registers"},
@@ -270,7 +272,8 @@ class TeamDurController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v1/teams/{teamId}/dur/{id}",
+     *      x={"internal"="true"},
+     *    path="/api/v2/teams/{teamId}/dur/{id}",
      *    operationId="fetch_dur_by_team_and_by_id_v2",
      *    tags={"Data Use Registers"},
      *    summary="TeamDurController@show",

@@ -31,6 +31,7 @@ class EnquiryThreadController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/enquiry_threads",
      *      operationId="fetch_all_enquiry_threads",
      *      summary="List of EnquiryThread",
@@ -103,6 +104,7 @@ class EnquiryThreadController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/enquiry_threads/{id}",
      *      operationId="fetch_enquiry_threads",
      *      summary="Return a single EnquiryThread",
@@ -180,6 +182,7 @@ class EnquiryThreadController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/enquiry_threads",
      *      operationId="create_enquiry_threads",
      *      summary="Create one or more new EnquiryThreads",

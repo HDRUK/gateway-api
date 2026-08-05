@@ -45,6 +45,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/status/active",
      *    operationId="fetch_team_active_collections_v2",
      *    tags={"Collections"},
@@ -118,6 +119,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/status/draft",
      *    operationId="fetch_team_draft_collections_v2",
      *    tags={"Collections"},
@@ -191,6 +193,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/status/archived",
      *    operationId="fetch_team_archived_collections_v2",
      *    tags={"Collections"},
@@ -264,6 +267,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/count/{field}",
      *    operationId="count_team_unique_fields_collection_v2",
      *    tags={"Collections"},
@@ -333,6 +337,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/{id}",
      *    operationId="fetch_team_collection_v2",
      *    tags={"Collections"},
@@ -414,6 +419,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections",
      *    operationId="create_team_collections_v2",
      *    tags={"Collections"},
@@ -553,6 +559,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/{id}",
      *    operationId="update_team_collections_v2",
      *    tags={"Collections"},
@@ -720,6 +727,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/{id}",
      *    operationId="edit_team_collections_v2",
      *    tags={"Collections"},
@@ -893,6 +901,7 @@ class TeamCollectionController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/collections/{id}",
      *    operationId="delete_team_collections_v2",
      *    tags={"Collections"},

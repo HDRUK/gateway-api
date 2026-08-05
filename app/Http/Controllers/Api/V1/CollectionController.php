@@ -412,6 +412,7 @@ class CollectionController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/teams/{teamId}/collections",
      *    deprecated=true,
      *    operationId="create_team_collections",
@@ -562,6 +563,7 @@ class CollectionController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v1/teams/{teamId}/collections/{id}",
      *    operationId="update_team_collections",
      *    deprecated=true,
@@ -725,6 +727,7 @@ class CollectionController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v1/teams/{teamId}/collections/{id}",
      *    operationId="edit_team_collections",
      *    deprecated=true,
@@ -948,6 +951,7 @@ class CollectionController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v1/teams/{teamId}/collections/{id}",
      *    operationId="delete_team_collections",
      *    deprecated=true,

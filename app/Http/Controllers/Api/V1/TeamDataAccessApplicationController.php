@@ -381,7 +381,8 @@ class TeamDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/showHeader",
+     *      x={"internal"="true"},
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/header",
      *      summary="Get header information about a specific DAR",
      *      description="Get header information about a specific DAR",
      *      tags={"TeamDataAccessApplication"},
