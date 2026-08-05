@@ -1209,6 +1209,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/teams/{team_id}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}",
      *      summary="Delete a review from a DAR application",
      *      description="Delete a review from a DAR application",
@@ -1327,6 +1328,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/teams/{team_id}/dar/applications/{id}/reviews/{reviewId}",
      *      summary="Delete a review from a DAR application",
      *      description="Delete a review from a DAR application",
