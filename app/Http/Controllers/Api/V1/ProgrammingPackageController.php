@@ -22,6 +22,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages",
      *      summary="List of system programming packages",
      *      description="Returns a list of programming packages enabled on the system",
@@ -74,6 +75,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Return a single system programming package",
      *      description="Return a single system programming package",

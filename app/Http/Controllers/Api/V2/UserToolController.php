@@ -44,6 +44,7 @@ class UserToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v2/users/{userId}/tools/status/{status}",
      *     operationId="fetch_all_tool_by_user_and_status_v2",
      *     tags={"Tools"},
@@ -143,6 +144,7 @@ class UserToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/tools/count/{field}",
      *    operationId="count_user_unique_fields_tools_v2",
      *    tags={"Tools"},
@@ -212,6 +214,7 @@ class UserToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/tools/{id}",
      *    operationId="fetch_tools_by_user_and_by_id_v2",
      *    tags={"Tools"},
@@ -312,6 +315,7 @@ class UserToolController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/tools",
      *    operationId="create_tools_by_user_v2",
      *    tags={"Tools"},
@@ -494,6 +498,7 @@ class UserToolController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/tools/{id}",
      *    operationId="update_tools_by_user_v2",
      *    tags={"Tools"},
@@ -716,6 +721,7 @@ class UserToolController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/tools/{id}",
      *    operationId="edit_tools_by_user_v2",
      *    tags={"Tools"},
@@ -934,6 +940,7 @@ class UserToolController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/tools/{id}",
      *    operationId="delete_tools_by_user_v2",
      *    tags={"Tools"},

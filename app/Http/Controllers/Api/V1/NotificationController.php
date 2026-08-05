@@ -26,6 +26,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications",
      *      summary="List of notifications",
      *      description="Returns a list of notifications enabled on the system",
@@ -79,6 +80,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Return a single notification",
      *      description="Return a single notification",
@@ -159,6 +161,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications",
      *      summary="Create a new notification",
      *      description="Creates a new notification",
@@ -235,6 +238,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Update a notification",
      *      description="Update a notification",
@@ -329,6 +333,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Edit a notification",
      *      description="Edit a notification",

@@ -39,6 +39,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v2/teams/{teamId}/publications/status/{status}",
      *     operationId="fetch_all_publications_by_team_and_status_v2",
      *     tags={"Publication"},
@@ -144,6 +145,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/count/{field}",
      *    operationId="count_team_unique_fields_publication_v2",
      *    tags={"Publication"},
@@ -213,6 +215,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="fetch_publications_by_team_and_by_id_v2",
      *    tags={"Publication"},
@@ -319,6 +322,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications",
      *    operationId="create_publications_v2_by_team_id",
      *    tags={"Publication"},
@@ -457,6 +461,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="update_publications_v2_by_team_id",
      *    tags={"Publication"},
@@ -620,6 +625,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="edit_publications_v2_by_team_id",
      *    tags={"Publication"},
@@ -794,6 +800,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="delete_publications_v2_by_team_id",
      *    tags={"Publication"},

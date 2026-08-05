@@ -50,6 +50,7 @@ class TeamDatasetController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/datasets/status/{status}",
      *    operationId="fetch_team_datasets_status",
      *    tags={"Datasets"},
@@ -207,6 +208,7 @@ class TeamDatasetController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/datasets/count/{field}",
      *    operationId="count_team_unique_fields_datasets_v2",
      *    tags={"Datasets"},
@@ -276,6 +278,7 @@ class TeamDatasetController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/datasets/{id}",
      *    operationId="fetch_team_datasets_v2",
      *    tags={"Datasets"},

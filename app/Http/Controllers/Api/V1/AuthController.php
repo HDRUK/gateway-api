@@ -130,6 +130,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/refresh_token",
      *    operationId="refresh_token",
      *    tags={"Authentication"},

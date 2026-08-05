@@ -136,6 +136,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/reviews",
      *      summary="Return all reviews on a DAR application",
      *      description="Return all reviews on a DAR application",
@@ -232,7 +233,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/ap1/v1/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}",
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}",
      *      summary="Download a file associated with a DAR application review",
      *      description="Download a file associated with a DAR application review",
      *      tags={"DataAccessApplicationReview"},
@@ -356,7 +357,8 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/ap1/v1/users/{userId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}",
+     *      x={"internal"="true"},
+     *      path="/api/v1/users/{userId}/dar/applications/{id}/reviews/{reviewId}/download/{fileId}",
      *      summary="Download a file associated with a DAR application review",
      *      description="Download a file associated with a DAR application review",
      *      tags={"DataAccessApplicationReview"},
@@ -947,6 +949,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/questions/{questionId}/reviews/{reviewId}",
      *      summary="User endpoint to update a review comment on a question in a DAR application",
      *      description="User endpoint to update a review comment on a question in a DAR application",
@@ -1080,6 +1083,7 @@ class DataAccessApplicationReviewController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/reviews/{reviewId}",
      *      summary="User endpoint to update a review comment on a DAR application",
      *      description="User endpoint to update a review comment on a DAR application",
