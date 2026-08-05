@@ -16,6 +16,7 @@ class AdminDatasetController extends Controller
 {
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *     path="/api/v1/datasets/admin_ctrl/trigger/term_extraction",
      *     operationId="create_datasets_term_extraction",
      *     summary="Trigger Term Extraction for Datasets",
@@ -135,6 +136,7 @@ class AdminDatasetController extends Controller
     }
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *     path="/api/v1/datasets/admin_ctrl/trigger/linkage_extraction",
      *     operationId="create_datasets_linkage_extraction",
      *     summary="Trigger Term Extraction for Datasets",

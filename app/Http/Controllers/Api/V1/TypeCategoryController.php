@@ -151,6 +151,7 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories",
      *      summary="Create a new system type category",
      *      description="Creates a new system type category",
@@ -222,6 +223,7 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Update a system type category",
      *      description="Update a system type category",
@@ -311,6 +313,7 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Edit a system type category",
      *      description="Edit a system type category",
@@ -401,6 +404,7 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Delete a system type category",
      *      description="Delete a system type category",

@@ -431,6 +431,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Delete a notification",
      *      description="Delete a notification",

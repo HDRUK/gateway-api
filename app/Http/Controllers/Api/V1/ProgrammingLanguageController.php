@@ -155,6 +155,7 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages",
      *      summary="Create a new system programming language",
      *      description="Creates a new system programming language",
@@ -224,6 +225,7 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages/{id}",
      *      summary="Update a system programming language",
      *      description="Update a system programming language",
@@ -311,6 +313,7 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages/{id}",
      *      summary="Edit a system programming language",
      *      description="Edit a system programming language",
@@ -401,6 +404,7 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages/{id}",
      *      summary="Delete a system programming language",
      *      description="Delete a system programming language",

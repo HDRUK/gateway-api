@@ -117,6 +117,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      operationId="fetch_admin_data_custodian_networks",
      *      path="/api/v2/admin/data_custodian_networks",
      *      description="Superadmin-only listing used by the network management admin screen — unlike index(), this is not filtered to enabled=1, so disabled networks remain visible/manageable.",
@@ -1228,6 +1229,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      operationId="create_data_custodian_network",
      *      path="/api/v2/data_custodian_networks",
      *      description="Creates a new DataCustodianNetwork",
@@ -1326,6 +1328,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      operationId="update_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      description="Update a DataCustodianNetwork",
@@ -1429,6 +1432,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      operationId="edit_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Edit a DataCustodianNetwork",
@@ -1533,6 +1537,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      operationId="delete_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Delete a DataCustodianNetwork",

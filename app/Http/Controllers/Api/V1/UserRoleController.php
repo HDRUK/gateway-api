@@ -26,6 +26,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/roles",
      *    operationId="create_user_has_roles",
      *    tags={"User-Roles"},
@@ -120,6 +121,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/roles",
      *    operationId="update_user_has_roles",
      *    tags={"User-Roles"},
@@ -229,6 +231,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/roles",
      *    operationId="delete_user_has_roles",
      *    tags={"User-Roles"},

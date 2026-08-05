@@ -325,6 +325,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews/{id}",
      *    operationId="update_reviews",
      *    tags={"Reviews"},
@@ -434,6 +435,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews/{id}",
      *    operationId="edit_reviews",
      *    tags={"Reviews"},
@@ -546,6 +548,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews/{id}",
      *    operationId="delete_reviews",
      *    tags={"Reviews"},

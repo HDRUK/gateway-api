@@ -236,6 +236,7 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/users",
      *    operationId="create_users",
      *    tags={"Users"},
@@ -560,6 +561,7 @@ class UserController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="edit_users",
      *    tags={"Users"},
@@ -881,6 +883,7 @@ class UserController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="delete_users",
      *    tags={"Users"},
