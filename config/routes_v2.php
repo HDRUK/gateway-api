@@ -1240,6 +1240,20 @@ return [
         'constraint' => [],
     ],
 
+    // nightly dataset tests
+    [
+        'name' => 'nightly_dataset_tests.get',
+        'method' => 'get',
+        'path' => '/nightly_dataset_tests',
+        'methodController' => 'NightlyDatasetTestController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+
     // SearchAggregator
     [
         'name' => 'search_agg.post',
