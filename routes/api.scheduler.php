@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\AliasReplyScannerJob;
+use App\Jobs\NightlyDatasetTestJob;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/cohort_user_expiry', function (Request $reqest) {
@@ -44,6 +45,14 @@ Route::get('/gateway_metadata_ingestion', function (Request $request) {
     ], 200);
 });
 
+Route::get('/nightly_dataset_test', function (Request $request) {
+    NightlyDatasetTestJob::dispatch();
+
+    return response()->json([
+        'message' => 'ok',
+    ], 200);
+});
+
 Route::any('{path}', function () {
     $response = [
         'message' => 'Resource not found',
@@ -51,3 +60,5 @@ Route::any('{path}', function () {
 
     return response()->json($response, 404);
 });
+
+

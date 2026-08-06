@@ -28,6 +28,9 @@ class Kernel extends ConsoleKernel
 
         // // update hubspot contacts information
         // $schedule->command('app:sync-hubspot-contacts')->dailyAt('04:00');
+
+        // nightly check that active dataset pages are reachable
+        // $schedule->command('app:nightly-dataset-test')->dailyAt('03:00');
     }
 
     /**
