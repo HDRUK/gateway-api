@@ -8,10 +8,11 @@ use Http;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\Pool;
+use Illuminate\Http\Client\Response;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Laravel\Horizon\Contracts\Silenced;
-use Throwable;
 
 class NightlyDatasetTestJob implements ShouldQueue, Silenced
 {
@@ -26,31 +27,36 @@ class NightlyDatasetTestJob implements ShouldQueue, Silenced
     {
         // We run a single rolling window of results here, every night. Will only have
         // as many rows as we have ACTIVE datasets.
+        NightlyDatasetTest::truncate();
+
+        $concurrency = (int) config('gateway.nightly_dataset_test_concurrency');
+
         Dataset::where('status', Dataset::STATUS_ACTIVE)
             ->select('id')
-            ->chunkById(100, function ($datasets) {
-                foreach ($datasets as $dataset) {
-                    $statusCode = $this->checkDataset($dataset->id);
+            ->chunkById($concurrency, function ($datasets) {
+                $ids = $datasets->pluck('id');
 
-                    NightlyDatasetTest::updateOrCreate(
-                        ['dataset_id' => $dataset->id],
-                        ['status_code' => $statusCode],
-                    );
+                $responses = Http::pool(fn (Pool $pool) => $ids->map(
+                    fn ($id) => $pool->as($id)
+                        ->timeout(30)
+                        ->withOptions(['stream' => true])
+                        ->get($this->datasetUrl($id))
+                ));
+
+                foreach ($ids as $id) {
+                    $response = $responses[$id];
+
+                    NightlyDatasetTest::create([
+                        'dataset_id' => $id,
+                        'status_code' => $response instanceof Response ? $response->status() : null,
+                    ]);
                 }
             });
     }
 
-    private function checkDataset(int $datasetId): ?int
+    private function datasetUrl(int $datasetId): string
     {
-        $url = rtrim(config('app.url'), '/') . '/en/datasets/' . $datasetId;
-
-        try {
-            $response = Http::timeout(30)->get($url);
-
-            return $response->status();
-        } catch (Throwable $e) {
-            return null;
-        }
+        return rtrim(config('gateway.gateway_url'), '/') . '/en/dataset/' . $datasetId;
     }
 
     public function tags(): array

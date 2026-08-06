@@ -39,7 +39,10 @@ class NightlyDatasetTestController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $results = NightlyDatasetTest::all();
+            // Null status_code means the request never got a response (e.g. a local
+            // connection blip) rather than the dataset page actually erroring, so we
+            // exclude those from the metrics entirely and only count real HTTP errors.
+            $results = NightlyDatasetTest::whereNotNull('status_code')->get();
 
             $totalChecked = $results->count();
             $successful = $results->filter(fn ($result) => $result->isSuccessful());
@@ -53,11 +56,16 @@ class NightlyDatasetTestController extends Controller
                 ];
             })->values();
 
+            $totalFailed = $failed->count();
+
             $data = [
                 'summary' => [
                     'totalChecked' => $totalChecked,
                     'totalSuccessful' => $successful->count(),
-                    'totalFailed' => $failed->count(),
+                    'totalFailed' => $totalFailed,
+                    'percentageFailed' => $totalChecked > 0
+                        ? round(($totalFailed / $totalChecked) * 100, 1)
+                        : 0,
                 ],
                 'failedDatasets' => $failedDatasets,
             ];
