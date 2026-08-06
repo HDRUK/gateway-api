@@ -2,15 +2,16 @@
 
 namespace App\Http\Traits;
 
+use App\Http\Requests\V2\Dataset\GetDataset;
+use App\Models\DataAccessTemplate;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Dur;
+use App\Services\DatasetService;
 use Config;
 use Exception;
-use App\Models\Dur;
-use App\Models\Dataset;
 use Illuminate\Support\Arr;
-use App\Models\DatasetVersion;
-use App\Models\DataAccessTemplate;
 use MetadataManagementController as MMC;
-use App\Http\Requests\V2\Dataset\GetDataset;
 
 trait DatasetsV2Helpers
 {
@@ -38,17 +39,17 @@ trait DatasetsV2Helpers
         // to translate these to raw sql, as I have done above.
         $dataset->setAttribute('tools_count', count($dataset->allActiveTools));
         $dataset->setAttribute('collections_count', count($dataset->allActiveCollections));
-        $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
-        $dataset->setAttribute('durs', $dataset->allActiveDurs  ?? []);
-        $dataset->setAttribute('publications', $dataset->allActivePublications  ?? []);
-        $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
-        $dataset->setAttribute('collections', $dataset->allActiveCollections  ?? []);
+        $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages ?? []);
+        $dataset->setAttribute('durs', $dataset->allActiveDurs ?? []);
+        $dataset->setAttribute('publications', $dataset->allActivePublications ?? []);
+        $dataset->setAttribute('named_entities', $dataset->allNamedEntities ?? []);
+        $dataset->setAttribute('collections', $dataset->allActiveCollections ?? []);
 
         $outputSchemaModel = $request->query('schema_model');
         $outputSchemaModelVersion = $request->query('schema_version');
 
         // Return the latest metadata for this dataset
-        if (!($outputSchemaModel && $outputSchemaModelVersion)) {
+        if (! ($outputSchemaModel && $outputSchemaModelVersion)) {
             $withLinks = DatasetVersion::where('id', $latestVersionID)
                 ->with(['linkedDatasetVersions'])
                 ->first();
@@ -60,12 +61,25 @@ trait DatasetsV2Helpers
         if ($outputSchemaModel && $outputSchemaModelVersion) {
             $latestVersion = $dataset->latestVersion();
 
+            // Reconstruct the full GWDM envelope via the handler system before translating,
+            // rather than translating the raw dataset_versions.metadata column directly. This
+            // keeps SQL the source of truth for 2.x linkages/publications (afterRead) so the
+            // form shows the same links as the read API, and it is delta-safe: on a delta row
+            // (patch != null) the raw metadata column holds only the reduced envelope (no GWDM),
+            // so translating it directly would drop most of the payload.
+            $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+                $dataset->id,
+                $latestVersion->version,
+                validate: false,
+                prefetched: $latestVersion,
+            );
+
             $translated = MMC::translateDataModelType(
-                json_encode($latestVersion->metadata),
+                json_encode($envelope),
                 $outputSchemaModel,
                 $outputSchemaModelVersion,
                 Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version'),
+                $envelope['gwdmVersion'],
             );
 
             if ($translated['wasTranslated']) {
@@ -77,7 +91,7 @@ trait DatasetsV2Helpers
             } else {
                 return [null, response()->json([
                     'message' => 'failed to translate',
-                    'details' => $translated
+                    'details' => $translated,
                 ], 400)];
             }
         } elseif ($outputSchemaModel) {
@@ -87,7 +101,7 @@ trait DatasetsV2Helpers
         }
 
         $teamPublishedDARTemplates = DataAccessTemplate::where([['team_id', $dataset['team']['id']], ['published', 1]])->pluck('id');
-        $dataset['team']['has_published_dar_template'] = !$teamPublishedDARTemplates->isEmpty();
+        $dataset['team']['has_published_dar_template'] = ! $teamPublishedDARTemplates->isEmpty();
 
         return [$dataset, null];
     }
@@ -95,14 +109,13 @@ trait DatasetsV2Helpers
     /**
      * Extracts metadata from the given mixed input.
      *
-     * @param Mixed $metadata
      * @return array
      */
-    private function extractMetadata(Mixed $metadata)
+    private function extractMetadata(mixed $metadata)
     {
         if (is_array($metadata) && Arr::has($metadata, 'metadata.metadata')) {
             $metadata = $metadata['metadata'];
-        } elseif (is_array($metadata) && !Arr::has($metadata, 'metadata')) {
+        } elseif (is_array($metadata) && ! Arr::has($metadata, 'metadata')) {
             $metadata = [
                 'metadata' => $metadata,
             ];
@@ -116,7 +129,6 @@ trait DatasetsV2Helpers
         // when we expect an associative array. FMA passes strings, this
         // is a safe-guard to ensure execution is unaffected by other data types.
 
-
         if (isset($metadata['metadata']) && is_string($metadata['metadata']) && isJsonString($metadata['metadata'])) {
             $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
             unset($metadata['metadata']);
@@ -125,5 +137,4 @@ trait DatasetsV2Helpers
 
         return $metadata;
     }
-
 }
