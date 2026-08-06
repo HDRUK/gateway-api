@@ -434,4 +434,50 @@ class DatasetVersionLinkageTest extends TestCase
         );
         $this->assertSame(['10.1371/journal.pone.0338652'], $linkage['publicationUsingDataset']);
     }
+
+    /**
+     * app:reconcile-linkages re-runs extraction so a DOI present in the blob but with no
+     * matching publications row is backfilled into SQL as an unresolved junction row
+     * (publication_id NULL, raw_doi set) — proving the command recovers linkages that
+     * pre-migration extraction would have dropped. Regression guard for GAT-9018.
+     */
+    public function test_reconcile_command_backfills_unresolved_publication_doi(): void
+    {
+        $this->disableObservers();
+
+        [$datasetId, $versionId] = $this->createDataset($this->getMetadataV2p0(), Dataset::STATUS_DRAFT);
+
+        // Write a snapshot blob whose linkage carries a DOI that resolves to no
+        // publications row (set directly to isolate the command from the translate mock).
+        $unknownDoi = '10.9999/unresolved-doi';
+        $this->overwriteVersionMetadata($versionId, [
+            'linkage' => [
+                'datasetLinkage' => null,
+                'publicationAboutDataset' => [$unknownDoi],
+                'publicationUsingDataset' => null,
+            ],
+        ]);
+
+        // Nothing extracted yet (observers disabled): no junction rows exist.
+        $this->assertSame(0, PublicationHasDatasetVersion::where('dataset_version_id', $versionId)->count());
+
+        $this->artisan('app:reconcile-linkages', [
+            '--dataset' => $datasetId,
+            '--sync' => true,
+            '--force' => true,
+        ])->assertExitCode(0);
+
+        // The unresolved DOI is now preserved as a raw_doi junction row (no publication_id).
+        $row = PublicationHasDatasetVersion::where('dataset_version_id', $versionId)
+            ->where('link_type', 'ABOUT')
+            ->first();
+
+        $this->assertNotNull($row, 'reconcile should create a junction row for the unresolved DOI');
+        $this->assertNull($row->publication_id);
+        $this->assertSame($unknownDoi, $row->raw_doi);
+
+        // And it round-trips through afterRead() (COALESCE(paper_doi, raw_doi)).
+        $linkage = $this->handler()->afterRead(DatasetVersion::find($versionId))['linkage'];
+        $this->assertContains($unknownDoi, $linkage['publicationAboutDataset']);
+    }
 }
