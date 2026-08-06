@@ -7,6 +7,7 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Services\Gwdm\GwdmHandlerFactory;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 /**
  * Reconcile the linkage junction tables against the stored GWDM blob (GAT-9018).
@@ -70,16 +71,24 @@ class ReconcileLinkages extends Command
 
         $versionsProcessed = 0;
         $failures = 0;
+        $driftRows = [];
 
-        $query->chunkById($chunk, function ($datasets) use ($allVersions, $sync, $dryRun, &$versionsProcessed, &$failures) {
+        $query->chunkById($chunk, function ($datasets) use ($allVersions, $sync, $dryRun, &$versionsProcessed, &$failures, &$driftRows) {
             foreach ($datasets as $dataset) {
-                $versions = $this->versionsFor($dataset, $allVersions);
-
-                foreach ($versions as $version) {
+                foreach ($this->versionsFor($dataset, $allVersions) as $version) {
                     $versionsProcessed++;
 
                     if ($dryRun) {
-                        $this->line("  would reconcile dataset {$dataset->id} version {$version->id} (v{$version->version}, gwdm {$version->gwdm_version})");
+                        foreach ($this->driftFor($version) as $d) {
+                            $driftRows[] = [
+                                $dataset->id,
+                                $version->version,
+                                $d['kind'],
+                                $d['linkage_type'],
+                                Str::limit($d['reference'], 60),
+                                $d['reason'],
+                            ];
+                        }
 
                         continue;
                     }
@@ -102,10 +111,64 @@ class ReconcileLinkages extends Command
             }
         });
 
-        $verb = $dryRun ? 'would process' : ($sync ? 'processed' : 'dispatched');
+        if ($dryRun) {
+            return $this->renderDriftReport($driftRows, $versionsProcessed);
+        }
+
+        $verb = $sync ? 'processed' : 'dispatched';
         $this->info("Done. {$verb} {$versionsProcessed} version(s)".($failures ? " with {$failures} failure(s)." : '.'));
 
         return $failures > 0 ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * Drift rows for a version via its GWDM handler. Only 2.x+ handlers expose
+     * diagnoseLinkageDrift(); others (1.x) have no SQL linkage tables, so report nothing.
+     *
+     * @return array<int, array{kind: string, linkage_type: string, reference: string, reason: string}>
+     */
+    private function driftFor($version): array
+    {
+        $full = DatasetVersion::findOrFail($version->id);
+        $gwdmVersion = $full->gwdm_version ?? ($full->metadata['gwdmVersion'] ?? '2.0');
+        $handler = app(GwdmHandlerFactory::class)->resolve($gwdmVersion);
+
+        return method_exists($handler, 'diagnoseLinkageDrift')
+            ? $handler->diagnoseLinkageDrift($full)
+            : [];
+    }
+
+    /**
+     * Print the dry-run drift table + a per-reason summary (what is in the blob but not
+     * in the SQL junction tables, and why).
+     */
+    private function renderDriftReport(array $driftRows, int $versionsProcessed): int
+    {
+        if (empty($driftRows)) {
+            $this->info("Scanned {$versionsProcessed} version(s): no linkage drift — SQL matches the blob.");
+
+            return self::SUCCESS;
+        }
+
+        $this->table(
+            ['Dataset', 'Version', 'Kind', 'Linkage', 'Reference', 'Reason'],
+            $driftRows,
+        );
+
+        $byReason = [];
+        foreach ($driftRows as $row) {
+            $byReason[$row[5]] = ($byReason[$row[5]] ?? 0) + 1;
+        }
+
+        $this->newLine();
+        $this->warn(count($driftRows).' out-of-sync reference(s) across '.$versionsProcessed.' version(s):');
+        foreach ($byReason as $reason => $count) {
+            $this->line(sprintf('  %4d  %s', $count, $reason));
+        }
+        $this->newLine();
+        $this->line('Run without --dry-run to backfill these into the junction tables.');
+
+        return self::SUCCESS;
     }
 
     /**

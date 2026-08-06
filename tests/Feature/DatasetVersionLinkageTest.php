@@ -480,4 +480,35 @@ class DatasetVersionLinkageTest extends TestCase
         $linkage = $this->handler()->afterRead(DatasetVersion::find($versionId))['linkage'];
         $this->assertContains($unknownDoi, $linkage['publicationAboutDataset']);
     }
+
+    /**
+     * app:reconcile-linkages --dry-run reports what is in the blob but missing from SQL
+     * (with a reason) and changes nothing. Regression guard for GAT-9018.
+     */
+    public function test_reconcile_dry_run_reports_drift_without_writing(): void
+    {
+        $this->disableObservers();
+
+        [$datasetId, $versionId] = $this->createDataset($this->getMetadataV2p0(), Dataset::STATUS_DRAFT);
+
+        $unknownDoi = '10.9999/unresolved-doi';
+        $this->overwriteVersionMetadata($versionId, [
+            'linkage' => [
+                'datasetLinkage' => null,
+                'publicationAboutDataset' => [$unknownDoi],
+                'publicationUsingDataset' => null,
+            ],
+        ]);
+
+        $this->artisan('app:reconcile-linkages', [
+            '--dataset' => $datasetId,
+            '--dry-run' => true,
+        ])
+            ->expectsOutputToContain($unknownDoi)
+            ->expectsOutputToContain('no publication row')
+            ->assertExitCode(0);
+
+        // Dry-run must not write anything.
+        $this->assertSame(0, PublicationHasDatasetVersion::where('dataset_version_id', $versionId)->count());
+    }
 }
