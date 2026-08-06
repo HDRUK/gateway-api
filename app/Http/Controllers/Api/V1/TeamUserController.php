@@ -937,7 +937,11 @@ class TeamUserController extends Controller
     {
         try {
             $admins = [];
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
+            $userTeamCollection = Team::where('id', $teamId)->with(['users', 'notifications'])->get();
+
+            User::preloadCohortDataForUsers($userTeamCollection->flatMap(fn ($team) => $team->users));
+
+            $userTeam = $userTeamCollection->toArray();
             $team = $this->getTeams($userTeam);
 
             $users = $team['users'];
