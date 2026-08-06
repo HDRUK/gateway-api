@@ -32,6 +32,13 @@ class TeamWidgetController extends Controller
      *    summary="WidgetController@index",
      *    description="Get All Widgets",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *        name="teamId",
+     *        in="path",
+     *        required=true,
+     *        description="Team ID",
+     *        @OA\Schema(type="integer")
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -113,15 +120,25 @@ class TeamWidgetController extends Controller
      *    summary="WidgetController@retrieve",
      *    description="Get a single Widget",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *        name="teamId",
+     *        in="path",
+     *        required=true,
+     *        description="Team ID",
+     *        @OA\Schema(type="integer")
+     *    ),
+     *    @OA\Parameter(
+     *        name="id",
+     *        in="path",
+     *        required=true,
+     *        description="Widget ID",
+     *        @OA\Schema(type="integer")
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="data",
-     *             type="object",
-     *             example={"id": 1, "widget_name": "Example Widget"}
-     *          )
+     *          @OA\Property(property="data", ref="#/components/schemas/Widget")
      *       )
      *    ),
      *    @OA\Response(
@@ -190,10 +207,18 @@ class TeamWidgetController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}/widgets/data",
+     *      operationId="fetch_widget_data_sources",
      *      tags={"Widgets"},
      *      summary="WidgetController@getWidgetData",
      *      description="Fetch lightweight data (id, name, etc.) for multiple teams across datasets, tools, collections, and DURS",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="teamId",
+     *          in="path",
+     *          required=true,
+     *          description="Team ID",
+     *          @OA\Schema(type="integer")
+     *      ),
      *      @OA\Parameter(
      *          name="team_ids",
      *          in="query",
@@ -737,6 +762,7 @@ class TeamWidgetController extends Controller
     /**
      * @OA\Patch(
      *     path="/api/v1/teams/{teamId}/widgets/{id}",
+     *     operationId="update_widget",
      *     tags={"Widgets"},
      *     summary="Update an existing widget",
      *     description="Updates an existing widget for a given team ID",
@@ -814,7 +840,7 @@ class TeamWidgetController extends Controller
      *         description="Widget successfully updated",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="success"),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="data", ref="#/components/schemas/Widget")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Widget not found"),

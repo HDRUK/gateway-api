@@ -29,11 +29,13 @@ class KeywordController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords",
      *      summary="List of keywords",
      *      description="Returns a list of keywords",
      *      tags={"Keyword"},
      *      summary="KeywordController@index",
+     *      operationId="fetch_all_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="per_page",
@@ -47,13 +49,7 @@ class KeywordController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  ),
+     *                  @OA\Items(ref="#/components/schemas/Keyword")
      *              ),
      *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/keywords?page=1"),
      *              @OA\Property(property="from", type="integer", example="1"),
@@ -109,11 +105,13 @@ class KeywordController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Return a single keyword",
      *      description="Return a single keyword",
      *      tags={"Keyword"},
      *      summary="KeywordController@show",
+     *      operationId="fetch_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -131,12 +129,8 @@ class KeywordController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(ref="#/components/schemas/Keyword")
      *              )
      *          ),
      *      ),
@@ -182,11 +176,13 @@ class KeywordController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords",
      *      summary="Create a new keyword",
      *      description="Creates a new keyword",
      *      tags={"Keyword"},
      *      summary="KeywordController@store",
+     *      operationId="create_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -265,11 +261,13 @@ class KeywordController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Update a keyword by id",
      *      description="Update a keyword by id",
      *      tags={"Keyword"},
      *      summary="KeywordController@update",
+     *      operationId="update_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -303,13 +301,7 @@ class KeywordController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Keyword")
      *          ),
      *      ),
      *      @OA\Response(
@@ -357,11 +349,13 @@ class KeywordController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Edit a keyword by id",
      *      description="Edit a keyword by id",
      *      tags={"Keyword"},
      *      summary="KeywordController@update",
+     *      operationId="edit_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -394,13 +388,7 @@ class KeywordController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Keyword")
      *          ),
      *      ),
      *      @OA\Response(
@@ -451,11 +439,13 @@ class KeywordController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Delete a keyword by id",
      *      description="Delete a keyword by id",
      *      tags={"Keyword"},
      *      summary="KeywordController@destroy",
+     *      operationId="delete_keywords",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

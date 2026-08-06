@@ -22,11 +22,13 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages",
      *      summary="List of system programming languages",
      *      description="Returns a list of programming languages enabled on the system",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@index",
+     *      operationId="fetch_all_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -34,13 +36,7 @@ class ProgrammingLanguageController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/ProgrammingLanguage")
      *              )
      *          )
      *      )
@@ -85,11 +81,13 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages/{id}",
      *      summary="Return a single system programming language",
      *      description="Return a single system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@show",
+     *      operationId="fetch_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -107,13 +105,7 @@ class ProgrammingLanguageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingLanguage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -163,11 +155,13 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages",
      *      summary="Create a new system programming language",
      *      description="Creates a new system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@store",
+     *      operationId="create_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -231,11 +225,13 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages/{id}",
      *      summary="Update a system programming language",
      *      description="Update a system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@update",
+     *      operationId="update_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -269,13 +265,7 @@ class ProgrammingLanguageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingLanguage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -323,11 +313,13 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages/{id}",
      *      summary="Edit a system programming language",
      *      description="Edit a system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@update",
+     *      operationId="edit_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -360,13 +352,7 @@ class ProgrammingLanguageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingLanguage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -418,11 +404,13 @@ class ProgrammingLanguageController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_languages/{id}",
      *      summary="Delete a system programming language",
      *      description="Delete a system programming language",
      *      tags={"ProgrammingLanguage"},
      *      summary="ProgrammingLanguage@destroy",
+     *      operationId="delete_programming_languages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

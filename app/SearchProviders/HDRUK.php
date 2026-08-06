@@ -4,6 +4,7 @@ namespace App\SearchProviders;
 
 use Auditor;
 use Http;
+use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
 use App\Services\Search\FilterCache;
 use App\Services\Search\CollectionHydrator;
@@ -63,6 +64,15 @@ class HDRUK implements SearchProvider
         'data_custodian_networks' => \App\Models\DataProviderColl::class,
         'data_custodians'         => \App\Models\Team::class,
     ];
+
+    public function __construct(private readonly ?PartnerContext $partnerContext = null)
+    {
+    }
+
+    private function resolvePartnerContext(): PartnerContext
+    {
+        return $this->partnerContext ?? app(PartnerContext::class);
+    }
 
     public function isDeferred(): bool
     {
@@ -197,7 +207,18 @@ class HDRUK implements SearchProvider
             $searchParams['facet_by'] = implode(',', $facetFields);
         }
 
-        $clauses          = $this->buildFilterClauses($type, $params);
+        $clauses = $this->buildFilterClauses($type, $params);
+
+        // Inject the partner context scope. Using $clauses ensures the filter
+        // is automatically AND-ed into every downstream query (exclusion,
+        // date-range min/max, population buckets) without touching any of that
+        // code — partnerContext is not in facet_map, so it is never stripped
+        // by the multi-select exclusion-query logic.
+        $partnerFilter = $this->buildPartnerContextFilter($type);
+        if ($partnerFilter !== null) {
+            $clauses['partnerContext'] = $partnerFilter;
+        }
+
         $combinedFilterBy = implode(' && ', $clauses);
         if ($combinedFilterBy !== '') {
             $searchParams['filter_by'] = $combinedFilterBy;
@@ -326,6 +347,12 @@ class HDRUK implements SearchProvider
 
         if ($query !== '') {
             $input['query'] = $query;
+        }
+
+        if ($filterConfig['type'] === 'dataset') {
+            $partner = $this->resolvePartnerContext()->getPartner();
+            $shouldScope = $partner !== 'HDRUK' || !config('partners.allow_cross_context_read', true);
+            $input['partnerContext'] = $shouldScope ? $partner : null;
         }
 
         $response = Http::post($this->getSearchURI($type), $input);
@@ -571,6 +598,34 @@ class HDRUK implements SearchProvider
         }
 
         return !empty($parts) ? implode(' && ', $parts) : null;
+    }
+
+    /**
+     * Returns a Typesense filter clause that scopes search results to the active
+     * partner, mirroring Dataset::scopeForPartnerContext().
+     *
+     * HDRUK with allow_cross_context_read=true sees all partners (no clause).
+     * Any other partner — or HDRUK with cross-context read disabled — is
+     * restricted to its own datasets.
+     *
+     * Only applies to the 'datasets' type; other entity types don't carry a
+     * partner_context column and shouldn't be filtered.
+     */
+    private function buildPartnerContextFilter(string $type): ?string
+    {
+        if ($type !== 'datasets') {
+            return null;
+        }
+
+        $partner = app(PartnerContext::class)->getPartner();
+
+        $shouldFilter = $partner && ($partner !== 'HDRUK' || !config('partners.allow_cross_context_read', false));
+
+        if (!$shouldFilter) {
+            return null;
+        }
+
+        return 'partnerContext:=`' . str_replace('`', '', $partner) . '`';
     }
 
     /**

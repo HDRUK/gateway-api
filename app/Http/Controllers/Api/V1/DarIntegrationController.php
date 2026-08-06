@@ -29,6 +29,7 @@ class DarIntegrationController extends Controller
      *      description="Returns a list of DAR integrations enabled on the system",
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@index",
+     *      operationId="fetch_all_dar_integrations",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -105,6 +106,7 @@ class DarIntegrationController extends Controller
      *      description="Returns a single DAR integration enabled on the system",
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@show",
+     *      operationId="fetch_dar_integration",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -200,7 +202,19 @@ class DarIntegrationController extends Controller
      *      description="Creates a new DAR integration enabled on the system",
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@store",
+     *      operationId="create_dar_integration",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="dar integration id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="dar integration id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="DarIntegration definition",
@@ -297,6 +311,7 @@ class DarIntegrationController extends Controller
      *      description="Updates a DAR integration enabled on the system",
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@update",
+     *      operationId="update_dar_integration",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -418,6 +433,7 @@ class DarIntegrationController extends Controller
      *      description="Edit a DAR integration enabled on the system",
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@edit",
+     *      operationId="edit_dar_integration",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -540,6 +556,7 @@ class DarIntegrationController extends Controller
      *      description="Delete a system Dar Integration",
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@destroy",
+     *      operationId="delete_dar_integration",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

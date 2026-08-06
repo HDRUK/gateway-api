@@ -25,11 +25,13 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches",
      *      summary="List of saved searches",
      *      description="Returns a list of saved searches enabled on the system",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@index",
+     *      operationId="fetch_all_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="per_page",
@@ -43,16 +45,7 @@ class SavedSearchController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                      @OA\Property(property="search_endpoint", type="string", example="datasets"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/SavedSearch")
      *              )
      *          )
      *      )
@@ -105,11 +98,13 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Return a single saved search",
      *      description="Return a single saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@show",
+     *      operationId="fetch_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -127,15 +122,8 @@ class SavedSearchController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                  @OA\Property(property="search_endpoint", type="string", example="datasets"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(ref="#/components/schemas/SavedSearch")
      *              )
      *          ),
      *      ),
@@ -186,11 +174,13 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches",
      *      summary="Create a new saved search",
      *      description="Creates a new saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@store",
+     *      operationId="create_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -286,11 +276,13 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Update a saved search",
      *      description="Update a saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@update",
+     *      operationId="update_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -331,16 +323,7 @@ class SavedSearchController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                  @OA\Property(property="search_endpoint", type="string", example="datasets"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/SavedSearch")
      *          ),
      *      ),
      *      @OA\Response(
@@ -411,11 +394,13 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Edit a saved search",
      *      description="Edit a saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@update",
+     *      operationId="edit_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -454,15 +439,7 @@ class SavedSearchController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="search_term", type="string", example="Example Search"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/SavedSearch")
      *          ),
      *      ),
      *      @OA\Response(
@@ -534,11 +511,13 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Delete a saved search",
      *      description="Delete a saved search",
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@destroy",
+     *      operationId="delete_saved_searches",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

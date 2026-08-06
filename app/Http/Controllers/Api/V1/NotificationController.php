@@ -26,11 +26,13 @@ class NotificationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications",
      *      summary="List of notifications",
      *      description="Returns a list of notifications enabled on the system",
      *      tags={"Notification"},
      *      summary="Notification@index",
+     *      operationId="fetch_all_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -38,15 +40,7 @@ class NotificationController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                      @OA\Property(property="notification_type", type="string", example="someType"),
-     *                      @OA\Property(property="message", type="string", example="some message"),
-     *                      @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/Notification")
      *              )
      *          )
      *      )
@@ -86,11 +80,13 @@ class NotificationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Return a single notification",
      *      description="Return a single notification",
      *      tags={"Notification"},
      *      summary="Notification@show",
+     *      operationId="fetch_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -108,16 +104,7 @@ class NotificationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="notification_type", type="string", example="someType"),
-     *                  @OA\Property(property="message", type="string", example="some message"),
-     *                  @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="email", type="string", example="john@example.com"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Notification")
      *          ),
      *      ),
      *      @OA\Response(
@@ -174,11 +161,13 @@ class NotificationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications",
      *      summary="Create a new notification",
      *      description="Creates a new notification",
      *      tags={"Notification"},
      *      summary="Notification@store",
+     *      operationId="create_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -249,11 +238,13 @@ class NotificationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Update a notification",
      *      description="Update a notification",
      *      tags={"Notification"},
      *      summary="Notification@update",
+     *      operationId="update_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -290,15 +281,7 @@ class NotificationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
-     *                  @OA\Property(property="message", type="string", example="your message here"),
-     *                  @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                  @OA\Property(property="email", type="string", example="john@example.com"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Notification")
      *          ),
      *      ),
      *      @OA\Response(
@@ -350,11 +333,13 @@ class NotificationController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Edit a notification",
      *      description="Edit a notification",
      *      tags={"Notification"},
      *      summary="Notification@edit",
+     *      operationId="edit_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -390,15 +375,7 @@ class NotificationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
-     *                  @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
-     *                  @OA\Property(property="message", type="string", example="your message here"),
-     *                  @OA\Property(property="opt_in", type="boolean", example="1"),
-     *                  @OA\Property(property="email", type="string", example="john@example.com"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Notification")
      *          ),
      *      ),
      *      @OA\Response(
@@ -454,11 +431,13 @@ class NotificationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/notifications/{id}",
      *      summary="Delete a notification",
      *      description="Delete a notification",
      *      tags={"Notification"},
      *      summary="Notification@destroy",
+     *      operationId="delete_notifications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

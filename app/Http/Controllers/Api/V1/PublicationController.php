@@ -76,11 +76,7 @@ class PublicationController extends Controller
      *          @OA\Property(
      *             property="data",
      *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Publication")
      *          ),
      *       ),
      *    ),
@@ -275,15 +271,7 @@ class PublicationController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *      @OA\Response(
@@ -360,7 +348,11 @@ class PublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -492,7 +484,11 @@ class PublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -502,15 +498,7 @@ class PublicationController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(
      *             property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *    @OA\Response(
@@ -654,7 +642,11 @@ class PublicationController extends Controller
       *                   @OA\Property(property="description", type="string"),
       *                )
       *             ),
-      *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+      *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
       *          ),
       *       ),
       *    ),
@@ -664,15 +656,7 @@ class PublicationController extends Controller
       *       @OA\JsonContent(
       *          @OA\Property(
       *             property="message", type="string", example="success"),
-      *          @OA\Property(
-      *             property="data",
-      *             type="array",
-      *             example="[]",
-      *             @OA\Items(
-      *                type="array",
-      *                @OA\Items()
-      *             )
-      *          ),
+      *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
       *       ),
       *    ),
       *    @OA\Response(

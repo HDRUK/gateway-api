@@ -32,25 +32,14 @@ class LicenseController extends Controller
      *      description="Returns a list of licenses available",
      *      tags={"License"},
      *      summary="License@index",
+     *      operationId="fetch_all_licenses",
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                      @OA\Property(property="label", type="string", example="Available upon request"),
-     *                      @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                      @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                      @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                      @OA\Property(property="verified", type="boolean", example="1"),
-     *                      @OA\Property(property="origin", type="string", example="HDR"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/License")
      *              ),
      *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/licenses?page=1"),
      *              @OA\Property(property="from", type="integer", example="1"),
@@ -106,6 +95,7 @@ class LicenseController extends Controller
      *      description="Return a single license",
      *      tags={"License"},
      *      summary="License@show",
+     *      operationId="fetch_licenses",
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -122,19 +112,7 @@ class LicenseController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                  @OA\Property(property="label", type="string", example="Available upon request"),
-     *                  @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                  @OA\Property(property="verified", type="boolean", example="1"),
-     *                  @OA\Property(property="origin", type="string", example="HDR"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/License")
      *          ),
      *      ),
      *      @OA\Response(
@@ -174,11 +152,13 @@ class LicenseController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses",
      *      summary="Create a new license",
      *      description="Creates a new license",
      *      tags={"License"},
      *      summary="License@store",
+     *      operationId="create_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -250,11 +230,13 @@ class LicenseController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses/{id}",
      *      summary="Update a tool license",
      *      description="Update a tool license",
      *      tags={"License"},
      *      summary="License@update",
+     *      operationId="update_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -292,19 +274,7 @@ class LicenseController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                  @OA\Property(property="label", type="string", example="Available upon request"),
-     *                  @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                  @OA\Property(property="verified", type="boolean", example="1"),
-     *                  @OA\Property(property="origin", type="string", example="HDR"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/License")
      *          ),
      *      ),
      *      @OA\Response(
@@ -356,11 +326,13 @@ class LicenseController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses/{id}",
      *      summary="Edit a tool license",
      *      description="Edit a tool license",
      *      tags={"License"},
      *      summary="License@edit",
+     *      operationId="edit_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -398,19 +370,7 @@ class LicenseController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="code", type="string", example="HDR_CATEGORY_AVAILABLE_UPON_REQUEST"),
-     *                  @OA\Property(property="label", type="string", example="Available upon request"),
-     *                  @OA\Property(property="valid_since", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="valid_until", type="datetime", example="2024-04-15 00:00:00"),
-     *                  @OA\Property(property="definition", type="string", example="Access to the software ..."),
-     *                  @OA\Property(property="verified", type="boolean", example="1"),
-     *                  @OA\Property(property="origin", type="string", example="HDR"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/License")
      *          ),
      *      ),
      *      @OA\Response(
@@ -466,11 +426,13 @@ class LicenseController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses/{id}",
      *      summary="Delete a License",
      *      description="Delete a License",
      *      tags={"License"},
      *      summary="License@destroy",
+     *      operationId="delete_licenses",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

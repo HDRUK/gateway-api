@@ -26,6 +26,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/roles",
      *    operationId="create_user_has_roles",
      *    tags={"User-Roles"},
@@ -120,6 +121,7 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/roles",
      *    operationId="update_user_has_roles",
      *    tags={"User-Roles"},
@@ -229,23 +231,13 @@ class UserRoleController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/roles",
      *    operationId="delete_user_has_roles",
      *    tags={"User-Roles"},
      *    summary="UserRoleController@destroy",
      *    description="Delete user - roles",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="userId",
-     *       in="path",
-     *       description="user id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="user id",
-     *       ),
-     *    ),
      *    @OA\Parameter(
      *       name="userId",
      *       in="path",

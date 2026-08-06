@@ -28,6 +28,7 @@ class TeamDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dashboard/{entity}/count",
      *     operationId="fetch_entities_count_v3",
      *     tags={"TeamDashboard"},
@@ -122,6 +123,7 @@ class TeamDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dashboard/datasets/views/360",
      *     operationId="fetch_dataset_views_360_v3",
      *     tags={"TeamDashboard"},
@@ -180,6 +182,7 @@ class TeamDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dashboard/datasets/views/top",
      *     operationId="fetch_dataset_views_top_v3",
      *     tags={"TeamDashboard"},
@@ -239,6 +242,7 @@ class TeamDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dashboard/collections/views",
      *     operationId="fetch_collections_views_v3",
      *     tags={"TeamDashboard"},
@@ -292,6 +296,7 @@ class TeamDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dashboard/datacustodians/views",
      *     operationId="fetch_data_custodians_views_v3",
      *     tags={"TeamDashboard"},
@@ -345,6 +350,7 @@ class TeamDashboardController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dashboard/download/csv",
      *     operationId="fetch_dashboard_download_csv_v3",
      *     tags={"TeamDashboard"},

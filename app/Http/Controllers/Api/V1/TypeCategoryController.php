@@ -22,11 +22,13 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories",
      *      summary="List of system type categories",
      *      description="Returns a list of type categories enabled on the system",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@index",
+     *      operationId="fetch_all_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -34,13 +36,7 @@ class TypeCategoryController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/TypeCategory")
      *              )
      *          )
      *      )
@@ -86,11 +82,13 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Return a single system type category",
      *      description="Return a single system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@show",
+     *      operationId="fetch_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -108,13 +106,7 @@ class TypeCategoryController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/TypeCategory")
      *          ),
      *      ),
      *      @OA\Response(
@@ -159,11 +151,13 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories",
      *      summary="Create a new system type category",
      *      description="Creates a new system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@store",
+     *      operationId="create_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -229,11 +223,13 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Update a system type category",
      *      description="Update a system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@update",
+     *      operationId="update_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -268,14 +264,7 @@ class TypeCategoryController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="description", type="string", example="Description"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/TypeCategory")
      *          ),
      *      ),
      *      @OA\Response(
@@ -324,11 +313,13 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Edit a system type category",
      *      description="Edit a system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@update",
+     *      operationId="edit_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -361,14 +352,7 @@ class TypeCategoryController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="description", type="string", example="Description"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/TypeCategory")
      *          ),
      *      ),
      *      @OA\Response(
@@ -420,11 +404,13 @@ class TypeCategoryController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/type_categories/{id}",
      *      summary="Delete a system type category",
      *      description="Delete a system type category",
      *      tags={"TypeCategory"},
      *      summary="TypeCategory@destroy",
+     *      operationId="delete_type_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

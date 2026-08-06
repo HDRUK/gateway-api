@@ -45,7 +45,7 @@ class IntegrationToolController extends Controller
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
-     *       @OA\JsonContent( @OA\Property( property="data", type="array", example="[]", @OA\Items( type="array", @OA\Items() ) ),
+     *       @OA\JsonContent( @OA\Property( property="data", type="array", @OA\Items(ref="#/components/schemas/Tool") ),
      *       ),
      *    ),
      * )
@@ -111,7 +111,7 @@ class IntegrationToolController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property( property="message", type="string", example="success" ),
-     *          @OA\Property( property="data", type="array", example="[]", @OA\Items( type="array", @OA\Items() ) ),
+     *          @OA\Property( property="data", ref="#/components/schemas/Tool" ),
      *       ),
      *    ),
      *    @OA\Response(
@@ -191,13 +191,22 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
-     *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
-     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
-     *             @OA\Property( property="dataset", type="array", @OA\Items() ),
-     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="tags", type="array", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="link_type", type="string", example="Other" ),
+     *             ) ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant publication" ),
+     *             )),
      *          ),
      *       ),
      *    ),
@@ -346,13 +355,22 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
-     *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
-     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
-     *             @OA\Property( property="dataset", type="array", @OA\Items() ),
-     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="tags", type="array", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="link_type", type="string", example="Other" ),
+     *             ) ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant publication" ),
+     *             )),
      *          ),
      *       ),
      *    ),
@@ -361,7 +379,7 @@ class IntegrationToolController extends Controller
      *          description="Created",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
+     *              @OA\Property(property="data", ref="#/components/schemas/Tool")
      *          )
      *      ),
      *      @OA\Response(
@@ -510,13 +528,22 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
-     *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
-     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
-     *             @OA\Property( property="dataset", type="array", @OA\Items() ),
-     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="tags", type="array", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="link_type", type="string", example="Other" ),
+     *             ) ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant publication" ),
+     *             )),
      *          ),
      *       ),
      *    ),
@@ -525,7 +552,7 @@ class IntegrationToolController extends Controller
      *          description="Created",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
+     *              @OA\Property(property="data", ref="#/components/schemas/Tool")
      *          )
      *      ),
      *      @OA\Response(

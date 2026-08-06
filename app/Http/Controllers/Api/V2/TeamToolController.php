@@ -44,6 +44,7 @@ class TeamToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v2/teams/{teamId}/tools/status/{status}",
      *     operationId="fetch_all_tool_by_team_and_status_v2",
      *     tags={"Tools"},
@@ -61,7 +62,7 @@ class TeamToolController extends Controller
      *         name="status",
      *         in="path",
      *         description="Status of the tool (active, draft, or archived). Defaults to active if not provided.",
-     *         required=false,
+     *         required=true,
      *         @OA\Schema( type="string", enum={"active", "draft", "archived"}, default="active" )
      *     ),
      *     @OA\Response(
@@ -71,9 +72,7 @@ class TeamToolController extends Controller
      *           @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 example="[]",
-     *                 @OA\Items( type="array", @OA\Items()
-     *              ),
+     *                 @OA\Items(ref="#/components/schemas/Tool")
      *           ),
      *        ),
      *     ),
@@ -151,6 +150,7 @@ class TeamToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/tools/count/{field}",
      *    operationId="count_team_unique_fields_tools_v2",
      *    tags={"Tools"},
@@ -220,6 +220,7 @@ class TeamToolController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/tools/{id}",
      *    operationId="fetch_tools_by_team_and_by_id_v2",
      *    tags={"Tools"},
@@ -267,12 +268,7 @@ class TeamToolController extends Controller
      *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             ref="#/components/schemas/Tool"
      *          ),
      *       ),
      *    ),
@@ -363,21 +359,31 @@ class TeamToolController extends Controller
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
-     *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="tags", type="array", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items(
      *                type="object",
      *                @OA\Property( property="id", type="integer", example=1 ),
      *                @OA\Property( property="link_type", type="string", example="Other" ),
      *             )),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
-     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
-     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
-     *             @OA\Property( property="publications", type="array", @OA\Items() ),
-     *             @OA\Property( property="durs", type="array", @OA\Items() ),
-     *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="publications", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant publication" ),
+     *             ) ),
+     *             @OA\Property( property="durs", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="collections", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant collection" ),
+     *             ) ),
      *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *             @OA\Property( property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"} ),
      *          ),
@@ -546,21 +552,31 @@ class TeamToolController extends Controller
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
-     *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="tags", type="array", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items(
      *                type="object",
      *                @OA\Property( property="id", type="integer", example=1 ),
      *                @OA\Property( property="link_type", type="string", example="Other" ),
      *             )),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
-     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
-     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
-     *             @OA\Property( property="publications", type="array", @OA\Items() ),
-     *             @OA\Property( property="durs", type="array", @OA\Items() ),
-     *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="publications", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant publication" ),
+     *             ) ),
+     *             @OA\Property( property="durs", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="collections", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant collection" ),
+     *             ) ),
      *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *             @OA\Property( property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"} ),
      *          ),
@@ -571,7 +587,7 @@ class TeamToolController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
+     *              @OA\Property(property="data", ref="#/components/schemas/Tool")
      *          )
      *      ),
      *      @OA\Response(
@@ -756,21 +772,31 @@ class TeamToolController extends Controller
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
-     *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="tags", type="array", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items(
      *                type="object",
      *                @OA\Property( property="id", type="integer", example=1 ),
      *                @OA\Property( property="link_type", type="string", example="Other" ),
      *             )),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
-     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
-     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
-     *             @OA\Property( property="publications", type="array", @OA\Items() ),
-     *             @OA\Property( property="durs", type="array", @OA\Items() ),
-     *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="publications", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant publication" ),
+     *             ) ),
+     *             @OA\Property( property="durs", type="array", @OA\Items( type="integer", format="int64", example=1 ) ),
+     *             @OA\Property( property="collections", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="user_id", type="integer", example=1 ),
+     *                @OA\Property( property="reason", type="string", example="Relevant collection" ),
+     *             ) ),
      *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *             @OA\Property( property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"} ),
      *          ),
@@ -781,7 +807,7 @@ class TeamToolController extends Controller
      *       description="Success",
      *          @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="success"),
-     *             @OA\Property(property="data", type="integer", example="100")
+     *             @OA\Property(property="data", ref="#/components/schemas/Tool")
      *          ),
      *    ),
      *    @OA\Response(

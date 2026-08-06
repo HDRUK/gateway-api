@@ -21,11 +21,12 @@ class AliasController extends Controller
 {
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/aliases",
      *    summary="List of aliases",
      *    description="Returns a list of aliases",
      *    tags={"Alias"},
-     *    operationId="AliasController@index",
+     *    operationId="fetch_all_aliases",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
      *       response=200,
@@ -33,10 +34,7 @@ class AliasController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string"),
      *          @OA\Property(property="data", type="array",
-     *             @OA\Items(
-     *                @OA\Property(property="id", type="integer", example="123"),
-     *                @OA\Property(property="name", type="string", example="something"),
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Alias")
      *          )
      *       )
      *    )
@@ -80,11 +78,12 @@ class AliasController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Return a single alias",
      *      description="Return a single alias",
      *      tags={"Alias"},
-     *      operationId="AliasController@show",
+     *      operationId="fetch_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -102,10 +101,7 @@ class AliasController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="alias", type="string", example="something")
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Alias")
      *          ),
      *      ),
      *      @OA\Response(
@@ -157,11 +153,13 @@ class AliasController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases",
      *      summary="Create a new alias",
      *      description="Creates a new alias",
      *      tags={"Alias"},
      *      summary="AliasController@store",
+     *      operationId="create_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -234,11 +232,13 @@ class AliasController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Update a alias",
      *      description="Update a alias",
      *      tags={"Alias"},
      *      summary="AliasController@update",
+     *      operationId="update_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -271,10 +271,7 @@ class AliasController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="name", type="string", example="xxx")
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Alias")
      *          ),
      *      ),
      *      @OA\Response(
@@ -327,11 +324,13 @@ class AliasController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Edit a alias",
      *      description="Edit a alias",
      *      tags={"Alias"},
      *      summary="AliasController@edit",
+     *      operationId="edit_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -364,10 +363,7 @@ class AliasController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="name", type="string", example="something")
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Alias")
      *          ),
      *      ),
      *      @OA\Response(
@@ -423,11 +419,13 @@ class AliasController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Delete an alias",
      *      description="Delete an alias",
      *      tags={"Alias"},
      *      summary="AliasController@destroy",
+     *      operationId="delete_aliases",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

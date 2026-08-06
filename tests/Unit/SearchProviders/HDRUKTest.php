@@ -2,13 +2,16 @@
 
 namespace Tests\Unit\SearchProviders;
 
+use Config;
 use Mockery;
 use Tests\TestCase;
+use App\Context\PartnerContext;
 use App\SearchProviders\HDRUK;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
 use App\Models\DataProviderColl;
 use App\Services\TypesenseService;
+use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
 
 class HDRUKTest extends TestCase
@@ -595,5 +598,80 @@ class HDRUKTest extends TestCase
             ['PIONEER: HDR UK Health Da...' => 16, 'SAIL' => 7, 'Tissue directory' => 2],
             collect($result['aggregations']['publisherName']['buckets'])->pluck('doc_count', 'key')->all()
         );
+    }
+
+    private function fakeSearchServiceDatasetsEndpoint(): void
+    {
+        Http::fake([
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/datasets*' => Http::response([
+                'hits' => ['total' => ['value' => 0], 'hits' => []],
+                'aggregations' => [],
+            ], 200),
+            config('gateway.search_service_url', 'http://localhost:8003') . '/search/tools*' => Http::response([
+                'hits' => ['total' => ['value' => 0], 'hits' => []],
+                'aggregations' => [],
+            ], 200),
+        ]);
+    }
+
+    public function test_search_via_elastic_sends_partner_context_for_datasets(): void
+    {
+        $this->fakeSearchServiceDatasetsEndpoint();
+
+        $partnerContext = Mockery::mock(PartnerContext::class);
+        $partnerContext->shouldReceive('getPartner')->andReturn('PRUK');
+
+        (new HDRUK($partnerContext))->search('asthma', 'datasets', []);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/search/datasets')
+                && $request['partnerContext'] === 'PRUK';
+        });
+    }
+
+    public function test_search_via_elastic_omits_partner_context_for_non_dataset_types(): void
+    {
+        $this->fakeSearchServiceDatasetsEndpoint();
+
+        $partnerContext = Mockery::mock(PartnerContext::class);
+        $partnerContext->shouldReceive('getPartner')->andReturn('PRUK');
+
+        (new HDRUK($partnerContext))->search('nlp', 'tools', []);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/search/tools')
+                && !array_key_exists('partnerContext', $request->data());
+        });
+    }
+
+    public function test_search_via_elastic_respects_hdruk_cross_context_read_default(): void
+    {
+        $this->fakeSearchServiceDatasetsEndpoint();
+        Config::set('partners.allow_cross_context_read', true);
+
+        $partnerContext = Mockery::mock(PartnerContext::class);
+        $partnerContext->shouldReceive('getPartner')->andReturn('HDRUK');
+
+        (new HDRUK($partnerContext))->search('asthma', 'datasets', []);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/search/datasets')
+                && array_key_exists('partnerContext', $request->data())
+                && $request['partnerContext'] === null;
+        });
+    }
+
+    public function test_hdruk_defaults_partner_context_when_constructed_without_argument(): void
+    {
+        $this->fakeSearchServiceDatasetsEndpoint();
+
+        request()->headers->set('x-partner-context', 'CRUK');
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/search/datasets')
+                && $request['partnerContext'] === 'CRUK';
+        });
     }
 }

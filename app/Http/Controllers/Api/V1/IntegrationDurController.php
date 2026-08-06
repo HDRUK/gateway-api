@@ -589,6 +589,7 @@ class IntegrationDurController extends Controller
      * @OA\Put(
      *    path="/api/v1/integrations/dur/{id}",
      *    deprecated=true,
+     *    operationId="update_dur_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="Update a dur by id",
      *    description="Update a dur",
@@ -883,6 +884,7 @@ class IntegrationDurController extends Controller
      * @OA\Patch(
      *    path="/api/v1/integrations/dur/{id}",
      *    deprecated=true,
+     *    operationId="edit_dur_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="Edit a dur",
      *    description="Edit a dur",
@@ -1156,6 +1158,7 @@ class IntegrationDurController extends Controller
      * @OA\Delete(
      *    path="/api/v1/integrations/dur/{id}",
      *    deprecated=true,
+     *    operationId="delete_dur_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="Delete a dur",
      *    description="Delete a dur",

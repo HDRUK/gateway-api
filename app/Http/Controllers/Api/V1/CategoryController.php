@@ -17,11 +17,13 @@ class CategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories",
      *      summary="List of tool categories",
      *      description="Returns a list of categories enabled on the system",
      *      tags={"Category"},
      *      summary="Category@index",
+     *      operationId="fetch_all_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="per_page",
@@ -40,13 +42,7 @@ class CategoryController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/Category")
      *              )
      *          )
      *      )
@@ -85,11 +81,13 @@ class CategoryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Return a single tool category",
      *      description="Return a single tool category",
      *      tags={"Category"},
      *      summary="Category@show",
+     *      operationId="fetch_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -107,12 +105,8 @@ class CategoryController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(ref="#/components/schemas/Category")
      *              )
      *          ),
      *      ),
@@ -158,11 +152,13 @@ class CategoryController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories",
      *      summary="Create a new tool category",
      *      description="Creates a new tool category",
      *      tags={"Category"},
      *      summary="Category@store",
+     *      operationId="create_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -226,11 +222,13 @@ class CategoryController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Update a tool category",
      *      description="Update a tool category",
      *      tags={"Category"},
      *      summary="Category@update",
+     *      operationId="update_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -264,13 +262,7 @@ class CategoryController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Category")
      *          ),
      *      ),
      *      @OA\Response(
@@ -318,11 +310,13 @@ class CategoryController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Edit a tool category",
      *      description="Edit a tool category",
      *      tags={"Category"},
      *      summary="Category@update",
+     *      operationId="edit_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -355,13 +349,7 @@ class CategoryController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Category")
      *          ),
      *      ),
      *      @OA\Response(
@@ -413,11 +401,13 @@ class CategoryController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/categories/{id}",
      *      summary="Delete a tool category",
      *      description="Delete a tool category",
      *      tags={"Category"},
      *      summary="Category@destroy",
+     *      operationId="delete_categories",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

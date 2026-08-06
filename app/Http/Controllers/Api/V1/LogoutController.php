@@ -9,6 +9,7 @@ class LogoutController extends Controller
 {
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/logout",
      *    operationId="logout",
      *    tags={"Logout"},

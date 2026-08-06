@@ -60,7 +60,7 @@ class ToolController extends Controller
      *          @OA\Property(
      *             property="data",
      *             type="array",
-     *             @OA\Items(type="object")
+     *             @OA\Items(ref="#/components/schemas/Tool")
      *          ),
      *          @OA\Property(property="current_page", type="integer"),
      *          @OA\Property(property="first_page_url", type="string"),
@@ -169,7 +169,7 @@ class ToolController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property( property="message", type="string", example="success" ),
-     *          @OA\Property( property="data", type="array", example="[]", @OA\Items( type="array", @OA\Items() ) ),
+     *          @OA\Property( property="data", ref="#/components/schemas/Tool" ),
      *       ),
      *    ),
      *    @OA\Response(

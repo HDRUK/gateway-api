@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @OA\Schema(
+ *   schema="TypeCategory",
+ *   description="A category used to classify tool types",
+ *   @OA\Property(property="id", type="integer", example=1),
+ *   @OA\Property(property="name", type="string", example="Analysis"),
+ *   @OA\Property(property="description", type="string", nullable=true, example="Tools used for data analysis"),
+ *   @OA\Property(property="enabled", type="boolean", example=true),
+ *   @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-15T10:30:00Z"),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
+ * )
+ */
 class TypeCategory extends Model
 {
     use HasFactory;

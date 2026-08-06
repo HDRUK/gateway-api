@@ -1,3 +1,11 @@
+## [2.47.4](https://github.com/HDRUK/gateway-api/compare/v2.47.3...v2.47.4) (2026-08-04)
+
+## [2.47.3](https://github.com/HDRUK/gateway-api/compare/v2.47.2...v2.47.3) (2026-08-04)
+
+### 🐛 Bug Fixes
+
+* **GAT-9374:** #2 - further tweaks to reinstate broken datasets from recent changes (#1740) ([b3df288](https://github.com/HDRUK/gateway-api/commit/b3df28876811a8bb007fd64381a444f01700b7e5)), closes [GAT-9374](undefinedGAT-9374)
+
 ## [2.47.2](https://github.com/HDRUK/gateway-api/compare/v2.47.1...v2.47.2) (2026-07-29)
 
 ### 🐛 Bug Fixes

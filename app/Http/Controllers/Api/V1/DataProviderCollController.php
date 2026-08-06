@@ -34,6 +34,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_provider_colls",
      *      path="/api/v1/data_provider_colls",
      *      summary="List of DataProviderColl's",
      *      description="Returns a list of DataProviderColls enabled on the system",
@@ -112,6 +113,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Return a single DataProviderColl",
      *      description="Return a single DataProviderColl",
@@ -194,6 +196,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_provider_coll_summary",
      *      path="/api/v1/data_provider_colls/{id}/summary",
      *      description="Return a single DataProviderColl - summary",
      *      tags={"DataProviderColl"},
@@ -346,6 +349,8 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
+     *      operationId="create_data_provider_coll",
      *      path="/api/v1/data_provider_colls",
      *      summary="Create a new DataProviderColl",
      *      description="Creates a new DataProviderColl",
@@ -362,9 +367,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="enabled", type="boolean", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -446,6 +449,8 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
+     *      operationId="update_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Update a DataProviderColl",
      *      description="Update a DataProviderColl",
@@ -473,9 +478,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -560,6 +563,8 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
+     *      operationId="edit_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Edit a DataProviderColl",
      *      description="Edit a DataProviderColl",
@@ -586,9 +591,7 @@ class DataProviderCollController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -674,6 +677,8 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
+     *      operationId="delete_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Delete a DataProviderColl",
      *      description="Delete a DataProviderColl",
