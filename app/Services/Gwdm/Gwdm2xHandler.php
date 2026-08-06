@@ -180,6 +180,20 @@ class Gwdm2xHandler extends GwdmMetadataHandler
                 $targetVersionId = $this->findTargetDataset($d);
 
                 if (! $targetVersionId) {
+                    // Store unresolved reference so afterRead() can reconstruct it from SQL.
+                    // Coerce blanks to NULL: the GWDM schema allows null url/pid/title but a
+                    // string must satisfy minLength/uri format, so '' would fail validation.
+                    DatasetVersionHasDatasetVersion::create([
+                        'dataset_version_source_id' => $sourceVersionId,
+                        'dataset_version_target_id' => null,
+                        'linkage_type' => $key,
+                        'direct_linkage' => 1,
+                        'description' => self::LINKAGE_DESCRIPTION,
+                        'raw_url' => $this->blankToNull($d['url'] ?? null),
+                        'raw_pid' => $this->blankToNull($d['pid'] ?? null),
+                        'raw_title' => $this->blankToNull($d['title'] ?? null),
+                    ]);
+
                     continue;
                 }
 
@@ -214,6 +228,15 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             $publicationId = $this->findTargetPublication($doi);
 
             if (! $publicationId) {
+                // Store unresolved DOI so afterRead() can reconstruct it from SQL.
+                PublicationHasDatasetVersion::create([
+                    'publication_id' => null,
+                    'dataset_version_id' => $sourceVersionId,
+                    'link_type' => $linkType,
+                    'description' => self::LINKAGE_DESCRIPTION,
+                    'raw_doi' => $doi,
+                ]);
+
                 continue;
             }
 
@@ -291,6 +314,44 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         return $doi !== '' ? $doi : null;
     }
 
+    /**
+     * Normalise a raw linkage string for storage/output: trim and treat an empty
+     * string as NULL. The GWDM schema allows null url/pid/title but requires any
+     * string to satisfy minLength/uri constraints, so '' would fail validation.
+     */
+    protected function blankToNull(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
+    }
+
+    /**
+     * Unresolved (free-text) dataset linkage rows for a version — junction rows with
+     * dataset_version_target_id = NULL that carry the raw url/pid/title captured at
+     * extraction time. resolveDatasetLinkages() excludes these (it requires an ACTIVE
+     * target), so afterRead()/getLinkages() read them here to keep SQL the complete
+     * source of truth.
+     *
+     * @return array<int, object{linkage_type: string, raw_url: ?string, raw_pid: ?string, raw_title: ?string}>
+     */
+    protected function resolveUnresolvedDatasetLinkages(int $sourceVersionId): array
+    {
+        return DB::select(
+            'SELECT linkage_type, raw_url, raw_pid, raw_title
+            FROM dataset_version_has_dataset_version
+            WHERE dataset_version_source_id = ?
+              AND direct_linkage = ?
+              AND description = ?
+              AND dataset_version_target_id IS NULL',
+            [$sourceVersionId, 1, self::LINKAGE_DESCRIPTION]
+        );
+    }
+
     // ── Read path ─────────────────────────────────────────────────────────────
 
     /**
@@ -304,9 +365,15 @@ class Gwdm2xHandler extends GwdmMetadataHandler
     public function afterRead(DatasetVersion $dv): array
     {
         $resolvedDatasets = $this->resolveDatasetLinkages($dv->id, useLatestTitle: true);
+
+        // Unresolved rows (target_id = NULL) carry the raw free-text reference captured
+        // at extraction time. resolveDatasetLinkages() intentionally excludes them (it
+        // requires an ACTIVE target dataset), so read them separately to preserve them.
+        $unresolvedDatasets = $this->resolveUnresolvedDatasetLinkages($dv->id);
+
         $publications = $this->resolvePublicationLinkages($dv->id);
 
-        if (empty($resolvedDatasets) && empty($publications)) {
+        if (empty($resolvedDatasets) && empty($unresolvedDatasets) && empty($publications)) {
             return [];
         }
 
@@ -316,6 +383,14 @@ class Gwdm2xHandler extends GwdmMetadataHandler
                 'url' => config('gateway.gateway_url').'/en/dataset/'.$row->dataset_id,
                 'pid' => $row->pid,
                 'title' => $row->title,
+            ];
+        }
+        foreach ($unresolvedDatasets as $row) {
+            // blankToNull: GWDM allows null url/pid/title, but '' fails minLength/uri.
+            $datasetLinkage[$row->linkage_type][] = [
+                'url' => $this->blankToNull($row->raw_url),
+                'pid' => $this->blankToNull($row->raw_pid),
+                'title' => $this->blankToNull($row->raw_title),
             ];
         }
 
@@ -410,9 +485,13 @@ class Gwdm2xHandler extends GwdmMetadataHandler
     }
 
     /**
-     * Resolved publication linkages for the given source version, sourced from SQL.
+     * Publication linkages for the given source version, sourced from SQL.
      * Companion to resolveDatasetLinkages(); consumed by afterRead() to rebuild the
      * publicationAboutDataset / publicationUsingDataset arrays.
+     *
+     * Uses a LEFT JOIN and coalesces the resolved publication's paper_doi with the
+     * raw_doi captured at extraction time, so unresolved (free-text) DOIs survive the
+     * read the same way unresolved dataset linkages do.
      *
      * @return array<int, object{link_type: string, doi: string}>
      */
@@ -421,9 +500,9 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         return DB::select(
             'SELECT
                 publication_has_dataset_version.link_type,
-                publications.paper_doi AS doi
+                COALESCE(publications.paper_doi, publication_has_dataset_version.raw_doi) AS doi
             FROM publication_has_dataset_version
-            INNER JOIN publications
+            LEFT JOIN publications
                 ON publications.id = publication_has_dataset_version.publication_id
                AND publications.deleted_at IS NULL
             WHERE publication_has_dataset_version.dataset_version_id = ?
@@ -435,11 +514,12 @@ class Gwdm2xHandler extends GwdmMetadataHandler
 
     /**
      * Flat dataset-linkage list for the given version (frontend `linkages` attribute).
-     * Thin formatter over resolveDatasetLinkages() — see it for the selection rules.
+     * Formats resolveDatasetLinkages() and appends unresolved (free-text) rows so a
+     * linkage to a dataset not on the gateway still surfaces its raw title/url.
      */
     public function getLinkages(int $datasetVersionId): array
     {
-        return array_map(
+        $resolved = array_map(
             fn ($row) => [
                 'title' => $row->title,
                 'url' => config('gateway.gateway_url').'/en/dataset/'.$row->dataset_id,
@@ -448,6 +528,191 @@ class Gwdm2xHandler extends GwdmMetadataHandler
             ],
             $this->resolveDatasetLinkages($datasetVersionId, useLatestTitle: true)
         );
+
+        $unresolved = array_map(
+            fn ($row) => [
+                'title' => $this->blankToNull($row->raw_title),
+                'url' => $this->blankToNull($row->raw_url),
+                'dataset_id' => null,
+                'linkage_type' => $row->linkage_type,
+            ],
+            $this->resolveUnresolvedDatasetLinkages($datasetVersionId)
+        );
+
+        return array_merge($resolved, $unresolved);
+    }
+
+    /**
+     * DRY-RUN diagnostics (read-only): which references in the reconstructed GWDM blob
+     * are NOT represented by a live junction row, and why. Powers
+     * `app:reconcile-linkages --dry-run`. A non-empty result means SQL is out of sync
+     * with the blob; a reconcile (re-extraction) would backfill these.
+     *
+     * @return array<int, array{kind: string, linkage_type: string, reference: string, reason: string}>
+     */
+    public function diagnoseLinkageDrift(DatasetVersion $dv): array
+    {
+        // Blob linkage only ($applySupplementary = false) — i.e. what extraction reads.
+        $gwdm = $this->datasetService()->getReconstructedMetadataEnvelope(
+            $dv->dataset_id,
+            $dv->version,
+            false,
+            $dv,
+            false,
+        )['metadata'] ?? [];
+
+        $linkage = $gwdm['linkage'] ?? [];
+        $drift = [];
+
+        foreach (['publicationAboutDataset' => 'ABOUT', 'publicationUsingDataset' => 'USING'] as $key => $linkType) {
+            $dois = $linkage[$key] ?? null;
+            if (! is_array($dois)) {
+                continue;
+            }
+
+            $represented = $this->representedPublicationDois($dv->id, $linkType);
+
+            foreach ($dois as $doi) {
+                if (! is_string($doi) || trim($doi) === '') {
+                    continue;
+                }
+                $bare = $this->normalisePublicationDoi($doi);
+                if ($bare !== null && in_array($bare, $represented, true)) {
+                    continue; // in sync
+                }
+                $drift[] = [
+                    'kind' => 'publication',
+                    'linkage_type' => $linkType,
+                    'reference' => $doi,
+                    'reason' => $this->publicationDriftReason($dv->id, $bare, $linkType),
+                ];
+            }
+        }
+
+        $datasetLinkage = $linkage['datasetLinkage'] ?? null;
+        if (is_array($datasetLinkage)) {
+            foreach ($datasetLinkage as $type => $refs) {
+                if (! is_array($refs)) {
+                    continue;
+                }
+                foreach ($refs as $ref) {
+                    if (! is_array($ref)) {
+                        continue;
+                    }
+                    $reason = $this->datasetDriftReason($dv->id, $ref, (string) $type);
+                    if ($reason === null) {
+                        continue; // in sync
+                    }
+                    $drift[] = [
+                        'kind' => 'dataset',
+                        'linkage_type' => (string) $type,
+                        'reference' => (string) ($ref['url'] ?? $ref['pid'] ?? $ref['title'] ?? '(unknown)'),
+                        'reason' => $reason,
+                    ];
+                }
+            }
+        }
+
+        return $drift;
+    }
+
+    /** Bare DOIs already represented by a live publication junction row for this version + link type. */
+    protected function representedPublicationDois(int $versionId, string $linkType): array
+    {
+        $rows = DB::select(
+            'SELECT COALESCE(publications.paper_doi, publication_has_dataset_version.raw_doi) AS doi
+            FROM publication_has_dataset_version
+            LEFT JOIN publications
+                ON publications.id = publication_has_dataset_version.publication_id
+               AND publications.deleted_at IS NULL
+            WHERE publication_has_dataset_version.dataset_version_id = ?
+              AND publication_has_dataset_version.description = ?
+              AND publication_has_dataset_version.link_type = ?
+              AND publication_has_dataset_version.deleted_at IS NULL',
+            [$versionId, self::LINKAGE_DESCRIPTION, $linkType]
+        );
+
+        return array_values(array_filter(array_map(
+            fn ($r) => $this->normalisePublicationDoi($r->doi),
+            $rows
+        )));
+    }
+
+    /** Why a blob DOI is missing from SQL (only called when it is not represented). */
+    protected function publicationDriftReason(int $versionId, ?string $bareDoi, string $linkType): string
+    {
+        $trashed = PublicationHasDatasetVersion::onlyTrashed()
+            ->where('dataset_version_id', $versionId)
+            ->where('description', self::LINKAGE_DESCRIPTION)
+            ->where('link_type', $linkType)
+            ->get();
+
+        foreach ($trashed as $row) {
+            $doi = $row->raw_doi
+                ?? optional(Publication::withTrashed()->find($row->publication_id))->paper_doi;
+            if ($doi !== null && $this->normalisePublicationDoi($doi) === $bareDoi) {
+                return 'linkage soft-deleted';
+            }
+        }
+
+        if ($bareDoi !== null && $this->findTargetPublication($bareDoi)) {
+            return 'publication exists but not linked';
+        }
+
+        return 'no publication row (reconcile stores raw DOI)';
+    }
+
+    /** Why a blob dataset reference is missing from SQL, or null when it is represented. */
+    protected function datasetDriftReason(int $versionId, array $ref, string $type): ?string
+    {
+        $targetVersionId = $this->findTargetDataset($ref);
+
+        if ($targetVersionId) {
+            $linked = DatasetVersionHasDatasetVersion::query()
+                ->where('dataset_version_source_id', $versionId)
+                ->where('dataset_version_target_id', $targetVersionId)
+                ->where('linkage_type', $type)
+                ->where('direct_linkage', 1)
+                ->where('description', self::LINKAGE_DESCRIPTION)
+                ->exists();
+            if ($linked) {
+                return null;
+            }
+
+            $targetVersion = DatasetVersion::find($targetVersionId);
+            $targetDataset = $targetVersion ? Dataset::find($targetVersion->dataset_id) : null;
+            if (! $targetDataset || $targetDataset->status !== Dataset::STATUS_ACTIVE) {
+                return 'target dataset not active (excluded from reconstruction)';
+            }
+
+            return 'dataset exists but not linked';
+        }
+
+        // Unresolvable free-text reference: represented by a live raw_* row?
+        $matched = false;
+        $query = DatasetVersionHasDatasetVersion::query()
+            ->where('dataset_version_source_id', $versionId)
+            ->whereNull('dataset_version_target_id')
+            ->where('linkage_type', $type)
+            ->where('direct_linkage', 1)
+            ->where('description', self::LINKAGE_DESCRIPTION)
+            ->where(function ($q) use ($ref, &$matched) {
+                foreach (['raw_url' => 'url', 'raw_pid' => 'pid', 'raw_title' => 'title'] as $col => $k) {
+                    if (! empty($ref[$k])) {
+                        $q->orWhere($col, $ref[$k]);
+                        $matched = true;
+                    }
+                }
+                if (! $matched) {
+                    $q->whereRaw('1 = 0');
+                }
+            });
+
+        if ($matched && $query->exists()) {
+            return null;
+        }
+
+        return 'unresolvable reference (reconcile stores raw url/pid/title)';
     }
 
     /**
