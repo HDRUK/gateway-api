@@ -39,7 +39,6 @@ class NightlyDatasetTestJob implements ShouldQueue, Silenced
                 $responses = Http::pool(fn (Pool $pool) => $ids->map(
                     fn ($id) => $pool->as($id)
                         ->timeout(30)
-                        ->withOptions(['stream' => true])
                         ->get($this->datasetUrl($id))
                 ));
 
