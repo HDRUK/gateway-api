@@ -107,6 +107,10 @@ class TeamController extends Controller
                 $query->where('teams.is_question_bank', $request->boolean('is_question_bank'));
             }
 
+            if ($request->has('name')) {
+                $query->where('teams.name', 'like', '%' . $request->query('name') . '%');
+            }
+
             foreach ($sort as $key => $value) {
                 if ($key === 'created_at' || $key === 'updated_at') {
                     $query->orderBy('teams.' . $key, strtoupper($value));
