@@ -5,12 +5,11 @@ namespace App\Console\Commands;
 use Config;
 use Auditor;
 use Exception;
-use App\Jobs\SendEmailJob;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestLog;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -154,13 +153,13 @@ class CohortUserExpiry extends Command
             $user = User::where('id', $cohortRequestUserId)->first();
             $userEmail = ($user['preferred_email'] === 'primary') ?
                 $user['email'] : $user['secondary_email'];
-            $template = null;
+            $identifier = null;
             switch ($cohortRequestStatus) {
                 case 'WILL_EXPIRE':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.will.expire')->first();
+                    $identifier = 'cohort.discovery.access.will.expire';
                     break;
                 case 'EXPIRED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.expired')->first();
+                    $identifier = 'cohort.discovery.access.expired';
                     break;
             }
 
@@ -181,7 +180,9 @@ class CohortUserExpiry extends Command
                 '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            if ($identifier) {
+                app(EmailManager::class)->send($identifier, $to, $replacements);
+            }
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

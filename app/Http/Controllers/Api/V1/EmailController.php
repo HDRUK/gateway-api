@@ -4,18 +4,16 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DispatchEmailRequest;
 
 class EmailController extends Controller
 {
-    public function dispatchEmail(DispatchEmailRequest $request)
+    public function dispatchEmail(DispatchEmailRequest $request, EmailManager $emailManager)
     {
         $body = $request->post();
 
-        $template = EmailTemplate::where('identifier', '=', $body['identifier'])->first();
         $user = User::where('id', '=', $body['to'])->first();
 
         $toArray = [
@@ -25,8 +23,9 @@ class EmailController extends Controller
             ],
         ];
 
-        if ($template) {
-            SendEmailJob::dispatch($toArray, $template, $body['replacements']);
+        $sent = $emailManager->send($body['identifier'], $toArray, $body['replacements']);
+
+        if ($sent) {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));

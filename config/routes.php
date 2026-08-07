@@ -2298,6 +2298,19 @@ return [
     ],
     [
         'name' => 'emailtemplates',
+        'method' => 'post',
+        'path' => '/emailtemplates/preview',
+        'methodController' => 'EmailTemplateController@preview',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'emailtemplates',
         'method' => 'put',
         'path' => '/emailtemplates/{id}',
         'methodController' => 'EmailTemplateController@update',
