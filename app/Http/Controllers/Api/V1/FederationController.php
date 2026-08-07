@@ -14,9 +14,8 @@ use App\Http\Requests\Federation\UpdateFederation;
 use App\Http\Traits\LoggingContext;
 use App\Http\Traits\RequestTransformation;
 use App\Jobs\ProcessFederation;
-use App\Jobs\SendEmailJob;
 use App\Jobs\TestFederation;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\Federation;
 use App\Models\FederationHasNotification;
 use App\Models\FederationJobRun;
@@ -1237,22 +1236,16 @@ class FederationController extends Controller
             throw new Exception('Gateway App not found!');
         }
 
-        $template = null;
-        switch ($type) {
-            case 'CREATE':
-                $template = EmailTemplate::where('identifier', '=', 'federation.app.create')->first();
-                break;
-            case 'UPDATE':
-                $template = EmailTemplate::where('identifier', '=', 'federation.app.update')->first();
-                break;
-            default:
-                throw new Exception("Send email type not found!");
-                break;
+        $identifiers = [
+            'CREATE' => 'federation.app.create',
+            'UPDATE' => 'federation.app.update',
+        ];
+
+        if (!array_key_exists($type, $identifiers)) {
+            throw new Exception("Send email type not found!");
         }
 
-        if (is_null($template)) {
-            throw new Exception('Email template not found!');
-        }
+        $identifier = $identifiers[$type];
 
         $receivers = $this->sendEmailTo($federationId);
 
@@ -1275,7 +1268,7 @@ class FederationController extends Controller
                 '[[CURRENT_YEAR]]' => date('Y'),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            app(EmailManager::class)->send($identifier, $to, $replacements);
         }
 
     }

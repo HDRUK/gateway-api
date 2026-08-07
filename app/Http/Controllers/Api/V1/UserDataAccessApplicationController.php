@@ -19,13 +19,12 @@ use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\UpdateUserDataAccessApplication;
 use App\Http\Traits\DataAccessApplicationHelpers;
-use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
 use App\Models\DataAccessApplicationStatus;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
@@ -1386,7 +1385,6 @@ class UserDataAccessApplicationController extends Controller
 
     private function emailSubmissionNotification(int $id, int $userId, DataAccessApplication $application): void
     {
-        $template = EmailTemplate::where(['identifier' => 'dar.submission.researcher'])->first();
         $user = User::where('id', '=', $userId)->first();
 
         $teamIds = TeamHasDataAccessApplication::where('dar_application_id', $id)
@@ -1413,9 +1411,8 @@ class UserDataAccessApplicationController extends Controller
             '[[CURRENT_YEAR]]' => date("Y"),
         ];
 
-        SendEmailJob::dispatch($to, $template, $replacements);
+        app(EmailManager::class)->send('dar.submission.researcher', $to, $replacements);
 
-        $custodianTemplate = EmailTemplate::where(['identifier' => 'dar.submission.custodian'])->first();
         foreach ($teams as $team) {
             $darManagers = $this->getDarManagers($team->id);
             $teamNotifications = $this->getTeamNotifications($team->id);
@@ -1431,7 +1428,7 @@ class UserDataAccessApplicationController extends Controller
                     '[[CURRENT_YEAR]]' => date('Y'),
                     '[[TEAM_ID]]' => $team->id,
                 ];
-                SendEmailJob::dispatch($dm, $custodianTemplate, $replacements);
+                app(EmailManager::class)->send('dar.submission.custodian', $dm, $replacements);
             }
         }
     }

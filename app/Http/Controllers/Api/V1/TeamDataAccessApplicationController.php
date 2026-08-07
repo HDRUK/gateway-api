@@ -14,13 +14,12 @@ use App\Http\Requests\DataAccessApplication\GetDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\EditDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplicationFile;
-use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessApplicationAnswer;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
 use App\Models\User;
@@ -1292,7 +1291,6 @@ class TeamDataAccessApplicationController extends Controller
 
     private function emailStatusNotification(int $id, DataAccessApplication $application, int $teamId): void
     {
-        $template = EmailTemplate::where(['identifier' => 'dar.status.researcher'])->first();
         $user = User::where('id', $application->applicant_id)->first();
 
         $to = [
@@ -1317,6 +1315,6 @@ class TeamDataAccessApplicationController extends Controller
             '[[CURRENT_YEAR]]' => date("Y"),
         ];
 
-        SendEmailJob::dispatch($to, $template, $replacements);
+        app(EmailManager::class)->send('dar.status.researcher', $to, $replacements);
     }
 }
