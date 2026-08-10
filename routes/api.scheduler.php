@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\AliasReplyScannerJob;
+use App\Jobs\NightlyDatasetLinkCheckJob;
 use App\Jobs\NightlyDatasetTestJob;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,14 @@ Route::get('/nightly_dataset_test', function (Request $request) {
     ], 200);
 });
 
+Route::get('/nightly_dataset_link_check', function (Request $request) {
+    NightlyDatasetLinkCheckJob::dispatch();
+
+    return response()->json([
+        'message' => 'ok',
+    ], 200);
+});
+
 Route::any('{path}', function () {
     $response = [
         'message' => 'Resource not found',
@@ -60,5 +69,3 @@ Route::any('{path}', function () {
 
     return response()->json($response, 404);
 });
-
-

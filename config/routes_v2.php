@@ -1254,6 +1254,20 @@ return [
         'constraint' => [],
     ],
 
+    // nightly dataset link check
+    [
+        'name' => 'dataset_link_check_results.get',
+        'method' => 'get',
+        'path' => '/dataset_link_check_results',
+        'methodController' => 'DatasetLinkCheckResultController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+
     // SearchAggregator
     [
         'name' => 'search_agg.post',
