@@ -14,6 +14,7 @@ use App\Http\Traits\CheckAccess;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\MetadataOnboard;
 use App\Http\Traits\MetadataVersioning;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use App\Models\Dataset;
@@ -41,6 +42,10 @@ class DatasetController extends Controller
     use MetadataOnboard;
     use CheckAccess;
     use ModelHelpers;
+
+    public function __construct(private readonly GwdmMetadataHandler $gwdmHandler)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -684,7 +689,8 @@ class DatasetController extends Controller
             $team,
             $inputSchema,
             $inputVersion,
-            $elasticIndexing
+            $elasticIndexing,
+            $this->gwdmHandler,
         );
 
         if ($metadataResult['translated']) {

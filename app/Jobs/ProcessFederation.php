@@ -8,6 +8,7 @@ use App\Http\Traits\MetadataVersioning;
 use App\Models\Federation;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Traits\GatewayMetadataIngestionTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,7 +52,7 @@ class ProcessFederation implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(GwdmMetadataHandler $handler): void
     {
         $jobUuid = $this->job?->getJobId() ?? null;
         $attempts = $this->attempts();
@@ -84,7 +85,8 @@ class ProcessFederation implements ShouldQueue
                 $this->gsms,
                 $this->gmi,
                 $jobUuid,
-                $attempts
+                $attempts,
+                $handler,
             );
 
             // Refresh our potentially mutated list of local items

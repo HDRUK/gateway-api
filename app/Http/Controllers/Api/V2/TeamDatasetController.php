@@ -28,6 +28,7 @@ use App\Http\Requests\V2\Dataset\GetDataset;
 use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\EditTeamDataset;
 use App\Context\PartnerContext;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
@@ -44,8 +45,10 @@ class TeamDatasetController extends Controller
     use DatasetsV2Helpers;
     use TrimPayload;
 
-    public function __construct(private readonly PartnerContext $partnerContext)
-    {
+    public function __construct(
+        private readonly PartnerContext $partnerContext,
+        private readonly GwdmMetadataHandler $gwdmHandler,
+    ) {
     }
 
     /**
@@ -505,6 +508,7 @@ class TeamDatasetController extends Controller
                 $inputSchema,
                 $inputVersion,
                 $elasticIndexing,
+                $this->gwdmHandler,
                 $this->partnerContext->getPartner(),
             );
 

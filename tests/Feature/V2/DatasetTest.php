@@ -1366,6 +1366,34 @@ class DatasetTest extends TestCase
         $this->assertNull($dsv[0]->patch);
     }
 
+    public function test_create_team_dataset_sets_title_and_short_title(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $responseCreateDataset = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId),
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $responseCreateDataset->decodeResponseJson()['data'];
+
+        $dsv = DatasetVersion::where('dataset_id', $datasetId)->first();
+        $expectedTitle = $this->metadata['metadata']['summary']['title'];
+
+        $this->assertNotNull($dsv->title, 'title must be set on the version created by metadataOnboard()');
+        $this->assertEquals($expectedTitle, $dsv->title);
+        $this->assertNotNull($dsv->short_title, 'short_title must be set on the version created by metadataOnboard()');
+    }
+
     /**
      * The team dataset show endpoint (used to hydrate the onboarding/edit form) must
      * reconstruct the GWDM envelope via the handler system before translating, so that
