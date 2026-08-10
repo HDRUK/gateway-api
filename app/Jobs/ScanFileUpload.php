@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Http\Traits\LoggingContext;
 use App\Http\Traits\MetadataOnboard;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Imports\ImportDurFile;
 use App\Imports\ImportStructuralMetadata;
 use App\Models\Collection;
@@ -113,7 +114,7 @@ class ScanFileUpload implements ShouldQueue
      *
      * @return void
      */
-    public function handle(): void
+    public function handle(GwdmMetadataHandler $gwdmHandler): void
     {
 
         $upload = Upload::findOrFail($this->uploadId);
@@ -197,7 +198,7 @@ class ScanFileUpload implements ShouldQueue
                         $this->createDurFromFile($loc, $upload);
                         break;
                     case 'dataset-from-upload':
-                        $this->createDatasetFromFile($loc, $upload);
+                        $this->createDatasetFromFile($loc, $upload, $gwdmHandler);
                         break;
                     case 'structural-metadata-upload':
                         $this->attachStructuralMetadata($loc, $upload);
@@ -370,7 +371,7 @@ class ScanFileUpload implements ShouldQueue
         ]);
     }
 
-    private function createDatasetFromFile(string $loc, Upload $upload): void
+    private function createDatasetFromFile(string $loc, Upload $upload, GwdmMetadataHandler $gwdmHandler): void
     {
         try {
             $team = Team::findOrFail($this->teamId)->toArray();
@@ -405,7 +406,8 @@ class ScanFileUpload implements ShouldQueue
                 $team,
                 $defineInputSchema,
                 $defineInputVersion,
-                $this->elasticIndexing
+                $this->elasticIndexing,
+                $gwdmHandler,
             );
 
             if ($metadataResult['translated']) {

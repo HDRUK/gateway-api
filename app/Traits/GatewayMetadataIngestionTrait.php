@@ -10,6 +10,7 @@ use App\Models\FederationJobRun;
 use App\Models\Team;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use Carbon\Carbon;
 use Config;
 use Http;
@@ -128,7 +129,8 @@ trait GatewayMetadataIngestionTrait
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
         ?string $jobUuid,
-        int $attempts
+        int $attempts,
+        GwdmMetadataHandler $handler,
     ): int {
         $createdCount = 0;
         $toCreate = $remoteItems->keys()->diff($localItems->keys());
@@ -189,7 +191,7 @@ trait GatewayMetadataIngestionTrait
                         'pid' => $pid,
                     ];
 
-                    $result = $gmi->storeMetadata($input);
+                    $result = $gmi->storeMetadata($input, $handler);
 
                     $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'CREATED', 1, $attempts);
 
