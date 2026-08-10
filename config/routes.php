@@ -2763,21 +2763,6 @@ return [
     ],
     [
         'name' => 'team.federation',
-        'method' => 'patch',
-        'path' => '/teams/{teamId}/federations/{federationId}',
-        'methodController' => 'FederationController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,integrations.metadata',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'federationId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.federation',
         'method' => 'delete',
         'path' => '/teams/{teamId}/federations/{federationId}',
         'methodController' => 'FederationController@destroy',
