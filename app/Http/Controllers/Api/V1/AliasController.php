@@ -21,6 +21,7 @@ class AliasController extends Controller
 {
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/aliases",
      *    summary="List of aliases",
      *    description="Returns a list of aliases",
@@ -77,6 +78,7 @@ class AliasController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Return a single alias",
      *      description="Return a single alias",
@@ -151,6 +153,7 @@ class AliasController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases",
      *      summary="Create a new alias",
      *      description="Creates a new alias",
@@ -229,6 +232,7 @@ class AliasController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Update a alias",
      *      description="Update a alias",
@@ -320,6 +324,7 @@ class AliasController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Edit a alias",
      *      description="Edit a alias",
@@ -414,6 +419,7 @@ class AliasController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/aliases/{id}",
      *      summary="Delete an alias",
      *      description="Delete an alias",

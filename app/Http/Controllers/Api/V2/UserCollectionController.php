@@ -44,6 +44,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/status/active",
      *    operationId="fetch_user_collections_v2",
      *    tags={"Collections"},
@@ -117,6 +118,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/status/draft",
      *    operationId="fetch_user_draft_collections_v2",
      *    tags={"Collections"},
@@ -190,6 +192,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/status/archived",
      *    operationId="fetch_user_archived_collections_v2",
      *    tags={"Collections"},
@@ -263,6 +266,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/count/{field}",
      *    operationId="count_user_unique_fields_collection_v2",
      *    tags={"Collections"},
@@ -333,6 +337,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/{id}",
      *    operationId="fetch_user_collection_v2",
      *    tags={"Collections"},
@@ -412,7 +417,8 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Post(
-     *    path="/api/v2/users/collections",
+     *      x={"internal"="true"},
+     *    path="/api/v2/users/{userId}/collections",
      *    operationId="create_user_collections",
      *    tags={"Collections"},
      *    summary="UserCollectionController@store",
@@ -542,6 +548,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/{id}",
      *    operationId="update_user_collections_v2",
      *    tags={"Collections"},
@@ -714,6 +721,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/{id}",
      *    operationId="edit_user_collections_v2",
      *    tags={"Collections"},
@@ -898,6 +906,7 @@ class UserCollectionController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/collections/{id}",
      *    operationId="delete_user_collections_v2",
      *    tags={"Collections"},

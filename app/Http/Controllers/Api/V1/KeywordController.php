@@ -29,6 +29,7 @@ class KeywordController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords",
      *      summary="List of keywords",
      *      description="Returns a list of keywords",
@@ -104,6 +105,7 @@ class KeywordController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Return a single keyword",
      *      description="Return a single keyword",
@@ -174,6 +176,7 @@ class KeywordController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords",
      *      summary="Create a new keyword",
      *      description="Creates a new keyword",
@@ -258,6 +261,7 @@ class KeywordController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Update a keyword by id",
      *      description="Update a keyword by id",
@@ -345,6 +349,7 @@ class KeywordController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Edit a keyword by id",
      *      description="Edit a keyword by id",
@@ -434,6 +439,7 @@ class KeywordController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/keywords/{id}",
      *      summary="Delete a keyword by id",
      *      description="Delete a keyword by id",

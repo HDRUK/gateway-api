@@ -18,6 +18,7 @@ class UploadController extends Controller
 {
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/files",
      *      operationId="create_files",
      *      summary="Upload a file to the gateway-api",
@@ -159,14 +160,15 @@ class UploadController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/files/{uuid}",
+     *      x={"internal"="true"},
+     *      path="/api/v1/files/{id}",
      *      operationId="fetch_files",
      *      summary="Get the scanning status of an upload",
      *      description="Get the scanning status of an upload",
      *      tags={"Upload"},
      *      summary="Upload@show",
      *      @OA\Parameter(
-     *         name="uuid",
+     *         name="id",
      *         in="path",
      *         description="upload id",
      *         required=true,
@@ -232,14 +234,15 @@ class UploadController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/files/processed/{uuid}/download",
+     *      x={"internal"="true"},
+     *      path="/api/v1/files/processed/{id}/download",
      *      operationId="fetch_files_processed_content",
      *      summary="Get the content of a processed file",
      *      description="Get the content of a processed file",
      *      tags={"Upload"},
      *      summary="Upload@content",
      *      @OA\Parameter(
-     *         name="uuid",
+     *         name="id",
      *         in="path",
      *         description="upload id",
      *         required=true,
@@ -316,6 +319,7 @@ class UploadController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/files/processed/{id}",
      *      operationId="delete_files_processed",
      *      summary="Delete a processed file",

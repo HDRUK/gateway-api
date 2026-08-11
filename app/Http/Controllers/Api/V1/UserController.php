@@ -25,8 +25,7 @@ use App\Http\Traits\UserTransformation;
 use App\Http\Traits\RequestTransformation;
 use App\Models\EmailVerification;
 use Carbon\Carbon;
-use App\Models\EmailTemplate;
-use App\Jobs\SendEmailJob;
+use App\Services\EmailManager;
 
 class UserController extends Controller
 {
@@ -36,6 +35,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/users",
      *    operationId="fetch_all_users",
      *    tags={"Users"},
@@ -142,6 +142,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="fetch_users",
      *    tags={"Users"},
@@ -234,6 +235,7 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/users",
      *    operationId="create_users",
      *    tags={"Users"},
@@ -355,6 +357,7 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="update_users",
      *    tags={"Users"},
@@ -476,21 +479,19 @@ class UserController extends Controller
                             'expires_at' => Carbon::now()->addHours(24),
                         ]);
 
-                        $template = EmailTemplate::where('identifier', '=', 'user.email_verification')->first();
-
                         $replacements = [
                             '[[UUID]]' => $newToken,
                             '[[USER_FIRST_NAME]]' => $input['firstname'] ?? $user->firstname,
                         ];
 
-                        if ($template && !empty($input['secondary_email'])) {
+                        if (!empty($input['secondary_email'])) {
                             $to = [
                             'to' => [
                               'email' => $input['secondary_email'],
                               'name' => $user['name'],
                             ],
                                   ];
-                            SendEmailJob::dispatch($to, $template, $replacements);
+                            app(EmailManager::class)->send('user.email_verification', $to, $replacements);
                         }
                     }
 
@@ -557,6 +558,7 @@ class UserController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="edit_users",
      *    tags={"Users"},
@@ -796,6 +798,7 @@ class UserController extends Controller
     }
     /**
  * @OA\Post(
+     *      x={"internal"="true"},
  *     path="/api/v1/users/{id}/resend-secondary-verification",
  *     operationId="resendSecondaryVerificationEmail",
  *     tags={"Users"},
@@ -849,24 +852,19 @@ class UserController extends Controller
             'is_secondary' => true,
         ]);
 
-        // Get email template
-        $template = EmailTemplate::where('identifier', '=', 'user.email_verification')->first();
-
         $replacements = [
             '[[UUID]]' => $newToken,
             '[[USER_FIRST_NAME]]' => $user->firstname,
         ];
 
-        if ($template) {
-            $to = [
-                'to' => [
-                    'email' => $user->secondary_email,
-                    'name' => $user->name,
-                ],
-            ];
+        $to = [
+            'to' => [
+                'email' => $user->secondary_email,
+                'name' => $user->name,
+            ],
+        ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
-        }
+        app(EmailManager::class)->send('user.email_verification', $to, $replacements);
 
         return response()->json([
             'message' => 'Verification email resent.',
@@ -877,6 +875,7 @@ class UserController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{id}",
      *    operationId="delete_users",
      *    tags={"Users"},

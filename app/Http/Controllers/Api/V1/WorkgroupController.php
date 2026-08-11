@@ -15,6 +15,7 @@ class WorkgroupController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *   path="/api/v1/workgroups",
      *   operationId="fetch_all_workgroups",
      *   tags={"Workgroups"},

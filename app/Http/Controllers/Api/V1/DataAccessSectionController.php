@@ -22,6 +22,7 @@ class DataAccessSectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/sections",
      *      summary="List of DAR sections",
      *      description="List of DAR sections",
@@ -110,6 +111,7 @@ class DataAccessSectionController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/sections/{id}",
      *      summary="Return a single DAR section",
      *      description="Return a single DAR section",

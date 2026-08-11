@@ -22,6 +22,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages",
      *      summary="List of system programming packages",
      *      description="Returns a list of programming packages enabled on the system",
@@ -74,6 +75,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Return a single system programming package",
      *      description="Return a single system programming package",
@@ -147,6 +149,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages",
      *      summary="Create a new system programming package",
      *      description="Creates a new system programming package",
@@ -216,6 +219,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Update a system programming package",
      *      description="Update a system programming package",
@@ -303,6 +307,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Edit a system programming package",
      *      description="Edit a system programming package",
@@ -393,6 +398,7 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Delete a system programming package",
      *      description="Delete a system programming package",

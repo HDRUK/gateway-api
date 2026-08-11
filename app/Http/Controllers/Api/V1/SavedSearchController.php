@@ -25,6 +25,7 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches",
      *      summary="List of saved searches",
      *      description="Returns a list of saved searches enabled on the system",
@@ -97,6 +98,7 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Return a single saved search",
      *      description="Return a single saved search",
@@ -172,6 +174,7 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches",
      *      summary="Create a new saved search",
      *      description="Creates a new saved search",
@@ -273,6 +276,7 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Update a saved search",
      *      description="Update a saved search",
@@ -390,6 +394,7 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Edit a saved search",
      *      description="Edit a saved search",
@@ -506,6 +511,7 @@ class SavedSearchController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/saved_searches/{id}",
      *      summary="Delete a saved search",
      *      description="Delete a saved search",

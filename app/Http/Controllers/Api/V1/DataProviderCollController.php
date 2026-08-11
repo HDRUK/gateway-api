@@ -349,6 +349,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      operationId="create_data_provider_coll",
      *      path="/api/v1/data_provider_colls",
      *      summary="Create a new DataProviderColl",
@@ -448,6 +449,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      operationId="update_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Update a DataProviderColl",
@@ -561,6 +563,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      operationId="edit_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Edit a DataProviderColl",
@@ -674,6 +677,7 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      operationId="delete_data_provider_coll",
      *      path="/api/v1/data_provider_colls/{id}",
      *      summary="Delete a DataProviderColl",

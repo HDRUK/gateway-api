@@ -33,6 +33,7 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/applications",
      *      summary="Create a new DAR application",
      *      description="Creates a new DAR application",
@@ -208,6 +209,7 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/applications/{id}",
      *      summary="Delete a system DAR application",
      *      description="Delete a system DAR application",
@@ -283,6 +285,7 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/applications/{id}/files/{fileId}",
      *      summary="Delete a file associated with a DAR application",
      *      description="Delete a file associated with a DAR application",

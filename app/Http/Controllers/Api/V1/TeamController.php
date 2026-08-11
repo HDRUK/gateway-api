@@ -107,6 +107,10 @@ class TeamController extends Controller
                 $query->where('teams.is_question_bank', $request->boolean('is_question_bank'));
             }
 
+            if ($request->has('name')) {
+                $query->where('teams.name', 'like', '%' . $request->query('name') . '%');
+            }
+
             foreach ($sort as $key => $value) {
                 if ($key === 'created_at' || $key === 'updated_at') {
                     $query->orderBy('teams.' . $key, strtoupper($value));
@@ -119,10 +123,13 @@ class TeamController extends Controller
             }
 
             $perPage = request('per_page', Config::get('constants.per_page'));
-            $teams = $query
+            $teamsPaginator = $query
                 ->with(['users', 'aliases'])
-                ->paginate($perPage, ['*'], 'page')
-                ->toArray();
+                ->paginate($perPage, ['*'], 'page');
+
+            User::preloadCohortDataForUsers($teamsPaginator->getCollection()->flatMap(fn ($team) => $team->users));
+
+            $teams = $teamsPaginator->toArray();
 
             $teams['data'] = $this->getTeams($teams['data']);
 
@@ -259,7 +266,11 @@ class TeamController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get()->toArray();
+            $userTeamCollection = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get();
+
+            User::preloadCohortDataForUsers($userTeamCollection->flatMap(fn ($team) => $team->users));
+
+            $userTeam = $userTeamCollection->toArray();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

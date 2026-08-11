@@ -298,6 +298,7 @@ class DataAccessTemplateController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/templates/{id}/download",
      *      summary="Download the template for a file based DAR application",
      *      description="Download the template for a file based DAR application",

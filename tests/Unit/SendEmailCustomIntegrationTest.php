@@ -8,6 +8,7 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\EmailTemplate;
 use App\Models\FederationJobRun;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -206,9 +207,12 @@ class SendEmailCustomIntegrationTest extends TestCase
 
     public function test_logs_warning_and_skips_when_template_not_found(): void
     {
-        // Use a made-up outcome that has no matching template in the database
+        // Use a made-up outcome that has no matching template in the database.
+        // Template lookup + missing-template logging now lives in EmailManager.
+        Log::spy();
+
         $job = $this->getMockBuilder(SendEmailCustomIntegration::class)
-            ->onlyMethods(['getDetails', 'getFederationHistory', 'checkUserPerms', 'getListOfUsers', 'log'])
+            ->onlyMethods(['getDetails', 'getFederationHistory', 'checkUserPerms', 'getListOfUsers'])
             ->setConstructorArgs([self::FEDERATION_ID, self::JOB_UUID, 'nonexistent', null])
             ->getMock();
 
@@ -216,13 +220,13 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job->method('getFederationHistory')->willReturn($this->historyStub());
         $job->method('checkUserPerms')->willReturn(true);
         $job->method('getListOfUsers')->willReturn('');
-        $job->expects($this->once())
-            ->method('log')
-            ->with('warning', $this->stringContains('template'));
 
         $job->handle();
 
         Queue::assertNothingPushed();
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->withArgs(fn ($message) => str_contains($message, 'template'));
     }
 
     // -------------------------------------------------------------------------

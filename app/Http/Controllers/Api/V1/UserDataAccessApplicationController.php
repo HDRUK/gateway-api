@@ -19,13 +19,12 @@ use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetUserDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\UpdateUserDataAccessApplication;
 use App\Http\Traits\DataAccessApplicationHelpers;
-use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationAnswer;
 use App\Models\DataAccessApplicationHasDataset;
 use App\Models\DataAccessApplicationHasQuestion;
 use App\Models\DataAccessApplicationStatus;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\Team;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
@@ -38,6 +37,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications",
      *      summary="List of dar applications belonging to a user",
      *      description="List of dar applications belonging to a user",
@@ -128,6 +128,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/dar/applications/count/{field}",
      *    tags={"UserDataAccessApplication"},
      *    summary="UserDataAccessApplicationController@count",
@@ -210,6 +211,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/users/{userId}/dar/applications/count",
      *    tags={"UserDataAccessApplication"},
      *    summary="UserDataAccessApplicationController@allCounts",
@@ -277,6 +279,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}",
      *      summary="Return a DAR application belonging to the user",
      *      description="Return a DAR application belonging to the user",
@@ -384,7 +387,8 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/users/{userId}/dar/applications/{id}/showHeader",
+     *      x={"internal"="true"},
+     *      path="/api/v1/users/{userId}/dar/applications/{id}/header",
      *      summary="Get header information about a specific DAR",
      *      description="Get header information about a specific DAR",
      *      tags={"UserDataAccessApplication"},
@@ -455,6 +459,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/answers",
      *      summary="Return answers from the user's DAR application",
      *      description="Return answers from the user's DAR application",
@@ -547,6 +552,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/files",
      *      summary="Return a list of files associated with a DAR application",
      *      description="Return a list of files associated with a DAR application",
@@ -648,6 +654,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/files/{fileId}/download",
      *      summary="Download a file associated with a DAR application",
      *      description="Download a file associated with a DAR application",
@@ -745,6 +752,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}",
      *      summary="Update a system DAR application",
      *      description="Update a system DAR application",
@@ -875,6 +883,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/answers",
      *      summary="Add answers to the user's DAR application",
      *      description="Add answers to the user's DAR application",
@@ -996,6 +1005,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}",
      *      summary="Edit a system DAR application",
      *      description="Edit a system DAR application",
@@ -1130,6 +1140,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}/files/{fileId}",
      *      summary="Delete a file associated with a DAR application",
      *      description="Delete a file associated with a DAR application",
@@ -1272,6 +1283,7 @@ class UserDataAccessApplicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/users/{userId}/dar/applications/{id}",
      *      summary="Delete a users DAR application",
      *      description="Delete a users DAR application",
@@ -1373,7 +1385,6 @@ class UserDataAccessApplicationController extends Controller
 
     private function emailSubmissionNotification(int $id, int $userId, DataAccessApplication $application): void
     {
-        $template = EmailTemplate::where(['identifier' => 'dar.submission.researcher'])->first();
         $user = User::where('id', '=', $userId)->first();
 
         $teamIds = TeamHasDataAccessApplication::where('dar_application_id', $id)
@@ -1400,9 +1411,8 @@ class UserDataAccessApplicationController extends Controller
             '[[CURRENT_YEAR]]' => date("Y"),
         ];
 
-        SendEmailJob::dispatch($to, $template, $replacements);
+        app(EmailManager::class)->send('dar.submission.researcher', $to, $replacements);
 
-        $custodianTemplate = EmailTemplate::where(['identifier' => 'dar.submission.custodian'])->first();
         foreach ($teams as $team) {
             $darManagers = $this->getDarManagers($team->id);
             $teamNotifications = $this->getTeamNotifications($team->id);
@@ -1418,7 +1428,7 @@ class UserDataAccessApplicationController extends Controller
                     '[[CURRENT_YEAR]]' => date('Y'),
                     '[[TEAM_ID]]' => $team->id,
                 ];
-                SendEmailJob::dispatch($dm, $custodianTemplate, $replacements);
+                app(EmailManager::class)->send('dar.submission.custodian', $dm, $replacements);
             }
         }
     }

@@ -152,6 +152,7 @@ class LicenseController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses",
      *      summary="Create a new license",
      *      description="Creates a new license",
@@ -229,6 +230,7 @@ class LicenseController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses/{id}",
      *      summary="Update a tool license",
      *      description="Update a tool license",
@@ -324,6 +326,7 @@ class LicenseController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses/{id}",
      *      summary="Edit a tool license",
      *      description="Edit a tool license",
@@ -423,6 +426,7 @@ class LicenseController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/licenses/{id}",
      *      summary="Delete a License",
      *      description="Delete a License",

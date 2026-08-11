@@ -28,6 +28,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews",
      *    operationId="fetch_all_reviews",
      *    tags={"Reviews"},
@@ -113,6 +114,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews/{id}",
      *    operationId="fetch_reviews",
      *    tags={"Reviews"},
@@ -234,6 +236,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews",
      *    operationId="create_reviews",
      *    tags={"Reviews"},
@@ -322,6 +325,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews/{id}",
      *    operationId="update_reviews",
      *    tags={"Reviews"},
@@ -431,6 +435,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews/{id}",
      *    operationId="edit_reviews",
      *    tags={"Reviews"},
@@ -543,6 +548,7 @@ class ReviewController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v1/reviews/{id}",
      *    operationId="delete_reviews",
      *    tags={"Reviews"},
