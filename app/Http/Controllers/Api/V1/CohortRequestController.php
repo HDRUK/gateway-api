@@ -1449,10 +1449,9 @@ class CohortRequestController extends Controller
 
             $checkingCohortRequest = CohortRequest::where([
                 'user_id' => $userId,
-                'request_status' => 'APPROVED',
             ])->first();
 
-            if (! $checkingCohortRequest) {
+            if (! $checkingCohortRequest || ! CohortRequest::grantsAccess($checkingCohortRequest)) {
                 return response()->json([
                     'message' => 'Unauthorized for access :: The request is not approved',
                 ], Config::get('statuscodes.STATUS_OK.code'));

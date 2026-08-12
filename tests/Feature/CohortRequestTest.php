@@ -720,11 +720,11 @@ class CohortRequestTest extends TestCase
         }
     }
 
-    private function approveTestUserForCohort(int $userId): void
+    private function approveTestUserForCohort(int $userId, string $status = 'APPROVED'): void
     {
         $cohortRequest = CohortRequest::updateOrCreate(
             ['user_id' => $userId],
-            ['request_status' => 'APPROVED', 'accept_declaration' => true]
+            ['request_status' => $status, 'accept_declaration' => true]
         );
 
         $permission = Permission::where([
@@ -798,5 +798,94 @@ class CohortRequestTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         // $response->assertSessionMissing('cr_uid');
+    }
+
+    public function test_check_access_cohort_discovery_allows_renewing_status(): void
+    {
+        Feature::flushCache();
+        Feature::activate('CohortDiscoveryService', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->createCohortServiceAccount();
+        $this->approveTestUserForCohort($userId, 'RENEWING');
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/cohort-discovery',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonStructure(['data' => ['redirect_url']]);
+    }
+
+    public function test_check_access_cohort_discovery_denies_when_status_is_pending(): void
+    {
+        Feature::flushCache();
+        Feature::activate('CohortDiscoveryService', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->createCohortServiceAccount();
+        $this->approveTestUserForCohort($userId, 'PENDING');
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/cohort-discovery',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertStringContainsString(
+            'not approved',
+            $response->json('message')
+        );
+    }
+
+    public function test_check_access_rquest_returns_redirect_url_for_approved_status(): void
+    {
+        Feature::flushCache();
+        Feature::activate('RQuest', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->approveTestUserForCohort($userId);
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/rquest',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonStructure(['data' => ['redirect_url']]);
+    }
+
+    public function test_check_access_rquest_allows_renewing_status(): void
+    {
+        Feature::flushCache();
+        Feature::activate('RQuest', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->approveTestUserForCohort($userId, 'RENEWING');
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/rquest',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonStructure(['data' => ['redirect_url']]);
     }
 }
