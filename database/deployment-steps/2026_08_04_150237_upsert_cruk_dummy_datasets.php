@@ -8,6 +8,8 @@ use App\Models\DatasetVersion;
 /**
  * Upsert the 20 CRUK dummy datasets from tests/Unit/test_files/cruk_dummy_data.
  *
+ * Only runs in local/dev.
+ *
  * Driven by each fixture's metadata.required.gatewayId (stored as datasets.pid),
  * so re-running seeders / this step is idempotent instead of creating another
  * batch of factory datasets + versions. Version rows are matched on
@@ -22,6 +24,12 @@ use App\Models\DatasetVersion;
 return new class () extends DeploymentStep {
     public function handle(): void
     {
+        if (!app()->environment(['local', 'dev'])) {
+            $this->warn('Skipping CRUK dummy upsert: only runs in local/dev environments.');
+
+            return;
+        }
+
         $files = glob(base_path('tests/Unit/test_files/cruk_dummy_data/dataset_*.json')) ?: [];
         sort($files, SORT_NATURAL);
 
