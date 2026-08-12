@@ -58,6 +58,18 @@ class CohortRequest extends Model
     public const REQUEST_PENDING = 'PENDING';
     public const REQUEST_EXPIRED = 'EXPIRED';
 
+    /**
+     * Statuses under which a user currently has CDS access.
+     */
+    public const ACCESS_GRANTING_STATUSES = [
+        CohortRequestStatus::APPROVED,
+        CohortRequestStatus::RENEWING,
+    ];
+
+    public const RENEWAL_ELIGIBLE = 'ELIGIBLE';
+    public const RENEWAL_ALREADY_RENEWING = 'ALREADY_RENEWING';
+    public const RENEWAL_NOT_APPLICABLE = 'NOT_APPLICABLE';
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -83,6 +95,30 @@ class CohortRequest extends Model
         }
 
         return Carbon::instance(min($candidates));
+    }
+
+    public static function hasAccess(CohortRequest $request): bool
+    {
+        if (! in_array($request->request_status, self::ACCESS_GRANTING_STATUSES, true)) {
+            return false;
+        }
+
+        $trueExpiry = $request->calculateTrueExpiry('request_expire_at');
+
+        return $trueExpiry === null || Carbon::now()->lessThan($trueExpiry);
+    }
+
+    public function renewalEligibility(): string
+    {
+        if ($this->request_status === CohortRequestStatus::RENEWING) {
+            return self::RENEWAL_ALREADY_RENEWING;
+        }
+
+        if ($this->request_status !== CohortRequestStatus::APPROVED) {
+            return self::RENEWAL_NOT_APPLICABLE;
+        }
+
+        return self::RENEWAL_ELIGIBLE;
     }
 
     /**
