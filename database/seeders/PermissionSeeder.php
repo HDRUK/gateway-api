@@ -83,6 +83,11 @@ class PermissionSeeder extends Seeder
                 'papers.update',
                 'papers.delete',
 
+                'project_grants.read',
+                'project_grants.create',
+                'project_grants.update',
+                'project_grants.delete',
+
                 'tools.read',
                 'tools.create',
                 'tools.update',
