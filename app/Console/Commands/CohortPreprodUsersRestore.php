@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\CohortRequestStatus;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
@@ -60,7 +61,7 @@ class CohortPreprodUsersRestore extends Command
                 }
 
                 // If the user had a non-approved request on prod - override status with preprod value
-                if (($cohortRequest) && ($cohortRequest->request_status !== 'APPROVED')) {
+                if (($cohortRequest) && ($cohortRequest->request_status !== CohortRequestStatus::APPROVED)) {
                     $cohortRequest->request_status = $cohortUser['request_status'];
                     $cohortRequest->access_to_env = 'PREPROD';
                     $cohortRequest->save();

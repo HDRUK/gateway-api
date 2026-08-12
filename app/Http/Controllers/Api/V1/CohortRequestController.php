@@ -462,7 +462,7 @@ class CohortRequestController extends Controller
             ])->first();
 
             // keep just one request by user id
-            if ($checkRequestByUserId && in_array(strtoupper($checkRequestByUserId['request_status']), $notAllowUpdateRequest)) {
+            if ($checkRequestByUserId && in_array(strtoupper($checkRequestByUserId->request_status?->value ?? ''), $notAllowUpdateRequest)) {
                 throw new Exception('A cohort request already exists or the status of the request does not allow updating.');
             } else {
                 $id = $checkRequestByUserId ? $checkRequestByUserId->id : 0;
@@ -623,7 +623,7 @@ class CohortRequestController extends Controller
             $nhseSdeRequestStatus = strtoupper(trim($input['nhse_sde_request_status']));
 
             $currCohortRequest = CohortRequest::where('id', $id)->first();
-            $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
+            $currRequestStatus = strtoupper(trim($currCohortRequest->request_status?->value ?? ''));
             $currNhseSdeRequestStatus = strtoupper(trim($currCohortRequest['nhse_sde_request_status']));
 
             $cohortRequestLog = new CohortRequestLog([
@@ -1020,7 +1020,7 @@ class CohortRequestController extends Controller
                                 (string) $rowDetails['user']['link'],
                                 (string) $rowDetails['user']['orcid'],
                                 (string) $rowDetails['user']['updated_at'],
-                                (string) $rowDetails['request_status'],
+                                (string) ($rowDetails['request_status']?->value ?? ''),
                                 (string) $rowDetails['access_to_env'],
                                 (string) $rowDetails['created_at'],
                                 (string) $rowDetails['updated_at'],
@@ -1543,7 +1543,7 @@ class CohortRequestController extends Controller
     {
         try {
             $cohort = CohortRequest::where('id', $cohortId)->first();
-            $cohortRequestStatus = $cohort['request_status'];
+            $cohortRequestStatus = $cohort['request_status']?->value;
             $cohortRequestUserId = $cohort['user_id'];
             $user = User::where('id', $cohortRequestUserId)->first();
             $userEmail = ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'];
