@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CohortRequestStatus;
+use Config;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
 class CohortRequest extends Model
 {
@@ -59,6 +61,28 @@ class CohortRequest extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function calculateTrueExpiry(string $expiryField = 'request_expire_at'): ?Carbon
+    {
+        /** @var Carbon|null $explicitExpiry */
+        $explicitExpiry = $this->$expiryField;
+
+        if ($expiryField === 'nhse_sde_request_expire_at') {
+            $basedOnUpdatedAt = $this->nhse_sde_updated_at
+                ? $this->nhse_sde_updated_at->copy()->addDays((int) Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days'))
+                : null;
+        } else {
+            $basedOnUpdatedAt = $this->updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'));
+        }
+
+        $candidates = array_filter([$basedOnUpdatedAt, $explicitExpiry]);
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        return Carbon::instance(min($candidates));
     }
 
     /**
