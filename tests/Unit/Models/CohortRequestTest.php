@@ -65,7 +65,7 @@ class CohortRequestTest extends TestCase
             'request_expire_at' => Carbon::now()->addDays(30),
         ]);
 
-        $this->assertTrue(CohortRequest::hasAccess($cohortRequest));
+        $this->assertTrue(CohortRequest::grantsAccess($cohortRequest));
     }
 
     public function test_has_access_is_true_for_renewing_within_expiry(): void
@@ -75,7 +75,7 @@ class CohortRequestTest extends TestCase
             'request_expire_at' => Carbon::now()->addDays(30),
         ]);
 
-        $this->assertTrue(CohortRequest::hasAccess($cohortRequest));
+        $this->assertTrue(CohortRequest::grantsAccess($cohortRequest));
     }
 
     public function test_has_access_is_false_for_approved_past_its_true_expiry(): void
@@ -87,7 +87,7 @@ class CohortRequestTest extends TestCase
             'request_expire_at' => Carbon::now()->subDay(),
         ]);
 
-        $this->assertFalse(CohortRequest::hasAccess($cohortRequest));
+        $this->assertFalse(CohortRequest::grantsAccess($cohortRequest));
     }
 
     public function test_has_access_is_false_for_renewing_past_its_true_expiry(): void
@@ -97,7 +97,7 @@ class CohortRequestTest extends TestCase
             'request_expire_at' => Carbon::now()->subDay(),
         ]);
 
-        $this->assertFalse(CohortRequest::hasAccess($cohortRequest));
+        $this->assertFalse(CohortRequest::grantsAccess($cohortRequest));
     }
 
     public function test_has_access_is_false_for_other_statuses(): void
@@ -112,7 +112,7 @@ class CohortRequestTest extends TestCase
             $cohortRequest = $this->makeCohortRequest(['request_status' => $status]);
 
             $this->assertFalse(
-                CohortRequest::hasAccess($cohortRequest),
+                CohortRequest::grantsAccess($cohortRequest),
                 "Expected hasAccess to be false for status {$status->value}"
             );
         }

@@ -62,6 +62,7 @@ class CohortRequestTest extends TestCase
                     'user',
                     'request_status',
                     'request_expire_at',
+                    'has_access',
                     'created_at',
                     'updated_at',
                     'deleted_at',
@@ -107,6 +108,20 @@ class CohortRequestTest extends TestCase
         ]);
 
         $response->assertStatus(200);
+    }
+
+    public function test_get_cohort_request_by_id_includes_has_access(): void
+    {
+        $userId = User::factory()->create()->id;
+        $this->approveTestUserForCohort($userId);
+        $cohortRequestId = CohortRequest::where('user_id', $userId)->first()->id;
+
+        $response = $this->json('GET', self::TEST_URL.'/'.$cohortRequestId, [], $this->header);
+
+        $content = $response->decodeResponseJson();
+
+        $response->assertStatus(200);
+        $this->assertTrue($content['data']['has_access']);
     }
 
     /**

@@ -135,6 +135,7 @@ class CohortRequestController extends Controller
      *                   @OA\Property(property="user_id", type="integer", example="1"),
      *                   @OA\Property(property="request_status", type="string", example="PENDING"),
      *                   @OA\Property(property="request_expire_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="has_access", type="boolean", example="1"),
      *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
