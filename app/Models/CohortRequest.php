@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CohortRequestStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -40,6 +41,7 @@ class CohortRequest extends Model
     ];
 
     protected $casts = [
+        'request_status' => CohortRequestStatus::class,
         'accept_declaration' => 'boolean',
         'request_expire_at' => 'datetime',
         'nhse_sde_requested_at' => 'datetime',
