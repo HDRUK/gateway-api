@@ -2,31 +2,18 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\FederationSecretException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
-use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\GetFederation;
 use App\Http\Requests\Federation\GetFederationHistory;
 use App\Http\Requests\Federation\RunNowFederation;
 use App\Http\Requests\Federation\UpdateFederation;
 use App\Http\Traits\LoggingContext;
-use App\Http\Traits\RequestTransformation;
-use App\Jobs\ProcessFederation;
 use App\Jobs\TestFederation;
-use App\Services\EmailManager;
-use App\Models\Federation;
-use App\Models\FederationHasNotification;
-use App\Models\FederationJobRun;
-use App\Models\Notification;
-use App\Models\Role;
-use App\Models\TeamHasFederation;
-use App\Models\TeamHasUser;
-use App\Models\TeamUserHasRole;
-use App\Models\User;
-use App\Services\GatewayMetadataIngestionService;
-use App\Services\GoogleSecretManagerService;
+use App\Services\FederationService;
 use Auditor;
 use Config;
 use Exception;
@@ -34,12 +21,11 @@ use Illuminate\Http\Request;
 
 class FederationController extends Controller
 {
-    use RequestTransformation;
     use LoggingContext;
 
-    public function __construct()
-    {
-        //
+    public function __construct(
+        private readonly FederationService $federationService,
+    ) {
     }
 
     /**
@@ -78,6 +64,7 @@ class FederationController extends Controller
      *                   @OA\Property(property="run_time_hour", type="integer", example="5"),
      *                   @OA\Property(property="run_time_minute", type="string", example="00"),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
+     *                   @OA\Property(property="enabled_at", type="datetime", example="2023-04-03 12:00:00", nullable=true),
      *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -112,21 +99,7 @@ class FederationController extends Controller
 
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
-            $federations = Federation::whereHas('team', function ($query) use ($teamId) {
-                $query->where('id', $teamId);
-            })->with(['team', 'notifications.userNotification'])->paginate($perPage, ['*'], 'page');
-
-            $federationIds = $federations->getCollection()->map(fn ($federation) => $federation->id)->all();
-            $lastRunTimes = $federationIds === [] ? collect() : FederationJobRun::latestRunTimesForFederationIds($federationIds);
-
-            $federations->getCollection()->transform(function ($federation) use ($lastRunTimes) {
-                $federation->setAttribute('auth_secret_key', $this->decryptAuthSecretKey(
-                    $federation->auth_secret_key_location,
-                    $federation->auth_type
-                ));
-                $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id));
-                return $federation;
-            });
+            $federations = $this->federationService->listForTeam($teamId, $perPage);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -199,6 +172,7 @@ class FederationController extends Controller
      *              @OA\Property(property="run_time_hour", type="integer", example="5"),
      *              @OA\Property(property="run_time_minute", type="string", example="00"),
      *              @OA\Property(property="enabled", type="boolean", example="1"),
+     *              @OA\Property(property="enabled_at", type="datetime", example="2023-04-03 12:00:00", nullable=true),
      *              @OA\Property(property="counter", type="integer", example="34319"),
      *              @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *              @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -219,14 +193,7 @@ class FederationController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $federations = Federation::whereHas('team', function ($query) use ($teamId) {
-                $query->where('id', $teamId);
-            })->where('id', $federationId)->with(['team', 'notifications.userNotification'])->first()->toArray();
-
-            $federations['auth_secret_key'] = $this->decryptAuthSecretKey(
-                $federations['auth_secret_key_location'] ?? null,
-                $federations['auth_type'] ?? null
-            );
+            $federation = $this->federationService->getForTeam($teamId, $federationId);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -238,7 +205,7 @@ class FederationController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => $federations,
+                'data' => $federation,
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
@@ -325,64 +292,7 @@ class FederationController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $payload = [
-                'federation_type' => $input['federation_type'],
-                'auth_type' => $input['auth_type'],
-                'auth_secret_key_location' => null,
-                'endpoint_baseurl' => $input['endpoint_baseurl'],
-                'endpoint_datasets' => $input['endpoint_datasets'],
-                'endpoint_dataset' => $input['endpoint_dataset'],
-                'run_time_hour' => $input['run_time_hour'],
-                'run_time_minute' => $input['run_time_minute'],
-                'enabled' => $input['enabled'],
-                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
-            ];
-
-            $federation = Federation::create($payload);
-
-            $secrets_payload = $this->getSecretsPayload($input);
-
-            if ($secrets_payload) {
-                $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federation->id;
-
-                try {
-                    app(GoogleSecretManagerService::class)->createSecret($auth_secret_key_location, json_encode($secrets_payload));
-                } catch (Exception $e) {
-                    Federation::where('id', $federation->id)->delete();
-                    return response()->json([
-                        'message' => 'failed to save secrets for this federation',
-                        'details' => $e->getMessage(),
-                    ], 400);
-                }
-
-                Federation::where('id', $federation->id)->first()
-                    ->update(["auth_secret_key_location" => $auth_secret_key_location]);
-
-            }
-
-            TeamHasFederation::create([
-                'federation_id' => $federation->id,
-                'team_id' => $teamId,
-            ]);
-
-            foreach ($input['notifications'] as $notification) {
-                // $notification may be a user id, or it may be an email address.
-                $notification = Notification::create([
-                    'notification_type' => 'federation',
-                    'message' => '',
-                    'opt_in' => 0,
-                    'enabled' => 1,
-                    'email' => is_numeric($notification) ? null : $notification,
-                    'user_id' => is_numeric($notification) ? (int) $notification : null,
-                ]);
-
-                FederationHasNotification::create([
-                    'federation_id' => $federation->id,
-                    'notification_id' => $notification->id,
-                ]);
-            }
-
-            $this->sendEmail($federation->id, 'CREATE');
+            $federation = $this->federationService->create($teamId, $input);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -396,6 +306,11 @@ class FederationController extends Controller
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $federation->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (FederationSecretException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'details' => $e->getDetails(),
+            ], 400);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -493,66 +408,7 @@ class FederationController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $updateArray = [
-                'federation_type' => $input['federation_type'],
-                'auth_type' => $input['auth_type'],
-                'endpoint_baseurl' => $input['endpoint_baseurl'],
-                'endpoint_datasets' => $input['endpoint_datasets'],
-                'endpoint_dataset' => $input['endpoint_dataset'],
-                'run_time_hour' => $input['run_time_hour'],
-                'run_time_minute' => $input['run_time_minute'],
-                'enabled' => $input['enabled'],
-                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0
-            ];
-
-            Federation::where('id', $federationId)->update($updateArray);
-
-            $secrets_payload = $this->getSecretsPayload($input);
-            if ($secrets_payload) {
-                try {
-                    $auth_secret_key_location = $this->upsertFederationSecret($federationId, $secrets_payload);
-                } catch (Exception $e) {
-                    return response()->json([
-                        'message' => 'something gone wrong with updating federation secret key',
-                        'details' => $e->getMessage(),
-                    ], 400);
-                }
-
-                Federation::where('id', $federationId)->update(["auth_secret_key_location" => $auth_secret_key_location]);
-            }
-
-            $federationNotifications = FederationHasNotification::where([
-                'federation_id' => $federationId,
-            ])->pluck('notification_id');
-
-            foreach ($federationNotifications as $federationNotification) {
-                Notification::where('id', $federationNotification)->delete();
-                FederationHasNotification::where('notification_id', $federationNotification)->delete();
-            }
-
-            foreach ($input['notifications'] as $notification) {
-                // $notification may be a user id, or it may be an email address.
-                $notification = Notification::create([
-                    'notification_type' => 'federation',
-                    'message' => '',
-                    'opt_in' => 0,
-                    'enabled' => 1,
-                    'email' => is_numeric($notification) ? null : $notification,
-                    'user_id' => is_numeric($notification) ? (int) $notification : null,
-                ]);
-
-                FederationHasNotification::create([
-                    'federation_id' => $federationId,
-                    'notification_id' => $notification->id,
-                ]);
-            }
-
-            $response = Federation::where('id', '=', $federationId)
-                ->whereHas('team', function ($query) use ($teamId) {
-                    $query->where('id', $teamId);
-                })->with(['notifications'])->first();
-
-            $this->sendEmail($federationId, 'UPDATE');
+            $response = $this->federationService->update($teamId, $federationId, $input);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -566,179 +422,11 @@ class FederationController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $response,
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'team_id' => $teamId,
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-            \Log::info($e->getMessage(), $loggingContext);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Patch(
-     *    path="/api/v1/teams/{teamId}/federations/{federationId}",
-     *    operationId="edit_federation_team",
-     *    tags={"Team-Federations"},
-     *    summary="FederationController@edit",
-     *    description="Edit federation for team",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="teamId",
-     *       in="path",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="federationId",
-     *       in="path",
-     *       description="federation id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="federation id",
-     *       ),
-     *    ),
-     *    @OA\RequestBody(
-     *       required=true,
-     *       description="Pass user credentials",
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          @OA\Schema(
-     *             @OA\Property(property="federation_type", type="string", example="federation type"),
-     *             @OA\Property(property="auth_type", type="string", example="bearer"),
-     *             @OA\Property(property="auth_secret_key", type="string", example="path/for/secret/key"),
-     *             @OA\Property(property="endpoint_baseurl", type="string", example="https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app"),
-     *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/bearer/datasets"),
-     *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/bearer/datasets/{id}"),
-     *             @OA\Property(property="run_time_hour", type="integer", example=11),
-     *             @OA\Property(property="enabled", type="boolean", example=true),
-     *             @OA\Property(property="notifications", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
-     *             @OA\Property(property="tested", type="boolean", example=true),
-     *          )
-     *       )
-     *    ),
-     *      @OA\Response(
-     *          response=201,
-     *          description="Created",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      )
-     * )
-     */
-    public function edit(EditFederation $request, int $teamId, int $federationId)
-    {
-        $loggingContext = $this->getLoggingContext($request);
-        $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
-
-        $input = $request->all();
-        $jwtUser = $request->jwtUser();
-
-        try {
-            $arrayKeys = [
-                'federation_type',
-                'auth_type',
-                'auth_secret_key',
-                'endpoint_baseurl',
-                'endpoint_datasets',
-                'endpoint_dataset',
-                'run_time_hour',
-                'enabled',
-                'tested',
-            ];
-
-            $updateArray = $this->checkEditArray($input, $arrayKeys);
-            unset($updateArray['auth_secret_key']);
-            Federation::where('id', $federationId)->update($updateArray);
-
-            $secrets_payload = $this->getSecretsPayload($input);
-            if ($secrets_payload) {
-                try {
-                    $auth_secret_key_location = $this->upsertFederationSecret($federationId, $secrets_payload);
-                } catch (Exception $e) {
-                    return response()->json([
-                        'message' => 'something gone wrong with updating federation secret key',
-                        'details' => $e->getMessage(),
-                    ], 400);
-                }
-
-                Federation::where('id', $federationId)->update(["auth_secret_key_location" => $auth_secret_key_location]);
-            }
-
-            if (array_key_exists('notifications', $input)) {
-                $federationNotifications = FederationHasNotification::where([
-                    'federation_id' => $federationId,
-                ])->pluck('notification_id');
-
-                foreach ($federationNotifications as $federationNotification) {
-                    Notification::where('id', $federationNotification)->delete();
-                    FederationHasNotification::where('notification_id', $federationNotification)->delete();
-                }
-
-                foreach ($input['notifications'] as $notification) {
-                    // $notification may be a user id, or it may be an email address.
-                    $notification = Notification::create([
-                        'notification_type' => 'federation',
-                        'message' => '',
-                        'opt_in' => 0,
-                        'enabled' => 1,
-                        'email' => is_numeric($notification) ? null : $notification,
-                        'user_id' => is_numeric($notification) ? (int) $notification : null,
-                    ]);
-
-                    FederationHasNotification::create([
-                        'federation_id' => $federationId,
-                        'notification_id' => $notification->id,
-                    ]);
-                }
-            }
-
-            $response = Federation::where('id', '=', $federationId)
-                ->whereHas('team', function ($query) use ($teamId) {
-                    $query->where('id', $teamId);
-                })->with(['notifications'])->first();
-
-            $this->sendEmail($federationId, 'UPDATE');
-
-            Auditor::log([
-                'user_id' => (int)$jwtUser['id'],
-                'team_id' => $teamId,
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'Federation ' . $federationId . ' updated',
-            ]);
-
+        } catch (FederationSecretException $e) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $response
-            ], Config::get('statuscodes.STATUS_OK.code'));
+                'message' => $e->getMessage(),
+                'details' => $e->getDetails(),
+            ], 400);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -821,30 +509,7 @@ class FederationController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $federationNotifications = FederationHasNotification::where([
-                'federation_id' => $federationId,
-            ])->pluck('notification_id');
-
-            foreach ($federationNotifications as $federationNotification) {
-                Notification::where('id', $federationNotification)->delete();
-                FederationHasNotification::where('notification_id', $federationNotification)->delete();
-            }
-
-            $federation = Federation::where('id', $federationId)->first();
-            if ($federation && $federation->auth_secret_key_location) {
-                try {
-                    app(GoogleSecretManagerService::class)->deleteSecret($federation->auth_secret_key_location);
-                } catch (Exception $e) {
-                    \Log::info('failed to delete federation secret: ' . $e->getMessage(), $loggingContext);
-                }
-            }
-
-            Federation::where('id', $federationId)->delete();
-
-            TeamHasFederation::where([
-                'federation_id' => $federationId,
-                'team_id' => $teamId,
-            ])->delete();
+            $this->federationService->delete($teamId, $federationId, $loggingContext);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -973,21 +638,7 @@ class FederationController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $checkFederation = Federation::where([
-                'id' => $federationId,
-                'enabled' => 1,
-                'tested' => 1,
-                'is_running' => 0,
-            ])->first();
-            if (is_null($checkFederation)) {
-                throw new Exception('Federation not found!');
-            }
-
-            $service = new GatewayMetadataIngestionService();
-            $service->setFederation($federationId);
-            $gmi = $service->getActiveFederationsById();
-
-            ProcessFederation::dispatch($gmi);
+            $this->federationService->runNow($federationId);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1012,42 +663,6 @@ class FederationController extends Controller
 
             throw new Exception($e->getMessage());
         }
-    }
-
-    private function decryptAuthSecretKey(?string $secretLocation, ?string $authType): ?string
-    {
-        if (!$secretLocation || !in_array($authType, ['BEARER', 'API_KEY'])) {
-            return null;
-        }
-
-        try {
-            $payload = json_decode(app(GoogleSecretManagerService::class)->getSecret($secretLocation), true);
-        } catch (Exception $e) {
-            \Log::info('failed to retrieve federation secret ' . $secretLocation . ': ' . $e->getMessage());
-            return null;
-        }
-
-        return match ($authType) {
-            'BEARER' => $payload['bearer_token'] ?? null,
-            'API_KEY' => $payload['api_key'] ?? null,
-            default => null,
-        };
-    }
-
-    private function upsertFederationSecret(int $federationId, array $secretsPayload): string
-    {
-        $federation = Federation::where('id', $federationId)->first();
-        $gsms = app(GoogleSecretManagerService::class);
-
-        if ($federation->auth_secret_key_location) {
-            $gsms->addSecretVersion($federation->auth_secret_key_location, json_encode($secretsPayload));
-            return $federation->auth_secret_key_location;
-        }
-
-        $auth_secret_key_location = config('gateway.google_secrets_gmi_prepend_name') . $federationId;
-        $gsms->createSecret($auth_secret_key_location, json_encode($secretsPayload));
-
-        return $auth_secret_key_location;
     }
 
     /**
@@ -1135,46 +750,7 @@ class FederationController extends Controller
 
         try {
             $perPage = $request->validated('per_page', Config::get('constants.per_page'));
-            $executions = FederationJobRun::executionsForFederation($federationId, $perPage);
-
-            $executions->getCollection()->transform(function (FederationJobRun $execution) use ($federationId) {
-                $rows = FederationJobRun::latestPerPidForExecution($federationId, $execution->job_uuid);
-
-                $failed = $rows->filter(fn ($row) => $row->status === 0);
-                $pending = $rows->filter(fn ($row) => is_null($row->status));
-
-                $failedDatasets = $failed->map(fn ($row) => [
-                    'pid' => $row->pid,
-                    'message' => collect($row->errorMessages())
-                        ->map(fn ($entry) => $entry['schema'] ? "{$entry['schema']}: {$entry['message']}" : $entry['message'])
-                        ->implode('; '),
-                ])->values()->all();
-
-                $onlyFailure = count($failedDatasets) === 1 ? $failedDatasets[0] : null;
-
-                if ($onlyFailure) {
-                    $status = 'failed';
-                    $message = $onlyFailure['message'];
-                } elseif (count($failedDatasets) > 1) {
-                    $status = 'failed';
-                    $message = count($failedDatasets) . " of {$rows->count()} datasets failed";
-                } elseif ($pending->count() > 0) {
-                    $status = 'in_progress';
-                    $message = null;
-                } else {
-                    $status = 'success';
-                    $message = null;
-                }
-
-                return [
-                    'job_uuid' => $execution->job_uuid,
-                    'started_at' => $execution->started_at,
-                    'finished_at' => $execution->finished_at,
-                    'status' => $status,
-                    'message' => $message,
-                    'failed_datasets' => $failedDatasets,
-                ];
-            });
+            $executions = $this->federationService->history($federationId, $perPage);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -1198,113 +774,4 @@ class FederationController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
-    private function getSecretsPayload(array $input)
-    {
-        $secrets_payload = [];
-        $secret_key = '';
-        if (in_array($input['auth_type'], ['BEARER', 'API_KEY'])) {
-            $secret_key = $input['auth_secret_key'];
-        }
-        switch ($input['auth_type']) {
-            case 'BEARER':
-                $secrets_payload = [
-                    "bearer_token" => $secret_key
-                ];
-                break;
-            case 'API_KEY':
-                $secrets_payload = [
-                    "api_key" => $secret_key,
-                    "client_id" => "", //something needs to happen here??
-                    "client_secret" => "" //something needs to happen here??
-                ];
-                break;
-            case 'NO_AUTH':
-                $secrets_payload = null;
-                break;
-        }
-        return $secrets_payload;
-    }
-
-    // send email
-    public function sendEmail(int $federationId, string $type)
-    {
-        $federation = Federation::where('id', $federationId)
-            ->with(['team','notifications.userNotification'])
-            ->first();
-        if (is_null($federation)) {
-            throw new Exception('Gateway App not found!');
-        }
-
-        $identifiers = [
-            'CREATE' => 'federation.app.create',
-            'UPDATE' => 'federation.app.update',
-        ];
-
-        if (!array_key_exists($type, $identifiers)) {
-            throw new Exception("Send email type not found!");
-        }
-
-        $identifier = $identifiers[$type];
-
-        $receivers = $this->sendEmailTo($federationId);
-
-        foreach ($receivers as $receiver) {
-            $to = [
-                'to' => [
-                    'email' => $receiver['email'],
-                    'name' => $receiver['name'],
-                ],
-            ];
-
-            $replacements = [
-                '[[TEAM_ID]]' => $federation->team[0]['id'],
-                '[[TEAM_NAME]]' => $federation->team[0]['name'],
-                '[[USER_FIRSTNAME]]' => $receiver['firstname'],
-                '[[FEDERATION_NAME]]' => 'Integration ' . $federation->federation_type,
-                '[[FEDERATION_CREATED_AT_DATE]]' => $federation->created_at,
-                '[[FEDERATION_UPDATED_AT_DATE]]' => $federation->updated_at,
-                '[[FEDERATION_STATUS]]' => $federation->enabled ? 'enabled' : 'disabled',
-                '[[CURRENT_YEAR]]' => date('Y'),
-            ];
-
-            app(EmailManager::class)->send($identifier, $to, $replacements);
-        }
-
-    }
-
-    public function sendEmailTo(int $federationId): array
-    {
-        $return = [];
-
-        $federation = Federation::where('id', $federationId)->first();
-        if (is_null($federation)) {
-            return $return;
-        }
-
-        $teamHasFederation = TeamHasFederation::where('federation_id', $federationId)->first();
-        if (is_null($teamHasFederation)) {
-            return $return;
-        }
-        $teamId = $teamHasFederation->team_id;
-
-        // only for users with the following roles: 'custodian.team.admin', 'developer'
-        $roles = Role::whereIn('name', ['custodian.team.admin', 'developer'])->select('id')->get();
-        $roles = convertArrayToArrayWithKeyName($roles, 'id');
-        $teamHasUsers = TeamHasUser::where('team_id', $teamId)->select('id', 'user_id')->get();
-
-        $notificationuserId = [];
-        foreach ($teamHasUsers as $item) {
-            $teamUserHasRoles = TeamUserHasRole::whereIn('role_id', $roles)->where('team_has_user_id', $item->id)->first();
-            if (!is_null($teamUserHasRoles)) {
-                $notificationuserId[] = $item->user_id;
-            }
-        }
-
-        $notificationuserId = array_unique($notificationuserId);
-        $return = User::whereIn('id', $notificationuserId)->select(['firstname', 'name', 'email'])->get()->toArray();
-
-        return $return;
-    }
-
 }
