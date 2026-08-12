@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use Config;
 use Auditor;
 use Exception;
-use App\Enums\CohortRequestStatus;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestLog;
 use App\Models\CohortRequestHasLog;
@@ -68,14 +67,14 @@ class CohortUserExpiry extends Command
         switch ($expiryField) {
             case 'request_expire_at':
                 if ($trueExpiryDate <= $now) {
-                    if ($r->request_status === CohortRequestStatus::APPROVED) {
+                    if (in_array($r->request_status, CohortRequest::ACCESS_GRANTING_STATUSES, true)) {
                         $this->expireRequest($r, $expiryField);
                         $this->removePermissions($r);
                         $this->createLog($r, $u);
                         $this->sendEmail($r->id, CohortRequest::REQUEST_EXPIRED, $trueExpiryDate);
                     }
                 } elseif (in_array($diff, $warnings)) {
-                    if ($r->request_status === CohortRequestStatus::APPROVED) {
+                    if (in_array($r->request_status, CohortRequest::ACCESS_GRANTING_STATUSES, true)) {
                         $this->sendEmail($r->id, 'WILL_EXPIRE', $trueExpiryDate);
                     }
                 }
