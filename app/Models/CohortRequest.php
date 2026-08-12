@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
+/**
+ * @property-read bool $has_access
+ */
 class CohortRequest extends Model
 {
     use HasFactory;
@@ -50,6 +53,10 @@ class CohortRequest extends Model
         'nhse_sde_self_declared_approved_at' => 'datetime',
         'nhse_sde_request_expire_at' => 'datetime',
         'nhse_sde_updated_at' => 'datetime',
+    ];
+
+    protected $appends = [
+        'has_access',
     ];
 
     public const REQUEST_APPROVED = 'APPROVED';
@@ -97,7 +104,7 @@ class CohortRequest extends Model
         return Carbon::instance(min($candidates));
     }
 
-    public static function hasAccess(CohortRequest $request): bool
+    public static function grantsAccess(CohortRequest $request): bool
     {
         if (! in_array($request->request_status, self::ACCESS_GRANTING_STATUSES, true)) {
             return false;
@@ -119,6 +126,11 @@ class CohortRequest extends Model
         }
 
         return self::RENEWAL_ELIGIBLE;
+    }
+
+    public function getHasAccessAttribute(): bool
+    {
+        return self::grantsAccess($this);
     }
 
     /**
