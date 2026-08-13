@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\CohortRequestStatus;
 use App\Models\CohortRequest;
+use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
+use App\Models\CohortRequestLog;
 use App\Models\OauthClient;
 use App\Models\Permission;
 use App\Models\User;
@@ -165,6 +167,112 @@ class CohortRequestTest extends TestCase
         ]);
 
         $responseGetOne->assertStatus(200);
+    }
+
+    public function test_create_cohort_request_for_approved_user_starts_renewal(): void
+    {
+        Mail::fake();
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+        $this->approveTestUserForCohort($userId);
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['details' => 'Renewing before my access expires.'],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequest = CohortRequest::where(['user_id' => $userId])->first();
+        $this->assertSame(CohortRequestStatus::RENEWING, $cohortRequest->request_status);
+    }
+
+    public function test_create_cohort_request_for_approved_user_leaves_expiry_and_permissions_untouched(): void
+    {
+        Mail::fake();
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+        $this->approveTestUserForCohort($userId);
+
+        $cohortRequestBefore = CohortRequest::where(['user_id' => $userId])->first();
+        $expiryBefore = $cohortRequestBefore->request_expire_at;
+        $permissionIdsBefore = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequestBefore->id,
+        ])->pluck('permission_id')->sort()->values()->all();
+
+        $this->json(
+            'POST',
+            self::TEST_URL,
+            ['details' => 'Renewing before my access expires.'],
+            $this->header,
+        )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequestAfter = CohortRequest::where(['user_id' => $userId])->first();
+        $permissionIdsAfter = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequestAfter->id,
+        ])->pluck('permission_id')->sort()->values()->all();
+
+        $this->assertSame($cohortRequestBefore->id, $cohortRequestAfter->id);
+        $this->assertEquals($expiryBefore, $cohortRequestAfter->request_expire_at);
+        $this->assertSame($permissionIdsBefore, $permissionIdsAfter);
+    }
+
+    public function test_create_cohort_request_while_already_renewing_is_idempotent(): void
+    {
+        Mail::fake();
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+        $this->approveTestUserForCohort($userId, 'RENEWING');
+
+        $cohortRequest = CohortRequest::where(['user_id' => $userId])->first();
+        $logCountBefore = CohortRequestHasLog::where('cohort_request_id', $cohortRequest->id)->count();
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['details' => 'Renewing again.'],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequest->refresh();
+        $this->assertSame(CohortRequestStatus::RENEWING, $cohortRequest->request_status);
+
+        $logCountAfter = CohortRequestHasLog::where('cohort_request_id', $cohortRequest->id)->count();
+        $this->assertSame($logCountBefore, $logCountAfter);
+    }
+
+    public function test_create_cohort_request_rejects_every_non_renewal_status(): void
+    {
+        Mail::fake();
+
+        foreach (['PENDING', 'REJECTED', 'BANNED', 'SUSPENDED', 'EXPIRED'] as $status) {
+            $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+            $userId = (int) $jwtUser['id'];
+            $this->approveTestUserForCohort($userId, $status);
+
+            $response = $this->json(
+                'POST',
+                self::TEST_URL,
+                ['details' => 'Trying again.'],
+                $this->header,
+            );
+
+            $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+            $cohortRequest = CohortRequest::where(['user_id' => $userId])->first();
+            $this->assertSame(
+                $status,
+                $cohortRequest->request_status->value,
+                "status {$status} should be left untouched after a rejected renewal attempt"
+            );
+        }
     }
 
     /**
