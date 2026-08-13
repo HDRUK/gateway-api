@@ -5,6 +5,8 @@ namespace Tests\Unit\Models;
 use Tests\TestCase;
 use App\Enums\CohortRequestStatus;
 use App\Models\CohortRequest;
+use App\Models\CohortRequestHasPermission;
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -19,6 +21,69 @@ class CohortRequestTest extends TestCase
             'request_status' => CohortRequestStatus::APPROVED,
             'request_expire_at' => null,
         ], $attributes));
+    }
+
+    private function grantGeneralAccessPermission(CohortRequest $cohortRequest): void
+    {
+        $permission = Permission::where([
+            'application' => 'cohort',
+            'name' => 'GENERAL_ACCESS',
+        ])->first();
+
+        CohortRequestHasPermission::create([
+            'cohort_request_id' => $cohortRequest->id,
+            'permission_id' => $permission->id,
+        ]);
+    }
+
+    public function test_roles_for_user_returns_permission_names_for_approved(): void
+    {
+        $cohortRequest = $this->makeCohortRequest(['request_status' => CohortRequestStatus::APPROVED]);
+        $this->grantGeneralAccessPermission($cohortRequest);
+
+        $this->assertSame(['GENERAL_ACCESS'], CohortRequest::rolesForUser($cohortRequest->user_id));
+    }
+
+    public function test_roles_for_user_returns_permission_names_for_renewing(): void
+    {
+        $cohortRequest = $this->makeCohortRequest([
+            'request_status' => CohortRequestStatus::RENEWING,
+            'request_expire_at' => Carbon::now()->addDays(30),
+        ]);
+        $this->grantGeneralAccessPermission($cohortRequest);
+
+        $this->assertSame(['GENERAL_ACCESS'], CohortRequest::rolesForUser($cohortRequest->user_id));
+    }
+
+    public function test_roles_for_user_returns_empty_for_non_access_status(): void
+    {
+        $cohortRequest = $this->makeCohortRequest(['request_status' => CohortRequestStatus::PENDING]);
+        $this->grantGeneralAccessPermission($cohortRequest);
+
+        $this->assertSame([], CohortRequest::rolesForUser($cohortRequest->user_id));
+    }
+
+    public function test_roles_for_user_returns_empty_when_no_cohort_request_exists(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertSame([], CohortRequest::rolesForUser($user->id));
+    }
+
+    public function test_roles_for_user_returns_empty_once_past_true_expiry(): void
+    {
+        $cohortRequest = $this->makeCohortRequest([
+            'request_status' => CohortRequestStatus::APPROVED,
+            'request_expire_at' => Carbon::now()->subDay(),
+        ]);
+        $this->grantGeneralAccessPermission($cohortRequest);
+
+        $this->assertSame([], CohortRequest::rolesForUser($cohortRequest->user_id));
+    }
+
+    public function test_roles_for_user_returns_empty_for_null_user_id(): void
+    {
+        $this->assertSame([], CohortRequest::rolesForUser(null));
     }
 
     public function test_renewal_eligibility_is_eligible_for_approved(): void

@@ -72,10 +72,8 @@ class SyncHubspotContacts extends Command
                 continue;
             }
 
-            $cohortRequest = CohortRequest::where([
-                'user_id' => $user->id,
-                'request_status' => 'APPROVED',
-            ])->first();
+            $cohortRequest = CohortRequest::where(['user_id' => $user->id])->first();
+            $hasCohortAccess = $cohortRequest !== null && CohortRequest::grantsAccess($cohortRequest);
 
             $rolesFullNamesByUserId = $this->getUserRoleNames($user->id);
 
@@ -89,7 +87,7 @@ class SyncHubspotContacts extends Command
                 'communication_preference' => count($commPreference) ? implode(';', $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
                 'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(';', $rolesFullNamesByUserId) : ''),
-                'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
+                'cohort_registered_user' => $hasCohortAccess ? 'Yes' : 'No',
             ];
 
             // update contact preferences

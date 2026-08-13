@@ -128,6 +128,30 @@ class CohortRequest extends Model
         return self::RENEWAL_ELIGIBLE;
     }
 
+    /**
+     * The cohort permission names granted to this user, or [] if they don't
+     * currently have access. Shared by every place that needs a user's
+     * cohort-derived roles (JWT claims, SSO claims, CRM sync).
+     */
+    public static function rolesForUser(?int $userId): array
+    {
+        if ($userId === null) {
+            return [];
+        }
+
+        $cohortRequest = self::where(['user_id' => $userId])->first();
+
+        if (! $cohortRequest || ! self::grantsAccess($cohortRequest)) {
+            return [];
+        }
+
+        $permissionIds = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequest->id,
+        ])->pluck('permission_id');
+
+        return Permission::whereIn('id', $permissionIds)->pluck('name')->toArray();
+    }
+
     public function getHasAccessAttribute(): bool
     {
         return self::grantsAccess($this);

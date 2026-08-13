@@ -130,13 +130,14 @@ class User extends Authenticatable
             return;
         }
 
-        $firstApprovedCohortRequestByUser = CohortRequest::whereIn('user_id', $userIds)
-            ->where('request_status', 'APPROVED')
+        $accessGrantingCohortRequestByUser = CohortRequest::whereIn('user_id', $userIds)
+            ->whereIn('request_status', CohortRequest::ACCESS_GRANTING_STATUSES)
             ->get()
+            ->filter(fn ($cohortRequest) => CohortRequest::grantsAccess($cohortRequest))
             ->groupBy('user_id')
             ->map(fn ($requests) => $requests->first());
 
-        $cohortRequestIds = $firstApprovedCohortRequestByUser->pluck('id')->all();
+        $cohortRequestIds = $accessGrantingCohortRequestByUser->pluck('id')->all();
 
         $permissionIdsByCohortRequest = CohortRequestHasPermission::whereIn('cohort_request_id', $cohortRequestIds)
             ->get()
@@ -148,16 +149,18 @@ class User extends Authenticatable
 
         $nhsSdeApprovedUserIds = array_flip(
             CohortRequest::whereIn('user_id', $userIds)
-                ->where('request_status', 'APPROVED')
+                ->whereIn('request_status', CohortRequest::ACCESS_GRANTING_STATUSES)
                 ->where('nhse_sde_request_status', 'APPROVED')
                 ->whereNull('nhse_sde_request_expire_at')
+                ->get()
+                ->filter(fn ($cohortRequest) => CohortRequest::grantsAccess($cohortRequest))
                 ->pluck('user_id')
                 ->unique()
                 ->all()
         );
 
         foreach ($users as $user) {
-            $cohortRequest = $firstApprovedCohortRequestByUser->get($user->id);
+            $cohortRequest = $accessGrantingCohortRequestByUser->get($user->id);
 
             if ($cohortRequest === null) {
                 $user->cohortRoleCache = [];
@@ -180,24 +183,7 @@ class User extends Authenticatable
             return $this->cohortRoleCache;
         }
 
-        $id = $this->id;
-
-        $cohortRequest = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-        ])->first();
-
-        if (! $cohortRequest) {
-            return [];
-        }
-
-        $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id,
-        ])->pluck('permission_id')->toArray();
-
-        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
-
-        return $cohortRequestRoles;
+        return CohortRequest::rolesForUser($this->id);
     }
 
     public function getRquestRolesAttribute()
@@ -206,24 +192,7 @@ class User extends Authenticatable
             return $this->cohortRoleCache;
         }
 
-        $id = $this->id;
-
-        $cohortRequest = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-        ])->first();
-
-        if (! $cohortRequest) {
-            return [];
-        }
-
-        $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id,
-        ])->pluck('permission_id')->toArray();
-
-        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
-
-        return $cohortRequestRoles;
+        return CohortRequest::rolesForUser($this->id);
     }
 
     public function getCohortDiscoveryNhsSdeAttribute()
@@ -232,17 +201,12 @@ class User extends Authenticatable
             return $this->cohortNhsSdeCache;
         }
 
-        $id = $this->id;
+        $cohortRequest = CohortRequest::where(['user_id' => $this->id])->first();
 
-        $nhsSdeApproved = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-            'nhse_sde_request_status' => 'APPROVED',
-        ])
-            ->whereNull('nhse_sde_request_expire_at')
-            ->exists();
-
-        return $nhsSdeApproved;
+        return $cohortRequest !== null
+            && CohortRequest::grantsAccess($cohortRequest)
+            && $cohortRequest->nhse_sde_request_status === 'APPROVED'
+            && $cohortRequest->nhse_sde_request_expire_at === null;
     }
 
     /**

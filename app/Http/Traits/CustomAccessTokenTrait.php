@@ -5,9 +5,7 @@ namespace App\Http\Traits;
 use App\Models\User;
 use Lcobucci\JWT\Token;
 use App\Models\CohortRequest;
-use App\Models\CohortRequestHasPermission;
 use App\Models\OauthUser;
-use App\Models\Permission;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
@@ -36,7 +34,7 @@ trait CustomAccessTokenTrait
             InMemory::plainText($publicKey)
         );
 
-        $cohortDiscoveryRoles = $this->getCohortDiscoveryRoles($this->getUserIdentifier());
+        $cohortDiscoveryRoles = CohortRequest::rolesForUser($this->getUserIdentifier());
 
         $user = User::where([
             'id' => $this->getUserIdentifier(),
@@ -113,37 +111,5 @@ trait CustomAccessTokenTrait
     public function __toString()
     {
         return $this->convertToJWT()->toString();
-    }
-
-    /**
-     * get Cohort discovery roles from db
-     */
-    public function getCohortDiscoveryRoles($id)
-    {
-        $cohortRequest = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-        ])->first();
-
-        if (!$cohortRequest) {
-            return [];
-        }
-
-        $cohortRequestRoleIds = CohortRequestHasPermission::select('permission_id')->where([
-            'cohort_request_id' => $cohortRequest->id
-        ])->get()->toArray();
-
-        $crRoleIds = [];
-        foreach ($cohortRequestRoleIds as $cohortRequestRoleId) {
-            $crRoleIds[] = $cohortRequestRoleId['permission_id'];
-        }
-
-        $cohortDiscoveryRoles = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
-        $cdRoles = [];
-        foreach ($cohortDiscoveryRoles as $role) {
-            $cdRoles[] = $role['name'];
-        }
-
-        return $cdRoles;
     }
 }
