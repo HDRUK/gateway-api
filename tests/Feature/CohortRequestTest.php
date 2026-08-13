@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\CohortRequestStatus;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
 use App\Models\OauthClient;
@@ -275,6 +276,57 @@ class CohortRequestTest extends TestCase
             $cohortRequest->nhse_sde_request_expire_at->timestamp,
             5,
             'nhse_sde_request_expire_at should be exactly 1825 days (5 years) from the time of approval.'
+        );
+    }
+
+    public function test_update_cohort_request_renewing_to_approved_extends_expiry(): void
+    {
+        Mail::fake();
+
+        $userId = User::factory()->create()->id;
+        $cohortRequest = CohortRequest::create([
+            'user_id' => $userId,
+            'request_status' => CohortRequestStatus::RENEWING,
+            'request_expire_at' => null,
+        ]);
+
+        $now = Carbon::now();
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL.'/'.$cohortRequest->id,
+            [
+                'request_status' => 'APPROVED',
+                'details' => 'Renewal approved.',
+                'nhse_sde_request_status' => null,
+            ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequest = CohortRequest::find($cohortRequest->id);
+
+        $this->assertSame(CohortRequestStatus::APPROVED, $cohortRequest->request_status);
+        $this->assertNotNull($cohortRequest->request_expire_at);
+
+        $expectedExpiry = $now->copy()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days'));
+        $this->assertEqualsWithDelta(
+            $expectedExpiry->timestamp,
+            $cohortRequest->request_expire_at->timestamp,
+            5,
+            'request_expire_at should be extended by the standard expiry period when a renewal is approved.'
+        );
+
+        $permission = Permission::where([
+            'application' => 'cohort',
+            'name' => 'GENERAL_ACCESS',
+        ])->first();
+
+        $this->assertTrue(
+            CohortRequestHasPermission::where([
+                'cohort_request_id' => $cohortRequest->id,
+                'permission_id' => $permission->id,
+            ])->exists()
         );
     }
 
