@@ -10,6 +10,7 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
+use App\Enums\CohortRequestStatus;
 use App\Http\Traits\HubspotContacts;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
@@ -420,6 +421,27 @@ class CohortRequestController extends Controller
      *      ),
      *
      *      @OA\Response(
+     *          response=200,
+     *          description="A user with an existing APPROVED or RENEWING request moved to (or remained in) RENEWING",
+     *
+     *          @OA\JsonContent(
+     *
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="integer", example="100")
+     *          )
+     *      ),
+     *
+     *      @OA\Response(
+     *          response=400,
+     *          description="An existing request in a non-renewable status (e.g. PENDING, REJECTED, BANNED, SUSPENDED, EXPIRED) blocks a new request",
+     *
+     *          @OA\JsonContent(
+     *
+     *              @OA\Property(property="message", type="string", example="A cohort request already exists or the status of the request does not allow updating.")
+     *          )
+     *      ),
+     *
+     *      @OA\Response(
      *          response=401,
      *          description="Unauthorized",
      *
@@ -454,48 +476,29 @@ class CohortRequestController extends Controller
                 throw new Exception('The user name not found!');
             }
 
-            $id = 0;
-            $cohortRequest = null;
-            $notAllowUpdateRequest = ['PENDING', 'APPROVED', 'BANNED', 'SUSPENDED'];
-
-            $checkRequestByUserId = CohortRequest::where([
+            $existingCohortRequest = CohortRequest::where([
                 'user_id' => (int) $jwtUser['id'],
             ])->first();
 
-            // keep just one request by user id
-            if ($checkRequestByUserId && in_array(strtoupper($checkRequestByUserId->request_status?->value ?? ''), $notAllowUpdateRequest)) {
-                throw new Exception('A cohort request already exists or the status of the request does not allow updating.');
-            } else {
-                $id = $checkRequestByUserId ? $checkRequestByUserId->id : 0;
+            if ($existingCohortRequest) {
+                return $this->handleRenewalAttempt($existingCohortRequest, $input);
             }
 
-            if ($id) {
-                $cohortRequest = (object) [
-                    'id' => CohortRequest::where('id', $id)->update([
-                        'user_id' => (int) $jwtUser['id'],
-                        'request_status' => 'PENDING',
-                        'request_expire_at' => null,
-                        'created_at' => Carbon::today()->toDateTimeString(),
-                    ]),
-                ];
-                CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
-            } else {
-                $cohortRequest = CohortRequest::create([
-                    'user_id' => (int) $jwtUser['id'],
-                    'request_status' => 'PENDING',
-                    'created_at' => Carbon::now(),
-                ]);
-            }
+            $cohortRequest = CohortRequest::create([
+                'user_id' => (int) $jwtUser['id'],
+                'request_status' => 'PENDING',
+                'created_at' => Carbon::now(),
+            ]);
 
             $cohortRequestLog = CohortRequestLog::create([
                 'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => 'PENDING',
-                'nhse_sde_request_status' => $id ? CohortRequest::where('id', $id)->select(['nhse_sde_request_status'])->first()['nhse_sde_request_status'] : null,
+                'nhse_sde_request_status' => null,
             ]);
 
             CohortRequestHasLog::create([
-                'cohort_request_id' => $id ?: $cohortRequest->id,
+                'cohort_request_id' => $cohortRequest->id,
                 'cohort_request_log_id' => $cohortRequestLog->id,
             ]);
 
@@ -506,12 +509,12 @@ class CohortRequestController extends Controller
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this).'@'.__FUNCTION__,
-                'description' => 'Cohort Request '.($id ?: $cohortRequest->id).' created',
+                'description' => 'Cohort Request '.$cohortRequest->id.' created',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $id ?: $cohortRequest->id,
+                'data' => $cohortRequest->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             Auditor::log([
@@ -523,6 +526,51 @@ class CohortRequestController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function handleRenewalAttempt(CohortRequest $cohortRequest, array $input): JsonResponse
+    {
+        return match ($cohortRequest->renewalEligibility()) {
+            CohortRequest::RENEWAL_ELIGIBLE => $this->renewCohortRequest($cohortRequest, $input),
+            CohortRequest::RENEWAL_ALREADY_RENEWING => response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $cohortRequest->id,
+            ], Config::get('statuscodes.STATUS_OK.code')),
+            CohortRequest::RENEWAL_NOT_APPLICABLE => response()->json([
+                'message' => 'A cohort request already exists or the status of the request does not allow updating.',
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code')),
+        };
+    }
+
+    private function renewCohortRequest(CohortRequest $cohortRequest, array $input): JsonResponse
+    {
+        $cohortRequest->update(['request_status' => CohortRequestStatus::RENEWING]);
+
+        $cohortRequestLog = CohortRequestLog::create([
+            'user_id' => $cohortRequest->user_id,
+            'details' => $input['details'],
+            'request_status' => CohortRequestStatus::RENEWING,
+            'nhse_sde_request_status' => $cohortRequest->nhse_sde_request_status,
+        ]);
+
+        CohortRequestHasLog::create([
+            'cohort_request_id' => $cohortRequest->id,
+            'cohort_request_log_id' => $cohortRequestLog->id,
+        ]);
+
+        $this->sendEmail($cohortRequest->id, null);
+
+        Auditor::log([
+            'user_id' => $cohortRequest->user_id,
+            'action_type' => 'UPDATE',
+            'action_name' => class_basename($this).'@renewCohortRequest',
+            'description' => 'Cohort Request '.$cohortRequest->id.' status set to RENEWING',
+        ]);
+
+        return response()->json([
+            'message' => Config::get('statuscodes.STATUS_OK.message'),
+            'data' => $cohortRequest->id,
+        ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
