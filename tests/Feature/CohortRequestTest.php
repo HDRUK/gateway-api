@@ -95,6 +95,47 @@ class CohortRequestTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_get_all_cohort_requests_orders_by_priority_before_created_at(): void
+    {
+        $namePrefix = 'PriorityOrderTest';
+
+        $createCohortRequest = function (string $status, string $userName, Carbon $createdAt) {
+            $user = User::factory()->create(['name' => $userName]);
+
+            $cohortRequest = new CohortRequest([
+                'user_id' => $user->id,
+                'request_status' => $status,
+                'accept_declaration' => true,
+            ]);
+            $cohortRequest->timestamps = false;
+            $cohortRequest->created_at = $createdAt;
+            $cohortRequest->updated_at = $createdAt;
+            $cohortRequest->save();
+
+            return $userName;
+        };
+
+        $expectedOrder = [
+            $createCohortRequest('RENEWING', $namePrefix.' Renewing Recent', Carbon::now()->subDays(2)),
+            $createCohortRequest('PENDING', $namePrefix.' Pending Old', Carbon::now()->subDays(20)),
+            $createCohortRequest('EXPIRED', $namePrefix.' Expired Recent', Carbon::now()->subDay()),
+            $createCohortRequest('APPROVED', $namePrefix.' Approved Old', Carbon::now()->subDays(30)),
+        ];
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'?name='.urlencode($namePrefix).'&sort=priority:desc,created_at:desc',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+
+        $names = collect($response->decodeResponseJson()['data'])->pluck('name')->all();
+
+        $this->assertSame($expectedOrder, $names);
+    }
+
     /**
      * Get Cohort Request by id with success
      */

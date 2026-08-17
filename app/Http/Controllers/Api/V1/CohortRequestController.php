@@ -229,6 +229,16 @@ class CohortRequestController extends Controller
                 });
 
             foreach ($sort as $key => $value) {
+                if ($key === 'priority') {
+                    $direction = strtoupper($value) === 'ASC' ? 'ASC' : 'DESC';
+                    $query->orderByRaw(
+                        'CASE WHEN cohort_requests.request_status IN (?, ?) THEN 1 ELSE 0 END '.$direction,
+                        [CohortRequestStatus::PENDING->value, CohortRequestStatus::RENEWING->value]
+                    );
+
+                    continue;
+                }
+
                 if (in_array(
                     $key,
                     [
