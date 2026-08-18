@@ -470,6 +470,8 @@ class DatasetController extends Controller
 
             return response()->json(['message' => 'success'], Config::get('statuscodes.STATUS_OK.code'));
 
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id'     => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,

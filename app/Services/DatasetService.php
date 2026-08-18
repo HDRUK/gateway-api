@@ -39,6 +39,23 @@ class DatasetService
     ) {
     }
 
+    /**
+     * COLLAB-origin datasets are drafts owned by an anonymous collaborator
+     * via a share token (see DatasetCollabController) and must only be
+     * edited through that token URL, never through the normal authenticated
+     * dataset endpoints.
+     *
+     * @throws \RuntimeException when the dataset is COLLAB-origin
+     */
+    private function assertNotCollabLocked(Dataset $dataset): void
+    {
+        if ($dataset->create_origin === Dataset::ORIGIN_COLLAB) {
+            throw new \RuntimeException(
+                'This dataset was created via a collaborative share link and can only be edited through that link'
+            );
+        }
+    }
+
     public function list(
         ?string $filterStatus,
         ?string $filterTitle,
@@ -421,6 +438,8 @@ class DatasetService
         bool $validateInput = true,
         bool $validateOutput = true,
     ): int {
+        $this->assertNotCollabLocked($dataset);
+
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
             'id' => $dataset->id,
@@ -508,6 +527,8 @@ class DatasetService
         bool $validateInput = true,
         bool $validateOutput = true,
     ): int {
+        $this->assertNotCollabLocked($dataset);
+
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
             'id' => $dataset->id,
@@ -575,6 +596,8 @@ class DatasetService
      */
     public function patch(Dataset $dataset, string $status): void
     {
+        $this->assertNotCollabLocked($dataset);
+
         $dataset->status = $status;
         $dataset->save();
 

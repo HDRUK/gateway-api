@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *   @OA\Property(
  *     property="create_origin",
  *     type="string",
- *     enum={"MANUAL","API","GMI"},
+ *     enum={"MANUAL","API","GMI","COLLAB"},
  *     nullable=true,
  *     example="MANUAL"
  *   ),
@@ -66,6 +66,7 @@ class Dataset extends Model
     public const ORIGIN_MANUAL = 'MANUAL';
     public const ORIGIN_API = 'API';
     public const ORIGIN_GMI = 'GMI';
+    public const ORIGIN_COLLAB = 'COLLAB';
 
 
     /**

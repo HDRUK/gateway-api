@@ -629,6 +629,12 @@ class TeamDatasetController extends Controller
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
 
+        if ($initDataset->create_origin === Dataset::ORIGIN_COLLAB) {
+            return response()->json([
+                'message' => 'This dataset was created via a collaborative share link and can only be edited through that link',
+            ], 403);
+        }
+
         try {
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
@@ -734,6 +740,45 @@ class TeamDatasetController extends Controller
     }
 
     /**
+     * Download a dataset's latest metadata version as a raw GWDM JSON file,
+     * for manual re-upload via the standard "create from JSON" flow (e.g.
+     * after a collaborative onboarding draft has been completed).
+     *
+     * The upload flow (UploadDataset.tsx's checkIfPidMatches, and
+     * ScanFileUpload::createDatasetFromFile) expects a bare metadata
+     * document at the JSON's top level (`summary.dataCustodian.identifier`
+     * etc.) - NOT the {metadata, original_metadata, gwdmVersion} wrapper
+     * Dataset::lastMetadata() returns. `original_metadata` is the form-shaped
+     * document (has `summary.dataCustodian`); the GWDM-translated `metadata`
+     * restructures that into `summary.publisher` instead, which the upload
+     * flow doesn't understand - so original_metadata is used whenever
+     * present, falling back to metadata only for a draft that's never been
+     * saved through the normal/collab update path yet.
+     */
+    public function exportJson(Request $request, int $teamId, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $dataset = Dataset::where('id', $id)->where('team_id', $teamId)->first();
+        if (!$dataset) {
+            return response()->json(['message' => 'not found'], 404);
+        }
+        $this->checkAccess($input, $teamId, null, 'team', $request->header());
+
+        $wrapper = $dataset->lastMetadata();
+        $metadata = $wrapper['original_metadata'] ?? $wrapper['metadata'] ?? [];
+
+        if (empty($metadata['summary']['dataCustodian']['identifier'] ?? null)) {
+            return response()->json([
+                'message' => 'This dataset\'s metadata is missing a data custodian identifier and cannot be '
+                    . 'exported for re-upload. Save the dataset again to have this repopulated automatically.',
+            ], 422);
+        }
+
+        return response()->json($metadata)
+            ->header('Content-Disposition', 'attachment; filename="dataset-' . $id . '.json"');
+    }
+
+    /**
      * @OA\Patch(
      *    path="/api/v2/teams/{teamId}/datasets/{id}",
      *    operationId="patch_team_datasets_v2",
@@ -804,6 +849,12 @@ class TeamDatasetController extends Controller
         $jwtUser = $request->jwtUser();
         $initDataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
+
+        if ($initDataset->create_origin === Dataset::ORIGIN_COLLAB) {
+            return response()->json([
+                'message' => 'This dataset was created via a collaborative share link and can only be edited through that link',
+            ], 403);
+        }
 
         try {
             //TODO: how to edit correctly, particularly the metadata? Assume if it's provided then it overwrites, otherwise leave as it is?
