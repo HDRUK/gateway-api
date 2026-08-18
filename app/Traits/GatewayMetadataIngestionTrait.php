@@ -147,7 +147,8 @@ trait GatewayMetadataIngestionTrait
 
             try {
                 $data = $remoteItems[$pid];
-                $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                    ->get($this->makeDatasetUrl($federation, $data));
 
                 $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection:
                 status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
@@ -222,7 +223,8 @@ trait GatewayMetadataIngestionTrait
             if ($localItems->has($pid)) {
                 try {
                     $local = $localItems[$pid];
-                    $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                    $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                        ->get($this->makeDatasetUrl($federation, $data));
                     if ($response->status() === 200) {
                         $team = Team::where('id', $gmi->getTeam())->first();
                         $ds = Dataset::where([

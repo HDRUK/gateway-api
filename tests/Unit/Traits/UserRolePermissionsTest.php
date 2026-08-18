@@ -14,7 +14,7 @@ class UserRolePermissionsTest extends TestCase
 {
     private function callGetCohortUserRoles(int $userId): array
     {
-        $host = new class {
+        $host = new class () {
             use UserRolePermissions;
         };
 
