@@ -118,6 +118,8 @@ class FederationService
             'run_time_minute' => $input['run_time_minute'],
             'enabled' => $input['enabled'],
             'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
+            'error' => false,
+            'error_text' => null,
         ];
 
         $updateArray = $this->withFirstEnabledAt($federationId, $updateArray);
