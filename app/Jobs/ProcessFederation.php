@@ -67,6 +67,7 @@ class ProcessFederation implements ShouldQueue
 
             if ($remoteItems->isEmpty()) {
                 $this->log('warning', 'REMOTE catalogue returned empty "items" array - aborting');
+                FederationProcessed::dispatch($this->federation, $jobUuid);
                 return;
             }
 

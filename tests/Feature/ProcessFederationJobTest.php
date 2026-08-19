@@ -190,6 +190,23 @@ class ProcessFederationJobTest extends TestCase
         $this->assertFalse($federation->fresh()->is_running);
     }
 
+    public function test_error_cleared_when_remote_returns_empty_items_after_prior_failure(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update([
+            'error' => true,
+            'error_text' => 'a previous connection failure',
+        ]);
+        $this->mockGsms();
+        $this->fakeRemoteCatalogue([]);
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->error);
+        $this->assertNull($fresh->error_text);
+    }
+
     public function test_is_running_cleared_when_remote_returns_error(): void
     {
         [, $federation] = $this->makeFederation();
