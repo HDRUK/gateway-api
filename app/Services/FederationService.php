@@ -137,6 +137,16 @@ class FederationService
         return $response;
     }
 
+    public function clearErrorForTeam(int $teamId, int $federationId): void
+    {
+        Federation::whereHas('team', function ($query) use ($teamId) {
+            $query->where('id', $teamId);
+        })->where('id', $federationId)->update([
+            'error' => false,
+            'error_text' => null,
+        ]);
+    }
+
     public function delete(int $teamId, int $federationId, array $loggingContext = []): void
     {
         $federationNotifications = FederationHasNotification::where([

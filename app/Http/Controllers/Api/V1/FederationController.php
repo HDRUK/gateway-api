@@ -566,7 +566,7 @@ class FederationController extends Controller
      *    )
      * )
      */
-    public function testFederation(Request $request)
+    public function testFederation(Request $request, int $teamId)
     {
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
@@ -575,7 +575,13 @@ class FederationController extends Controller
 
         try {
             $testVerdict = new TestFederation($input);
-            return $testVerdict->handle();
+            $result = $testVerdict->handle();
+
+            if (!empty($input['id']) && ($result['data']['success'] ?? false)) {
+                $this->federationService->clearErrorForTeam($teamId, (int) $input['id']);
+            }
+
+            return $result;
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

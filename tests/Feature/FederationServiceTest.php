@@ -51,4 +51,49 @@ class FederationServiceTest extends TestCase
         $this->assertFalse($fresh->error);
         $this->assertNull($fresh->error_text);
     }
+
+    public function test_clear_error_for_team_clears_a_previously_recorded_error(): void
+    {
+        $team = Team::factory()->create();
+
+        $federation = Federation::factory()->create([
+            'error' => true,
+            'error_text' => 'a previous connection failure',
+        ]);
+
+        TeamHasFederation::create([
+            'team_id' => $team->id,
+            'federation_id' => $federation->id,
+        ]);
+
+        (new FederationService())->clearErrorForTeam($team->id, $federation->id);
+
+        $fresh = $federation->fresh();
+
+        $this->assertFalse($fresh->error);
+        $this->assertNull($fresh->error_text);
+    }
+
+    public function test_clear_error_for_team_does_not_affect_a_different_teams_federation(): void
+    {
+        $team = Team::factory()->create();
+        $otherTeam = Team::factory()->create();
+
+        $federation = Federation::factory()->create([
+            'error' => true,
+            'error_text' => 'a previous connection failure',
+        ]);
+
+        TeamHasFederation::create([
+            'team_id' => $team->id,
+            'federation_id' => $federation->id,
+        ]);
+
+        (new FederationService())->clearErrorForTeam($otherTeam->id, $federation->id);
+
+        $fresh = $federation->fresh();
+
+        $this->assertTrue($fresh->error);
+        $this->assertSame('a previous connection failure', $fresh->error_text);
+    }
 }
