@@ -6,7 +6,6 @@ use App\Enums\CohortRequestStatus;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
-use App\Models\CohortRequestLog;
 use App\Models\OauthClient;
 use App\Models\Permission;
 use App\Models\User;
