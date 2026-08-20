@@ -1,3 +1,43 @@
+## [2.48.0](https://github.com/HDRUK/gateway-api/compare/v2.47.4...v2.48.0) (2026-08-20)
+
+### ✨ Features
+
+* **GAT-1111:** add ProjectGrant create endpoint (#1695) ([62de680](https://github.com/HDRUK/gateway-api/commit/62de680eef6c8f8f38e26aa127e0eec521c717ab)), closes [GAT-1111](undefinedGAT-1111)
+* **GAT-2905:** Add last run time for federations ([6a2bca9](https://github.com/HDRUK/gateway-api/commit/6a2bca9872a5a12ef64cc712aa6152f295e304bb)), closes [GAT-2905](undefinedGAT-2905)
+* **GAT-8320:** Refactors Federation god controller into service. Add… (#1755) ([3067bcf](https://github.com/HDRUK/gateway-api/commit/3067bcfd7e0b7633dd2280dd42cd83f9406b0d37)), closes [GAT-8320](undefinedGAT-8320)
+* **GAT-8899:** improves call speeds to return teams (#1749) ([3bd8d30](https://github.com/HDRUK/gateway-api/commit/3bd8d3037c34a0f94ac8c3d1e7abffe0622f4b7f)), closes [GAT-8899](undefinedGAT-8899)
+* **GAT-8985:** Add Dataset::titlesForPids() for bulk pid to title lookup ([bf646a3](https://github.com/HDRUK/gateway-api/commit/bf646a398f9da10a9fa647e5ad27c5cbf329d808)), closes [GAT-8985](undefinedGAT-8985) [those](undefinedose)
+* **GAT-8985:** Show dataset title in federation integration emails ([1e908e0](https://github.com/HDRUK/gateway-api/commit/1e908e05d35b6d215989fe5365233bb3a27d8c1b)), closes [GAT-8985](undefinedGAT-8985)
+* **GAT-9143:** #10 - Implements partner context into search results … (#1736) ([23bb462](https://github.com/HDRUK/gateway-api/commit/23bb462553dc9eab031ab11cce079cb99d436690)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9143:** #4 - Tweaks queue slightly to avoid job clashes causi… (#1719) ([ff0f60d](https://github.com/HDRUK/gateway-api/commit/ff0f60d96cf85b0e13b4ade56efae7c8a79b990a)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9143:** #5 - potential N+1 preventing collections from indexi… (#1720) ([362e963](https://github.com/HDRUK/gateway-api/commit/362e9635be53b4dcd5ef1a757fb8e1a3048982a6)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9143:** #6 attempting to prove jobs are failing, but not bein… (#1724) ([44f5c8d](https://github.com/HDRUK/gateway-api/commit/44f5c8df7ded21a8d7d20893ce3e391bd729d6ed)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9143:** #7 caught collections OOM at OS level. This prevents … (#1727) ([71d980a](https://github.com/HDRUK/gateway-api/commit/71d980ae39a4d8cc86cf1bd4b11761c58f2ed341)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9143:** #8 - implements a few more filters: populationCount, … (#1731) ([0150879](https://github.com/HDRUK/gateway-api/commit/01508792e4a7e6eb2067d3b2058beb0ad396c050)), closes [GAT-9143](undefinedGAT-9143)
+* **GAT-9236:** Add partnerContext to ES documents ([7391fb1](https://github.com/HDRUK/gateway-api/commit/7391fb1ea19791ce91c8eef0e3b1df324bb547b3)), closes [GAT-9236](undefinedGAT-9236)
+* **GAT-9236:** extend partner scoped search to the V2 aggregator ([1c53e9c](https://github.com/HDRUK/gateway-api/commit/1c53e9c193a21d915e9d5b64e8297d3dbdc38f5d)), closes [GAT-9236](undefinedGAT-9236) [aggregator](undefinedgator)
+* **GAT-9236:** scope V1 dataset search to the active partner via search-service ([35cd4bc](https://github.com/HDRUK/gateway-api/commit/35cd4bcdac159b25d1807720d417c7637bb32624)), closes [GAT-9236](undefinedGAT-9236) [post-fetch](undefinedost-fetch)
+* **GAT-9361:** Cater for completely barren repos - to prevent having… (#1733) ([af35e2e](https://github.com/HDRUK/gateway-api/commit/af35e2e1dae6cbb5582b4daa175849d3ea40d8a7)), closes [GAT-9361](undefinedGAT-9361)
+* **GAT-9361:** Fills gaps in swagger docs in order to allow building… (#1732) ([706d047](https://github.com/HDRUK/gateway-api/commit/706d0474c58a310d1485a0556abb52d900e3a6fa)), closes [GAT-9361](undefinedGAT-9361)
+* **GAT-9361:** Implement annotations to properly form outter envelop… (#1734) ([a627d45](https://github.com/HDRUK/gateway-api/commit/a627d452ac92eee62ea9b75f8e5fe397ffa64f62)), closes [GAT-9361](undefinedGAT-9361)
+* **GAT-9361:** Implements further SDK generators for java, typescrip… (#1735) ([6f03b81](https://github.com/HDRUK/gateway-api/commit/6f03b8188269b1a99bb400827dbc4c0c97e1af76)), closes [GAT-9361](undefinedGAT-9361)
+* **GAT-9423:** Adds ability to search by name (#1751) ([57e1406](https://github.com/HDRUK/gateway-api/commit/57e1406a71be205ccdaed6a07466ef3512853221)), closes [GAT-9423](undefinedGAT-9423)
+* **GAT-9424:**  Implements a nightly dataset link scanner to expose issues with dataset rendering on the frontend (#1747) ([4dbb0e1](https://github.com/HDRUK/gateway-api/commit/4dbb0e1b6d691d7322bb56f2893a0e6d1970787f)), closes [GAT-9424](undefinedGAT-9424) [expose](undefinedose)
+* **GAT-9442:** Allows toggling and editing of email templates with live … (#1750) ([3913e49](https://github.com/HDRUK/gateway-api/commit/3913e498dc4d56be3a9a9781c063b9b7cd475b23)), closes [GAT-9442](undefinedGAT-9442)
+* **GAT-9456:** Adds job to scan metadata for broken links and report… (#1752) ([962db0b](https://github.com/HDRUK/gateway-api/commit/962db0be8ee2f52f7d8e89c1f6f0352a7b4a3939)), closes [GAT-9456](undefinedGAT-9456)
+* **GAT-9999:** Further SDK work to reduce the bloat in the SDKs. Rem… (#1743) ([18d5ee8](https://github.com/HDRUK/gateway-api/commit/18d5ee834d12ed9e74dba9a9293e46121ca3ee3a)), closes [GAT-9999](undefinedGAT-9999)
+* **GAT-9999:** implements knowledge base from understand-anything (#1754) ([843fa92](https://github.com/HDRUK/gateway-api/commit/843fa92ddc213d7301f7c4c1aa74e6ca758f87b3)), closes [GAT-9999](undefinedGAT-9999)
+* **GAT-9999:** SDK work 2. Removes all superadmin endpoints from SDK… (#1744) ([764c466](https://github.com/HDRUK/gateway-api/commit/764c466f9b99512fade70792979aae3124954a23)), closes [GAT-9999](undefinedGAT-9999)
+
+### 🐛 Bug Fixes
+
+* **FAT-9343:** Backfill missing metadata title/short_title fields on deployment ([30e5db3](https://github.com/HDRUK/gateway-api/commit/30e5db3e724b839f95935758723179959f7d94d8))
+* **GAT-9247:** fixes headers not being sent for remote source with au… (#1728) ([5724c29](https://github.com/HDRUK/gateway-api/commit/5724c29185d9a917cecc516e0106c99b6c20a065))
+* **GAT-9343:** populate title/short_title when creating a dataset via metadataOnboard() ([9f1b90f](https://github.com/HDRUK/gateway-api/commit/9f1b90fe9fb0cca616206173ba3d56982d98a096)), closes [GAT-9343](undefinedGAT-9343)
+* **GAT-9343:** retire dead /integrations/datasets endpoints ([f84bf1d](https://github.com/HDRUK/gateway-api/commit/f84bf1dcc2debe9295f375a95718459b4c37cc81)), closes [GAT-9343](undefinedGAT-9343)
+* **GAT-9357:** BUg fix for doi with leading http://doi.org and loading of data to onboarding form (#1745) ([95f27b0](https://github.com/HDRUK/gateway-api/commit/95f27b003b6adebfcd8ac30b7003d0d4a0c935d2))
+* **GAT-9374:** Reverts changes retrofit to dev (#1742) ([01cab82](https://github.com/HDRUK/gateway-api/commit/01cab82eac0abc050124c56a12bc70648e532e7e)), closes [GAT-9374](undefinedGAT-9374)
+
 ## [2.47.4](https://github.com/HDRUK/gateway-api/compare/v2.47.3...v2.47.4) (2026-08-04)
 
 ## [2.47.3](https://github.com/HDRUK/gateway-api/compare/v2.47.2...v2.47.3) (2026-08-04)
