@@ -272,6 +272,25 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         return $publication?->id;
     }
 
+    /**
+     * Reduce a stored `paper_doi` to the bare DOI form the GWDM Doi schema requires.
+     * `paper_doi` is stored inconsistently (bare, `doi.org/...`, or `https://doi.org/...`);
+     * strip any doi.org host prefix — with or without a scheme — so reconstructed linkage
+     * arrays validate (mirrors the prefix stripping in findTargetPublication()). Returns null
+     * for empty input so callers can skip it.
+     */
+    protected function normalisePublicationDoi(?string $doi): ?string
+    {
+        if (! $doi) {
+            return null;
+        }
+
+        $doi = trim($doi);
+        $doi = preg_replace('#^(https?://)?(dx\.)?doi\.org/#i', '', $doi);
+
+        return $doi !== '' ? $doi : null;
+    }
+
     // ── Read path ─────────────────────────────────────────────────────────────
 
     /**
@@ -303,7 +322,10 @@ class Gwdm2xHandler extends GwdmMetadataHandler
         $aboutDataset = [];
         $usingDataset = [];
         foreach ($publications as $row) {
-            $doi = $row->doi;
+            // `paper_doi` is stored inconsistently — some rows carry a bare DOI, others a
+            // `https://doi.org/...` URL. The GWDM Doi schema only accepts the bare form, so
+            // normalise here (mirrors the prefix stripping in findTargetPublication()).
+            $doi = $this->normalisePublicationDoi($row->doi);
             if (! $doi) {
                 continue;
             }

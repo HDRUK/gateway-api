@@ -37,7 +37,8 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v2/users/{userId}/publications/{status}",
+     *      x={"internal"="true"},
+     *     path="/api/v2/users/{userId}/publications/status/{status}",
      *     operationId="fetch_all_publications_by_user_and_status_v2",
      *     tags={"Publication"},
      *     summary="UserPublicationController@indexStatus",
@@ -56,7 +57,7 @@ class UserPublicationController extends Controller
      *         name="status",
      *         in="path",
      *         description="Status of the team (active, draft, or archived). Defaults to active if not provided.",
-     *         required=false,
+     *         required=true,
      *         @OA\Schema(
      *             type="string",
      *             enum={"active", "draft", "archived"},
@@ -77,11 +78,7 @@ class UserPublicationController extends Controller
      *           @OA\Property(
      *              property="data",
      *              type="array",
-     *              example="[]",
-     *              @OA\Items(
-     *                 type="array",
-     *                 @OA\Items()
-     *              )
+     *              @OA\Items(ref="#/components/schemas/Publication")
      *           ),
      *        ),
      *     ),
@@ -144,6 +141,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/count/{field}",
      *    operationId="count_user_unique_fields_publication_v2",
      *    tags={"Publication"},
@@ -213,6 +211,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="fetch_publications_by_user_and_by_id_v2",
      *    tags={"Publication"},
@@ -245,15 +244,7 @@ class UserPublicationController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *      @OA\Response(
@@ -315,6 +306,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications",
      *    operationId="create_publications_v2_by_user_id",
      *    tags={"Publication"},
@@ -353,7 +345,11 @@ class UserPublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -446,6 +442,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="update_publications_v2_by_user_id",
      *    tags={"Publication"},
@@ -496,7 +493,11 @@ class UserPublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -506,15 +507,7 @@ class UserPublicationController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(
      *             property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *    @OA\Response(
@@ -607,6 +600,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="edit_publications_v2_by_user_id",
      *    tags={"Publication"},
@@ -657,7 +651,11 @@ class UserPublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -667,15 +665,7 @@ class UserPublicationController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(
      *             property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *    @OA\Response(
@@ -772,6 +762,7 @@ class UserPublicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v2/users/{userId}/publications/{id}",
      *    operationId="delete_publications_v2_by_user_id",
      *    tags={"Publication"},

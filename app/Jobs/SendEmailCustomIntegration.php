@@ -2,9 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Models\EmailTemplate;
+use App\Models\Dataset;
 use App\Models\Federation;
 use App\Models\FederationJobRun;
+use App\Services\EmailManager;
 use App\Traits\GatewayMetadataIngestionTrait;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -69,13 +70,6 @@ class SendEmailCustomIntegration implements ShouldQueue
             $permSuffix     = $checkUser ? 'teamadmin_developer' : 'no_teamadmin_developer';
             $templateId     = "integration.job.{$this->outcome}.{$permSuffix}";
 
-            $template = EmailTemplate::where('identifier', $templateId)->first();
-
-            if (!$template) {
-                $this->log('warning', "send email after integration: template '{$templateId}' not found");
-                continue;
-            }
-
             $to = [
                 'to' => [
                     'email' => $userEmail,
@@ -96,22 +90,26 @@ class SendEmailCustomIntegration implements ShouldQueue
                 '[[JOB_ERROR]]'            => $this->errorMessage ?? '',
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            app(EmailManager::class)->send($templateId, $to, $replacements);
         }
     }
 
     public function getFederationHistory(): array
     {
         $latestAttempts = FederationJobRun::latestPerPidForExecution($this->federationId, $this->jobUuid);
+        $titlesByPid    = Dataset::titlesForPids($latestAttempts->pluck('pid')->all());
 
         $integrationSuccess = '<ul>';
         $integrationErrors  = '<ul>';
         $successCount       = 0;
 
         foreach ($latestAttempts as $latestAttempt) {
+            $title = $titlesByPid[$latestAttempt->pid];
+
             if ($latestAttempt->status === 1) {
-                $details = data_get($latestAttempt, 'details.message', '');
-                $integrationSuccess .= "<li>PID: {$latestAttempt->pid} - {$details}</li>";
+                $details    = data_get($latestAttempt, 'details.message', '');
+                $identifier = $title ? "{$title} (PID: {$latestAttempt->pid})" : "PID: {$latestAttempt->pid}";
+                $integrationSuccess .= "<li>{$identifier} - {$details}</li>";
                 $successCount++;
             }
 
@@ -119,7 +117,8 @@ class SendEmailCustomIntegration implements ShouldQueue
                 $error = collect($latestAttempt->errorMessages())
                     ->map(fn ($entry) => $entry['schema'] ? "{$entry['schema']}  - {$entry['message']}<br>" : $entry['message'])
                     ->implode('');
-                $integrationErrors .= "<li>PID - {$latestAttempt->pid}:<br>{$error}</li>";
+                $identifier = $title ? "{$title} (PID: {$latestAttempt->pid})" : "PID - {$latestAttempt->pid}";
+                $integrationErrors .= "<li>{$identifier}:<br>{$error}</li>";
             }
         }
 

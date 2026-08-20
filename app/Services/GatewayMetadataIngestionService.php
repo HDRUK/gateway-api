@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Team;
 use App\Models\Federation;
 use App\Http\Traits\MetadataOnboard;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -33,14 +34,15 @@ class GatewayMetadataIngestionService
         return $this;
     }
 
-    public function storeMetadata($input): mixed
+    public function storeMetadata($input, GwdmMetadataHandler $handler): mixed
     {
         $metadataResult = $this->metadataOnboard(
             $input,
             Team::where('id', $this->teamId)->first()->toArray(),
             null,
             null,
-            false
+            false,
+            $handler,
         );
 
         if ($metadataResult['translated']) {

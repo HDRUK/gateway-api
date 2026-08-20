@@ -39,6 +39,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v2/teams/{teamId}/publications/status/{status}",
      *     operationId="fetch_all_publications_by_team_and_status_v2",
      *     tags={"Publication"},
@@ -58,7 +59,7 @@ class TeamPublicationController extends Controller
      *         name="status",
      *         in="path",
      *         description="Status of the team (active, draft, or archived). Defaults to active if not provided.",
-     *         required=false,
+     *         required=true,
      *         @OA\Schema(
      *             type="string",
      *             enum={"active", "draft", "archived"},
@@ -79,11 +80,7 @@ class TeamPublicationController extends Controller
      *           @OA\Property(
      *              property="data",
      *              type="array",
-     *              example="[]",
-     *              @OA\Items(
-     *                 type="array",
-     *                 @OA\Items()
-     *              )
+     *              @OA\Items(ref="#/components/schemas/Publication")
      *           ),
      *        ),
      *     ),
@@ -148,6 +145,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/count/{field}",
      *    operationId="count_team_unique_fields_publication_v2",
      *    tags={"Publication"},
@@ -217,6 +215,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="fetch_publications_by_team_and_by_id_v2",
      *    tags={"Publication"},
@@ -250,15 +249,7 @@ class TeamPublicationController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *      @OA\Response(
@@ -331,6 +322,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications",
      *    operationId="create_publications_v2_by_team_id",
      *    tags={"Publication"},
@@ -370,7 +362,11 @@ class TeamPublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -465,6 +461,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="update_publications_v2_by_team_id",
      *    tags={"Publication"},
@@ -516,7 +513,11 @@ class TeamPublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -526,15 +527,7 @@ class TeamPublicationController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(
      *             property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *    @OA\Response(
@@ -632,6 +625,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="edit_publications_v2_by_team_id",
      *    tags={"Publication"},
@@ -683,7 +677,11 @@ class TeamPublicationController extends Controller
      *                   @OA\Property(property="description", type="string"),
      *                )
      *             ),
-     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="tools", type="array",
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -693,15 +691,7 @@ class TeamPublicationController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(
      *             property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Publication"),
      *       ),
      *    ),
      *    @OA\Response(
@@ -810,6 +800,7 @@ class TeamPublicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/publications/{id}",
      *    operationId="delete_publications_v2_by_team_id",
      *    tags={"Publication"},

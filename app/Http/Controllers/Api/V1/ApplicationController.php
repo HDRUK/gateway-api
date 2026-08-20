@@ -9,13 +9,12 @@ use Exception;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
 use App\Models\Application;
 use App\Models\TeamHasUser;
 use Illuminate\Support\Str;
 use App\Models\Notification;
+use App\Services\EmailManager;
 use Illuminate\Http\Request;
-use App\Models\EmailTemplate;
 use App\Models\TeamUserHasRole;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
@@ -244,6 +243,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/applications",
+     *    operationId="create_applications",
      *    summary="Create application",
      *    description="Creates application",
      *    tags={"Application"},
@@ -378,6 +378,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/applications/{id}",
+     *    operationId="update_applications",
      *    tags={"Application"},
      *    summary="Update application",
      *    description="Update application",
@@ -511,6 +512,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/applications/{id}",
+     *    operationId="edit_applications",
      *    tags={"Application"},
      *    summary="Edit application",
      *    description="Edit application",
@@ -634,6 +636,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/applications/{id}",
+     *    operationId="delete_applications",
      *    tags={"Application"},
      *    summary="Delete application",
      *    description="Delete application",
@@ -720,6 +723,7 @@ class ApplicationController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/applications/{id}/clientid",
+     *    operationId="patch_applications_client_id",
      *    tags={"Application"},
      *    summary="Generate Client ID application",
      *    description="Generate Client ID application",
@@ -911,24 +915,18 @@ class ApplicationController extends Controller
             throw new Exception('Application not found!');
         }
 
-        $template = null;
-        switch ($type) {
-            case 'CREATE':
-                $template = EmailTemplate::where('identifier', 'private.app.create')->first();
-                break;
-            case 'UPDATE':
-                $template = EmailTemplate::where('identifier', 'private.app.update')->first();
-                break;
-            case 'DELETE':
-                $template = EmailTemplate::where('identifier', 'private.app.delete')->first();
-                break;
-            case 'UPDATE.CLIENTID':
-                $template = EmailTemplate::where('identifier', 'private.app.update.clientid')->first();
-                break;
-            default:
-                throw new Exception("Send email type not found!");
-                break;
+        $identifiers = [
+            'CREATE' => 'private.app.create',
+            'UPDATE' => 'private.app.update',
+            'DELETE' => 'private.app.delete',
+            'UPDATE.CLIENTID' => 'private.app.update.clientid',
+        ];
+
+        if (!array_key_exists($type, $identifiers)) {
+            throw new Exception("Send email type not found!");
         }
+
+        $identifier = $identifiers[$type];
 
         $receivers = $this->sendEmailTo($app);
 
@@ -960,7 +958,7 @@ class ApplicationController extends Controller
                 '[[CURRENT_YEAR]]' => date('Y'),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            app(EmailManager::class)->send($identifier, $to, $replacements);
         }
 
     }

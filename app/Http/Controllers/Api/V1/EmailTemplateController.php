@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\EmailTemplate;
+use App\Services\EmailPreviewRenderer;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
@@ -16,6 +17,7 @@ use App\Http\Requests\EmailTemplate\EditEmailTemplate;
 use App\Http\Requests\EmailTemplate\CreateEmailTemplate;
 use App\Http\Requests\EmailTemplate\DeleteEmailTemplate;
 use App\Http\Requests\EmailTemplate\UpdateEmailTemplate;
+use App\Http\Requests\EmailTemplate\RenderEmailTemplatePreview;
 
 class EmailTemplateController extends Controller
 {
@@ -66,9 +68,10 @@ class EmailTemplateController extends Controller
                 'description' => 'Email template get all',
             ]);
 
-            return response()->json(
-                $emailTemplates
-            );
+            return response()->json([
+                'message' => 'success',
+                'data' => $emailTemplates,
+            ]);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -138,15 +141,12 @@ class EmailTemplateController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $emailTemplates = EmailTemplate::where([
-                'id' =>  $id,
-                'enabled' => 1,
-            ])->get();
+            $emailTemplate = EmailTemplate::where('id', $id)->first();
 
-            if ($emailTemplates->count()) {
+            if ($emailTemplate) {
                 return response()->json([
                     'message' => 'success',
-                    'data' => $emailTemplates,
+                    'data' => $emailTemplate,
                 ], 200);
             }
 
@@ -554,6 +554,75 @@ class EmailTemplateController extends Controller
             }
 
             throw new NotFoundException();
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/emailtemplates/preview",
+     *    operationId="preview_emailtemplates",
+     *    tags={"Email Templates"},
+     *    summary="EmailTemplateController@preview",
+     *    description="Render an email template body (raw MJML) to HTML for live preview, with fictional placeholder data",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="body", type="string", example="<mjml>...</mjml>")
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *             @OA\Property(property="html", type="string")
+     *          )
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function preview(RenderEmailTemplatePreview $request): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $html = (new EmailPreviewRenderer())->renderHtml(html_entity_decode($input['body']));
+
+            return response()->json([
+                'message' => 'success',
+                'data' => ['html' => $html],
+            ], 200);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

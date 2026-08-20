@@ -66,7 +66,11 @@ return [
             'driver'       => 'redis',
             'connection'   => 'default',
             'queue'        => env('REDIS_QUEUE', 'default'),
-            'retry_after'  => 240,
+            // Must stay above the longest-running job's own $timeout (e.g.
+            // ReindexTypesenseEntity / TermExtraction at 600s, Horizon's
+            // supervisor-enrichment at 660s) or Redis assumes the job died
+            // and re-releases it onto the queue while it's still running.
+            'retry_after'  => env('REDIS_QUEUE_RETRY_AFTER', 700),
             'block_for'    => null,
             'after_commit' => false,
         ],

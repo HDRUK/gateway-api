@@ -14,13 +14,12 @@ use App\Http\Requests\DataAccessApplication\GetDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\GetDataAccessApplicationFile;
 use App\Http\Requests\DataAccessApplication\EditDataAccessApplication;
 use App\Http\Requests\DataAccessApplication\DeleteDataAccessApplicationFile;
-use App\Jobs\SendEmailJob;
 use App\Models\DataAccessApplication;
 use App\Models\DataAccessApplicationComment;
 use App\Models\DataAccessApplicationReview;
 use App\Models\DataAccessApplicationStatus;
 use App\Models\DataAccessApplicationAnswer;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\TeamHasDataAccessApplication;
 use App\Models\Upload;
 use App\Models\User;
@@ -44,39 +43,26 @@ class TeamDataAccessApplicationController extends Controller
      *      description="List of dar applications belonging to a team",
      *      tags={"TeamDataAccessApplication"},
      *      summary="TeamDataAccessApplicationController@index",
+     *      operationId="fetch_team_dar_applications",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                      @OA\Property(property="project_title", type="string", example="A project"),
-     *                      @OA\Property(property="user", type="array", @OA\Items(
-     *                          @OA\Property(property="name", type="string", example="A User"),
-     *                          @OA\Property(property="organisation", type="string", example="An origanisation"),
-     *                      )),
-     *                      @OA\Property(property="datasets", type="array", @OA\Items(
-     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
-     *                          @OA\Property(property="dataset_id", type="integer", example="1"),
-     *                          @OA\Property(property="dataset_title", type="string", example="A dataset"),
-     *                          @OA\Property(property="custodian", type="array", @OA\Items(
-     *                              @OA\Property(property="name", type="string", example="A Custodian"),
-     *                          )),
-     *                      )),
-     *                      @OA\Property(property="teams", type="array", @OA\Items(
-     *                          @OA\Property(property="team_id", type="integer", example="1"),
-     *                          @OA\Property(property="dar_application_id", type="integer", example="1"),
-     *                          @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                          @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *                      )),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/DataAccessApplication")
      *              )
      *          )
      *      )
@@ -150,6 +136,17 @@ class TeamDataAccessApplicationController extends Controller
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="Team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="Team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
      *       name="field",
      *       in="path",
      *       description="name of the field to perform a count on",
@@ -218,8 +215,20 @@ class TeamDataAccessApplicationController extends Controller
      *    path="/api/v1/teams/{teamId}/dar/applications/count",
      *    tags={"TeamDataAccessApplication"},
      *    summary="TeamDataAccessApplicationController@allCounts",
+     *    operationId="count_team_dar_applications",
      *    description="Get Counts for all status fields in the model",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="Team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="Team id",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -270,7 +279,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return a single DAR application",
      *      tags={"TeamDataAccessApplication"},
      *      summary="TeamDataAccessApplicationController@show",
+     *      operationId="fetch_team_dar_application",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -287,18 +308,7 @@ class TeamDataAccessApplicationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                  @OA\Property(property="project_title", type="string", example="A DAR project"),
-     *                  @OA\Property(property="teams", type="array", @OA\Items(
-     *                      @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                      @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *                  )
-     *              ))
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplication"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -370,12 +380,36 @@ class TeamDataAccessApplicationController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/showHeader",
+     *      x={"internal"="true"},
+     *      path="/api/v1/teams/{teamId}/dar/applications/{id}/header",
      *      summary="Get header information about a specific DAR",
      *      description="Get header information about a specific DAR",
      *      tags={"TeamDataAccessApplication"},
      *      summary="TeamDataAccessApplicationController@showHeader",
+     *      operationId="fetch_team_dar_application_header",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DAR application id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DAR application id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -456,7 +490,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Returns a DAR form as a CSV with attached files as a zip",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@download",
+     *      operationId="fetch_team_dar_application_download_zip",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -596,7 +642,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return a list of files associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@showFiles",
+     *      operationId="fetch_team_dar_application_files",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -692,7 +750,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Download a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@downloadFile",
+     *      operationId="fetch_team_dar_application_file",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -789,7 +859,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return answers from a single DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@showAnswers",
+     *      operationId="fetch_team_dar_application_answers",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -866,7 +948,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Return the status history of a single DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@status",
+     *      operationId="fetch_team_dar_application_status_history",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -948,7 +1042,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Edit a system DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@update",
+     *      operationId="update_team_dar_application",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -981,11 +1087,7 @@ class TeamDataAccessApplicationController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="applicant_id", type="integer", example="1"),
-     *                  @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
-     *                  @OA\Property(property="approval_status", type="string", example="APPROVED"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataAccessApplication"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -1087,7 +1189,19 @@ class TeamDataAccessApplicationController extends Controller
      *      description="Delete a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroyFile",
+     *      operationId="delete_team_dar_application_file",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="teamId",
+     *         in="path",
+     *         description="Team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="Team id",
+     *         ),
+     *      ),
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -1177,7 +1291,6 @@ class TeamDataAccessApplicationController extends Controller
 
     private function emailStatusNotification(int $id, DataAccessApplication $application, int $teamId): void
     {
-        $template = EmailTemplate::where(['identifier' => 'dar.status.researcher'])->first();
         $user = User::where('id', $application->applicant_id)->first();
 
         $to = [
@@ -1202,6 +1315,6 @@ class TeamDataAccessApplicationController extends Controller
             '[[CURRENT_YEAR]]' => date("Y"),
         ];
 
-        SendEmailJob::dispatch($to, $template, $replacements);
+        app(EmailManager::class)->send('dar.status.researcher', $to, $replacements);
     }
 }

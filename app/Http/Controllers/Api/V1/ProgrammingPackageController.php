@@ -22,11 +22,13 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages",
      *      summary="List of system programming packages",
      *      description="Returns a list of programming packages enabled on the system",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@index",
+     *      operationId="fetch_all_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -34,13 +36,7 @@ class ProgrammingPackageController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/ProgrammingPackage")
      *              )
      *          )
      *      )
@@ -79,11 +75,13 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Return a single system programming package",
      *      description="Return a single system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@show",
+     *      operationId="fetch_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -101,13 +99,7 @@ class ProgrammingPackageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingPackage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -157,11 +149,13 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages",
      *      summary="Create a new system programming package",
      *      description="Creates a new system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@store",
+     *      operationId="create_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -225,11 +219,13 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Update a system programming package",
      *      description="Update a system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@update",
+     *      operationId="update_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -263,13 +259,7 @@ class ProgrammingPackageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingPackage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -317,11 +307,13 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Edit a system programming package",
      *      description="Edit a system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@update",
+     *      operationId="edit_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -354,13 +346,7 @@ class ProgrammingPackageController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="enabled", type="boolean", example="true"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/ProgrammingPackage")
      *          ),
      *      ),
      *      @OA\Response(
@@ -412,11 +398,13 @@ class ProgrammingPackageController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/programming_packages/{id}",
      *      summary="Delete a system programming package",
      *      description="Delete a system programming package",
      *      tags={"ProgrammingPackage"},
      *      summary="ProgrammingPackage@destroy",
+     *      operationId="delete_programming_packages",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

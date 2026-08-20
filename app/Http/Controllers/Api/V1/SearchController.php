@@ -16,7 +16,6 @@ use App\Http\Requests\Search\PublicationSearch;
 use App\Http\Requests\Search\Search;
 use App\Http\Traits\LoggingContext;
 use App\Http\Traits\PaginateFromArray;
-use App\Models\Dataset;
 use App\Models\Dur;
 use App\Models\License;
 use Auditor;
@@ -72,6 +71,7 @@ class SearchController extends Controller
      * ),
      * @OA\Post(
      *      path="/api/v1/search/datasets",
+     *      operationId="search_datasets",
      *      summary="Keyword search across gateway datasets",
      *      description="Returns gateway datasets related to the provided query term(s)",
      *      tags={"Search-Datasets"},
@@ -153,6 +153,10 @@ class SearchController extends Controller
         try {
             $input['aggs'] = FilterCache::get('dataset', enabledOnly: true);
 
+            $partner = $this->partnerContext->getPartner();
+            $shouldScope = $partner !== 'HDRUK' || !config('partners.allow_cross_context_read', true);
+            $input['partnerContext'] = $shouldScope ? $partner : null;
+
             $urlString = config('gateway.search_service_url') . '/search/datasets';
             $response = Http::withHeaders($loggingContext)->post($urlString, $input);
 
@@ -173,10 +177,7 @@ class SearchController extends Controller
                 ], 404);
             }
 
-            $datasetsArray = $this->filterDatasetHitsForPartner(
-                $response['hits']['hits'],
-                $this->partnerContext->getPartner(),
-            );
+            $datasetsArray = $response['hits']['hits'];
             $totalResults = count($datasetsArray);
             $matchedIds = array_column($datasetsArray, '_id');
 
@@ -238,6 +239,7 @@ class SearchController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/search/similar/datasets",
+     *      operationId="search_similar_datasets",
      *      summary="Search for similar datasets",
      *      description="Returns top three gateway datasets most similar to the provided dataset",
      *      tags={"Search-Similar-Datasets"},
@@ -317,6 +319,7 @@ class SearchController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/search/tools",
+     *      operationId="search_tools",
      *      summary="Keyword search across gateway tools",
      *      description="Returns gateway tools related to the provided query term(s)",
      *      tags={"Search-Tools"},
@@ -488,6 +491,7 @@ class SearchController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/search/collections",
+     *      operationId="search_collections",
      *      summary="Keyword search across gateway collections",
      *      description="Returns gateway collections related to the provided query term(s)",
      *      tags={"Search-Collections"},
@@ -623,6 +627,7 @@ class SearchController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/search/dur",
+     *      operationId="search_data_uses",
      *      summary="Keyword search across gateway data uses",
      *      description="Returns gateway data uses related to the provided query term(s)",
      *      tags={"Search-DataUses"},
@@ -816,6 +821,7 @@ class SearchController extends Controller
      * ),
      * @OA\Post(
      *      path="/api/v1/search/publications",
+     *      operationId="search_publications",
      *      summary="Keyword search across gateway hosted publications",
      *      description="Returns gateway publications related to the provided query term(s)",
      *      tags={"Search-Publications"},
@@ -1059,6 +1065,7 @@ class SearchController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/search/doi",
+     *      operationId="search_publications_by_doi",
      *      summary="DOI search of EuropePMC publications",
      *      description="Returns publications from EuropePMC matching a give DOI",
      *      tags={"Search-Publications"},
@@ -1152,6 +1159,7 @@ class SearchController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/search/data_custodian_networks",
+     *      operationId="search_data_custodian_networks",
      *      summary="Keyword search across gateway data custodian networks",
      *      description="Returns gateway data custodian networks related to the provided query term(s)",
      *      tags={"Search-DataCustodianNetworks"},
@@ -1297,6 +1305,7 @@ class SearchController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/search/data_custodians",
+     *      operationId="search_data_custodians",
      *      summary="Keyword search across gateway data custodians",
      *      description="Returns gateway data custodians related to the provided query term(s)",
      *      tags={"Search-DataCustodians"},
@@ -1470,38 +1479,6 @@ class SearchController extends Controller
         }
 
         return $resultArray;
-    }
-
-    /**
-     * Keep only Elasticsearch hits whose dataset is visible in the active partner context.
-     * Only ACTIVE datasets are indexed in search, so we align with that here.
-     *
-     * @param  array<int, array<string, mixed>>  $hits
-     * @return array<int, array<string, mixed>>
-     */
-    private function filterDatasetHitsForPartner(array $hits, string $partnerContext): array
-    {
-        if ($hits === []) {
-            return $hits;
-        }
-
-        $shouldFilter = $partnerContext !== 'HDRUK'
-            || !config('partners.allow_cross_context_read', true);
-
-        if (!$shouldFilter) {
-            return $hits;
-        }
-
-        $allowedIds = Dataset::query()
-            ->forPartnerContext($partnerContext)
-            ->where('status', Dataset::STATUS_ACTIVE)
-            ->pluck('id')
-            ->flip();
-
-        return array_values(array_filter(
-            $hits,
-            fn (array $hit) => isset($allowedIds[(int) $hit['_id']])
-        ));
     }
 
     private function isDoi(string $query): bool

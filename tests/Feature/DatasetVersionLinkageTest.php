@@ -321,4 +321,41 @@ class DatasetVersionLinkageTest extends TestCase
         // And the encoded shape is a JSON null (object-or-null), not a `[]` array.
         $this->assertStringContainsString('"datasetLinkage":null', json_encode($linkage));
     }
+
+    /**
+     * `paper_doi` is stored inconsistently — bare, `doi.org/...`, or `https://doi.org/...`.
+     * The GWDM Doi schema only accepts the bare form, so afterRead() must strip any doi.org
+     * host prefix (scheme optional) when rebuilding the publication linkage arrays.
+     */
+    public function test_after_read_strips_doi_org_prefix_from_publication_dois(): void
+    {
+        $this->disableObservers();
+
+        [, $sourceVersionId] = $this->createDataset($this->getMetadataV2p0());
+
+        $stored = [
+            'https://doi.org/10.1111/tme.12750' => 'ABOUT',
+            'doi.org/10.1000/xyz123' => 'ABOUT',
+            '10.1371/journal.pone.0338652' => 'USING',
+        ];
+
+        foreach ($stored as $paperDoi => $linkType) {
+            $publication = Publication::factory()->create(['paper_doi' => $paperDoi]);
+            PublicationHasDatasetVersion::create([
+                'publication_id' => $publication->id,
+                'dataset_version_id' => $sourceVersionId,
+                'link_type' => $linkType,
+                'description' => Gwdm2xHandler::LINKAGE_DESCRIPTION,
+            ]);
+        }
+
+        $linkage = $this->handler()->afterRead(DatasetVersion::find($sourceVersionId))['linkage'];
+
+        // Every emitted DOI is the bare form, regardless of how it was stored.
+        $this->assertEqualsCanonicalizing(
+            ['10.1111/tme.12750', '10.1000/xyz123'],
+            $linkage['publicationAboutDataset']
+        );
+        $this->assertSame(['10.1371/journal.pone.0338652'], $linkage['publicationUsingDataset']);
+    }
 }

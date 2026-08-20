@@ -12,6 +12,7 @@ use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
 use Illuminate\Support\Str;
 use MetadataManagementController as MMC;
+use App\Services\Gwdm\GwdmMetadataHandler;
 
 trait MetadataOnboard
 {
@@ -26,6 +27,7 @@ trait MetadataOnboard
         string | null $inputSchema,
         string | null $inputVersion,
         bool $elasticIndexing,
+        GwdmMetadataHandler $handler,
         string $partnerContext = 'HDRUK',
     ): array {
         $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ?
@@ -138,10 +140,14 @@ trait MetadataOnboard
             //include a note of what the metadata was (i.e. which GWDM version)
             $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
+            [$title, $shortTitle] = $handler->extractTitleFields($input['metadata']['metadata']);
+
             $version = MMC::createDatasetVersion([
                 'dataset_id' => $dataset->id,
                 'metadata' => json_encode($input['metadata']),
                 'version' => 1,
+                'title' => $title,
+                'short_title' => $shortTitle,
             ]);
 
             // map coverage/spatial field to controlled list for filtering

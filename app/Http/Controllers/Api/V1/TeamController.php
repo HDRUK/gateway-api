@@ -66,30 +66,7 @@ class TeamController extends Controller
      *         @OA\JsonContent(
      *            @OA\Property(property="current_page", type="integer", example="1"),
      *               @OA\Property(property="data", type="array",
-     *                  @OA\Items(type="object",
-     *                    @OA\Property(property="id", type="integer", example="123"),
-     *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                    @OA\Property(property="enabled", type="boolean", example="1"),
-     *                    @OA\Property(property="name", type="string", example="someName"),
-     *                    @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                    @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                    @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                    @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                    @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                    @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()),
-     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
-     *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
-     *                    @OA\Property(property="is_provider", type="boolean", example="1"),
-     *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
-     *                    @OA\Property(property="introduction", type="string", example="info about the team"),
-     *                    @OA\Property(property="service", type="string", example="https://example"),
-     *                    @OA\Property(property="aliases", type="array", example="[]", @OA\Items()),
-     *                ),
+     *                  @OA\Items(ref="#/components/schemas/Team"),
      *             ),
      *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams?page=1"),
      *             @OA\Property(property="from", type="integer", example="1"),
@@ -130,6 +107,10 @@ class TeamController extends Controller
                 $query->where('teams.is_question_bank', $request->boolean('is_question_bank'));
             }
 
+            if ($request->has('name')) {
+                $query->where('teams.name', 'like', '%' . $request->query('name') . '%');
+            }
+
             foreach ($sort as $key => $value) {
                 if ($key === 'created_at' || $key === 'updated_at') {
                     $query->orderBy('teams.' . $key, strtoupper($value));
@@ -142,10 +123,13 @@ class TeamController extends Controller
             }
 
             $perPage = request('per_page', Config::get('constants.per_page'));
-            $teams = $query
+            $teamsPaginator = $query
                 ->with(['users', 'aliases'])
-                ->paginate($perPage, ['*'], 'page')
-                ->toArray();
+                ->paginate($perPage, ['*'], 'page');
+
+            User::preloadCohortDataForUsers($teamsPaginator->getCollection()->flatMap(fn ($team) => $team->users));
+
+            $teams = $teamsPaginator->toArray();
 
             $teams['data'] = $this->getTeams($teams['data']);
 
@@ -264,29 +248,7 @@ class TeamController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="name", type="string", example="someName"),
-     *                  @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                  @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
-     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
-     *                  @OA\Property(property="is_provider", type="boolean", example="1"),
-     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
-     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *                  @OA\Property(property="aliases", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Team")
      *          ),
      *      ),
      *      @OA\Response(
@@ -304,7 +266,11 @@ class TeamController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get()->toArray();
+            $userTeamCollection = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get();
+
+            User::preloadCohortDataForUsers($userTeamCollection->flatMap(fn ($team) => $team->users));
+
+            $userTeam = $userTeamCollection->toArray();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -395,29 +361,7 @@ class TeamController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(type="object",
-     *                    @OA\Property(property="id", type="integer", example="123"),
-     *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                    @OA\Property(property="enabled", type="boolean", example="1"),
-     *                    @OA\Property(property="name", type="string", example="someName"),
-     *                    @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                    @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                    @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                    @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                    @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                    @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()),
-     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
-     *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
-     *                    @OA\Property(property="is_provider", type="boolean", example="1"),
-     *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
-     *                    @OA\Property(property="introduction", type="string", example="info about the team"),
-     *                    @OA\Property(property="service", type="string", example="https://example"),
-     *                 ),
+     *                  @OA\Items(ref="#/components/schemas/Team"),
      *              ),
      *          ),
      *      ),
@@ -1499,30 +1443,7 @@ class TeamController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="someName"),
-     *                  @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                  @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
-     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
-     *                  @OA\Property(property="is_provider", type="boolean", example="1"),
-     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
-     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
-     *                  @OA\Property(property="dar_modal_header", type="string", example="dar info"),
-*                       @OA\Property(property="dar_modal_content", type="string", example="dar info"),
-     *                  @OA\Property(property="dar_modal_footer", type="string", example="dar info"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Team")
      *          ),
      *      ),
      *      @OA\Response(
@@ -1664,30 +1585,7 @@ class TeamController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="someName"),
-     *                  @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                  @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
-     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
-     *                  @OA\Property(property="is_provider", type="boolean", example="1"),
-     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
-     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
-     *                  @OA\Property(property="dar_modal_header", type="string", example="dar info"),
-     *                  @OA\Property(property="dar_modal_content", type="string", example="dar info"),
-     *                  @OA\Property(property="dar_modal_footer", type="string", example="dar info"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/Team")
      *          ),
      *      ),
      *      @OA\Response(

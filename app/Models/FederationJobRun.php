@@ -83,6 +83,20 @@ class FederationJobRun extends Model
     }
 
     /**
+     * @param non-empty-array<int, int> $federationIds
+     * @return Collection<int, string> federation_id => last_run_at
+     */
+    public static function latestRunTimesForFederationIds(array $federationIds): Collection
+    {
+        return static::select('federation_id')
+            ->selectRaw('MAX(created_at) as last_run_at')
+            ->whereIn('federation_id', $federationIds)
+            ->groupBy('federation_id')
+            ->get()
+            ->pluck('last_run_at', 'federation_id');
+    }
+
+    /**
      * @return array<int, array{schema: ?string, message: string}>
      */
     public function errorMessages(): array

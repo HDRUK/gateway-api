@@ -20,11 +20,34 @@ class TeamQuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}/questions/section/{sectionId}",
+     *      operationId="fetch_team_question_bank_questions_by_section",
      *      summary="List of question bank questions by section",
      *      description="List of question bank questions by section",
      *      tags={"QuestionBank"},
      *      summary="TeamQuestionBank@indexBySection",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="teamId",
+     *          in="path",
+     *          description="Team ID",
+     *          required=true,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="Team ID",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="sectionId",
+     *          in="path",
+     *          description="section id",
+     *          required=true,
+     *          example="1",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="section id",
+     *          ),
+     *      ),
      *      @OA\Parameter(
      *          name="is_child",
      *          in="query",

@@ -8,10 +8,9 @@ use Exception;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
 use App\Models\Notification;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\TeamUserHasRole;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -778,7 +777,6 @@ class TeamUserController extends Controller
     private function sendEmailNewUser(int $teamId, int $userId, array $roles)
     {
         try {
-            $template = EmailTemplate::where(['identifier' => 'add.new.user.team'])->first();
             $user = User::where('id', '=', $userId)->first();
             $team = Team::where('id', '=', $teamId)->first();
 
@@ -797,7 +795,7 @@ class TeamUserController extends Controller
                 '[[CURRENT_YEAR]]' => date("Y"),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            app(EmailManager::class)->send('add.new.user.team', $to, $replacements);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -811,7 +809,6 @@ class TeamUserController extends Controller
 
     public function sendEmailUpdate(int $teamId, int $userId)
     {
-        $template = EmailTemplate::where(['identifier' => 'update.roles.team.user'])->first();
         $team = Team::where('id', '=', $teamId)->first();
         $user = User::where('id', '=', $userId)->first();
         $to = [
@@ -831,12 +828,11 @@ class TeamUserController extends Controller
             '[[REMOVED_ROLES]]' => $this->stringRoleFullName($this->deleteRoleNames),
         ];
 
-        SendEmailJob::dispatch($to, $template, $replacements);
+        app(EmailManager::class)->send('update.roles.team.user', $to, $replacements);
     }
 
     public function sendEmailUpdateToTeam(int $teamId)
     {
-        $template = EmailTemplate::where(['identifier' => 'update.roles.team.notifications'])->first();
         $team = Team::where('id', '=', $teamId)->first();
         if (!$team->notification_status) {
             return;
@@ -875,7 +871,7 @@ class TeamUserController extends Controller
                 '[[USER_CHANGES]]' => $this->stringUserRoleTeamNotifications(),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            app(EmailManager::class)->send('update.roles.team.notifications', $to, $replacements);
         }
     }
 
@@ -937,7 +933,11 @@ class TeamUserController extends Controller
     {
         try {
             $admins = [];
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
+            $userTeamCollection = Team::where('id', $teamId)->with(['users', 'notifications'])->get();
+
+            User::preloadCohortDataForUsers($userTeamCollection->flatMap(fn ($team) => $team->users));
+
+            $userTeam = $userTeamCollection->toArray();
             $team = $this->getTeams($userTeam);
 
             $users = $team['users'];

@@ -104,4 +104,34 @@ class IndexElasticGwdmGatingTest extends TestCase
         $this->assertIsArray($params, 'an indexable version (real GWDM 2.0 today) must still build an ES document');
         $this->assertSame((int) $datasetId, $params['id']);
     }
+
+    public function test_reindex_elastic_includes_the_dataset_partner_context(): void
+    {
+        $team = Team::first();
+        $user = User::first();
+        $metadata = $this->getMetadataV2p0();
+
+        request()->headers->set('x-gwdm-version', '2.0');
+        $created = app(DatasetService::class)->create(
+            [
+                'metadata' => $metadata,
+                'status' => Dataset::STATUS_ACTIVE,
+                'user_id' => $user->id,
+                'team_id' => $team->id,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+            ],
+            $team,
+            null,
+            null,
+            false,
+        );
+        $datasetId = $created['dataset_id'];
+
+        Dataset::where('id', $datasetId)->update(['partner_context' => 'CRUK']);
+
+        $job = new IndexDataset((string) $datasetId);
+        $params = $job->reindexElastic((string) $datasetId, true);
+
+        $this->assertSame('CRUK', $params['body']['partnerContext']);
+    }
 }

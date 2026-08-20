@@ -7,10 +7,9 @@ use Exception;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
 use App\Models\Notification;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\EnquiryThread;
 use App\Models\DatasetVersion;
 use App\Models\EnquiryMessage;
@@ -185,8 +184,6 @@ trait EnquiriesTrait
         list($username, $domain) = explode('@', $imapUsername);
 
         try {
-            $template = EmailTemplate::where('identifier', $ident)->first();
-
             if (array_key_exists('datasets', $threadDetail['thread'])) {
                 $threadDetail['message']['message_body']['[[DATASETS]]'] = $threadDetail['thread']['datasets'];
             }
@@ -234,13 +231,10 @@ trait EnquiriesTrait
                 }
 
                 $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
-                SendEmailJob::dispatch($to, $template, $replacements, $from);
+                app(EmailManager::class)->send($ident, $to, $replacements, $from);
             }
 
-            unset(
-                $template,
-                $replacements,
-            );
+            unset($replacements);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

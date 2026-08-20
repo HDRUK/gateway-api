@@ -10,7 +10,10 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
 use App\Models\Permission;
+use App\Models\Publication;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\Team;
+use App\Services\Gwdm\Gwdm2xHandler;
 use Config;
 use Hash;
 use Illuminate\Support\Carbon;
@@ -1361,6 +1364,99 @@ class DatasetTest extends TestCase
 
         // patch column must remain null (no delta stored in v2 path).
         $this->assertNull($dsv[0]->patch);
+    }
+
+    public function test_create_team_dataset_sets_title_and_short_title(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $responseCreateDataset = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId),
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $responseCreateDataset->decodeResponseJson()['data'];
+
+        $dsv = DatasetVersion::where('dataset_id', $datasetId)->first();
+        $expectedTitle = $this->metadata['metadata']['summary']['title'];
+
+        $this->assertNotNull($dsv->title, 'title must be set on the version created by metadataOnboard()');
+        $this->assertEquals($expectedTitle, $dsv->title);
+        $this->assertNotNull($dsv->short_title, 'short_title must be set on the version created by metadataOnboard()');
+    }
+
+    /**
+     * The team dataset show endpoint (used to hydrate the onboarding/edit form) must
+     * reconstruct the GWDM envelope via the handler system before translating, so that
+     * SQL is the source of truth for 2.x linkages/publications. This asserts a publication
+     * linked only in the SQL junction table (with a URL-form paper_doi) surfaces in the
+     * translated payload as the bare DOI — proving getDatasetDetails() no longer translates
+     * the raw metadata blob. Regression guard for GAT-9357.
+     */
+    public function test_team_show_reconstructs_publication_linkage_from_sql(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $create = $this->json(
+            'POST',
+            self::TEST_URL_DATASET_V2,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $create->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $create->decodeResponseJson()['data'];
+
+        $latestVersion = DatasetVersion::where('dataset_id', $datasetId)
+            ->orderBy('version', 'desc')
+            ->firstOrFail();
+
+        // Link a publication ONLY in SQL (no auto-extraction — observers are flushed in
+        // setUp), storing the DOI in the URL form the GWDM Doi schema rejects.
+        $publication = Publication::factory()->create([
+            'paper_doi' => 'https://doi.org/10.1111/tme.12750',
+        ]);
+        PublicationHasDatasetVersion::create([
+            'publication_id' => $publication->id,
+            'dataset_version_id' => $latestVersion->id,
+            'link_type' => 'ABOUT',
+            'description' => Gwdm2xHandler::LINKAGE_DESCRIPTION,
+        ]);
+
+        $response = $this->json(
+            'GET',
+            $this->team_datasets_url($teamId).'/'.$datasetId.'?schema_model=GWDM&schema_version=2.0',
+            [],
+            $this->header,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $version = $response->decodeResponseJson()['data']['versions'][0];
+        $metadata = $version['metadata'];
+        if (is_string($metadata)) {
+            $metadata = json_decode($metadata, true);
+        }
+        $about = $metadata['metadata']['linkage']['publicationAboutDataset'] ?? [];
+
+        // Reconstructed from SQL and normalised to the bare DOI — not the raw blob, not the URL form.
+        $this->assertContains('10.1111/tme.12750', $about);
+        $this->assertNotContains('https://doi.org/10.1111/tme.12750', $about);
     }
 
     private function team_datasets_url(int $teamId)

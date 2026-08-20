@@ -26,6 +26,7 @@ class LibraryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/libraries",
      *      operationId="listLibraries",
      *      tags={"Library"},
@@ -156,7 +157,9 @@ class LibraryController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *      path="/api/v1/libraries/{id}",
+     *      operationId="fetch_libraries",
      *      summary="Return a single library",
      *      description="Return a single library",
      *      tags={"Library"},
@@ -277,7 +280,9 @@ class LibraryController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/libraries",
+     *      operationId="create_libraries",
      *      summary="Create a new library",
      *      description="Creates a new library",
      *      tags={"Library"},
@@ -345,7 +350,9 @@ class LibraryController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
      *      path="/api/v1/libraries/{id}",
+     *      operationId="update_libraries",
      *      summary="Update a library",
      *      description="Update a library",
      *      tags={"Library"},
@@ -440,7 +447,9 @@ class LibraryController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
      *      path="/api/v1/libraries/{id}",
+     *      operationId="edit_libraries",
      *      summary="Edit a library",
      *      description="Edit a library",
      *      tags={"Library"},
@@ -540,7 +549,9 @@ class LibraryController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/libraries/{id}",
+     *      operationId="delete_libraries",
      *      summary="Delete a library",
      *      description="Delete a library",
      *      tags={"Library"},

@@ -37,6 +37,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_networks",
      *      path="/api/v2/data_custodian_networks",
      *      description="Returns a list of DataCustodianNetworks enabled on the system",
      *      tags={"DataCustodianNetworks"},
@@ -59,16 +60,7 @@ class DataCustodianNetworksController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="name", type="string", example="Name"),
-     *                      @OA\Property(property="summary", type="string", example="Summary"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="service", type="string", example="https://example"),
-     *                  )
+     *                  @OA\Items(ref="#/components/schemas/DataCustodianNetwork")
      *              )
      *          )
      *      )
@@ -125,6 +117,8 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
+     *      operationId="fetch_admin_data_custodian_networks",
      *      path="/api/v2/admin/data_custodian_networks",
      *      description="Superadmin-only listing used by the network management admin screen — unlike index(), this is not filtered to enabled=1, so disabled networks remain visible/manageable.",
      *      tags={"Admin-DataCustodianNetworks"},
@@ -196,6 +190,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      description="Return a single DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
@@ -217,16 +212,7 @@ class DataCustodianNetworksController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataCustodianNetwork")
      *          ),
      *      ),
      *      @OA\Response(
@@ -285,6 +271,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_custodians_summary",
      *      path="/api/v2/data_custodian_networks/{id}/custodians_summary",
      *      description="Return a single DataCustodianNetwork - custodians summary",
      *      tags={"DataCustodianNetworks"},
@@ -369,6 +356,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_datasets_summary",
      *      path="/api/v2/data_custodian_networks/{id}/datasets_summary",
      *      description="Return a single DataCustodianNetwork - summary of datasets",
      *      tags={"DataCustodianNetworks"},
@@ -473,6 +461,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_entities_summary",
      *      path="/api/v2/data_custodian_networks/{id}/entities_summary",
      *      description="Return a single DataCustodianNetwork - summary of entities",
      *      tags={"DataCustodianNetworks"},
@@ -1159,6 +1148,7 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Get(
+     *      operationId="fetch_data_custodian_network_info",
      *      path="/api/v2/data_custodian_networks/{id}/info",
      *      description="Return a single DataCustodianNetwork - basic information",
      *      tags={"DataCustodianNetworks"},
@@ -1239,6 +1229,8 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
+     *      operationId="create_data_custodian_network",
      *      path="/api/v2/data_custodian_networks",
      *      description="Creates a new DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
@@ -1254,9 +1246,7 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="enabled", type="boolean", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -1338,6 +1328,8 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Put(
+     *      x={"internal"="true"},
+     *      operationId="update_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      description="Update a DataCustodianNetwork",
      *      tags={"DataCustodianNetworks"},
@@ -1364,9 +1356,7 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -1382,16 +1372,7 @@ class DataCustodianNetworksController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataCustodianNetwork")
      *          ),
      *      ),
      *      @OA\Response(
@@ -1451,6 +1432,8 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Patch(
+     *      x={"internal"="true"},
+     *      operationId="edit_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Edit a DataCustodianNetwork",
      *      description="Edit a DataCustodianNetwork",
@@ -1477,9 +1460,7 @@ class DataCustodianNetworksController extends Controller
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="service", type="string", example="https://example"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
-     *                  @OA\Items(
-     *                      @OA\Property(type="integer")
-     *                  )
+     *                  @OA\Items(type="integer")
      *              )
      *          ),
      *      ),
@@ -1495,16 +1476,7 @@ class DataCustodianNetworksController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="name", type="string", example="Name"),
-     *                  @OA\Property(property="summary", type="string", example="Summary"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="service", type="string", example="https://example"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/DataCustodianNetwork")
      *          ),
      *      ),
      *      @OA\Response(
@@ -1565,6 +1537,8 @@ class DataCustodianNetworksController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
+     *      operationId="delete_data_custodian_network",
      *      path="/api/v2/data_custodian_networks/{id}",
      *      summary="Delete a DataCustodianNetwork",
      *      description="Delete a DataCustodianNetwork",

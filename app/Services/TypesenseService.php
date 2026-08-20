@@ -114,9 +114,13 @@ class TypesenseService
         }
 
         $result = $this->rawSearch($collection, '*', [
-            'facet_by' => implode(',', $fields),
-            'per_page' => 0,
-            'max_facet_values' => 250,
+            'facet_by'                      => implode(',', $fields),
+            'per_page'                      => 0,
+            'max_facet_values'              => 250,
+            // Typesense truncates facet values to 100 chars by default —
+            // the FE then sends the truncated string as a filter value, which
+            // never matches the full stored value. 0 = no truncation.
+            'facet_value_truncation_threshold' => 0,
         ]);
 
         $facets = [];

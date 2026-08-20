@@ -243,11 +243,38 @@ class DatasetVersion extends BaseTypesenseModel
         )->selectRaw('dataset_versions.id, dataset_versions.dataset_id, title, short_title as shortTitle');
     }
 
+    /** @return BelongsTo<Dataset, $this> */
     public function dataset(): BelongsTo
     {
         return $this->belongsTo(Dataset::class, 'dataset_id', 'id')
             ->where('status', 'ACTIVE')
             ->select(['id', 'status', 'is_cohort_discovery']);
+    }
+
+    public function linkedCollections(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Collection::class,
+            'collection_has_dataset_version',
+            'dataset_version_id',
+            'collection_id'
+        )
+        ->whereNull('collection_has_dataset_version.deleted_at')
+        ->where('collections.status', 'ACTIVE')
+        ->select(['collections.id', 'collections.name']);
+    }
+
+    public function linkedDurs(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Dur::class,
+            'dur_has_dataset_version',
+            'dataset_version_id',
+            'dur_id'
+        )
+        ->whereNull('dur_has_dataset_version.deleted_at')
+        ->where('dur.status', 'ACTIVE')
+        ->select(['dur.id', 'dur.project_title']);
     }
 
     public function shouldBeSearchable(): bool
@@ -322,18 +349,42 @@ class DatasetVersion extends BaseTypesenseModel
         // Only DB columns and Eloquent relationships (not visible to the handler,
         // which sees only the envelope) are merged in here.
         return array_merge($fields, [
-            'id' => (string) $this->id,
-            'dataset_id' => (string) $this->dataset_id,
-            'title' => $this->title ?? '',
-            'shortTitle' => $this->short_title ?? '',
+            'id'                 => (string) $this->id,
+            'dataset_id'         => (string) $this->dataset_id,
+            'title'              => $this->title ?? '',
+            'shortTitle'         => $this->short_title ?? '',
             'geographicLocation' => $this->spatialCoverage->pluck('region')->all(),
-            'isCohortDiscovery' => (bool) ($this->dataset->is_cohort_discovery ?? false),
+            'partnerContext'      => $this->dataset?->partner_context ?? 'HDRUK',
+            'isCohortDiscovery'  => (bool) ($this->dataset?->is_cohort_discovery ?? false),
+            'dataProviderColl'   => $this->dataset?->team?->dataProviderColls?->pluck('name')->all() ?? [],
+            'collectionNames'    => $this->relationLoaded('linkedCollections')
+                ? $this->linkedCollections->pluck('name')->filter()->values()->all()
+                : [],
+            'dataUseTitles'      => $this->relationLoaded('linkedDurs')
+                ? $this->linkedDurs->pluck('project_title')->filter()->values()->all()
+                : [],
         ]);
     }
 
+    /**
+     * @param  Builder<DatasetVersion>  $query
+     * @return Builder<DatasetVersion>
+     */
     public function makeAllSearchableUsing(Builder $query): Builder
     {
-        return $query->with(['spatialCoverage', 'dataset']);
+        // Pre-filter to indexable rows at the DB level (single correlated
+        // subquery) instead of pulling every historical version through the
+        // chunk and eager-loads only to be discarded by shouldBeSearchable()'s
+        // per-row query. See scopeIndexEligible() for the equivalence.
+        return $query->indexEligible()->with([
+            'spatialCoverage',
+            // Override the default dataset() select to include team_id so the
+            // nested team.dataProviderColls load can resolve.
+            'dataset' => fn ($q) => $q->select(['id', 'status', 'is_cohort_discovery', 'team_id', 'partner_context'])
+                ->with('team.dataProviderColls:id,name'),
+            'linkedCollections',
+            'linkedDurs',
+        ]);
     }
 
     public function typesenseSearchParameters(): array
@@ -367,6 +418,18 @@ class DatasetVersion extends BaseTypesenseModel
                 ['name' => 'containsBioSamples',           'type' => 'bool',     'facet' => true, 'optional' => true],
                 ['name' => 'sampleAvailability',           'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'isCohortDiscovery',             'type' => 'bool',     'facet' => true, 'optional' => true],
+                ['name' => 'dataProviderColl',              'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'collectionNames',              'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'dataUseTitles',                'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'partnerContext',                'type' => 'string',   'optional' => true],
+                ['name' => 'startDate',                    'type' => 'int64',    'optional' => true],
+                ['name' => 'endDate',                      'type' => 'int64',    'optional' => true],
+                // Year-level facets for the FE date-range year picker. Stored
+                // separately from the int64 timestamps (used for range filtering)
+                // because Typesense can't facet arbitrary timestamps into year
+                // buckets — the FE needs discrete year keys, not raw unix values.
+                ['name' => 'startYear',                    'type' => 'int32',    'facet' => true, 'optional' => true],
+                ['name' => 'endYear',                      'type' => 'int32',    'facet' => true, 'optional' => true],
                 ['name' => 'structuralTableNames',         'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnNames',        'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnDescriptions', 'type' => 'string[]', 'optional' => true],

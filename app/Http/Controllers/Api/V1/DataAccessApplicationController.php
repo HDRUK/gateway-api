@@ -33,11 +33,13 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Post(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/applications",
      *      summary="Create a new DAR application",
      *      description="Creates a new DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@store",
+     *      operationId="create_dar_applications",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -48,8 +50,8 @@ class DataAccessApplicationController extends Controller
      *              @OA\Property(property="submission_status", type="string", example="SUBMITTED"),
      *              @OA\Property(property="approval_status", type="string", example="APPROVED"),
      *              @OA\Property(property="project_title", type="string", example="A DAR project"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
-     *              @OA\Property(property="dataset_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items(type="integer")),
+     *              @OA\Property(property="dataset_ids", type="array", @OA\Items(type="integer")),
      *          ),
      *      ),
      *      @OA\Response(
@@ -207,11 +209,13 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/applications/{id}",
      *      summary="Delete a system DAR application",
      *      description="Delete a system DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroy",
+     *      operationId="delete_dar_applications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -281,11 +285,13 @@ class DataAccessApplicationController extends Controller
 
     /**
      * @OA\Delete(
+     *      x={"internal"="true"},
      *      path="/api/v1/dar/applications/{id}/files/{fileId}",
      *      summary="Delete a file associated with a DAR application",
      *      description="Delete a file associated with a DAR application",
      *      tags={"DataAccessApplication"},
      *      summary="DataAccessApplication@destroyFile",
+     *      operationId="delete_dar_application_files",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",

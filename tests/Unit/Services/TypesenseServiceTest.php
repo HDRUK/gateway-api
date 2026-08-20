@@ -322,6 +322,7 @@ class TypesenseServiceTest extends TestCase
                 'facet_by' => 'dataType',
                 'per_page' => 0,
                 'max_facet_values' => 250,
+                'facet_value_truncation_threshold' => 0,
             ])
             ->andReturn([
                 'facet_counts' => [

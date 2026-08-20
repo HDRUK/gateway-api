@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\DataAccessApplication;
 use App\Observers\DataAccessApplicationObserver;
+use App\Services\Gwdm\GwdmHandlerFactory;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use Config;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
@@ -20,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->bind(GwdmMetadataHandler::class, fn ($app) => $app->make(GwdmHandlerFactory::class)
+            ->resolve(Config::get('metadata.GWDM.version')));
+
         if (Config::get('logging.sqlLog') === true) {
             \DB::listen(function ($query) {
                 $bindings = [];

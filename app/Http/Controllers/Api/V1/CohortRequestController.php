@@ -11,12 +11,11 @@ use App\Http\Requests\CohortRequest\GetCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Traits\HubspotContacts;
-use App\Jobs\SendEmailJob;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
 use App\Models\CohortRequestLog;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\OauthClient;
 use App\Models\OauthUser;
 use App\Models\Permission;
@@ -1549,24 +1548,24 @@ class CohortRequestController extends Controller
             $user = User::where('id', $cohortRequestUserId)->first();
             $userEmail = ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'];
 
-            // template
-            $template = null;
+            // identifier
+            $identifier = null;
             if (!$admin || !$statusNhs) {
                 switch ($cohortRequestStatus) {
                     case 'PENDING': // submitted
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
+                        $identifier = 'cohort.discovery.access.submitted';
                         break;
                     case 'REJECTED':
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.rejected')->first();
+                        $identifier = 'cohort.discovery.access.rejected';
                         break;
                     case 'APPROVED':
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.approved')->first();
+                        $identifier = 'cohort.discovery.access.approved';
                         break;
                     case 'BANNED':
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.banned')->first();
+                        $identifier = 'cohort.discovery.access.banned';
                         break;
                     case 'SUSPENDED':
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.suspended')->first();
+                        $identifier = 'cohort.discovery.access.suspended';
                         break;
                 }
             }
@@ -1574,10 +1573,10 @@ class CohortRequestController extends Controller
             if ($admin) {
                 switch ($admin) {
                     case 'assign': // submitted
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.admin.approve')->first();
+                        $identifier = 'cohort.request.admin.approve';
                         break;
                     case 'remove':
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.admin.remove')->first();
+                        $identifier = 'cohort.request.admin.remove';
                         break;
                 }
             }
@@ -1585,7 +1584,7 @@ class CohortRequestController extends Controller
             if ($statusNhs) {
                 switch ($statusNhs) {
                     case 'APPROVED': // approved nhs
-                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.nhs.approved')->first();
+                        $identifier = 'cohort.request.nhs.approved';
                         break;
                 }
             }
@@ -1609,8 +1608,8 @@ class CohortRequestController extends Controller
                 '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
             ];
 
-            if ($template) {
-                SendEmailJob::dispatch($to, $template, $replacements);
+            if ($identifier) {
+                app(EmailManager::class)->send($identifier, $to, $replacements);
             }
         } catch (Exception $e) {
             Auditor::log([

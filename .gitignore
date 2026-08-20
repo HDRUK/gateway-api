@@ -28,3 +28,9 @@ _ide_helper.php
 application_default_credentials.json
 
 frankenphp
+/sdks
+
+# understand-anything: keep the knowledge graph tracked, ignore run-local cache/output
+app/.ua/.trash-*/
+app/.ua/intermediate/
+app/.ua/fingerprints.json

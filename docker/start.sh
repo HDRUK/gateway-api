@@ -35,6 +35,7 @@ fi
 
 # Start the Octane server in the background
 $base_command &
+OCTANE_PID=$!
 
 if [ "$APP_ENV" = 'local' ]; then
     # Separate the command from the cron timings, so as to first check for
@@ -52,6 +53,17 @@ if [ "$APP_ENV" = 'local' ]; then
     service cron start
 fi
 
-php artisan horizon
+php artisan horizon &
+HORIZON_PID=$!
+
+# This script is PID 1 in the container. Without this trap, a stop signal
+# (e.g. on redeploy/rolling restart) is never forwarded to either child —
+# bash just exits on it, and Octane/Horizon get hard-killed when the
+# container is torn down instead of shutting down gracefully. Horizon in
+# particular relies on a real SIGTERM to release its master lock and hand
+# off in-flight job reservations cleanly.
+trap 'kill -TERM "$OCTANE_PID" "$HORIZON_PID" 2>/dev/null; wait "$OCTANE_PID" "$HORIZON_PID"' TERM INT
+
+wait -n "$OCTANE_PID" "$HORIZON_PID"
 
 

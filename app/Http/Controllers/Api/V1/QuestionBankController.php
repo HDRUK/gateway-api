@@ -33,6 +33,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions",
+     *      operationId="fetch_question_bank_questions",
      *      summary="List of question bank questions",
      *      description="List of question bank questions",
      *      tags={"QuestionBank"},
@@ -191,6 +192,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/standard",
+     *      operationId="fetch_standard_question_bank_questions",
      *      summary="List of standard question bank questions",
      *      description="List of standard question bank questions",
      *      tags={"QuestionBank"},
@@ -350,6 +352,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/custom",
+     *      operationId="fetch_custom_question_bank_questions",
      *      summary="List of custom question bank questions",
      *      description="List of custom question bank questions",
      *      tags={"QuestionBank"},
@@ -509,6 +512,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/archived",
+     *      operationId="fetch_archived_question_bank_questions",
      *      summary="List of archived question bank questions",
      *      description="List of archived question bank questions",
      *      tags={"QuestionBank"},
@@ -667,6 +671,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/{id}",
+     *      operationId="fetch_question_bank_question",
      *      summary="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
      *      description="Return the latest question bank question version for the supplied question id, in an FE-friendly format",
      *      tags={"QuestionBank"},
@@ -768,6 +773,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/version/{id}",
+     *      operationId="fetch_question_bank_question_version",
      *      summary="Return a single system question bank question version",
      *      description="Return a single system question bank question version",
      *      tags={"QuestionBank"},
@@ -852,6 +858,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Post(
      *      path="/api/v1/questions",
+     *      operationId="create_question_bank_question",
      *      summary="Create a new system question bank question with FE-helpful input format",
      *      description="Create a new system question bank question with FE-helpful input format",
      *      tags={"QuestionBank"},
@@ -864,7 +871,7 @@ class QuestionBankController extends Controller
      *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override", "component", "validations", "options"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items(type="integer", example="1")),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="required", type="boolean", example="false"),
@@ -873,10 +880,32 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="default", type="boolean", example="false"),
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
-     *              @OA\Property(property="field", type="array", @OA\Items()),
+     *              @OA\Property(property="field", type="array", @OA\Items(type="object")),
      *              @OA\Property(property="component", type="string", example="RadioGroup"),
-     *              @OA\Property(property="validations", type="array", @OA\Items()),
-     *              @OA\Property(property="options", type="array", @OA\Items()),
+     *              @OA\Property(property="validations", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="options", type="array",
+     *                  @OA\Items(type="object",
+     *                      @OA\Property(property="label", type="string", example="Option label"),
+     *                      @OA\Property(property="children", type="array",
+     *                          @OA\Items(type="object",
+     *                              @OA\Property(property="force_required", type="boolean", example="false"),
+     *                              @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
+     *                              @OA\Property(property="locked", type="boolean", example="false"),
+     *                              @OA\Property(property="archived", type="boolean", example="false"),
+     *                              @OA\Property(property="component", type="string", example="RadioGroup"),
+     *                              @OA\Property(property="validations", type="array", @OA\Items(type="object")),
+     *                              @OA\Property(property="options", type="array",
+     *                                  @OA\Items(type="object",
+     *                                      @OA\Property(property="label", type="string", example="Option label"),
+     *                                  ),
+     *                              ),
+     *                              @OA\Property(property="title", type="string", example="Question title"),
+     *                              @OA\Property(property="guidance", type="string", example="Question guidance"),
+     *                              @OA\Property(property="required", type="boolean", example="false"),
+     *                          ),
+     *                      ),
+     *                  ),
+     *              ),
      *              @OA\Property(property="is_child", type="boolean", example="true"),
      *              @OA\Property(property="question_type", type="string", example="STANDARD"),
      *          ),
@@ -959,6 +988,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Put(
      *      path="/api/v1/questions/{id}",
+     *      operationId="update_question_bank_question",
      *      summary="Update a system question bank question - children and their version are updated through parents",
      *      description="Update a system question bank question - children and their versions are updated through parents",
      *      tags={"QuestionBank"},
@@ -982,7 +1012,7 @@ class QuestionBankController extends Controller
      *              required={"field", "section_id", "guidance", "title", "force_required", "allow_guidance_override"},
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items(type="integer", example="1")),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="is_child", type="boolean", example="false"),
@@ -993,7 +1023,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="default", type="boolean", example="false"),
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
-     *              @OA\Property(property="field", type="array", @OA\Items()),
+     *              @OA\Property(property="field", type="array", @OA\Items(type="object")),
      *          ),
      *      ),
      *      @OA\Response(
@@ -1008,41 +1038,7 @@ class QuestionBankController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="section_id", type="integer", example="1"),
-     *                  @OA\Property(property="user_id", type="integer", example="1"),
-     *                  @OA\Property(property="locked", type="boolean", example="false"),
-     *                  @OA\Property(property="archived", type="boolean", example="true"),
-     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="is_child", type="boolean", example="false"),
-     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *                  @OA\Property(property="force_required", type="boolean", example="false"),
-     *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *                  @OA\Property(property="options", type="array",
-     *                      @OA\Items(type="object",
-     *                          @OA\Property(property="label", type="string", example="yes"),
-     *                          @OA\Property(property="children", type="array",
-     *                              @OA\Items(type="object",
-     *                                  @OA\Property(property="label", type="string", example="yes"),
-     *                                  @OA\Property(property="field", type="array",
-     *                                      @OA\Items(type="object",
-     *                                          @OA\Property(property="options", type="array", example="['yes', 'no']", @OA\Items()),
-     *                                          @OA\Property(property="component", type="string", example="yes"),
-     *                                          @OA\Property(property="validations", type="array", example="[]", @OA\Items()),
-     *                                      )
-     *                                  ),
-     *                                  @OA\Property(property="title", type="string", example="This is my nested question"),
-     *                                  @OA\Property(property="guidance", type="string", example="This is how you should answer this nested question"),
-     *                                  @OA\Property(property="required", type="boolean", example="false")
-     *                              )
-     *                          )
-     *                      )
-     *                  )
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/QuestionBank")
      *          )
      *      ),
      *      @OA\Response(
@@ -1119,6 +1115,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v1/questions/{id}",
+     *      operationId="edit_question_bank_question",
      *      summary="Edit a system question bank question - use this for parents and children separately",
      *      description="Edit a system question bank question - use this for parents and children separately",
      *      tags={"QuestionBank"},
@@ -1141,7 +1138,7 @@ class QuestionBankController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="section_id", type="integer", example="1"),
      *              @OA\Property(property="user_id", type="integer", example="1"),
-     *              @OA\Property(property="team_ids", type="array", @OA\Items()),
+     *              @OA\Property(property="team_ids", type="array", @OA\Items(type="integer", example="1")),
      *              @OA\Property(property="locked", type="boolean", example="false"),
      *              @OA\Property(property="archived", type="boolean", example="false"),
      *              @OA\Property(property="force_required", type="boolean", example="false"),
@@ -1150,7 +1147,7 @@ class QuestionBankController extends Controller
      *              @OA\Property(property="default", type="boolean", example="false"),
      *              @OA\Property(property="guidance", type="string", example="Question guidance"),
      *              @OA\Property(property="title", type="string", example="Question title"),
-     *              @OA\Property(property="field", type="array", @OA\Items()),
+     *              @OA\Property(property="field", type="array", @OA\Items(type="object")),
      *          ),
      *      ),
      *      @OA\Response(
@@ -1165,20 +1162,7 @@ class QuestionBankController extends Controller
      *          description="Success",
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="object",
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="section_id", type="integer", example="1"),
-     *                  @OA\Property(property="user_id", type="integer", example="1"),
-     *                  @OA\Property(property="locked", type="boolean", example="false"),
-     *                  @OA\Property(property="archived", type="boolean", example="true"),
-     *                  @OA\Property(property="archived_date", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="force_required", type="boolean", example="false"),
-     *                  @OA\Property(property="allow_guidance_override", type="boolean", example="true"),
-     *                  @OA\Property(property="question_type", type="string", example="STANDARD"),
-     *              )
+     *              @OA\Property(property="data", ref="#/components/schemas/QuestionBank")
      *          ),
      *      ),
      *      @OA\Response(
@@ -1301,6 +1285,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v1/questions/{id}/{status}",
+     *      operationId="update_question_bank_question_status",
      *      summary="Lock, unlock, archive or unarchive a question bank question",
      *      description="Lock, unlock, archive or unarchive a question bank question",
      *      tags={"QuestionBank"},
@@ -1318,7 +1303,7 @@ class QuestionBankController extends Controller
      *         ),
      *      ),
      *      @OA\Parameter(
-     *         name="locking",
+     *         name="status",
      *         in="path",
      *         description="lock or unlock",
      *         required=true,
@@ -1412,6 +1397,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/questions/{id}",
+     *      operationId="delete_question_bank_question",
      *      summary="Delete a system question bank question",
      *      description="Delete a system question bank question",
      *      tags={"QuestionBank"},
@@ -1529,6 +1515,7 @@ class QuestionBankController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/questions/{id}/files/{fileId}",
+     *      operationId="download_question_bank_question_file",
      *      summary="Download a file attached to a question bank question",
      *      description="Download a system question bank question",
      *      tags={"QuestionBank"},
@@ -1546,7 +1533,7 @@ class QuestionBankController extends Controller
      *         ),
      *      ),
      *      @OA\Parameter(
-     *         name="id",
+     *         name="fileId",
      *         in="path",
      *         description="file uuid",
      *         required=true,

@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Services\Search\DataProviderCollLoader;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -262,6 +261,7 @@ class Collection extends BaseTypesenseModel
 
     }
 
+    /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
@@ -311,7 +311,14 @@ class Collection extends BaseTypesenseModel
 
     public function makeAllSearchableUsing(Builder $query): Builder
     {
-        return $query->with(['team', 'datasetVersions']);
+        // datasetVersions carries the full GWDM metadata/patch JSON blobs by
+        // default; facetDatasetTitles() only reads short_title, so restrict
+        // the eager load to avoid hydrating that payload for every version
+        // linked to every collection in the chunk.
+        return $query->with([
+            'team.dataProviderColls',
+            'datasetVersions:id,dataset_id,short_title',
+        ]);
     }
 
     private function facetPublisherName(): string
@@ -327,14 +334,16 @@ class Collection extends BaseTypesenseModel
             ->unique()->values()->all();
     }
 
+    /**
+     * Relies on 'team.dataProviderColls' being eager-loaded by
+     * makeAllSearchableUsing() — a single whereIn() query for the whole
+     * reindex batch, instead of a per-row DataProviderCollLoader call.
+     */
     private function facetDataProviderColl(): array
     {
-        if ($this->team_id === null) {
-            return [];
-        }
-
-        return DataProviderCollLoader::forTeamIds([$this->team_id])
-            ->get($this->team_id, []);
+        return $this->team?->dataProviderColls
+            ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])
+            ->all() ?? [];
     }
 
     public function toSearchableArray(): array

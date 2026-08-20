@@ -28,6 +28,7 @@ use App\Http\Requests\V2\Dataset\GetDataset;
 use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\EditTeamDataset;
 use App\Context\PartnerContext;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
@@ -44,12 +45,15 @@ class TeamDatasetController extends Controller
     use DatasetsV2Helpers;
     use TrimPayload;
 
-    public function __construct(private readonly PartnerContext $partnerContext)
-    {
+    public function __construct(
+        private readonly PartnerContext $partnerContext,
+        private readonly GwdmMetadataHandler $gwdmHandler,
+    ) {
     }
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/datasets/status/{status}",
      *    operationId="fetch_team_datasets_status",
      *    tags={"Datasets"},
@@ -67,6 +71,13 @@ class TeamDatasetController extends Controller
      *          description="team id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="status",
+     *         in="path",
+     *         description="Status of the dataset (active, draft, or archived). Defaults to active if not provided.",
+     *         required=true,
+     *         @OA\Schema( type="string", enum={"active", "draft", "archived"}, default="active" )
+     *     ),
      *    @OA\Parameter(
      *       name="sort",
      *       in="query",
@@ -98,11 +109,7 @@ class TeamDatasetController extends Controller
      *          @OA\Property(
      *             property="data",
      *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             @OA\Items(ref="#/components/schemas/Dataset")
      *          )
      *       )
      *    )
@@ -204,6 +211,7 @@ class TeamDatasetController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/datasets/count/{field}",
      *    operationId="count_team_unique_fields_datasets_v2",
      *    tags={"Datasets"},
@@ -273,6 +281,7 @@ class TeamDatasetController extends Controller
 
     /**
      * @OA\Get(
+     *      x={"internal"="true"},
      *    path="/api/v2/teams/{teamId}/datasets/{id}",
      *    operationId="fetch_team_datasets_v2",
      *    tags={"Datasets"},
@@ -324,15 +333,7 @@ class TeamDatasetController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(
-     *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
-     *          ),
+     *          @OA\Property(property="data", ref="#/components/schemas/Dataset"),
      *       ),
      *    ),
      *      @OA\Response(
@@ -446,7 +447,7 @@ class TeamDatasetController extends Controller
      *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
      *             @OA\Property(property="mongo_id", type="string", example="456"),
      *             @OA\Property(property="mongo_pid", type="string", example="def789"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -507,6 +508,7 @@ class TeamDatasetController extends Controller
                 $inputSchema,
                 $inputVersion,
                 $elasticIndexing,
+                $this->gwdmHandler,
                 $this->partnerContext->getPartner(),
             );
 
@@ -579,7 +581,7 @@ class TeamDatasetController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),
@@ -756,7 +758,7 @@ class TeamDatasetController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
      *    ),

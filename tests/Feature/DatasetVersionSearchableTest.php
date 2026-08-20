@@ -119,6 +119,24 @@ class DatasetVersionSearchableTest extends TestCase
         // Relationship-derived fields.
         $this->assertIsArray($searchable['geographicLocation']);
         $this->assertIsBool($searchable['isCohortDiscovery']);
+
+        // Tier-3 filter fields — arrays (may be empty in a fixture with no linked
+        // collections/DURs/networks, but must never be absent or non-array).
+        $this->assertIsArray($searchable['dataProviderColl'], 'dataProviderColl must be an array');
+        $this->assertIsArray($searchable['collectionNames'], 'collectionNames must be an array');
+        $this->assertIsArray($searchable['dataUseTitles'], 'dataUseTitles must be an array');
+
+        // Temporal provenance timestamps — must be an integer unix timestamp or
+        // null (never a raw date string, never false). The fixture contains
+        // date strings in provenance.temporal, so we expect int values here.
+        $this->assertTrue(
+            is_int($searchable['startDate']) || $searchable['startDate'] === null,
+            'startDate must be a unix timestamp (int) or null'
+        );
+        $this->assertTrue(
+            is_int($searchable['endDate']) || $searchable['endDate'] === null,
+            'endDate must be a unix timestamp (int) or null'
+        );
     }
 
     public function test_to_searchable_array_matches_between_snapshot_and_delta(): void

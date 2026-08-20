@@ -2298,6 +2298,19 @@ return [
     ],
     [
         'name' => 'emailtemplates',
+        'method' => 'post',
+        'path' => '/emailtemplates/preview',
+        'methodController' => 'EmailTemplateController@preview',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'emailtemplates',
         'method' => 'put',
         'path' => '/emailtemplates/{id}',
         'methodController' => 'EmailTemplateController@update',
@@ -2738,21 +2751,6 @@ return [
         'method' => 'put',
         'path' => '/teams/{teamId}/federations/{federationId}',
         'methodController' => 'FederationController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,integrations.metadata',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'federationId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.federation',
-        'method' => 'patch',
-        'path' => '/teams/{teamId}/federations/{federationId}',
-        'methodController' => 'FederationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3536,7 +3534,20 @@ return [
         'path' => '/project_grants',
         'methodController' => 'ProjectGrantController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'project_grants.store',
+        'method' => 'post',
+        'path' => '/project_grants',
+        'methodController' => 'ProjectGrantController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,project_grants.create',
+            'sunset',
+        ],
         'constraint' => [],
     ],
     [
@@ -3545,7 +3556,7 @@ return [
         'path' => '/project_grants/{id}',
         'methodController' => 'ProjectGrantController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [
             'id' => '[0-9]+',
         ],

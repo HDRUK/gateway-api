@@ -296,6 +296,27 @@ class Dataset extends Model
     }
 
     /**
+     * @param array<int, string> $pids
+     * @return array<string, string|null>
+     *
+     */
+    public static function titlesForPids(array $pids): array
+    {
+        if (empty($pids)) {
+            return [];
+        }
+
+        $found = static::whereIn('pid', $pids)
+            ->with(['latestMetadata' => fn ($q) => $q->selectRaw('dataset_versions.id, dataset_versions.dataset_id, dataset_versions.title')])
+            ->get(['id', 'pid'])
+            ->mapWithKeys(fn ($dataset) => [
+                $dataset->pid => filled($dataset->latestMetadata?->title) ? $dataset->latestMetadata->title : null,
+            ]);
+
+        return collect($pids)->mapWithKeys(fn ($pid) => [$pid => $found[$pid] ?? null])->all();
+    }
+
+    /**
      * Helper function to grab dataset title from latest metadata.
      */
     public function getTitle(): string

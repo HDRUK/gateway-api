@@ -10,6 +10,7 @@ use App\Models\FederationJobRun;
 use App\Models\Team;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use Carbon\Carbon;
 use Config;
 use Http;
@@ -35,13 +36,10 @@ trait GatewayMetadataIngestionTrait
         $url = $federation->endpoint_baseurl . $federation->endpoint_datasets;
         $this->log('info', "calling REMOTE collection @ {$url}");
 
-        $response = Http::get(
-            $url,
-            [
-                $this->determineAuthType($federation, $gsms),
-                'Accept' => 'application/json',
-            ]
-        );
+        $response = Http::withHeaders(array_merge(
+            $this->determineAuthType($federation, $gsms),
+            ['Accept' => 'application/json'],
+        ))->get($url);
         $this->log('info', "response from REMOTE collection: status={$response->status()}, body=" . json_encode($response->body()));
 
         if ($response->status() === 200) {
@@ -55,10 +53,9 @@ trait GatewayMetadataIngestionTrait
 
     private function getCatalogueFromFederationArray(array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
-        $response = Http::get(
-            $federation['endpoint_baseurl'] . $federation['endpoint_datasets'],
+        $response = Http::withHeaders(
             $this->determineAuthType($federation, $gsms)
-        );
+        )->get($federation['endpoint_baseurl'] . $federation['endpoint_datasets']);
         if ($response->status() === 200) {
             return collect($response->json()['items'])->keyBy('persistentId');
         }
@@ -132,7 +129,8 @@ trait GatewayMetadataIngestionTrait
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
         ?string $jobUuid,
-        int $attempts
+        int $attempts,
+        GwdmMetadataHandler $handler,
     ): int {
         $createdCount = 0;
         $toCreate = $remoteItems->keys()->diff($localItems->keys());
@@ -193,7 +191,7 @@ trait GatewayMetadataIngestionTrait
                         'pid' => $pid,
                     ];
 
-                    $result = $gmi->storeMetadata($input);
+                    $result = $gmi->storeMetadata($input, $handler);
 
                     $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'CREATED', 1, $attempts);
 
