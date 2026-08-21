@@ -283,6 +283,11 @@ class Dur extends BaseTypesenseModel
         ->where('tools.status', 'ACTIVE');
     }
 
+    public function outputs(): HasMany
+    {
+        return $this->hasMany(DurOutput::class, 'dur_id')->orderBy('id');
+    }
+
     public static function exportHeadings(): array
     {
         return [

@@ -6,6 +6,7 @@ use App\Models\Dataset;
 use Carbon\Carbon;
 use App\Models\Dur;
 use App\Models\DurHasKeyword;
+use App\Models\DurOutput;
 use App\Models\Keyword;
 use App\Models\Team;
 use App\Models\User;
@@ -222,6 +223,15 @@ class DurSeeder extends Seeder
             DurHasKeyword::create([
                 'dur_id' => $dur->id,
                 'keyword_id' => $keywordId,
+            ]);
+
+            DurOutput::create([
+                'dur_id' => $dur->id,
+                'type'   => fake()->randomElement(['Paper', 'Software', 'Presentation']),
+                'title'  => fake()->sentence(),
+                'status' => fake()->randomElement(['Published', 'In progress', 'Under review']),
+                'detail' => fake()->paragraph(),
+                'url'    => fake()->randomElement($nonGatewayOutputs),
             ]);
         }
     }
