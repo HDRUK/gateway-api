@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Events\FederationProcessed;
 use App\Jobs\ProcessFederation;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -11,6 +12,7 @@ use App\Models\TeamHasFederation;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 use App\Services\Gwdm\GwdmMetadataHandler;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -205,6 +207,41 @@ class ProcessFederationJobTest extends TestCase
         $fresh = $federation->fresh();
         $this->assertFalse($fresh->error);
         $this->assertNull($fresh->error_text);
+    }
+
+    public function test_run_with_per_item_history_failures_records_error_and_skips_success_event(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        Http::fake([
+            $this->datasetUrlPattern('some-pid') => Http::response(['metadata' => []], 404),
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'some-pid', 'version' => '1.0']],
+            ], 200),
+        ]);
+
+        Event::fake([FederationProcessed::class]);
+
+        // sendToHistory(status: 0) is what per-item create/update/archive
+        // failures actually call internally — force it here rather than
+        // reproducing a real translation failure, so this test exercises
+        // ProcessFederation's branch on hadHistoryFailures() in isolation.
+        $job = new class ($federation) extends ProcessFederation {
+            public function hadHistoryFailures(): bool
+            {
+                return true;
+            }
+        };
+
+        $job->handle(app(GwdmMetadataHandler::class));
+
+        Event::assertNotDispatched(FederationProcessed::class);
+
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->is_running);
+        $this->assertTrue($fresh->error);
+        $this->assertStringContainsString('job', $fresh->error_text);
     }
 
     public function test_is_running_cleared_when_remote_returns_error(): void
@@ -633,7 +670,7 @@ class ProcessFederationJobTest extends TestCase
         [, $federation] = $this->makeAuthenticatedFederation('API_KEY');
 
         $this->mock(GoogleSecretManagerService::class, function ($mock) {
-            $mock->shouldReceive('getSecret')->andReturn('correct-api-key');
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['api_key' => 'correct-api-key']));
         });
 
         // Same simulated auth gate as the bearer-token test, but checking the
@@ -663,7 +700,7 @@ class ProcessFederationJobTest extends TestCase
         // Secret store hands back an API key that does NOT match what the
         // simulated server expects.
         $this->mock(GoogleSecretManagerService::class, function ($mock) {
-            $mock->shouldReceive('getSecret')->andReturn('stale-api-key');
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['api_key' => 'stale-api-key']));
         });
 
         $this->fakeAuthenticatingRemoteServer(
