@@ -22,6 +22,13 @@ trait GatewayMetadataIngestionTrait
 {
     use MetadataVersioning;
 
+    private bool $hadHistoryFailures = false;
+
+    public function hadHistoryFailures(): bool
+    {
+        return $this->hadHistoryFailures;
+    }
+
     public function pullCatalogueList(Federation|array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
         if (!is_array($federation)) {
@@ -316,7 +323,7 @@ trait GatewayMetadataIngestionTrait
                 case 'API_KEY':
                     $key = $gsms->getSecret($federation->auth_secret_key_location);
                     return [
-                        'apikey' => $key,
+                        'apikey' => json_decode($key, true)['api_key'],
                     ];
                 case 'NO_AUTH':
                     // Nothing to do
@@ -357,6 +364,10 @@ trait GatewayMetadataIngestionTrait
 
     public function sendToHistory(int $teamId, int $federationId, string $pid, string $jobUuid, array|string $message, int $status, int $attempts): void
     {
+        if ($status === 0) {
+            $this->hadHistoryFailures = true;
+        }
+
         FederationJobRun::create(
             [
                 'team_id' => $teamId,
