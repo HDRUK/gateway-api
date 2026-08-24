@@ -15,6 +15,7 @@ use App\Http\Traits\CheckAccess;
 use App\Http\Traits\CollabMetadataSeed;
 use App\Http\Controllers\Controller;
 use App\Context\PartnerContext;
+use Laravel\Pennant\Feature;
 
 class DatasetShareTokenController extends Controller
 {
@@ -22,6 +23,8 @@ class DatasetShareTokenController extends Controller
     use CollabMetadataSeed;
 
     private const EXPIRY_WEEKS = 3;
+
+    private const FEATURE_FLAG = 'CollaborativeMetadataOnboarding';
 
     public function __construct(
         private readonly PartnerContext $partnerContext,
@@ -33,6 +36,10 @@ class DatasetShareTokenController extends Controller
      */
     public function index(Request $request, int $teamId): JsonResponse
     {
+        if (!Feature::active(self::FEATURE_FLAG)) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+
         $input = $request->all();
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
@@ -53,6 +60,10 @@ class DatasetShareTokenController extends Controller
      */
     public function store(Request $request, int $teamId): JsonResponse
     {
+        if (!Feature::active(self::FEATURE_FLAG)) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+
         $input = $request->all();
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
         $jwtUser = $input['jwt_user'] ?? [];
@@ -124,6 +135,10 @@ class DatasetShareTokenController extends Controller
      */
     public function destroy(Request $request, int $teamId, int $id): JsonResponse
     {
+        if (!Feature::active(self::FEATURE_FLAG)) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+
         $input = $request->all();
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 

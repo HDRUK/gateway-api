@@ -7,6 +7,7 @@ use App\Models\Dataset;
 use App\Models\DatasetShareToken;
 use App\Models\DatasetVersion;
 use Config;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -38,6 +39,13 @@ class DatasetShareTokenTest extends TestCase
 
         Dataset::flushEventListeners();
         DatasetVersion::flushEventListeners();
+
+        // Flush the Pennant in-memory cache, then write an explicit stored
+        // value so Feature::active() always sees a fresh result within each
+        // test - the flag defaults to inactive, and this whole controller is
+        // unreachable without it.
+        Feature::flushCache();
+        Feature::activate('CollaborativeMetadataOnboarding');
 
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
@@ -146,6 +154,28 @@ class DatasetShareTokenTest extends TestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * The entire controller is gated behind the CollaborativeMetadataOnboarding
+     * flag - with it off, even a metadata manager with a valid team role
+     * gets 404, not 401/403, since the feature (not the caller's access)
+     * is what's unavailable.
+     */
+    public function test_create_share_token_returns_404_when_feature_flag_disabled(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+        Feature::deactivate('CollaborativeMetadataOnboarding');
+
+        $response = $this->json(
+            'POST',
+            $this->shareTokensUrl($teamId),
+            [],
+            $this->headerNonAdmin,
+        );
+
+        $response->assertStatus(404);
+    }
+
     public function test_can_list_share_tokens_for_team(): void
     {
         $notificationId = $this->createNotification();
@@ -179,6 +209,110 @@ class DatasetShareTokenTest extends TestCase
         $token = DatasetShareToken::where('id', $tokenId)->first();
         $this->assertNotNull($token->revoked_at);
         $this->assertFalse($token->isValid());
+    }
+
+    /**
+     * A COLLAB-origin draft can be edited/activated at any time through the
+     * normal authenticated dataset endpoint, same as any other draft the
+     * team admin owns - there is no lock. Doing so flips create_origin to
+     * MANUAL (the web app's normal edit form always submits
+     * create_origin=MANUAL), so the dataset is indistinguishable from a
+     * normally-created one from that point on.
+     */
+    public function test_admin_can_activate_a_collab_draft_via_the_normal_update_endpoint(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+
+        $create = $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin);
+        $datasetId = $create->decodeResponseJson()['data']['dataset_id'];
+        $tokenId = $create->decodeResponseJson()['data']['id'];
+
+        $response = $this->json(
+            'PUT',
+            'api/v2/teams/'.$teamId.'/datasets/'.$datasetId,
+            [
+                'metadata' => $this->getMetadata(),
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->headerNonAdmin,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $dataset = Dataset::where('id', $datasetId)->first();
+        $this->assertEquals(Dataset::STATUS_ACTIVE, $dataset->status);
+        $this->assertEquals(Dataset::ORIGIN_MANUAL, $dataset->create_origin);
+    }
+
+    /**
+     * Regression test: activating a COLLAB draft used to leave its share
+     * token valid indefinitely - an anonymous collaborator with the old
+     * link could keep submitting edits to a dataset that was already live.
+     * Activation must auto-revoke any still-open share token for that
+     * dataset, closing that window without requiring the admin to remember
+     * a separate manual revoke.
+     */
+    public function test_activating_a_collab_draft_auto_revokes_its_share_token(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+
+        $create = $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin);
+        $datasetId = $create->decodeResponseJson()['data']['dataset_id'];
+        $tokenId = $create->decodeResponseJson()['data']['id'];
+
+        $this->json(
+            'PUT',
+            'api/v2/teams/'.$teamId.'/datasets/'.$datasetId,
+            [
+                'metadata' => $this->getMetadata(),
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->headerNonAdmin,
+        )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $token = DatasetShareToken::where('id', $tokenId)->first();
+        $this->assertNotNull($token->revoked_at);
+        $this->assertFalse($token->isValid());
+        $this->assertEquals('completed', $token->status);
+    }
+
+    /**
+     * index() exposes a derived `status` per token so an admin can tell
+     * "collaborator still has an open link" (active) apart from "draft
+     * went live" (completed) apart from "I revoked it by hand" (revoked) -
+     * none of that is a stored column, it's computed from revoked_at,
+     * expires_at, and the linked dataset's own status.
+     */
+    public function test_list_exposes_derived_status_per_token(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+
+        $create = $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin);
+        $tokenId = $create->decodeResponseJson()['data']['id'];
+
+        $response = $this->json('GET', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin);
+        $data = $response->decodeResponseJson()['data'];
+        $listed = collect($data)->firstWhere('id', $tokenId);
+
+        $this->assertEquals('active', $listed['status']);
+
+        $this->json(
+            'DELETE',
+            $this->shareTokensUrl($teamId).'/'.$tokenId,
+            [],
+            $this->headerNonAdmin,
+        );
+
+        $response = $this->json('GET', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin);
+        $data = $response->decodeResponseJson()['data'];
+        $listed = collect($data)->firstWhere('id', $tokenId);
+
+        $this->assertEquals('revoked', $listed['status']);
     }
 
     private function createNotification()

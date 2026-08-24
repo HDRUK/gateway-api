@@ -481,20 +481,6 @@ return [
     ],
     [
         'name' => 'datasets',
-        'method' => 'get',
-        'path' => '/teams/{teamId}/datasets/{id}/export/json',
-        'methodController' => 'TeamDatasetController@exportJson',
-        'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'jwt.verify',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'datasets',
         'method' => 'put',
         'path' => '/teams/{teamId}/datasets/{id}',
         'methodController' => 'TeamDatasetController@update',

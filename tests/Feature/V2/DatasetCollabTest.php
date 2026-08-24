@@ -7,6 +7,7 @@ use App\Models\Dataset;
 use App\Models\DatasetShareToken;
 use App\Models\DatasetVersion;
 use Config;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -39,6 +40,13 @@ class DatasetCollabTest extends TestCase
 
         $this->metadata = $this->getMetadata();
 
+        // Flush the Pennant in-memory cache, then write an explicit stored
+        // value so Feature::active() always sees a fresh result within each
+        // test - the flag defaults to inactive, and this whole controller is
+        // unreachable without it.
+        Feature::flushCache();
+        Feature::activate('CollaborativeMetadataOnboarding');
+
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
         $this->nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
@@ -55,7 +63,7 @@ class DatasetCollabTest extends TestCase
 
     /**
      * Mints a share token via the authenticated admin endpoint and returns
-     * [token, datasetId].
+     * [token, datasetId, teamId].
      */
     private function createShareToken(): array
     {
@@ -70,12 +78,13 @@ class DatasetCollabTest extends TestCase
         );
         $data = $response->decodeResponseJson()['data'];
 
-        return [$data['token'], $data['dataset_id']];
+        return [$data['token'], $data['dataset_id'], $teamId];
     }
 
     public function test_public_show_returns_draft_metadata_for_valid_token_without_auth(): void
     {
-        [$token, $datasetId] = $this->createShareToken();
+        [$token, $datasetId, $teamId] = $this->createShareToken();
+        $team = \App\Models\Team::where('id', $teamId)->first();
 
         $response = $this->json('GET', $this->collabUrl($token), [], ['Accept' => 'application/json']);
 
@@ -84,6 +93,11 @@ class DatasetCollabTest extends TestCase
         $this->assertEquals($datasetId, $data['dataset_id']);
         $this->assertArrayHasKey('team_id', $data);
         $this->assertArrayHasKey('schema', $data);
+        // Anonymous collaborators can't call the authenticated GET
+        // /teams/{id} endpoint - the team's contact_point must be exposed
+        // here instead, so the web app has a fallback for the hidden
+        // required "contact point" fields.
+        $this->assertEquals($team->contact_point, $data['team_contact_point']);
     }
 
     public function test_public_show_returns_404_for_unknown_token(): void
@@ -105,6 +119,21 @@ class DatasetCollabTest extends TestCase
     {
         [$token] = $this->createShareToken();
         DatasetShareToken::where('token', $token)->update(['revoked_at' => now()]);
+
+        $response = $this->json('GET', $this->collabUrl($token), [], ['Accept' => 'application/json']);
+        $response->assertStatus(404);
+    }
+
+    /**
+     * The whole controller is gated behind CollaborativeMetadataOnboarding -
+     * with it off, even a perfectly valid, unexpired, unrevoked token must
+     * be treated exactly like an unknown one (same 404, same message),
+     * since this is a public endpoint with nothing else to gate access.
+     */
+    public function test_public_show_returns_404_when_feature_flag_disabled(): void
+    {
+        [$token] = $this->createShareToken();
+        Feature::deactivate('CollaborativeMetadataOnboarding');
 
         $response = $this->json('GET', $this->collabUrl($token), [], ['Accept' => 'application/json']);
         $response->assertStatus(404);

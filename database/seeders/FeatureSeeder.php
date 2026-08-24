@@ -41,6 +41,9 @@ class FeatureSeeder extends Seeder
         'LoginLinkedInEnabled' => true,
         'LoginOpenAthensEnabled' => true,
         'LoginRegistryEnabled' => true,
+        // Tokenised share links for anonymous collaborative dataset
+        // onboarding (DatasetCollabController). Off = collab routes 404.
+        'CollaborativeMetadataOnboarding' => false,
     ];
 
     public function run(): void

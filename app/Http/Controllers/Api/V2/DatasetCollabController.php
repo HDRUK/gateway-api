@@ -11,10 +11,11 @@ use App\Models\DatasetShareToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\MetadataVersioning;
-use App\Http\Traits\DatasetsV2Helpers;
+use App\Http\Traits\MetadataExtraction;
 use App\Http\Traits\CollabMetadataSeed;
 use App\Http\Controllers\Controller;
 use MetadataManagementController as MMC;
+use Laravel\Pennant\Feature;
 
 /**
  * Public, unauthenticated endpoints for collaborative dataset onboarding.
@@ -24,11 +25,24 @@ use MetadataManagementController as MMC;
 class DatasetCollabController extends Controller
 {
     use MetadataVersioning;
-    use DatasetsV2Helpers;
+    use MetadataExtraction;
     use CollabMetadataSeed;
 
+    private const FEATURE_FLAG = 'CollaborativeMetadataOnboarding';
+
+    /**
+     * Folds the feature flag into the same null-return path as an invalid
+     * token, so a disabled feature and an unknown/expired/revoked token are
+     * indistinguishable to an anonymous caller - this is a public,
+     * unauthenticated endpoint, so there's no reason to leak which one it
+     * is.
+     */
     private function resolveToken(string $token): ?DatasetShareToken
     {
+        if (!Feature::active(self::FEATURE_FLAG)) {
+            return null;
+        }
+
         $shareToken = DatasetShareToken::where('token', $token)->first();
         if (!$shareToken || !$shareToken->isValid()) {
             return null;
@@ -47,12 +61,19 @@ class DatasetCollabController extends Controller
         }
 
         $dataset = Dataset::where('id', $shareToken->dataset_id)->first();
+        $team = Team::where('id', $dataset->team_id)->first();
 
         return response()->json([
             'message' => Config::get('statuscodes.STATUS_OK.message'),
             'data' => [
                 'dataset_id' => $dataset->id,
                 'team_id' => $dataset->team_id,
+                // Anonymous collaborators can't call the authenticated
+                // GET /teams/{id} endpoint, but the web app's onboarding
+                // form needs a fallback email for its hidden required
+                // "contact point" fields - surface just this one field here
+                // rather than exposing the full team record publicly.
+                'team_contact_point' => $team->contact_point,
                 'metadata' => $dataset->lastMetadata(),
                 'schema' => [
                     'model' => Config::get('metadata.GWDM.name'),

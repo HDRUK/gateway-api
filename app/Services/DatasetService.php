@@ -7,6 +7,7 @@ use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
+use App\Models\DatasetShareToken;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
@@ -37,23 +38,6 @@ class DatasetService
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
     ) {
-    }
-
-    /**
-     * COLLAB-origin datasets are drafts owned by an anonymous collaborator
-     * via a share token (see DatasetCollabController) and must only be
-     * edited through that token URL, never through the normal authenticated
-     * dataset endpoints.
-     *
-     * @throws \RuntimeException when the dataset is COLLAB-origin
-     */
-    private function assertNotCollabLocked(Dataset $dataset): void
-    {
-        if ($dataset->create_origin === Dataset::ORIGIN_COLLAB) {
-            throw new \RuntimeException(
-                'This dataset was created via a collaborative share link and can only be edited through that link'
-            );
-        }
     }
 
     public function list(
@@ -438,8 +422,6 @@ class DatasetService
         bool $validateInput = true,
         bool $validateOutput = true,
     ): int {
-        $this->assertNotCollabLocked($dataset);
-
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
             'id' => $dataset->id,
@@ -490,6 +472,8 @@ class DatasetService
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
         ]);
 
+        DatasetShareToken::revokeForActivatedDataset($dataset->id, $input['status']);
+
         $datasetVersionId = $this->persistMetadataVersion(
             $dataset,
             $gwdm,
@@ -527,8 +511,6 @@ class DatasetService
         bool $validateInput = true,
         bool $validateOutput = true,
     ): int {
-        $this->assertNotCollabLocked($dataset);
-
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
             'id' => $dataset->id,
@@ -578,6 +560,8 @@ class DatasetService
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
         ]);
 
+        DatasetShareToken::revokeForActivatedDataset($dataset->id, $input['status']);
+
         $datasetVersionId = $this->persistMetadataVersionLegacy(
             $dataset,
             $gwdm,
@@ -596,10 +580,10 @@ class DatasetService
      */
     public function patch(Dataset $dataset, string $status): void
     {
-        $this->assertNotCollabLocked($dataset);
-
         $dataset->status = $status;
         $dataset->save();
+
+        DatasetShareToken::revokeForActivatedDataset($dataset->id, $status);
 
         if ($status === Dataset::STATUS_ACTIVE) {
             $metadata = DatasetVersion::where('dataset_id', $dataset->id)->latest()->first();
