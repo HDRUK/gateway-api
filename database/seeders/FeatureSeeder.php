@@ -18,6 +18,7 @@ class FeatureSeeder extends Seeder
         'V2_SearchAggregation' => false,
         'V3_CustodianDashboard' => false,
         'TypesenseSearch' => false,
+        'SafePeopleRegistrySSOEnabled' => false,
     ];
 
     public function run(): void

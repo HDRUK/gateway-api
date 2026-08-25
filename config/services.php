@@ -120,6 +120,17 @@ return [
         'url' => env('DTA_URL', ''),
     ],
 
+    // Safe People Registry acting as an identity source. The registry's own
+    // Keycloak client is never contacted directly by Gateway - the browser is
+    // sent to the Registry web app, which redeems the auth code itself and
+    // hands Gateway a short-lived, single-use code via its API instead.
+    'registry' => [
+        'web_url' => env('REGISTRY_WEB_URL', ''),
+        'login_path' => env('REGISTRY_WEB_LOGIN_PATH', '/en/keycloak'),
+        'api_url' => env('REGISTRY_API_URL', ''),
+        'handoff_secret' => env('REGISTRY_HANDOFF_SECRET'),
+    ],
+
     'mauro' => [
         'app_key' => env('MAURO_APP_KEY'),
         'api_url' => env('MAURO_API_URL'),
