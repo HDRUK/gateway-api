@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
@@ -145,6 +146,10 @@ class SocialLoginController extends Controller
         }
 
         session(['redirectUrl' => $redirectUrl]);
+
+        if (strtolower($provider) === 'registry') {
+            return $this->registryLoginRedirect();
+        }
 
         if (strtolower($provider) === 'openathens') {
             $provider = 'open-athens';
@@ -364,7 +369,11 @@ class SocialLoginController extends Controller
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            if (strtolower($provider) === 'openathens') {
+            if (strtolower($provider) === 'registry') {
+                $socialUserDetails = $this->redeemRegistryHandoff($request);
+
+                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+            } elseif (strtolower($provider) === 'openathens') {
                 $provider = 'open-athens';
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
@@ -527,6 +536,77 @@ class SocialLoginController extends Controller
             'firstname' => '',
             'lastname' => '',
             'email' => $targetedId . $affiliation,
+            'provider' => $provider,
+            'password' => Hash::make(json_encode($data)),
+        ];
+    }
+
+    /**
+     * Redirect the browser to Safe People Registry's own sign-in entry point.
+     * Registry never sends Keycloak's auth code to Gateway directly - it's
+     * bound to Registry's own redirect_uri - so Gateway's callback URL is
+     * passed through as `external_redirect` and Registry hands back a
+     * short-lived handoff code of its own once it has completed the exchange.
+     *
+     * @return mixed
+     */
+    private function registryLoginRedirect(): mixed
+    {
+        $callbackUrl = config('app.url') . '/api/v1/auth/registry/callback';
+
+        $registryUrl = rtrim(config('services.registry.web_url'), '/')
+            . config('services.registry.login_path')
+            . '?' . http_build_query(['external_redirect' => $callbackUrl]);
+
+        return redirect()->away($registryUrl);
+    }
+
+    /**
+     * Redeem the single-use handoff code minted by Safe People Registry for
+     * the authenticated user's claims. This call is server-to-server and
+     * HMAC-signed with a secret shared out-of-band with the Registry.
+     *
+     * @param Request $request
+     * @return array
+     */
+    private function redeemRegistryHandoff(Request $request): array
+    {
+        $code = $request->query('code');
+
+        if (!$code) {
+            throw new Exception('Missing handoff code from Safe People Registry');
+        }
+
+        $signature = base64_encode(hash_hmac('sha256', $code, config('services.registry.handoff_secret'), true));
+
+        $response = Http::withHeaders([
+            'x-signature' => $signature,
+        ])->post(rtrim(config('services.registry.api_url'), '/') . "/auth/gateway_handoff/{$code}/redeem");
+
+        if (!$response->successful()) {
+            throw new Exception('Failed to redeem Safe People Registry handoff code');
+        }
+
+        return $this->registryResponse($response->json('data') ?? [], 'registry');
+    }
+
+    /**
+     * Uniform response from Safe People Registry. Identity is matched on
+     * the Keycloak `sub` claim (providerid), not email - Registry email
+     * changes shouldn't silently merge into an unrelated Gateway account.
+     *
+     * @param array $data
+     * @param string $provider
+     * @return array
+     */
+    private function registryResponse(array $data, string $provider): array
+    {
+        return [
+            'providerid' => $data['sub'] ?? '',
+            'name' => trim(($data['given_name'] ?? '') . ' ' . ($data['family_name'] ?? '')),
+            'firstname' => $data['given_name'] ?? '',
+            'lastname' => $data['family_name'] ?? '',
+            'email' => $data['email'] ?? '',
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
