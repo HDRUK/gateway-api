@@ -77,6 +77,7 @@ class User extends Authenticatable
         'is_admin',
         'terms',
         'is_nhse_sde_approval',
+        'registry_digital_identifier',
     ];
 
     /**
