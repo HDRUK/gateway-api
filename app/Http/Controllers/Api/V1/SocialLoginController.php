@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
+use Illuminate\Database\QueryException;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
 
@@ -447,6 +448,27 @@ class SocialLoginController extends Controller
                 $redirectUrl = session('redirectUrl');
                 return redirect()->away($redirectUrl)->withCookies($cookies);
             }
+        } catch (QueryException $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            // registry/open-athens match an existing Gateway user by
+            // providerid only (see registryResponse()) - a second identity
+            // provider account under an email Gateway already knows about
+            // (e.g. the user re-registered with Registry after abandoning
+            // email verification) hits the unique constraint on `email` on
+            // insert rather than a graceful "already exists" response.
+            // Message format differs per driver (MySQL: "users_email_unique",
+            // SQLite in tests: "UNIQUE constraint failed: users.email"), so
+            // match on the column name rather than the MySQL index name.
+            if (stripos($e->getMessage(), 'email') !== false) {
+                return redirect()->away($baseRedirectUrl . '/error/409');
+            }
+
+            return redirect()->away($baseRedirectUrl . '/error/500');
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -454,7 +476,7 @@ class SocialLoginController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e->getMessage());
+            return redirect()->away($baseRedirectUrl . '/error/500');
         }
     }
 
@@ -595,6 +617,10 @@ class SocialLoginController extends Controller
      * the Keycloak `sub` claim (providerid), not email - Registry email
      * changes shouldn't silently merge into an unrelated Gateway account.
      *
+     * `soursdDigitalIdentifier` is Registry's own persistent identifier for
+     * the person (distinct from the Keycloak `sub`), stashed on the Gateway
+     * user record for cross-referencing back to Registry.
+     *
      * @param array $data
      * @param string $provider
      * @return array
@@ -609,6 +635,7 @@ class SocialLoginController extends Controller
             'email' => $data['email'] ?? '',
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
+            'registry_digital_identifier' => $data['soursdDigitalIdentifier'] ?? null,
         ];
     }
 
@@ -632,6 +659,9 @@ class SocialLoginController extends Controller
             $user->email = $data['email'];
             $user->provider = $data['provider'];
             $user->password = $data['password'];
+            if (array_key_exists('registry_digital_identifier', $data)) {
+                $user->registry_digital_identifier = $data['registry_digital_identifier'];
+            }
             $user->update();
         }
 
@@ -655,6 +685,9 @@ class SocialLoginController extends Controller
         $user->email = $value['email'];
         $user->provider = $value['provider'];
         $user->password = $value['password'];
+        if (array_key_exists('registry_digital_identifier', $value)) {
+            $user->registry_digital_identifier = $value['registry_digital_identifier'];
+        }
         if ($provider == 'open-athens') {
             $user->preferred_email = 'secondary';
         }
