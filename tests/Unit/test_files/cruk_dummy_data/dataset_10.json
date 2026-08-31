@@ -1,4 +1,5 @@
 {
+    "identifier": "087654b3-2c0a-4b32-9c2e-1234567890b5",
     "gwdmVersion": "2.1",
     "metadata": {
         "required": {
@@ -95,7 +96,7 @@
         },
         "observations": [
             {
-                "observedNode": "Patients",
+                "observedNode": "Persons",
                 "measuredValue": 1890,
                 "observationDate": "2023-08-01",
                 "measuredProperty": "Count",
@@ -138,14 +139,14 @@
                 "id": "0_2_4_4_2_2",
                 "label": "spatial",
                 "category": "Spatial resolution",
-                "primaryGroup": "Multi-omic Data",
+                "primaryGroup": "data-type",
                 "description": ""
             },
             {
                 "id": "0_2_4_4_1_1",
                 "label": "Liquid Biopsy",
                 "category": "Source",
-                "primaryGroup": "Multi-omic Data",
+                "primaryGroup": "data-type",
                 "description": ""
             },
             {
