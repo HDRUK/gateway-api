@@ -139,4 +139,8 @@ return [
     'media' => [
         'base_url' => env('MEDIA_URL', 'http://media.local'),
     ],
+
+    'slack' => [
+        'feature_flag_webhook_url' => env('SLACK_FEATURE_FLAG_WEBHOOK_URL', ''),
+    ],
 ];
