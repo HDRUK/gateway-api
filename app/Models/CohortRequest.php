@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CohortRequestEligibility;
 use App\Enums\CohortRequestStatus;
 use Config;
 use Illuminate\Database\Eloquent\Model;
@@ -73,10 +74,6 @@ class CohortRequest extends Model
         CohortRequestStatus::RENEWING,
     ];
 
-    public const RENEWAL_ELIGIBLE = 'ELIGIBLE';
-    public const RENEWAL_ALREADY_RENEWING = 'ALREADY_RENEWING';
-    public const RENEWAL_NOT_APPLICABLE = 'NOT_APPLICABLE';
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -115,17 +112,14 @@ class CohortRequest extends Model
         return $trueExpiry === null || Carbon::now()->lessThan($trueExpiry);
     }
 
-    public function renewalEligibility(): string
+    public function eligibility(): CohortRequestEligibility
     {
-        if ($this->request_status === CohortRequestStatus::RENEWING) {
-            return self::RENEWAL_ALREADY_RENEWING;
-        }
-
-        if ($this->request_status !== CohortRequestStatus::APPROVED) {
-            return self::RENEWAL_NOT_APPLICABLE;
-        }
-
-        return self::RENEWAL_ELIGIBLE;
+        return match (true) {
+            $this->request_status === CohortRequestStatus::RENEWING => CohortRequestEligibility::ALREADY_RENEWING,
+            $this->request_status === CohortRequestStatus::APPROVED => CohortRequestEligibility::RENEW,
+            in_array($this->request_status, [CohortRequestStatus::REJECTED, CohortRequestStatus::EXPIRED], true) => CohortRequestEligibility::REAPPLY,
+            default => CohortRequestEligibility::BLOCKED,
+        };
     }
 
     /**

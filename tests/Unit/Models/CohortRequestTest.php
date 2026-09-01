@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use Tests\TestCase;
+use App\Enums\CohortRequestEligibility;
 use App\Enums\CohortRequestStatus;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
@@ -86,39 +87,50 @@ class CohortRequestTest extends TestCase
         $this->assertSame([], CohortRequest::rolesForUser(null));
     }
 
-    public function test_renewal_eligibility_is_eligible_for_approved(): void
+    public function test_eligibility_is_renew_for_approved(): void
     {
         $cohortRequest = $this->makeCohortRequest([
             'request_status' => CohortRequestStatus::APPROVED,
         ]);
 
-        $this->assertSame(CohortRequest::RENEWAL_ELIGIBLE, $cohortRequest->renewalEligibility());
+        $this->assertSame(CohortRequestEligibility::RENEW, $cohortRequest->eligibility());
     }
 
-    public function test_renewal_eligibility_is_already_renewing_when_status_renewing(): void
+    public function test_eligibility_is_already_renewing_when_status_renewing(): void
     {
         $cohortRequest = $this->makeCohortRequest([
             'request_status' => CohortRequestStatus::RENEWING,
         ]);
 
-        $this->assertSame(CohortRequest::RENEWAL_ALREADY_RENEWING, $cohortRequest->renewalEligibility());
+        $this->assertSame(CohortRequestEligibility::ALREADY_RENEWING, $cohortRequest->eligibility());
     }
 
-    public function test_renewal_eligibility_is_not_applicable_for_other_statuses(): void
+    public function test_eligibility_is_reapply_for_rejected_and_expired(): void
+    {
+        foreach ([CohortRequestStatus::REJECTED, CohortRequestStatus::EXPIRED] as $status) {
+            $cohortRequest = $this->makeCohortRequest(['request_status' => $status]);
+
+            $this->assertSame(
+                CohortRequestEligibility::REAPPLY,
+                $cohortRequest->eligibility(),
+                "Expected REAPPLY for status {$status->value}"
+            );
+        }
+    }
+
+    public function test_eligibility_is_blocked_for_pending_banned_and_suspended(): void
     {
         foreach ([
             CohortRequestStatus::PENDING,
-            CohortRequestStatus::REJECTED,
             CohortRequestStatus::BANNED,
             CohortRequestStatus::SUSPENDED,
-            CohortRequestStatus::EXPIRED,
         ] as $status) {
             $cohortRequest = $this->makeCohortRequest(['request_status' => $status]);
 
             $this->assertSame(
-                CohortRequest::RENEWAL_NOT_APPLICABLE,
-                $cohortRequest->renewalEligibility(),
-                "Expected NOT_APPLICABLE for status {$status->value}"
+                CohortRequestEligibility::BLOCKED,
+                $cohortRequest->eligibility(),
+                "Expected BLOCKED for status {$status->value}"
             );
         }
     }
