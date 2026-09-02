@@ -1,3 +1,28 @@
+## [2.49.0](https://github.com/HDRUK/gateway-api/compare/v2.48.0...v2.49.0) (2026-09-02)
+
+### ✨ Features
+
+* **GAT-7829:** Update for CSVs (#1768) ([f08c19c](https://github.com/HDRUK/gateway-api/commit/f08c19cbed0f579361654f9f1cd7a41b3b83ab91)), closes [GAT-7829](undefinedGAT-7829)
+* **GAT-9206:** Point CDS expiry email button at the access status page ([a81d803](https://github.com/HDRUK/gateway-api/commit/a81d803f2f04093c4fa2b1362effdcb550a19d72)), closes [GAT-9206](undefinedGAT-9206)
+* **GAT-9459:** Accept RENEWING in the CDS access gate ([1659a46](https://github.com/HDRUK/gateway-api/commit/1659a463a086c0886ea566d6b3de44378d874a95)), closes [GAT-9459](undefinedGAT-9459) [gate](undefinedgate)
+* **GAT-9459:** Add RENEWING status with access/renewal eligibility checks ([d442d00](https://github.com/HDRUK/gateway-api/commit/d442d009d9c55c4bb544ad581b33b44830752515)), closes [GAT-9459](undefinedGAT-9459)
+* **GAT-9459:** Cast CohortRequest request_status to an enum ([275e755](https://github.com/HDRUK/gateway-api/commit/275e7550d2540066000eccc925258d5fc12a6668)), closes [GAT-9459](undefinedGAT-9459)
+* **GAT-9459:** cohort role/access lookups to CohortRequest::rolesForUser() ([69017fa](https://github.com/HDRUK/gateway-api/commit/69017fab96f6e964d647d7ceb04de724ead0a7a0)), closes [GAT-9459](undefinedGAT-9459)
+* **GAT-9459:** Expose has_access on CohortRequest API responses ([63b0862](https://github.com/HDRUK/gateway-api/commit/63b0862c0192b696815524d08d1852928365985c)), closes [GAT-9459](undefinedGAT-9459) [Expose](undefinedose)
+* **GAT-9459:** Handle renewals on cds request store endpoint ([f3d143d](https://github.com/HDRUK/gateway-api/commit/f3d143d76744beede09f9fc0982ff50cff7d476e)), closes [GAT-9459](undefinedGAT-9459)
+* **GAT-9459:** Move calculateTrueExpiry to the CohortRequest model ([777bf57](https://github.com/HDRUK/gateway-api/commit/777bf57a8b2019f8737ffd0fe495e582299df757)), closes [GAT-9459](undefinedGAT-9459)
+* **GAT-9459:** Watch RENEWING requests in the nightly expiry job ([fee358d](https://github.com/HDRUK/gateway-api/commit/fee358d7ccdf7e5145b9b049cb865704843bfe1f)), closes [GAT-9459](undefinedGAT-9459)
+* **GAT-9462:** Add priority sort key to surface PENDING/RENEWING requests first ([1773575](https://github.com/HDRUK/gateway-api/commit/17735753fc1a67c8820066ea056198f6643f8efc)), closes [GAT-9462](undefinedGAT-9462)
+
+### 🐛 Bug Fixes
+
+* **GAT-9482:** Clear error when succesfully testing an existing federation ([a84fd48](https://github.com/HDRUK/gateway-api/commit/a84fd4898c3f6b32ecd8fb9c3b18e0263d5ad03f)), closes [GAT-9482](undefinedGAT-9482)
+* **GAT-9482:** Clear stale federation error when a run succeeds with no items ([473ad4b](https://github.com/HDRUK/gateway-api/commit/473ad4bd70f87902d31f3467c5b5e4fe5397120b)), closes [GAT-9482](undefinedGAT-9482)
+* **GAT-9482:** Clear stale federation error/error_text on save ([2308d8c](https://github.com/HDRUK/gateway-api/commit/2308d8c2fefa22b90a8efbcb6fd6aade6f762177)), closes [GAT-9482](undefinedGAT-9482)
+* **GAT-9488:** Further auth layer issues discovered (#1771) ([8fd7d4f](https://github.com/HDRUK/gateway-api/commit/8fd7d4fad604673c9bdd4c706cebd31fccf276d9)), closes [GAT-9488](undefinedGAT-9488)
+* **GAT-9999:** API Key wasnt decoded before being sent (#1780) ([95dea45](https://github.com/HDRUK/gateway-api/commit/95dea4516bfad5259b80b702791e5923c9b6258f)), closes [GAT-9999](undefinedGAT-9999)
+* **GAT-9999:** API Key wasnt decoded before being sent (#1780) (#1781) ([3d2165f](https://github.com/HDRUK/gateway-api/commit/3d2165fde9147de0379cfbe800148458d6ffe117)), closes [GAT-9999](undefinedGAT-9999)
+
 ## [2.48.0](https://github.com/HDRUK/gateway-api/compare/v2.47.4...v2.48.0) (2026-08-20)
 
 ### ✨ Features
