@@ -59,6 +59,7 @@ class DurTest extends TestCase
                     'gateway_outputs_tools',
                     'gateway_outputs_papers',
                     'non_gateway_outputs',
+                    'outputs',
                     'project_title',
                     'project_id_text',
                     'organisation_name',
@@ -151,6 +152,7 @@ class DurTest extends TestCase
                     'gateway_outputs_tools',
                     'gateway_outputs_papers',
                     'non_gateway_outputs',
+                    'outputs',
                     'project_title',
                     'project_id_text',
                     'organisation_name',
@@ -207,6 +209,168 @@ class DurTest extends TestCase
             ]
         ]);
         $response->assertStatus(200);
+    }
+
+    /**
+     * PUT update() syncs the outputs relation: adds new rows, updates
+     * existing rows by id, and removes rows omitted from the payload.
+     *
+     * @return void
+     */
+    public function test_update_dur_syncs_outputs_with_success(): void
+    {
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'status' => 'ACTIVE',
+            ],
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        // First sync: two brand new outputs (no id).
+        $responseFirstSync = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $durId,
+            [
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'status' => 'ACTIVE',
+                'outputs' => [
+                    ['type' => 'Paper', 'title' => 'Output A', 'status' => 'Published', 'detail' => 'Detail A', 'url' => 'https://a.com'],
+                    ['type' => 'Software', 'title' => 'Output B', 'status' => 'Draft', 'detail' => 'Detail B', 'url' => 'https://b.com'],
+                ],
+            ],
+            $this->header
+        );
+        $responseFirstSync->assertStatus(200);
+        $outputsAfterFirstSync = $responseFirstSync['data']['outputs'];
+        $this->assertCount(2, $outputsAfterFirstSync);
+
+        $outputAId = collect($outputsAfterFirstSync)->firstWhere('title', 'Output A')['id'];
+        $outputBId = collect($outputsAfterFirstSync)->firstWhere('title', 'Output B')['id'];
+
+        // Second sync: update Output A, omit Output B (should be removed), add a brand new Output C.
+        $responseSecondSync = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $durId,
+            [
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'status' => 'ACTIVE',
+                'outputs' => [
+                    ['id' => $outputAId, 'type' => 'Paper', 'title' => 'Output A Updated', 'status' => 'Published', 'detail' => 'Detail A', 'url' => 'https://a.com'],
+                    ['type' => 'Presentation', 'title' => 'Output C', 'status' => 'Draft', 'detail' => 'Detail C', 'url' => 'https://c.com'],
+                ],
+            ],
+            $this->header
+        );
+        $responseSecondSync->assertStatus(200);
+
+        $outputsAfterSecondSync = $responseSecondSync['data']['outputs'];
+        $this->assertCount(2, $outputsAfterSecondSync);
+
+        $titles = collect($outputsAfterSecondSync)->pluck('title')->all();
+        $this->assertContains('Output A Updated', $titles);
+        $this->assertContains('Output C', $titles);
+        $this->assertNotContains('Output B', $titles);
+
+        $updatedOutputA = collect($outputsAfterSecondSync)->firstWhere('id', $outputAId);
+        $this->assertEquals('Output A Updated', $updatedOutputA['title']);
+
+        $this->assertSoftDeleted('dur_outputs', ['id' => $outputBId]);
+    }
+
+    /**
+     * PATCH edit() also syncs the outputs relation (same checkOutputs()
+     * method as update(), verified separately since edit() is wired
+     * independently).
+     *
+     * @return void
+     */
+    public function test_edit_dur_syncs_outputs_with_success(): void
+    {
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'status' => 'ACTIVE',
+            ],
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $responseEdit = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $durId,
+            [
+                'outputs' => [
+                    ['type' => 'Paper', 'title' => 'Edited Output', 'status' => 'Published', 'detail' => 'Detail', 'url' => 'https://edited.com'],
+                ],
+            ],
+            $this->header
+        );
+        $responseEdit->assertStatus(200);
+
+        $outputs = $responseEdit['data']['outputs'];
+        $this->assertCount(1, $outputs);
+        $this->assertEquals('Edited Output', $outputs[0]['title']);
+    }
+
+    /**
+     * Output url must be a valid URL, when provided.
+     *
+     * @return void
+     */
+    public function test_edit_dur_rejects_invalid_output_url(): void
+    {
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'user_id' => $userId,
+                'team_id' => $teamId,
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'status' => 'ACTIVE',
+            ],
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $responseEdit = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $durId,
+            [
+                'outputs' => [
+                    ['type' => 'Paper', 'title' => 'Bad URL Output', 'url' => 'not a url'],
+                ],
+            ],
+            $this->header
+        );
+
+        // EditDur overrides failedValidation() to return a custom 400 shape
+        // (BaseFormRequest), not Laravel's default 422/errors-bag response.
+        $responseEdit->assertStatus(400);
+        $responseEdit->assertJsonFragment(['field' => 'outputs.0.url']);
     }
 
     /**

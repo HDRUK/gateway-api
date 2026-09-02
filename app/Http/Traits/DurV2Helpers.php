@@ -15,6 +15,7 @@ trait DurV2Helpers
             'keywords',
             'publications',
             'tools',
+            'outputs',
             // SC: I can't get these fields to work properly when applying a status=ACTIVE condition to the underlying entity.
             // I don't think the FE ever uses this information, so I'm disabling it until it ever is required again.
             // 'userDatasets' => function ($query) {
