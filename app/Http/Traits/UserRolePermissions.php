@@ -13,7 +13,6 @@ use App\Models\TeamUserHasRole;
 use App\Models\UserHasWorkgroup;
 use App\Models\RoleHasPermission;
 use App\Exceptions\UnauthorizedException;
-use App\Models\CohortRequestHasPermission;
 
 trait UserRolePermissions
 {
@@ -133,22 +132,7 @@ trait UserRolePermissions
 
     private function getCohortUserRoles(int $userId): array
     {
-        $cohortRequest = CohortRequest::where([
-            'user_id' => $userId,
-            'request_status' => 'APPROVED',
-        ])->first();
-
-        if (!$cohortRequest) {
-            return [];
-        }
-
-        $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id
-        ])->pluck('permission_id')->toArray();
-
-        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
-
-        return $cohortRequestRoles;
+        return CohortRequest::rolesForUser($userId);
     }
 
     public function getUserWorkgroups(int $userId): array

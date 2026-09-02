@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\CohortRequestStatus;
+use Config;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -10,7 +12,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property-read bool $has_access
+ */
 class CohortRequest extends Model
 {
     use HasFactory;
@@ -40,6 +46,7 @@ class CohortRequest extends Model
     ];
 
     protected $casts = [
+        'request_status' => CohortRequestStatus::class,
         'accept_declaration' => 'boolean',
         'request_expire_at' => 'datetime',
         'nhse_sde_requested_at' => 'datetime',
@@ -48,15 +55,106 @@ class CohortRequest extends Model
         'nhse_sde_updated_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'has_access',
+    ];
+
     public const REQUEST_APPROVED = 'APPROVED';
     public const REQUEST_IN_PROCESS = 'IN PROCESS';
     public const REQUEST_APPROVAL_REQUESTED = 'APPROVAL REQUESTED';
     public const REQUEST_PENDING = 'PENDING';
     public const REQUEST_EXPIRED = 'EXPIRED';
 
+    /**
+     * Statuses under which a user currently has CDS access.
+     */
+    public const ACCESS_GRANTING_STATUSES = [
+        CohortRequestStatus::APPROVED,
+        CohortRequestStatus::RENEWING,
+    ];
+
+    public const RENEWAL_ELIGIBLE = 'ELIGIBLE';
+    public const RENEWAL_ALREADY_RENEWING = 'ALREADY_RENEWING';
+    public const RENEWAL_NOT_APPLICABLE = 'NOT_APPLICABLE';
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function calculateTrueExpiry(string $expiryField = 'request_expire_at'): ?Carbon
+    {
+        /** @var Carbon|null $explicitExpiry */
+        $explicitExpiry = $this->$expiryField;
+
+        if ($expiryField === 'nhse_sde_request_expire_at') {
+            $basedOnUpdatedAt = $this->nhse_sde_updated_at
+                ? $this->nhse_sde_updated_at->copy()->addDays((int) Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days'))
+                : null;
+        } else {
+            $basedOnUpdatedAt = $this->updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'));
+        }
+
+        $candidates = array_filter([$basedOnUpdatedAt, $explicitExpiry]);
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        return Carbon::instance(min($candidates));
+    }
+
+    public static function grantsAccess(CohortRequest $request): bool
+    {
+        if (! in_array($request->request_status, self::ACCESS_GRANTING_STATUSES, true)) {
+            return false;
+        }
+
+        $trueExpiry = $request->calculateTrueExpiry('request_expire_at');
+
+        return $trueExpiry === null || Carbon::now()->lessThan($trueExpiry);
+    }
+
+    public function renewalEligibility(): string
+    {
+        if ($this->request_status === CohortRequestStatus::RENEWING) {
+            return self::RENEWAL_ALREADY_RENEWING;
+        }
+
+        if ($this->request_status !== CohortRequestStatus::APPROVED) {
+            return self::RENEWAL_NOT_APPLICABLE;
+        }
+
+        return self::RENEWAL_ELIGIBLE;
+    }
+
+    /**
+     * The cohort permission names granted to this user, or [] if they don't
+     * currently have access. Shared by every place that needs a user's
+     * cohort-derived roles (JWT claims, SSO claims, CRM sync).
+     */
+    public static function rolesForUser(?int $userId): array
+    {
+        if ($userId === null) {
+            return [];
+        }
+
+        $cohortRequest = self::where(['user_id' => $userId])->first();
+
+        if (! $cohortRequest || ! self::grantsAccess($cohortRequest)) {
+            return [];
+        }
+
+        $permissionIds = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequest->id,
+        ])->pluck('permission_id');
+
+        return Permission::whereIn('id', $permissionIds)->pluck('name')->toArray();
+    }
+
+    public function getHasAccessAttribute(): bool
+    {
+        return self::grantsAccess($this);
     }
 
     /**

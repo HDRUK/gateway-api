@@ -118,6 +118,8 @@ class FederationService
             'run_time_minute' => $input['run_time_minute'],
             'enabled' => $input['enabled'],
             'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
+            'error' => false,
+            'error_text' => null,
         ];
 
         $updateArray = $this->withFirstEnabledAt($federationId, $updateArray);
@@ -133,6 +135,16 @@ class FederationService
         $this->sendEmail($federationId, 'UPDATE');
 
         return $response;
+    }
+
+    public function clearErrorForTeam(int $teamId, int $federationId): void
+    {
+        Federation::whereHas('team', function ($query) use ($teamId) {
+            $query->where('id', $teamId);
+        })->where('id', $federationId)->update([
+            'error' => false,
+            'error_text' => null,
+        ]);
     }
 
     public function delete(int $teamId, int $federationId, array $loggingContext = []): void

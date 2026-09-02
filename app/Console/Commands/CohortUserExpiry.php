@@ -51,7 +51,7 @@ class CohortUserExpiry extends Command
     private function handleExpiryCheck(CohortRequest $r, User $u, string $expiryField, array $warnings): void
     {
         $now = Carbon::now();
-        $trueExpiryDate = $this->calculateTrueExpiry($r, $expiryField);
+        $trueExpiryDate = $r->calculateTrueExpiry($expiryField);
 
         if ($trueExpiryDate === null) {
             Auditor::log([
@@ -67,14 +67,14 @@ class CohortUserExpiry extends Command
         switch ($expiryField) {
             case 'request_expire_at':
                 if ($trueExpiryDate <= $now) {
-                    if ($r->request_status === CohortRequest::REQUEST_APPROVED) {
+                    if (in_array($r->request_status, CohortRequest::ACCESS_GRANTING_STATUSES, true)) {
                         $this->expireRequest($r, $expiryField);
                         $this->removePermissions($r);
                         $this->createLog($r, $u);
                         $this->sendEmail($r->id, CohortRequest::REQUEST_EXPIRED, $trueExpiryDate);
                     }
                 } elseif (in_array($diff, $warnings)) {
-                    if ($r->request_status === CohortRequest::REQUEST_APPROVED) {
+                    if (in_array($r->request_status, CohortRequest::ACCESS_GRANTING_STATUSES, true)) {
                         $this->sendEmail($r->id, 'WILL_EXPIRE', $trueExpiryDate);
                     }
                 }
@@ -194,25 +194,4 @@ class CohortUserExpiry extends Command
         }
     }
 
-    private function calculateTrueExpiry(CohortRequest $cohort, string $expiryField = 'request_expire_at'): Carbon|null
-    {
-        /** @var Carbon|null $explicitExpiry */
-        $explicitExpiry = $cohort->$expiryField;
-
-        if ($expiryField === 'nhse_sde_request_expire_at') {
-            $basedOnUpdatedAt = $cohort->nhse_sde_updated_at
-                ? $cohort->nhse_sde_updated_at->copy()->addDays((int) Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days'))
-                : null;
-        } else {
-            $basedOnUpdatedAt = $cohort->updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'));
-        }
-
-        $candidates = array_filter([$basedOnUpdatedAt, $explicitExpiry]);
-
-        if (empty($candidates)) {
-            return null;
-        }
-
-        return Carbon::instance(min($candidates));
-    }
 }

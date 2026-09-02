@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Hash;
 use Config;
 use Auditor;
 use Exception;
@@ -12,6 +11,7 @@ use App\Models\User;
 use App\Models\Application;
 use App\Models\TeamHasUser;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Notification;
 use App\Services\EmailManager;
 use Illuminate\Http\Request;

@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Hash;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Hash;
 
 class UpdateUserPassword extends Command
 {

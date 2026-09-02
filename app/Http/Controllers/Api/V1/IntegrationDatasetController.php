@@ -11,7 +11,7 @@ class IntegrationDatasetController extends Controller
     private const GONE_MESSAGE = 'This endpoint has been retired. Please use the current Dataset API instead.';
 
     public function index(Request $request): JsonResponse
-{
+    {
         return $this->gone();
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Events\FederationProcessed;
 use App\Jobs\ProcessFederation;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -11,6 +12,7 @@ use App\Models\TeamHasFederation;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 use App\Services\Gwdm\GwdmMetadataHandler;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -56,6 +58,26 @@ class ProcessFederationJobTest extends TestCase
         return [$team, $federation];
     }
 
+    private function makeAuthenticatedFederation(string $authType, string $secretLocation = 'projects/test/secrets/federation-token'): array
+    {
+        $team = Team::factory()->create();
+        $federation = Federation::factory()->create([
+            'auth_type' => $authType,
+            'auth_secret_key_location' => $secretLocation,
+            'endpoint_baseurl' => self::BASE_URL,
+            'endpoint_datasets' => self::DATASETS_PATH,
+            'endpoint_dataset' => self::DATASET_PATH,
+            'enabled' => true,
+            'tested' => true,
+            'is_running' => false,
+        ]);
+        TeamHasFederation::create([
+            'team_id' => $team->id,
+            'federation_id' => $federation->id,
+        ]);
+        return [$team, $federation];
+    }
+
     private function catalogueUrlPattern(): string
     {
         return self::BASE_URL . self::DATASETS_PATH . '*';
@@ -71,6 +93,53 @@ class ProcessFederationJobTest extends TestCase
         Http::fake([
             $this->catalogueUrlPattern() => Http::response(['items' => $items], 200),
         ]);
+    }
+
+    /**
+     * Simulates a real remote server that enforces auth (BEARER or API_KEY)
+     * on every request — both the initial catalogue-list connection and any
+     * subsequent per-dataset lookups. Requests without the exact expected
+     * credential are rejected with 401, exactly like a real auth-gated
+     * endpoint would.
+     */
+    private function fakeAuthenticatingRemoteServer(
+        string $authType,
+        string $expectedCredential,
+        array $catalogueItems,
+        array $datasetBodiesByPid = [],
+    ): void {
+        Http::fake(function ($request) use ($authType, $expectedCredential, $catalogueItems, $datasetBodiesByPid) {
+            // Only intercept calls to the simulated federation host — let any
+            // other request (e.g. the real internal TRASER/MMC translation
+            // call) fall through to whatever stub already handles it.
+            if (parse_url($request->url(), PHP_URL_HOST) !== parse_url(self::BASE_URL, PHP_URL_HOST)) {
+                return null;
+            }
+
+            $receivedCredential = match ($authType) {
+                'BEARER' => $request->header('Authorization')[0] ?? null,
+                'API_KEY' => $request->header('apikey')[0] ?? null,
+            };
+            $expectedHeaderValue = $authType === 'BEARER' ? "Bearer {$expectedCredential}" : $expectedCredential;
+
+            if ($receivedCredential !== $expectedHeaderValue) {
+                return Http::response(['error' => 'unauthorized'], 401);
+            }
+
+            $path = parse_url($request->url(), PHP_URL_PATH);
+
+            if ($path === self::DATASETS_PATH) {
+                return Http::response(['items' => $catalogueItems], 200);
+            }
+
+            foreach ($datasetBodiesByPid as $pid => $body) {
+                if (str_ends_with($path, "/{$pid}")) {
+                    return Http::response($body, 200);
+                }
+            }
+
+            return Http::response(['error' => 'not found'], 404);
+        });
     }
 
     private function makeGmiDataset(int $teamId, string $pid, string $status = Dataset::STATUS_ACTIVE): Dataset
@@ -121,6 +190,58 @@ class ProcessFederationJobTest extends TestCase
         (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
 
         $this->assertFalse($federation->fresh()->is_running);
+    }
+
+    public function test_error_cleared_when_remote_returns_empty_items_after_prior_failure(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update([
+            'error' => true,
+            'error_text' => 'a previous connection failure',
+        ]);
+        $this->mockGsms();
+        $this->fakeRemoteCatalogue([]);
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->error);
+        $this->assertNull($fresh->error_text);
+    }
+
+    public function test_run_with_per_item_history_failures_records_error_and_skips_success_event(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        Http::fake([
+            $this->datasetUrlPattern('some-pid') => Http::response(['metadata' => []], 404),
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'some-pid', 'version' => '1.0']],
+            ], 200),
+        ]);
+
+        Event::fake([FederationProcessed::class]);
+
+        // sendToHistory(status: 0) is what per-item create/update/archive
+        // failures actually call internally — force it here rather than
+        // reproducing a real translation failure, so this test exercises
+        // ProcessFederation's branch on hadHistoryFailures() in isolation.
+        $job = new class ($federation) extends ProcessFederation {
+            public function hadHistoryFailures(): bool
+            {
+                return true;
+            }
+        };
+
+        $job->handle(app(GwdmMetadataHandler::class));
+
+        Event::assertNotDispatched(FederationProcessed::class);
+
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->is_running);
+        $this->assertTrue($fresh->error);
+        $this->assertStringContainsString('job', $fresh->error_text);
     }
 
     public function test_is_running_cleared_when_remote_returns_error(): void
@@ -405,6 +526,197 @@ class ProcessFederationJobTest extends TestCase
         $this->assertStringNotContainsString($sensitiveMessage, $record->details['message']);
         $this->assertStringContainsString('unexpected error', $record->details['message']);
         $this->assertStringContainsString('test-job-uuid', $record->details['message']);
+    }
+
+    public function test_create_dataset_request_includes_auth_header(): void
+    {
+        $team = Team::factory()->create();
+        $federation = Federation::factory()->create([
+            'auth_type' => 'BEARER',
+            'auth_secret_key_location' => 'projects/test/secrets/federation-token',
+            'endpoint_baseurl' => self::BASE_URL,
+            'endpoint_datasets' => self::DATASETS_PATH,
+            'endpoint_dataset' => self::DATASET_PATH,
+            'enabled' => true,
+            'tested' => true,
+            'is_running' => false,
+        ]);
+        TeamHasFederation::create([
+            'team_id' => $team->id,
+            'federation_id' => $federation->id,
+        ]);
+
+        $this->mock(GoogleSecretManagerService::class, function ($mock) {
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['bearer_token' => 'test-token-value']));
+        });
+
+        Http::fake([
+            // Dataset-specific pattern registered before the catalogue wildcard —
+            // Http::fake matches in registration order, and the catalogue pattern's
+            // trailing '*' would otherwise also swallow this more specific URL.
+            $this->datasetUrlPattern('new-pid') => Http::response(['metadata' => []], 404),
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'new-pid', 'version' => '1.0']],
+            ], 200),
+        ]);
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/api/v1/datasets/new-pid')
+                && $request->hasHeader('Authorization', 'Bearer test-token-value');
+        });
+    }
+
+    public function test_update_dataset_request_includes_auth_header(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $federation->update([
+            'auth_type' => 'BEARER',
+            'auth_secret_key_location' => 'projects/test/secrets/federation-token',
+        ]);
+
+        $dataset = $this->makeGmiDataset($team->id, 'existing-pid');
+        DatasetVersion::create([
+            'dataset_id' => $dataset->id,
+            'metadata' => ['metadata' => ['required' => ['version' => '1.0']]],
+            'version' => 1,
+            'provider_team_id' => $team->id,
+            'application_type' => 'dataset',
+        ]);
+
+        $this->mock(GoogleSecretManagerService::class, function ($mock) {
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['bearer_token' => 'test-token-value']));
+        });
+
+        Http::fake([
+            $this->datasetUrlPattern('existing-pid') => Http::response(['metadata' => []], 404),
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'existing-pid', 'version' => '2.0']],
+            ], 200),
+        ]);
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->url(), '/api/v1/datasets/existing-pid')
+                && $request->hasHeader('Authorization', 'Bearer test-token-value');
+        });
+    }
+
+    public function test_full_sync_succeeds_against_simulated_authenticating_server(): void
+    {
+        [, $federation] = $this->makeAuthenticatedFederation('BEARER');
+
+        $this->mock(GoogleSecretManagerService::class, function ($mock) {
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['bearer_token' => 'correct-token']));
+        });
+
+        // The simulated server only accepts requests carrying the exact bearer
+        // token above — it 401s the initial catalogue connection AND any
+        // subsequent per-dataset lookup if either is missing the header. The
+        // per-dataset response is a benign 404 ("nothing to translate") so
+        // this test stays focused on the auth gate rather than exercising the
+        // unrelated metadata-translation/dataset-creation internals.
+        $this->fakeAuthenticatingRemoteServer(
+            authType: 'BEARER',
+            expectedCredential: 'correct-token',
+            catalogueItems: [['persistentId' => 'server-verified-pid', 'version' => '1.0']],
+            datasetBodiesByPid: [],
+        );
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        // Both the catalogue call and the per-dataset call must have carried
+        // valid auth — if either had been sent without the header, the
+        // simulated server would have 401'd it instead of responding 404.
+        Http::assertSent(fn ($request) => $request->url() === self::BASE_URL . self::DATASETS_PATH
+            && $request->hasHeader('Authorization', 'Bearer correct-token'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/server-verified-pid')
+            && $request->hasHeader('Authorization', 'Bearer correct-token'));
+
+        // No auth failure was recorded for this dataset.
+        $this->assertDatabaseMissing('federation_job_runs', ['pid' => 'server-verified-pid', 'status' => 0]);
+    }
+
+    public function test_initial_catalogue_connection_is_rejected_by_server_on_bad_bearer_auth(): void
+    {
+        [, $federation] = $this->makeAuthenticatedFederation('BEARER');
+
+        // Secret store hands back a token that does NOT match what the
+        // simulated server expects (e.g. a stale/rotated secret).
+        $this->mock(GoogleSecretManagerService::class, function ($mock) {
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['bearer_token' => 'stale-token']));
+        });
+
+        $this->fakeAuthenticatingRemoteServer(
+            authType: 'BEARER',
+            expectedCredential: 'correct-token',
+            catalogueItems: [['persistentId' => 'server-verified-pid', 'version' => '1.0']],
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/non-200 status 401/');
+
+        try {
+            (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        } finally {
+            $this->assertDatabaseMissing('datasets', ['pid' => 'server-verified-pid']);
+        }
+    }
+
+    public function test_full_sync_succeeds_against_simulated_server_with_api_key_auth(): void
+    {
+        [, $federation] = $this->makeAuthenticatedFederation('API_KEY');
+
+        $this->mock(GoogleSecretManagerService::class, function ($mock) {
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['api_key' => 'correct-api-key']));
+        });
+
+        // Same simulated auth gate as the bearer-token test, but checking the
+        // 'apikey' header instead of 'Authorization' — this is what
+        // determineAuthType() sends for API_KEY federations.
+        $this->fakeAuthenticatingRemoteServer(
+            authType: 'API_KEY',
+            expectedCredential: 'correct-api-key',
+            catalogueItems: [['persistentId' => 'server-verified-pid', 'version' => '1.0']],
+            datasetBodiesByPid: [],
+        );
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        Http::assertSent(fn ($request) => $request->url() === self::BASE_URL . self::DATASETS_PATH
+            && $request->hasHeader('apikey', 'correct-api-key'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/server-verified-pid')
+            && $request->hasHeader('apikey', 'correct-api-key'));
+
+        $this->assertDatabaseMissing('federation_job_runs', ['pid' => 'server-verified-pid', 'status' => 0]);
+    }
+
+    public function test_initial_catalogue_connection_is_rejected_by_server_on_bad_api_key_auth(): void
+    {
+        [, $federation] = $this->makeAuthenticatedFederation('API_KEY');
+
+        // Secret store hands back an API key that does NOT match what the
+        // simulated server expects.
+        $this->mock(GoogleSecretManagerService::class, function ($mock) {
+            $mock->shouldReceive('getSecret')->andReturn(json_encode(['api_key' => 'stale-api-key']));
+        });
+
+        $this->fakeAuthenticatingRemoteServer(
+            authType: 'API_KEY',
+            expectedCredential: 'correct-api-key',
+            catalogueItems: [['persistentId' => 'server-verified-pid', 'version' => '1.0']],
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/non-200 status 401/');
+
+        try {
+            (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        } finally {
+            $this->assertDatabaseMissing('datasets', ['pid' => 'server-verified-pid']);
+        }
     }
 
     public function test_gmi_dataset_from_another_team_is_never_archived(): void

@@ -22,6 +22,13 @@ trait GatewayMetadataIngestionTrait
 {
     use MetadataVersioning;
 
+    private bool $hadHistoryFailures = false;
+
+    public function hadHistoryFailures(): bool
+    {
+        return $this->hadHistoryFailures;
+    }
+
     public function pullCatalogueList(Federation|array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
         if (!is_array($federation)) {
@@ -147,7 +154,8 @@ trait GatewayMetadataIngestionTrait
 
             try {
                 $data = $remoteItems[$pid];
-                $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                    ->get($this->makeDatasetUrl($federation, $data));
 
                 $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection:
                 status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
@@ -222,7 +230,8 @@ trait GatewayMetadataIngestionTrait
             if ($localItems->has($pid)) {
                 try {
                     $local = $localItems[$pid];
-                    $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                    $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                        ->get($this->makeDatasetUrl($federation, $data));
                     if ($response->status() === 200) {
                         $team = Team::where('id', $gmi->getTeam())->first();
                         $ds = Dataset::where([
@@ -314,7 +323,7 @@ trait GatewayMetadataIngestionTrait
                 case 'API_KEY':
                     $key = $gsms->getSecret($federation->auth_secret_key_location);
                     return [
-                        'apikey' => $key,
+                        'apikey' => json_decode($key, true)['api_key'],
                     ];
                 case 'NO_AUTH':
                     // Nothing to do
@@ -355,6 +364,10 @@ trait GatewayMetadataIngestionTrait
 
     public function sendToHistory(int $teamId, int $federationId, string $pid, string $jobUuid, array|string $message, int $status, int $attempts): void
     {
+        if ($status === 0) {
+            $this->hadHistoryFailures = true;
+        }
+
         FederationJobRun::create(
             [
                 'team_id' => $teamId,
