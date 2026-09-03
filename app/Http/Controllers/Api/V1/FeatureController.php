@@ -8,6 +8,7 @@ use App\Models\User;
 use Auditor;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
 
 class FeatureController extends Controller
@@ -263,8 +264,12 @@ class FeatureController extends Controller
 
             Feature::flushCache();
 
+            $active = $global->active($name);
+
+            $this->notifyFeatureFlagToggled($name, $active, $this->jwtUser($request));
+
             return response()->json([
-                'data' => $global->active($name),
+                'data' => $active,
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
@@ -274,6 +279,46 @@ class FeatureController extends Controller
             ]);
 
             throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Post a Slack message when a feature flag is toggled globally.
+     * Best-effort - a Slack delivery failure must never fail the toggle request.
+     */
+    private function notifyFeatureFlagToggled(string $name, bool $active, ?User $toggledBy): void
+    {
+        $webhookUrl = config('services.slack.feature_flag_webhook_url');
+        if (! $webhookUrl) {
+            return;
+        }
+
+        try {
+            $link = rtrim((string) config('gateway.gateway_url'), '/').'/en/account/profile/search-admin?tab=features';
+            $emoji = $active ? '🟢' : '🔴';
+
+            $toggledByName = trim(($toggledBy?->firstname ?? '').' '.($toggledBy?->lastname ?? ''));
+            if ($toggledByName === '') {
+                $toggledByName = $toggledBy?->name ?? $toggledBy?->email ?? 'Unknown user';
+            }
+
+            Http::post($webhookUrl, [
+                'text' => implode("\n", [
+                    'Product: Gateway',
+                    'Feature Flag: '.$name,
+                    'State: '.$emoji.' '.($active ? 'ON' : 'OFF'),
+                    'Toggled by: '.$toggledByName,
+                    'Environment: '.config('app.env'),
+                    'When: '.now()->format('l jS M Y, g:ia T'),
+                    'Link: '.$link,
+                ]),
+            ]);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this).'@notifyFeatureFlagToggled',
+                'description' => $e->getMessage(),
+            ]);
         }
     }
 

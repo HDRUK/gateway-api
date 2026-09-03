@@ -36,6 +36,7 @@ class DurTest extends TestCase
                 'gateway_outputs_tools',
                 'gateway_outputs_papers',
                 'non_gateway_outputs',
+                'outputs',
                 'project_title',
                 'project_id_text',
                 'organisation_name',
@@ -1247,6 +1248,127 @@ class DurTest extends TestCase
 
         // delete user
         $this->deleteUser($userId);
+    }
+
+    /**
+     * PUT update() (team-scoped, V2) syncs the outputs relation: adds new
+     * rows, updates existing rows by id, and removes rows omitted from the
+     * payload.
+     *
+     * @return void
+     */
+    public function test_update_dur_syncs_outputs_with_success(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+
+        $responseCreate = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            [
+                'project_title' => 'ABC',
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'ACTIVE',
+            ],
+            $this->header,
+        );
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $durId = $responseCreate['data'];
+
+        // First sync: two brand new outputs (no id).
+        $responseFirstSync = $this->json(
+            'PUT',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'project_title' => 'ABC',
+                'status' => 'ACTIVE',
+                'outputs' => [
+                    ['type' => 'Paper', 'title' => 'Output A', 'status' => 'Published', 'detail' => 'Detail A', 'url' => 'https://a.com'],
+                    ['type' => 'Software', 'title' => 'Output B', 'status' => 'Draft', 'detail' => 'Detail B', 'url' => 'https://b.com'],
+                ],
+            ],
+            $this->header,
+        );
+        $responseFirstSync->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $outputsAfterFirstSync = $responseFirstSync['data']['outputs'];
+        $this->assertCount(2, $outputsAfterFirstSync);
+
+        $outputAId = collect($outputsAfterFirstSync)->firstWhere('title', 'Output A')['id'];
+        $outputBId = collect($outputsAfterFirstSync)->firstWhere('title', 'Output B')['id'];
+
+        // Second sync: update Output A, omit Output B (should be removed), add a brand new Output C.
+        $responseSecondSync = $this->json(
+            'PUT',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'project_title' => 'ABC',
+                'status' => 'ACTIVE',
+                'outputs' => [
+                    ['id' => $outputAId, 'type' => 'Paper', 'title' => 'Output A Updated', 'status' => 'Published', 'detail' => 'Detail A', 'url' => 'https://a.com'],
+                    ['type' => 'Presentation', 'title' => 'Output C', 'status' => 'Draft', 'detail' => 'Detail C', 'url' => 'https://c.com'],
+                ],
+            ],
+            $this->header,
+        );
+        $responseSecondSync->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $outputsAfterSecondSync = $responseSecondSync['data']['outputs'];
+        $this->assertCount(2, $outputsAfterSecondSync);
+
+        $titles = collect($outputsAfterSecondSync)->pluck('title')->all();
+        $this->assertContains('Output A Updated', $titles);
+        $this->assertContains('Output C', $titles);
+        $this->assertNotContains('Output B', $titles);
+
+        $this->assertSoftDeleted('dur_outputs', ['id' => $outputBId]);
+
+        // delete team
+        $this->deleteTeam($teamId);
+    }
+
+    /**
+     * PATCH edit() (team-scoped, V2) also syncs the outputs relation.
+     *
+     * @return void
+     */
+    public function test_edit_dur_syncs_outputs_with_success(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+
+        $responseCreate = $this->json(
+            'POST',
+            $this->team_durs_url($teamId),
+            [
+                'project_title' => 'ABC',
+                'latest_approval_date' => '2017-09-12T01:00:00',
+                'organisation_sector' => 'academia',
+                'status' => 'ACTIVE',
+            ],
+            $this->header,
+        );
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $durId = $responseCreate['data'];
+
+        $responseEdit = $this->json(
+            'PATCH',
+            $this->team_durs_url($teamId) . '/' . $durId,
+            [
+                'outputs' => [
+                    ['type' => 'Paper', 'title' => 'Edited Output', 'status' => 'Published', 'detail' => 'Detail', 'url' => 'https://edited.com'],
+                ],
+            ],
+            $this->header,
+        );
+        $responseEdit->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $outputs = $responseEdit['data']['outputs'];
+        $this->assertCount(1, $outputs);
+        $this->assertEquals('Edited Output', $outputs[0]['title']);
+
+        // delete team
+        $this->deleteTeam($teamId);
     }
 
     public function test_download_dur_table_with_success_v2(): void

@@ -18,6 +18,7 @@ use App\Models\DurHasDatasetVersion;
 use App\Models\DatasetVersion;
 use App\Http\Requests\Dur\GetDur;
 use App\Models\DurHasPublication;
+use App\Models\DurOutput;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
 use App\Http\Controllers\Controller;
@@ -161,6 +162,7 @@ class IntegrationDurController extends Controller
                     'publications',
                     'tools',
                     'keywords',
+                    'outputs',
                     'userDatasets' => function ($query) {
                         $query->distinct('id');
                     },
@@ -836,6 +838,10 @@ class IntegrationDurController extends Controller
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools);
 
+            // sync dur outputs
+            $outputs = array_key_exists('outputs', $input) ? $input['outputs'] : [];
+            $this->checkOutputs($id, $outputs);
+
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
                 Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
@@ -1117,6 +1123,12 @@ class IntegrationDurController extends Controller
             if (array_key_exists('tools', $input)) {
                 $tools = $input['tools'];
                 $this->checkKeywords($id, $tools);
+            }
+
+            // sync dur outputs
+            if (array_key_exists('outputs', $input)) {
+                $outputs = $input['outputs'];
+                $this->checkOutputs($id, $outputs);
             }
 
             // for migration from mongo database
@@ -1573,6 +1585,34 @@ class IntegrationDurController extends Controller
             throw new Exception('deleteDurHasTools :: ' . $e->getMessage());
         }
     }
+
+    // outputs
+    private function checkOutputs(int $durId, array $inOutputs)
+    {
+        $keepIds = array_values(array_filter(array_column($inOutputs, 'id')));
+
+        DurOutput::where('dur_id', $durId)
+            ->whereNotIn('id', $keepIds)
+            ->delete();
+
+        foreach ($inOutputs as $output) {
+            DurOutput::updateOrCreate(
+                [
+                    'id' => $output['id'] ?? null,
+                    'dur_id' => $durId,
+                ],
+                [
+                    'dur_id' => $durId,
+                    'type' => $output['type'] ?? null,
+                    'title' => $output['title'] ?? null,
+                    'status' => $output['status'] ?? null,
+                    'detail' => $output['detail'] ?? null,
+                    'url' => $output['url'] ?? null,
+                ]
+            );
+        }
+    }
+
     private function extractInputIdToArray(array $input): array
     {
         $response = [];
@@ -1625,6 +1665,7 @@ class IntegrationDurController extends Controller
                 'keywords',
                 'publications',
                 'tools',
+                'outputs',
                 'userDatasets' => function ($query) {
                     $query->distinct('id');
                 },

@@ -1,4 +1,5 @@
 {
+    "identifier": "087654b3-2c0a-4b32-9c2e-1234567890b4",
     "gwdmVersion": "2.1",
     "metadata": {
         "required": {
@@ -95,7 +96,7 @@
         },
         "observations": [
             {
-                "observedNode": "Patients",
+                "observedNode": "Persons",
                 "measuredValue": 3120,
                 "observationDate": "2023-11-30",
                 "measuredProperty": "Count",

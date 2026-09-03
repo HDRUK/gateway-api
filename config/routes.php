@@ -72,7 +72,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -83,7 +83,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -94,7 +94,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -105,7 +105,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
 
