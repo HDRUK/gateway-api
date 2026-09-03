@@ -4,23 +4,26 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use Auditor;
 use Exception;
-use App\Models\User;
-use App\Models\TeamHasUser;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Models\TeamUserHasNotification;
-use App\Models\TeamUserHasRole;
+use App\Exceptions\UnprocessableException;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
+use App\Services\AdminUserService;
 
 class AdminTeamUserController extends Controller
 {
+    public function __construct(private readonly AdminUserService $adminUserService)
+    {
+    }
+
     /**
      * Remove a super-user from a team.
      *
-     * Reuses the same team pivot cleanup as TeamUserController::destroy(),
-     * but does not apply the "last custodian.team.admin" guard, since
-     * super-users are not subject to that team-level restriction.
+     * Delegates entirely to AdminUserService::removeUserFromTeams() -
+     * the "target must be a super-user" check and the pivot cleanup live
+     * there once, rather than being duplicated between this controller and
+     * the bulk remove-from-teams endpoint.
      *
      * @param \App\Http\Requests\TeamUser\DeleteTeamUser $request
      * @param integer $teamId
@@ -33,39 +36,11 @@ class AdminTeamUserController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            $user = User::where('id', $userId)->first();
+            $results = $this->adminUserService->removeUserFromTeams($userId, [$teamId]);
 
-            if (!$user) {
+            if (($results[$teamId] ?? null) !== 'removed') {
                 throw new NotFoundException();
             }
-
-            if (!$user->is_admin) {
-                return response()->json([
-                    'message' => 'This endpoint is for removing super-users only — use the standard team-member removal endpoint for other users.',
-                ], 400);
-            }
-
-            $teamHasUsers = TeamHasUser::where([
-                'team_id' => $teamId,
-                'user_id' => $userId,
-            ])->first();
-
-            if (!$teamHasUsers) {
-                throw new NotFoundException();
-            }
-
-            TeamUserHasNotification::where([
-                'team_has_user_id' => $teamHasUsers->id,
-            ])->delete();
-
-            TeamUserHasRole::where([
-                'team_has_user_id' => $teamHasUsers->id,
-            ])->delete();
-
-            TeamHasUser::where([
-                'team_id' => $teamHasUsers->team_id,
-                'user_id' => $teamHasUsers->user_id,
-            ])->delete();
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -79,6 +54,16 @@ class AdminTeamUserController extends Controller
             return response()->json([
                 'message' => 'success',
             ], 200);
+        } catch (UnprocessableException $e) {
+            Auditor::log([
+                'user_id' => (int)($jwtUser['id'] ?? 0),
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw $e;
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),

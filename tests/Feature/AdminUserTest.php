@@ -185,7 +185,11 @@ class AdminUserTest extends TestCase
             $this->header,
         );
 
-        $response->assertStatus(400);
+        // Delegated to AdminUserService::removeUserFromTeams(), which
+        // throws UnprocessableException (422) for a non-super-user target -
+        // same check, same status code, as the bulk remove-from-teams
+        // endpoint.
+        $response->assertStatus(422);
 
         $this->assertDatabaseHas('team_has_users', [
             'team_id' => $teamId,

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\ReassignableEntityType;
+use App\Exceptions\UnprocessableException;
 use App\Models\Application;
 use App\Models\ApplicationHasNotification;
 use App\Models\ApplicationHasPermission;
@@ -42,24 +44,9 @@ use App\Models\UserHasNotification;
 use App\Models\UserHasRole;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class AdminUserService
 {
-    /**
-     * Entity types that require an explicit admin decision (reassign or
-     * delete) before the owning user can be removed.
-     */
-    public const RESOLVABLE_ENTITY_TYPES = [
-        'dataset',
-        'tool',
-        'application',
-        'review',
-        'cohort_request',
-        'enquiry_thread',
-        'collection',
-    ];
-
     /**
      * Gather every entity linked to a user that needs an explicit
      * reassign-or-delete decision before that user can be safely removed.
@@ -111,16 +98,14 @@ class AdminUserService
      * @param array $teamIds
      * @return array<int, string> keyed by team id, one of 'removed' or 'not_member'
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws \App\Exceptions\UnprocessableException
      */
     public function removeUserFromTeams(int $userId, array $teamIds): array
     {
         $user = User::find($userId);
 
         if (!$user || !$user->is_admin) {
-            throw ValidationException::withMessages([
-                'userId' => ['This action is for removing super-users from teams only.'],
-            ]);
+            throw new UnprocessableException('This action is for removing super-users from teams only.');
         }
 
         $results = [];
@@ -312,12 +297,12 @@ class AdminUserService
      */
     private function applyReassignment(int $userId, array $reassignment): void
     {
-        $entityType = $reassignment['entity_type'];
+        $entityType = ReassignableEntityType::from($reassignment['entity_type']);
         $entityId = (int) $reassignment['entity_id'];
         $delete = (bool) ($reassignment['delete'] ?? false);
         $newUserId = $reassignment['new_user_id'] ?? null;
 
-        if ($entityType === 'collection') {
+        if ($entityType === ReassignableEntityType::COLLECTION) {
             if ($delete) {
                 // Force-delete (not soft-delete): user_id is NOT NULL on
                 // collection_has_users, and this pivot row has no meaning
@@ -370,19 +355,19 @@ class AdminUserService
      * EnquiryThread's messages), don't clean up every non-cascading child
      * table anyway.
      *
-     * @param string $entityType
+     * @param \App\Enums\ReassignableEntityType $entityType
      * @param integer $entityId
      * @return void
      */
-    private function deleteEntityChildren(string $entityType, int $entityId): void
+    private function deleteEntityChildren(ReassignableEntityType $entityType, int $entityId): void
     {
         switch ($entityType) {
-            case 'cohort_request':
+            case ReassignableEntityType::COHORT_REQUEST:
                 CohortRequestHasLog::where('cohort_request_id', $entityId)->delete();
                 CohortRequestHasPermission::where('cohort_request_id', $entityId)->delete();
                 break;
 
-            case 'tool':
+            case ReassignableEntityType::TOOL:
                 // None of these cascade at the DB level (verified against
                 // the actual migrations, not the live DB - see note on
                 // transferAndDeleteUser). Reviews of this tool (possibly by
@@ -406,7 +391,7 @@ class AdminUserService
                 PublicationHasTool::withTrashed()->where('tool_id', $entityId)->forceDelete();
                 break;
 
-            case 'application':
+            case ReassignableEntityType::APPLICATION:
                 ApplicationHasPermission::where('application_id', $entityId)->delete();
 
                 $notificationIds = ApplicationHasNotification::where('application_id', $entityId)
@@ -427,7 +412,7 @@ class AdminUserService
                 PublicationHasTool::where('application_id', $entityId)->update(['application_id' => null]);
                 break;
 
-            case 'enquiry_thread':
+            case ReassignableEntityType::ENQUIRY_THREAD:
                 EnquiryMessage::where('thread_id', $entityId)->delete();
                 break;
 
@@ -437,18 +422,18 @@ class AdminUserService
     }
 
     /**
-     * @param string $entityType
+     * @param \App\Enums\ReassignableEntityType $entityType
      * @return string
      */
-    private function modelForEntityType(string $entityType): string
+    private function modelForEntityType(ReassignableEntityType $entityType): string
     {
         return match ($entityType) {
-            'dataset' => Dataset::class,
-            'tool' => Tool::class,
-            'application' => Application::class,
-            'review' => Review::class,
-            'cohort_request' => CohortRequest::class,
-            'enquiry_thread' => EnquiryThread::class,
+            ReassignableEntityType::DATASET => Dataset::class,
+            ReassignableEntityType::TOOL => Tool::class,
+            ReassignableEntityType::APPLICATION => Application::class,
+            ReassignableEntityType::REVIEW => Review::class,
+            ReassignableEntityType::COHORT_REQUEST => CohortRequest::class,
+            ReassignableEntityType::ENQUIRY_THREAD => EnquiryThread::class,
         };
     }
 
@@ -460,7 +445,7 @@ class AdminUserService
      * @param array $reassignments
      * @return void
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws \App\Exceptions\UnprocessableException
      */
     private function assertFullCoverage(int $userId, array $reassignments): void
     {
@@ -485,11 +470,9 @@ class AdminUserService
         }
 
         if (!empty($missing)) {
-            throw ValidationException::withMessages([
-                'reassignments' => [
-                    'The following linked entities are missing a reassign/delete decision: ' . implode(', ', $missing),
-                ],
-            ]);
+            throw new UnprocessableException(
+                'The following linked entities are missing a reassign/delete decision: ' . implode(', ', $missing)
+            );
         }
     }
 }

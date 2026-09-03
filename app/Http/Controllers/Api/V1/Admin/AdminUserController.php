@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use Auditor;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\ValidationException;
+use App\Exceptions\UnprocessableException;
 use App\Http\Controllers\Controller;
 use App\Services\AdminUserService;
 use App\Http\Requests\Admin\GetUserDeletionCheck;
@@ -73,7 +73,7 @@ class AdminUserController extends Controller
             return response()->json([
                 'data' => $results,
             ], 200);
-        } catch (ValidationException $e) {
+        } catch (UnprocessableException $e) {
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),
                 'target_user_id' => $userId,
@@ -82,10 +82,7 @@ class AdminUserController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->errors(),
-            ], 422);
+            throw $e;
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),
@@ -155,7 +152,7 @@ class AdminUserController extends Controller
             return response()->json([
                 'message' => 'success',
             ], 200);
-        } catch (ValidationException $e) {
+        } catch (UnprocessableException $e) {
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),
                 'target_user_id' => $userId,
@@ -164,10 +161,7 @@ class AdminUserController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->errors(),
-            ], 422);
+            throw $e;
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),

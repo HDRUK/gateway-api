@@ -2,21 +2,13 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\ReassignableEntityType;
 use App\Http\Requests\BaseFormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\Rule;
 
 class TransferAndDeleteUser extends BaseFormRequest
 {
-    public const ENTITY_TYPES = [
-        'dataset',
-        'tool',
-        'application',
-        'review',
-        'cohort_request',
-        'enquiry_thread',
-        'collection',
-    ];
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -36,7 +28,7 @@ class TransferAndDeleteUser extends BaseFormRequest
             'reassignments.*.entity_type' => [
                 'required',
                 'string',
-                'in:' . implode(',', self::ENTITY_TYPES),
+                Rule::enum(ReassignableEntityType::class),
             ],
             'reassignments.*.entity_id' => [
                 'required',
@@ -99,7 +91,7 @@ class TransferAndDeleteUser extends BaseFormRequest
                 // linked to safely hard-delete here. Datasets must always
                 // be reassigned to a new owner, never deleted, via this
                 // endpoint.
-                if (($reassignment['entity_type'] ?? null) === 'dataset' && $hasDelete) {
+                if (($reassignment['entity_type'] ?? null) === ReassignableEntityType::DATASET->value && $hasDelete) {
                     $validator->errors()->add(
                         "reassignments.{$index}",
                         'Datasets cannot be deleted here - they must be reassigned to another user.'
@@ -110,7 +102,7 @@ class TransferAndDeleteUser extends BaseFormRequest
                 // specific user who submitted it - reassigning it to
                 // someone else doesn't make sense. It must always be
                 // deleted, never reassigned, via this endpoint.
-                if (($reassignment['entity_type'] ?? null) === 'cohort_request' && $hasNewUserId) {
+                if (($reassignment['entity_type'] ?? null) === ReassignableEntityType::COHORT_REQUEST->value && $hasNewUserId) {
                     $validator->errors()->add(
                         "reassignments.{$index}",
                         'Cohort Discovery requests cannot be reassigned here - they must be deleted.'
