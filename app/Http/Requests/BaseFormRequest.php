@@ -47,7 +47,11 @@ abstract class BaseFormRequest extends FormRequest
 
         foreach ($validator->errors()->messages() as $field => $messages) {
             foreach ($messages as $message) {
-                $rules = $validator->failed()[$field];
+                // A custom error added via $validator->errors()->add() in a
+                // withValidator() after() callback (rather than a declared
+                // rule) has no entry in failed() - fall back to a generic
+                // reason instead of crashing on the missing key.
+                $rules = $validator->failed()[$field] ?? ['CUSTOM' => []];
 
                 foreach ($rules as $rule => $ruleData) {
                     $errors[] = [

@@ -113,7 +113,21 @@ class UserController extends Controller
 
                     $users = ['data' => $users];
                 } elseif ($userIsAdmin) {
-                    $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
+                    $query = User::with(['roles', 'roles.permissions', 'teams', 'notifications']);
+
+                    if ($request->filled('search')) {
+                        $search = $request->query('search');
+                        $query->where(function ($userQuery) use ($search) {
+                            $userQuery->where('firstname', 'like', '%' . $search . '%')
+                                ->orWhere('lastname', 'like', '%' . $search . '%')
+                                ->orWhere('name', 'like', '%' . $search . '%')
+                                ->orWhereHas('teams', function ($teamQuery) use ($search) {
+                                    $teamQuery->where('name', 'like', '%' . $search . '%');
+                                });
+                        });
+                    }
+
+                    $users = $query->paginate($perPage, ['*'], 'page');
                 } else {
                     $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
                 }
