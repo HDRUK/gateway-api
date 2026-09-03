@@ -94,6 +94,40 @@ class UserTest extends TestCase
     }
 
     /**
+     * The admin user list can be filtered by a search term matching the
+     * user's name or one of their team names.
+     *
+     * @return void
+     */
+    public function test_admin_get_all_users_filters_by_search_term(): void
+    {
+        $matchingUser = User::factory()->create([
+            'firstname' => 'Zaphod',
+            'lastname' => 'Beeblebrox',
+        ]);
+
+        $nonMatchingUser = User::factory()->create([
+            'firstname' => 'Arthur',
+            'lastname' => 'Dent',
+        ]);
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . '?search=Zaphod',
+            [],
+            $this->header,
+        );
+
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+
+        $ids = array_column($content['data'], 'id');
+
+        $this->assertContains($matchingUser->id, $ids);
+        $this->assertNotContains($nonMatchingUser->id, $ids);
+    }
+
+    /**
      * Get All Users with success as non admin
      *
      * @return void
