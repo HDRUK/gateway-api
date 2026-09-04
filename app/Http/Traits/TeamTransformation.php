@@ -75,7 +75,6 @@ trait TeamTransformation
                 'contact_point' => $team['contact_point'],
                 'application_form_updated_by' => $team['application_form_updated_by'],
                 'application_form_updated_on' => $team['application_form_updated_on'],
-                'mongo_object_id' => $team['mongo_object_id'],
                 'notification_status' => $team['notification_status'],
                 'is_question_bank' => $team['is_question_bank'],
                 'is_provider' => $team['is_provider'],
@@ -113,8 +112,6 @@ trait TeamTransformation
                     'orcid' => $user['orcid'],
                     'contact_feedback' => $user['contact_feedback'],
                     'contact_news' => $user['contact_news'],
-                    'mongo_id' => $user['mongo_id'],
-                    'mongo_object_id' => $user['mongo_object_id'],
                     'terms' => $user['terms'],
                     'hubspot_id' => $user['hubspot_id'],
                 ];

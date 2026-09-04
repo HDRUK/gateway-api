@@ -241,9 +241,6 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
-     *             @OA\Property(property="mongo_id", type="string", example="456"),
-     *             @OA\Property(property="mongo_pid", type="string", example="def789"),
      *             @OA\Property(property="metadata", type="object")
      *          )
      *       )

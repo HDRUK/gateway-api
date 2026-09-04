@@ -318,8 +318,6 @@ class UserController extends Controller
                 'orcid' => $input['orcid'],
                 'contact_feedback' => $input['contact_feedback'],
                 'contact_news' => $input['contact_news'],
-                'mongo_id' => $input['mongo_id'],
-                'mongo_object_id' => $input['mongo_object_id'],
                 'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
                 'is_nhse_sde_approval' => array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : 0,
             ];
@@ -471,8 +469,6 @@ class UserController extends Controller
                     'orcid' => $input['orcid'],
                     'contact_feedback' => $input['contact_feedback'],
                     'contact_news' => $input['contact_news'],
-                    'mongo_id' => $input['mongo_id'],
-                    'mongo_object_id' => $input['mongo_object_id'],
                     'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
                     'is_nhse_sde_approval' => array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : 0,
                 ];
@@ -672,8 +668,6 @@ class UserController extends Controller
                 'orcid',
                 'contact_feedback',
                 'contact_news',
-                'mongo_id',
-                'mongo_object_id',
                 'terms',
                 'is_nhse_sde_approval',
             ];

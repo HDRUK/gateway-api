@@ -63,9 +63,6 @@ trait MetadataOnboard
             $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
             $input['metadata']['metadata'] = $traserResponse['metadata'];
 
-            $mongo_object_id = array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null;
-            $mongo_id = array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null;
-            $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
             $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
 
             $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
@@ -73,9 +70,6 @@ trait MetadataOnboard
             $dataset = MMC::createDataset([
                 'user_id' => $input['user_id'],
                 'team_id' => $input['team_id'],
-                'mongo_object_id' => $mongo_object_id,
-                'mongo_id' => $mongo_id,
-                'mongo_pid' => $mongo_pid,
                 'datasetid' => $datasetid,
                 'created' => now(),
                 'updated' => now(),

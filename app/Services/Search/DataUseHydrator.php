@@ -48,7 +48,6 @@ class DataUseHydrator
             $hits[$i]['projectTitle'] = $model->project_title;
             $hits[$i]['organisationName'] = $model->organisation_name;
             $hits[$i]['team'] = $model->team;
-            $hits[$i]['mongoObjectId'] = $model->mongo_object_id;
             $hits[$i]['datasetTitles'] = array_column($datasetTitles, 'title');
             $hits[$i]['datasetIds'] = array_column($datasetTitles, 'id');
             $hits[$i]['dataProviderColl'] = $dataProviderCollsByTeam->get($model->team_id, []);

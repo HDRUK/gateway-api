@@ -74,10 +74,6 @@ class UpdateTeam extends BaseFormRequest
                 'required',
                 'array',
             ],
-            'mongo_object_id' => [
-                'nullable',
-                'string',
-            ],
             'is_question_bank' => [
                 'boolean',
             ],

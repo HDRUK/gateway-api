@@ -193,10 +193,6 @@ class UpdateDurByTeamAndId extends FormRequest
                 'nullable',
                 'string',
             ],
-            'mongo_object_dar_id' => [
-                'nullable',
-                'string',
-            ],
             'user_id' => [
                 'integer',
                 'exists:users,id',
@@ -215,14 +211,6 @@ class UpdateDurByTeamAndId extends FormRequest
                 'integer',
             ],
             'applicant_id' => [
-                'nullable',
-                'string',
-            ],
-            'mongo_object_id' => [
-                'nullable',
-                'string',
-            ],
-            'mongo_id' => [
                 'nullable',
                 'string',
             ],

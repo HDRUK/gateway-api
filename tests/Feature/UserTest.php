@@ -81,8 +81,6 @@ class UserTest extends TestCase
                     'orcid',
                     'contact_feedback',
                     'contact_news',
-                    'mongo_id',
-                    'mongo_object_id',
                     'terms',
                     'notifications',
                     'roles',
@@ -151,8 +149,6 @@ class UserTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -238,8 +234,6 @@ class UserTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
                 'notifications' => [$notificationID],
             ],
             $this->header
@@ -293,8 +287,6 @@ class UserTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
                 'notifications' => [$notificationID],
             ],
             $this->header
@@ -326,8 +318,6 @@ class UserTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 0,
                 'contact_news' => 0,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
                 'notifications' => [$notificationID],
             ],
             $this->header
@@ -383,8 +373,6 @@ class UserTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
                 'terms' => true,
             ],
             $this->header
@@ -416,8 +404,6 @@ class UserTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 0,
                 'contact_news' => 0,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
                 'terms' => true,
             ],
             $this->header
@@ -526,8 +512,6 @@ class UserTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 0,
                 'contact_news' => 0,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
                 'terms' => true,
             ],
             $this->headerNonAdmin
@@ -555,8 +539,6 @@ class UserTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 0,
                 'contact_news' => 0,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
                 'terms' => true,
             ],
             $this->headerNonAdmin

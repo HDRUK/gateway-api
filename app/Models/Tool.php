@@ -75,8 +75,6 @@ class Tool extends BaseTypesenseModel
     public $timestamps = true;
 
     protected $fillable = [
-        'mongo_object_id',
-        'mongo_id',
         'name',
         'url',
         'description',
