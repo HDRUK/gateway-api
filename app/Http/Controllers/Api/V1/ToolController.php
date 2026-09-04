@@ -62,13 +62,6 @@ class ToolController extends Controller
      *    description="Get all tools with optional filters and sorting",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="mongo_id",
-     *       in="query",
-     *       required=false,
-     *       @OA\Schema(type="string"),
-     *       description="Filter tools by mongo ID"
-     *    ),
-     *    @OA\Parameter(
      *       name="team_id",
      *       in="query",
      *       required=false,
@@ -138,7 +131,6 @@ class ToolController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $mongoId = $request->query('mongo_id', null);
             $teamId = $request->query('team_id', null);
             $userId = $request->query('user_id', null);
             $filterTitle = $request->query('title', null);
@@ -180,9 +172,6 @@ class ToolController extends Controller
                 'category',
                 'typeCategory',
             ])
-            ->when($mongoId, function ($query) use ($mongoId) {
-                return $query->where('mongo_id', '=', $mongoId);
-            })
             ->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })
@@ -495,7 +484,6 @@ class ToolController extends Controller
 
         try {
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -506,7 +494,6 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id',
-                'mongo_id',
                 'associated_authors',
                 'contact_address',
                 'any_dataset',
@@ -686,7 +673,6 @@ class ToolController extends Controller
             }
 
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -697,7 +683,6 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id',
-                'mongo_id',
                 'associated_authors',
                 'contact_address',
                 'any_dataset',
@@ -931,7 +916,6 @@ class ToolController extends Controller
             }
 
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -942,7 +926,6 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id',
-                'mongo_id',
                 'associated_authors',
                 'contact_address',
                 'any_dataset',

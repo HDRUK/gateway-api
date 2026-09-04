@@ -1759,7 +1759,6 @@ class TeamController extends Controller
         try {
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
-            $mongoPId = $request->query('mongo_pid', null);
             $withMetadata = $request->boolean('with_metadata', true);
 
             $sort = $request->query('sort', 'created:desc');
@@ -1793,9 +1792,6 @@ class TeamController extends Controller
             $datasets = Dataset::where('team_id', $teamId)
                 ->when($datasetId, function ($query) use ($datasetId) {
                     return $query->where('datasetid', '=', $datasetId);
-                })
-                ->when($mongoPId, function ($query) use ($mongoPId) {
-                    return $query->where('mongo_pid', '=', $mongoPId);
                 })
                 // LS - Reworked from original in DatasetsController@index, as
                 // that is incorrect and flawed logic

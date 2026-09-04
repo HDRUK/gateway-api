@@ -82,12 +82,6 @@ class CreateUser extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'mongo_id' => [
-                'integer',
-            ],
-            'mongo_object_id' => [
-                'nullable', 'string',
-            ],
             'terms' => [
                 'boolean',
             ],

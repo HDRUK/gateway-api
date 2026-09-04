@@ -483,8 +483,6 @@ class UserCollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -652,8 +650,6 @@ class UserCollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -815,8 +811,6 @@ class UserCollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'team_id',
                 'status',
             ];

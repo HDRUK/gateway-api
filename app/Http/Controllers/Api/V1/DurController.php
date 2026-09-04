@@ -112,16 +112,13 @@ class DurController extends Controller
                 $sort['updated_at'] = 'desc';
             }
 
-            $mongoId = $request->query('mongo_id', null);
             $projectTitle = $request->query('project_title', null);
             $teamId = $request->query('team_id', null);
             $projectId = $request->query('project_id', null);
             $filterStatus = $request->query('status', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
-            $durs = Dur::when($mongoId, function ($query) use ($mongoId) {
-                return $query->where('mongo_id', '=', $mongoId);
-            })->when(
+            $durs = Dur::when(
                 $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                 function ($query) {
                     return $query->withTrashed();
@@ -376,12 +373,9 @@ class DurController extends Controller
      *             @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example=1),
      *                @OA\Property(property="reason", type="string", example=""),
@@ -479,13 +473,10 @@ class DurController extends Controller
             'request_category_type',
             'request_frequency',
             'access_type',
-            'mongo_object_dar_id',
             'team_id',
             'enabled',
             'last_activity',
             'counter',
-            'mongo_object_id',
-            'mongo_id',
             'applicant_id',
             'status',
             'project_start_date',
@@ -625,12 +616,9 @@ class DurController extends Controller
      *             @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example=1),
      *                @OA\Property(property="reason", type="string", example=""),
@@ -733,12 +721,9 @@ class DurController extends Controller
                 'request_category_type',
                 'request_frequency',
                 'access_type',
-                'mongo_object_dar_id',
                 'enabled',
                 'last_activity',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'applicant_id',
                 'status',
                 'project_start_date',
@@ -882,12 +867,9 @@ class DurController extends Controller
      *             @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items(type="object",
      *                @OA\Property(property="id", type="integer", example=1),
      *                @OA\Property(property="reason", type="string", example=""),
@@ -1021,12 +1003,9 @@ class DurController extends Controller
                     'request_category_type',
                     'request_frequency',
                     'access_type',
-                    'mongo_object_dar_id',
                     'enabled',
                     'last_activity',
                     'counter',
-                    'mongo_object_id',
-                    'mongo_id',
                     'applicant_id',
                     'status',
                     'project_start_date',

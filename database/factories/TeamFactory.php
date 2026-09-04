@@ -35,7 +35,6 @@ class TeamFactory extends Factory
             'contact_point' => fake()->email(),
             'application_form_updated_by' => fake()->words(2, true),
             'application_form_updated_on' => fake()->dateTime(),
-            'mongo_object_id' => null,
             'is_question_bank' => fake()->boolean(),
             'is_provider' => fake()->boolean(),
             'team_logo' => Config::get('services.media.base_url') . '/teams/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']),

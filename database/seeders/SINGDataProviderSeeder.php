@@ -36,7 +36,6 @@ class SINGDataProviderSeeder extends Seeder
             'contact_point' => 'stephen.lavenberg@hdruk.ac.uk',
             'application_form_updated_by' => '',
             'application_form_updated_on' => Carbon::now(),
-            'mongo_object_id' => '',
             'notification_status' => 1,
             'is_question_bank' => 1,
             'team_logo' => 'https://storage.googleapis.com/hdruk-gateway_prod-cms/web-assets/search_image_gteway_news.png?mtime=20220802121343&focal=none',
