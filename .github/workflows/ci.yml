@@ -41,6 +41,16 @@ jobs:
       id: composerauth
       run: composer config --global github-oauth.github.com "${{ secrets.COMPOSER_GITHUB_TOKEN }}"
 
+    - name: Cache Composer dependencies
+      id: composercache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        # composer.lock isn't committed, so key on composer.json instead
+        key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
     - name: Composer install
       id: composerinstall
       run: "composer install"
