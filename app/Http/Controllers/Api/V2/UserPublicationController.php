@@ -337,7 +337,6 @@ class UserPublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array",
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
@@ -401,7 +400,6 @@ class UserPublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
-                'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
                 'owner_id' => $userId,
                 'status' => $request['status'],
@@ -484,7 +482,6 @@ class UserPublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *             @OA\Property(property="datasets", type="array",
      *                @OA\Items(type="object",
@@ -561,7 +558,6 @@ class UserPublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => array_key_exists('url', $input) ? $input['url'] : null,
-                'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'status' => array_key_exists('status', $input) ? $input['status'] : Publication::STATUS_DRAFT,
                 'team_id' => array_key_exists('team_id', $input) ? $input['team_id'] : null,
             ]);
@@ -642,7 +638,6 @@ class UserPublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *             @OA\Property(property="datasets", type="array",
      *                @OA\Items(type="object",
@@ -714,7 +709,6 @@ class UserPublicationController extends Controller
                 'journal_name',
                 'abstract',
                 'url',
-                'mongo_id',
                 'status'
             ];
             $array = $this->checkEditArray($input, $arrayKeys);

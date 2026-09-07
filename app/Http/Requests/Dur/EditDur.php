@@ -196,10 +196,6 @@ class EditDur extends BaseFormRequest
                 'nullable',
                 'string',
             ],
-            'mongo_object_dar_id' => [
-                'nullable',
-                'string',
-            ],
             'user_id' => [
                 'integer',
                 'exists:users,id',
@@ -218,14 +214,6 @@ class EditDur extends BaseFormRequest
                 'integer',
             ],
             'applicant_id' => [
-                'nullable',
-                'string',
-            ],
-            'mongo_object_id' => [
-                'nullable',
-                'string',
-            ],
-            'mongo_id' => [
                 'nullable',
                 'string',
             ],

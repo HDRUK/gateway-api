@@ -50,12 +50,6 @@ class UserRequest extends BaseFormRequest
             'contact_news' => [
                 'required', 'boolean',
             ],
-            'mongo_id' => [
-                'integer',
-            ],
-            'mongo_object_id' => [
-                'nullable', 'string',
-            ],
         ];
     }
 }

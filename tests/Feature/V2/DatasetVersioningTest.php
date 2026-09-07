@@ -447,8 +447,6 @@ class DatasetVersioningTest extends TestCase
                 'orcid' => 'https://orcid.org/75697342',
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => fake()->randomNumber(7),
-                'mongo_object_id' => fake()->regexify('[a-z0-9]{10}'),
             ],
             $this->header,
         );

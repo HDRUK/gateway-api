@@ -19,6 +19,11 @@ class IndexUser extends BaseFormRequest
                 'string',
                 'min:3',
             ],
+            'search' => [
+                'nullable',
+                'string',
+                'min:1',
+            ],
         ];
     }
 
@@ -30,5 +35,6 @@ class IndexUser extends BaseFormRequest
     protected function prepareForValidation()
     {
         $this->merge(['filterNames' => $this->query('filterNames')]);
+        $this->merge(['search' => $this->query('search')]);
     }
 }

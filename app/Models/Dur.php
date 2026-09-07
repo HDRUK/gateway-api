@@ -141,12 +141,9 @@ class Dur extends BaseTypesenseModel
         'request_category_type',
         'request_frequency',
         'access_type',
-        'mongo_object_dar_id',
         'enabled',
         'last_activity',
         'counter',
-        'mongo_object_id',
-        'mongo_id',
         'user_id',
         'team_id',
         'created_at', // for migration from mongo database

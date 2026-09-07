@@ -118,7 +118,6 @@ class ReviewTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                "mongo_object_id" => "5ece82082abda8b3a06f1941",
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -150,8 +149,6 @@ class ReviewTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -193,7 +190,6 @@ class ReviewTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                "mongo_object_id" => "5ece82082abda8b3a06f1941",
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -225,8 +221,6 @@ class ReviewTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 12345657,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -292,7 +286,6 @@ class ReviewTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                "mongo_object_id" => "5ece82082abda8b3a06f1941",
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -324,8 +317,6 @@ class ReviewTest extends TestCase
                 'orcid' => "https://orcid.org/12345678",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -442,7 +433,6 @@ class ReviewTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                "mongo_object_id" => "5ece82082abda8b3a06f1941",
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -474,8 +464,6 @@ class ReviewTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );

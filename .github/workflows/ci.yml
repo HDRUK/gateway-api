@@ -37,6 +37,10 @@ jobs:
       with:
         php-version: '8.3'
 
+    - name: Configure Composer GitHub auth
+      id: composerauth
+      run: composer config --global github-oauth.github.com "${{ secrets.COMPOSER_GITHUB_TOKEN }}"
+
     - name: Composer install
       id: composerinstall
       run: "composer install"

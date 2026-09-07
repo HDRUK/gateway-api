@@ -200,7 +200,6 @@ class DurSeeder extends Seeder
                 'request_category_type' => fake()->randomElement($requestCategoryType), // requestCategoryType
                 'request_frequency' => fake()->randomElement($requestFrequency), // requestFrequency
                 'access_type' => fake()->randomElement($accessType), // accessType
-                'mongo_object_dar_id' => fake()->numerify('MOBJIDDAR-####'), // projectId which is data_requests._id (mongo)
 
                 'user_id' => $userId, // user: from team
                 'team_id' => $teamId, // publisher: from team
@@ -208,9 +207,6 @@ class DurSeeder extends Seeder
                 'enabled' => fake()->boolean(), // activeflag
                 'last_activity' => Carbon::now(), // lastActivity
                 'counter' => fake()->randomNumber(5, false), // counter
-
-                'mongo_object_id' => fake()->numerify('MOBJID-####'), // _id (mongo)
-                'mongo_id' => fake()->numberBetween(10000000000, 99999999999), // id
 
                 'status' => fake()->randomElement([
                     Dur::STATUS_ACTIVE,

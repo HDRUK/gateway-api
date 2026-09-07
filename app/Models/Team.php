@@ -70,7 +70,6 @@ class Team extends BaseTypesenseModel
         'contact_point',
         'application_form_updated_by',
         'application_form_updated_on',
-        'mongo_object_id',
         'notification_status',
         'is_question_bank',
         'team_logo',
@@ -202,14 +201,6 @@ class Team extends BaseTypesenseModel
      * @var bool
      */
     private $is_question_bank = false;
-
-    /**
-     * Represents the migrated data id of a previous record to preserve internal
-     * linking
-     *
-     * @var string
-     */
-    private $mongo_object_id = '';
 
     /**
      * Indicates whether the team is an admin

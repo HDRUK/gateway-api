@@ -15,7 +15,6 @@ use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
-use Illuminate\Support\Str;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\CollectionHasTool;
@@ -72,7 +71,6 @@ class ToolTest extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'mongo_object_id',
                     'name',
                     'url',
                     'description',
@@ -126,7 +124,6 @@ class ToolTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -174,7 +171,6 @@ class ToolTest extends TestCase
         $initialTagCount = ToolHasTag::count();
 
         $mockData = [
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -338,8 +334,6 @@ class ToolTest extends TestCase
                 'orcid' => " https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header,
         );
@@ -353,7 +347,6 @@ class ToolTest extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'mongo_object_id' => '5ece82082abda8b3a06f1941',
                 'name' => 'Tool A',
                 'url' => 'http://example.com/toolA',
                 'description' => 'Test Tool A Description',
@@ -383,7 +376,6 @@ class ToolTest extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'mongo_object_id' => '5ece82082abda8b3a06f1942',
                 'name' => 'Tool B',
                 'url' => 'http://example.com/toolB',
                 'description' => 'Test Tool B Description',
@@ -413,7 +405,6 @@ class ToolTest extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'mongo_object_id' => '5ece82082abda8b3a06f1943',
                 'name' => 'Tool C',
                 'url' => 'http://example.com/toolC',
                 'description' => 'Test Tool C Description',
@@ -438,20 +429,10 @@ class ToolTest extends TestCase
         );
         $responseCreateTool->assertStatus(201);
 
-        // Use the explicit team_id, mongo_id, and name for filtering tests
+        // Use the explicit team_id and name for filtering tests
         $toolA = Tool::where('name', 'Tool A')->first();
-        $mongoId = $toolA->mongo_id;
         $teamId = $toolA->team_id;
         $title = $toolA->name;
-
-        // Filter by mongo_id
-        $response = $this->json('GET', self::TEST_URL . '?mongo_id=' . $mongoId, [], $this->header);
-        $response->assertStatus(200);
-        $responseData = $response->json('data');
-        $this->assertNotEmpty($responseData);
-        foreach ($responseData as $tool) {
-            $this->assertEquals($mongoId, $tool['mongo_id']);
-        }
 
         // Filter by team_id
         $response = $this->json('GET', self::TEST_URL . '?team_id=' . $teamId, [], $this->header);
@@ -590,7 +571,6 @@ class ToolTest extends TestCase
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -638,7 +618,6 @@ class ToolTest extends TestCase
         $generatedPublications = $this->generatePublications();
         $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
@@ -737,7 +716,6 @@ class ToolTest extends TestCase
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -791,7 +769,6 @@ class ToolTest extends TestCase
 
         // update
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
@@ -888,7 +865,6 @@ class ToolTest extends TestCase
 
         // Insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -971,7 +947,6 @@ class ToolTest extends TestCase
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -1059,7 +1034,6 @@ class ToolTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => 'Test Tool A Description',
@@ -1123,7 +1097,6 @@ class ToolTest extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1184,7 +1157,6 @@ class ToolTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1230,7 +1202,6 @@ class ToolTest extends TestCase
             'PATCH',
             '/api/v1/tools/' . $toolId,
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1291,7 +1262,6 @@ class ToolTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1348,7 +1318,6 @@ class ToolTest extends TestCase
             'PATCH',
             '/api/v1/tools/' . $toolId,
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1409,7 +1378,6 @@ class ToolTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1469,7 +1437,6 @@ class ToolTest extends TestCase
             'PATCH',
             '/api/v1/tools/' . $toolId,
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1530,7 +1497,6 @@ class ToolTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1630,7 +1596,6 @@ class ToolTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1740,7 +1705,6 @@ class ToolTest extends TestCase
             'POST',
             '/api/v1/tools',
             [
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'name' => 'Tool A',
                 'url' => fake()->url(),
                 'description' => fake()->sentence(),
@@ -1931,8 +1895,6 @@ class ToolTest extends TestCase
                 'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => fake()->randomNumber(9, true),
-                'mongo_object_id' => strtolower(Str::random(24)),
                 'notifications' => [$responseNotification['data']],
             ],
             $this->header

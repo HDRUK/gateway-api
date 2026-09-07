@@ -86,14 +86,11 @@ class DurObserverTest extends TestCase
             'request_category_type' => 'Health Services & Delivery',
             'request_frequency' => 'Efficacy & Mechanism Evaluation',
             'access_type' => 'Public Health Research',
-            'mongo_object_dar_id' => 'MOBJIDDAR-6556',
             'user_id' => $this->userId,
             'team_id' => $this->teamId,
             'enabled' => 0,
             'last_activity' => Carbon::now(),
             'counter' => 53816,
-            'mongo_object_id' => 'MOBJID-5092',
-            'mongo_id' => 86611984357,
             'status' => Dur::STATUS_ACTIVE,
         ]);
 
@@ -147,14 +144,11 @@ class DurObserverTest extends TestCase
             'request_category_type' => 'Health Services & Delivery',
             'request_frequency' => 'Efficacy & Mechanism Evaluation',
             'access_type' => 'Public Health Research',
-            'mongo_object_dar_id' => 'MOBJIDDAR-6556',
             'user_id' => $this->userId,
             'team_id' => $this->teamId,
             'enabled' => 0,
             'last_activity' => Carbon::now(),
             'counter' => 53816,
-            'mongo_object_id' => 'MOBJID-5092',
-            'mongo_id' => 86611984357,
             'status' => Dur::STATUS_ACTIVE,
         ]);
 
@@ -208,14 +202,11 @@ class DurObserverTest extends TestCase
             'request_category_type' => 'Health Services & Delivery',
             'request_frequency' => 'Efficacy & Mechanism Evaluation',
             'access_type' => 'Public Health Research',
-            'mongo_object_dar_id' => 'MOBJIDDAR-6556',
             'user_id' => $this->userId,
             'team_id' => $this->teamId,
             'enabled' => 0,
             'last_activity' => Carbon::now(),
             'counter' => 53816,
-            'mongo_object_id' => 'MOBJID-5092',
-            'mongo_id' => 86611984357,
             'status' => Dur::STATUS_DRAFT,
         ]);
 
@@ -272,14 +263,11 @@ class DurObserverTest extends TestCase
             'request_category_type' => 'Health Services & Delivery',
             'request_frequency' => 'Efficacy & Mechanism Evaluation',
             'access_type' => 'Public Health Research',
-            'mongo_object_dar_id' => 'MOBJIDDAR-6556',
             'user_id' => $this->userId,
             'team_id' => $this->teamId,
             'enabled' => 0,
             'last_activity' => Carbon::now(),
             'counter' => 53816,
-            'mongo_object_id' => 'MOBJID-5092',
-            'mongo_id' => 86611984357,
             'status' => Dur::STATUS_ACTIVE,
         ]);
 

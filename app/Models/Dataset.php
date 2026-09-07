@@ -89,9 +89,6 @@ class Dataset extends Model
     protected $fillable = [
         'user_id',
         'team_id',
-        'mongo_object_id',
-        'mongo_id',
-        'mongo_pid',
         'datasetid',
         'metadata',
         'created',

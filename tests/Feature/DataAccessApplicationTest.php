@@ -702,8 +702,6 @@ class DataAccessApplicationTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -1488,8 +1486,6 @@ class DataAccessApplicationTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -2957,8 +2953,6 @@ class DataAccessApplicationTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
