@@ -34,3 +34,6 @@ frankenphp
 app/.ua/.trash-*/
 app/.ua/intermediate/
 app/.ua/fingerprints.json
+
+# generated migrated+seeded template DB used by tests/Traits/RefreshDatabaseLite
+/database/testing/

@@ -111,8 +111,12 @@
         "phpcs": [
             "vendor/bin/phpcs --standard=PSR1 app"
         ],
+        "test:build-template": [
+            "APP_ENV=testing DB_CONNECTION=sqlite php artisan testing:build-template"
+        ],
         "pest": [
-            "php -d memory_limit=2048M vendor/bin/pest --bail --parallel --compact"
+            "@test:build-template",
+            "php -d memory_limit=2048M vendor/bin/pest --parallel --compact"
         ],
         "lint": [
             "vendor/bin/pint --preset psr12"
