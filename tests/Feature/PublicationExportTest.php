@@ -62,11 +62,9 @@ class PublicationExportTest extends TestCase
                     "contact_point" => null,
                     "application_form_updated_by" => "System Generated",
                     "application_form_updated_on" => "0001-01-01 00 =>00 =>00",
-                    "mongo_object_id" => "60c08fa84401b6d377682068",
                     "notification_status" => false,
                     "is_question_bank" => false
                 ],
-                "mongoObjectId" => "61e6df5eb81d5cda54d1918b"
             ]
         ];
     }

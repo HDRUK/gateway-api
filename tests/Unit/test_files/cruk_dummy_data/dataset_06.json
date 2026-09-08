@@ -1,4 +1,5 @@
 {
+    "identifier": "087654b3-2c0a-4b32-9c2e-1234567890b1",
     "gwdmVersion": "2.1",
     "metadata": {
         "required": {
@@ -95,7 +96,7 @@
         },
         "observations": [
             {
-                "observedNode": "Organoid Lines",
+                "observedNode": "Findings",
                 "measuredValue": 1280,
                 "observationDate": "2024-01-01",
                 "measuredProperty": "Count",

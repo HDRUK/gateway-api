@@ -75,8 +75,6 @@ class Collection extends BaseTypesenseModel
         'keywords',
         'public',
         'counter',
-        'mongo_object_id',
-        'mongo_id',
         'created_at',
         'updated_at',
         'updated_on',

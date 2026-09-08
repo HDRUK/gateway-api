@@ -264,7 +264,6 @@ class IntegrationToolController extends Controller
             $this->overrideBothTeamAndUserId($teamId, $userId, $request->header());
 
             $tool = Tool::create([
-                'mongo_object_id' => array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null,
                 'name' => $input['name'],
                 'url' => $input['url'],
                 'description' => $input['description'],
@@ -413,7 +412,6 @@ class IntegrationToolController extends Controller
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -596,7 +594,6 @@ class IntegrationToolController extends Controller
             }
 
             $arrayKeys = [
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',

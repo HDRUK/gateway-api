@@ -18,6 +18,7 @@ use App\Models\DurHasDatasetVersion;
 use App\Models\DatasetVersion;
 use App\Http\Requests\Dur\GetDur;
 use App\Models\DurHasPublication;
+use App\Models\DurOutput;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
 use App\Http\Controllers\Controller;
@@ -106,12 +107,9 @@ class IntegrationDurController extends Controller
      *                @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *                @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *                @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                @OA\Property(property="counter", type="integer", example="34319"),
-     *                @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
@@ -161,6 +159,7 @@ class IntegrationDurController extends Controller
                     'publications',
                     'tools',
                     'keywords',
+                    'outputs',
                     'userDatasets' => function ($query) {
                         $query->distinct('id');
                     },
@@ -305,12 +304,9 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
-     *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
@@ -415,12 +411,9 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="users", type="array", example="[]", @OA\Items()),
@@ -506,13 +499,10 @@ class IntegrationDurController extends Controller
                 'request_category_type',
                 'request_frequency',
                 'access_type',
-                'mongo_object_dar_id',
                 'team_id',
                 'enabled',
                 'last_activity',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'applicant_id',
                 'status',
             ];
@@ -645,12 +635,9 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="users", type="array", example="[]", @OA\Items()),
@@ -713,12 +700,9 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
-     *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
@@ -789,12 +773,9 @@ class IntegrationDurController extends Controller
                 'request_category_type',
                 'request_frequency',
                 'access_type',
-                'mongo_object_dar_id',
                 'enabled',
                 'last_activity',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'applicant_id',
                 'status',
             ];
@@ -835,6 +816,10 @@ class IntegrationDurController extends Controller
             // link/unlink dur with tools
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools);
+
+            // sync dur outputs
+            $outputs = array_key_exists('outputs', $input) ? $input['outputs'] : [];
+            $this->checkOutputs($id, $outputs);
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -940,12 +925,9 @@ class IntegrationDurController extends Controller
      *             @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *             @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *             @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *             @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *             @OA\Property(property="enabled", type="boolean", example="1"),
      *             @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="counter", type="integer", example="34319"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="users", type="array", example="[]", @OA\Items()),
@@ -1008,12 +990,9 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="request_category_type", type="string", example="Health Services & Delivery"),
      *                   @OA\Property(property="request_frequency", type="string", example="Public Health Research"),
      *                   @OA\Property(property="access_type", type="string", example="Efficacy & Mechanism Evaluation"),
-     *                   @OA\Property(property="mongo_object_dar_id", type="string", example="MOBJIDDAR-2387"),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
      *                   @OA\Property(property="last_activity", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="counter", type="integer", example="34319"),
-     *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
-     *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
@@ -1083,12 +1062,9 @@ class IntegrationDurController extends Controller
                 'request_category_type',
                 'request_frequency',
                 'access_type',
-                'mongo_object_dar_id',
                 'enabled',
                 'last_activity',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'applicant_id',
                 'status',
             ];
@@ -1117,6 +1093,12 @@ class IntegrationDurController extends Controller
             if (array_key_exists('tools', $input)) {
                 $tools = $input['tools'];
                 $this->checkKeywords($id, $tools);
+            }
+
+            // sync dur outputs
+            if (array_key_exists('outputs', $input)) {
+                $outputs = $input['outputs'];
+                $this->checkOutputs($id, $outputs);
             }
 
             // for migration from mongo database
@@ -1573,6 +1555,34 @@ class IntegrationDurController extends Controller
             throw new Exception('deleteDurHasTools :: ' . $e->getMessage());
         }
     }
+
+    // outputs
+    private function checkOutputs(int $durId, array $inOutputs)
+    {
+        $keepIds = array_values(array_filter(array_column($inOutputs, 'id')));
+
+        DurOutput::where('dur_id', $durId)
+            ->whereNotIn('id', $keepIds)
+            ->delete();
+
+        foreach ($inOutputs as $output) {
+            DurOutput::updateOrCreate(
+                [
+                    'id' => $output['id'] ?? null,
+                    'dur_id' => $durId,
+                ],
+                [
+                    'dur_id' => $durId,
+                    'type' => $output['type'] ?? null,
+                    'title' => $output['title'] ?? null,
+                    'status' => $output['status'] ?? null,
+                    'detail' => $output['detail'] ?? null,
+                    'url' => $output['url'] ?? null,
+                ]
+            );
+        }
+    }
+
     private function extractInputIdToArray(array $input): array
     {
         $response = [];
@@ -1625,6 +1635,7 @@ class IntegrationDurController extends Controller
                 'keywords',
                 'publications',
                 'tools',
+                'outputs',
                 'userDatasets' => function ($query) {
                     $query->distinct('id');
                 },

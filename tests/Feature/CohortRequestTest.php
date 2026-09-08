@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\CohortRequestStatus;
+use App\Mail\Email;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
@@ -217,6 +218,9 @@ class CohortRequestTest extends TestCase
         $userId = (int) $jwtUser['id'];
         $this->approveTestUserForCohort($userId);
 
+        $cohortRequestBefore = CohortRequest::where(['user_id' => $userId])->first();
+        $logCountBefore = CohortRequestHasLog::where('cohort_request_id', $cohortRequestBefore->id)->count();
+
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -228,6 +232,9 @@ class CohortRequestTest extends TestCase
 
         $cohortRequest = CohortRequest::where(['user_id' => $userId])->first();
         $this->assertSame(CohortRequestStatus::RENEWING, $cohortRequest->request_status);
+
+        $logCountAfter = CohortRequestHasLog::where('cohort_request_id', $cohortRequest->id)->count();
+        $this->assertSame($logCountBefore + 1, $logCountAfter, 'starting a renewal must create exactly one new log entry');
     }
 
     public function test_create_cohort_request_for_approved_user_leaves_expiry_and_permissions_untouched(): void
@@ -288,11 +295,63 @@ class CohortRequestTest extends TestCase
         $this->assertSame($logCountBefore, $logCountAfter);
     }
 
+    public function test_create_cohort_request_for_rejected_or_expired_user_resets_and_reapplies(): void
+    {
+        Mail::fake();
+
+        $statusesToTest = ['REJECTED', 'EXPIRED'];
+
+        foreach ($statusesToTest as $status) {
+            $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+            $userId = (int) $jwtUser['id'];
+            $this->approveTestUserForCohort($userId, $status);
+
+            $cohortRequestBefore = CohortRequest::where(['user_id' => $userId])->first();
+            $originalId = $cohortRequestBefore->id;
+            $logCountBefore = CohortRequestHasLog::where('cohort_request_id', $originalId)->count();
+
+            $response = $this->json(
+                'POST',
+                self::TEST_URL,
+                ['details' => 'Applying again after being '.strtolower($status).'.'],
+                $this->header,
+            );
+
+            $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+                ->assertJsonStructure(['message', 'data']);
+
+            $content = $response->decodeResponseJson();
+            $this->assertEquals(Config::get('statuscodes.STATUS_CREATED.message'), $content['message']);
+            $this->assertSame($originalId, $content['data'], "status {$status} should reuse the existing row id, not create a new one");
+
+            $this->assertSame(
+                1,
+                CohortRequest::where(['user_id' => $userId])->count(),
+                "status {$status} reapplication must not leave duplicate cohort_requests rows"
+            );
+
+            $cohortRequestAfter = CohortRequest::where(['user_id' => $userId])->first();
+            $this->assertSame($originalId, $cohortRequestAfter->id);
+            $this->assertSame(CohortRequestStatus::PENDING, $cohortRequestAfter->request_status);
+            $this->assertNull($cohortRequestAfter->request_expire_at);
+
+            $this->assertFalse(
+                CohortRequestHasPermission::where('cohort_request_id', $originalId)->exists(),
+                "status {$status} reapplication must clear any stale permission grants"
+            );
+
+            $logCountAfter = CohortRequestHasLog::where('cohort_request_id', $originalId)->count();
+            $this->assertSame($logCountBefore + 1, $logCountAfter, "status {$status} reapplication must create exactly one new log entry");
+        }
+
+        Mail::assertSent(Email::class, count($statusesToTest)); // one email send for each status
+    }
+
     public function test_create_cohort_request_rejects_every_non_renewal_status(): void
     {
         Mail::fake();
 
-        foreach (['PENDING', 'REJECTED', 'BANNED', 'SUSPENDED', 'EXPIRED'] as $status) {
+        foreach (['PENDING', 'BANNED', 'SUSPENDED'] as $status) {
             $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
             $userId = (int) $jwtUser['id'];
             $this->approveTestUserForCohort($userId, $status);

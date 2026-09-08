@@ -6,6 +6,7 @@ use App\Models\Dataset;
 use Carbon\Carbon;
 use App\Models\Dur;
 use App\Models\DurHasKeyword;
+use App\Models\DurOutput;
 use App\Models\Keyword;
 use App\Models\Team;
 use App\Models\User;
@@ -199,7 +200,6 @@ class DurSeeder extends Seeder
                 'request_category_type' => fake()->randomElement($requestCategoryType), // requestCategoryType
                 'request_frequency' => fake()->randomElement($requestFrequency), // requestFrequency
                 'access_type' => fake()->randomElement($accessType), // accessType
-                'mongo_object_dar_id' => fake()->numerify('MOBJIDDAR-####'), // projectId which is data_requests._id (mongo)
 
                 'user_id' => $userId, // user: from team
                 'team_id' => $teamId, // publisher: from team
@@ -207,9 +207,6 @@ class DurSeeder extends Seeder
                 'enabled' => fake()->boolean(), // activeflag
                 'last_activity' => Carbon::now(), // lastActivity
                 'counter' => fake()->randomNumber(5, false), // counter
-
-                'mongo_object_id' => fake()->numerify('MOBJID-####'), // _id (mongo)
-                'mongo_id' => fake()->numberBetween(10000000000, 99999999999), // id
 
                 'status' => fake()->randomElement([
                     Dur::STATUS_ACTIVE,
@@ -222,6 +219,15 @@ class DurSeeder extends Seeder
             DurHasKeyword::create([
                 'dur_id' => $dur->id,
                 'keyword_id' => $keywordId,
+            ]);
+
+            DurOutput::create([
+                'dur_id' => $dur->id,
+                'type'   => fake()->randomElement(['Paper', 'Software', 'Presentation']),
+                'title'  => fake()->sentence(),
+                'status' => fake()->randomElement(['Published', 'In progress', 'Under review']),
+                'detail' => fake()->paragraph(),
+                'url'    => fake()->randomElement($nonGatewayOutputs),
             ]);
         }
     }

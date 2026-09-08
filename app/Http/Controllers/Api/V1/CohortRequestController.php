@@ -10,6 +10,7 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
+use App\Enums\CohortRequestEligibility;
 use App\Enums\CohortRequestStatus;
 use App\Http\Traits\HubspotContacts;
 use App\Models\CohortRequest;
@@ -443,7 +444,7 @@ class CohortRequestController extends Controller
      *
      *      @OA\Response(
      *          response=400,
-     *          description="An existing request in a non-renewable status (e.g. PENDING, REJECTED, BANNED, SUSPENDED, EXPIRED) blocks a new request",
+     *          description="An existing request in a non-renewable status (e.g. PENDING, BANNED, SUSPENDED) blocks a new request",
      *
      *          @OA\JsonContent(
      *
@@ -491,7 +492,7 @@ class CohortRequestController extends Controller
             ])->first();
 
             if ($existingCohortRequest) {
-                return $this->handleRenewalAttempt($existingCohortRequest, $input);
+                return $this->handleExistingCohortRequest($existingCohortRequest, $input);
             }
 
             $cohortRequest = CohortRequest::create([
@@ -538,15 +539,16 @@ class CohortRequestController extends Controller
         }
     }
 
-    private function handleRenewalAttempt(CohortRequest $cohortRequest, array $input): JsonResponse
+    private function handleExistingCohortRequest(CohortRequest $cohortRequest, array $input): JsonResponse
     {
-        return match ($cohortRequest->renewalEligibility()) {
-            CohortRequest::RENEWAL_ELIGIBLE => $this->renewCohortRequest($cohortRequest, $input),
-            CohortRequest::RENEWAL_ALREADY_RENEWING => response()->json([
+        return match ($cohortRequest->eligibility()) {
+            CohortRequestEligibility::RENEW => $this->renewCohortRequest($cohortRequest, $input),
+            CohortRequestEligibility::ALREADY_RENEWING => response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $cohortRequest->id,
             ], Config::get('statuscodes.STATUS_OK.code')),
-            CohortRequest::RENEWAL_NOT_APPLICABLE => response()->json([
+            CohortRequestEligibility::REAPPLY => $this->reapplyCohortRequest($cohortRequest, $input),
+            CohortRequestEligibility::BLOCKED => response()->json([
                 'message' => 'A cohort request already exists or the status of the request does not allow updating.',
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code')),
         };
@@ -581,6 +583,43 @@ class CohortRequestController extends Controller
             'message' => Config::get('statuscodes.STATUS_OK.message'),
             'data' => $cohortRequest->id,
         ], Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    private function reapplyCohortRequest(CohortRequest $cohortRequest, array $input): JsonResponse
+    {
+        $cohortRequest->update([
+            'request_status' => CohortRequestStatus::PENDING,
+            'request_expire_at' => null,
+            'created_at' => Carbon::now(),
+        ]);
+
+        CohortRequestHasPermission::where('cohort_request_id', $cohortRequest->id)->delete();
+
+        $cohortRequestLog = CohortRequestLog::create([
+            'user_id' => $cohortRequest->user_id,
+            'details' => $input['details'],
+            'request_status' => CohortRequestStatus::PENDING,
+            'nhse_sde_request_status' => $cohortRequest->nhse_sde_request_status,
+        ]);
+
+        CohortRequestHasLog::create([
+            'cohort_request_id' => $cohortRequest->id,
+            'cohort_request_log_id' => $cohortRequestLog->id,
+        ]);
+
+        $this->sendEmail($cohortRequest->id, null);
+
+        Auditor::log([
+            'user_id' => $cohortRequest->user_id,
+            'action_type' => 'CREATE',
+            'action_name' => class_basename($this).'@reapplyCohortRequest',
+            'description' => 'Cohort Request '.$cohortRequest->id.' created',
+        ]);
+
+        return response()->json([
+            'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+            'data' => $cohortRequest->id,
+        ], Config::get('statuscodes.STATUS_CREATED.code'));
     }
 
     /**

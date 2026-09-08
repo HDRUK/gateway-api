@@ -6,6 +6,7 @@ use Throwable;
 use CloudLogger;
 use Carbon\Carbon;
 use App\Models\Dur;
+use App\Models\DurOutput;
 use App\Http\Traits\MapOrganisationSector;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -166,6 +167,19 @@ class ImportDurFile implements WithMultipleSheets, ToModel, WithStartRow, SkipsO
         ]);
 
         $this->durIds[] = (int) $dur->id;
+
+        foreach (explode(",", $row[30]) as $url) {
+            $trimmed = trim($url);
+
+            if ($trimmed === '') {
+                continue;
+            }
+
+            DurOutput::create([
+                'dur_id' => $dur->id,
+                'url' => $trimmed,
+            ]);
+        }
 
         return $dur;
     }

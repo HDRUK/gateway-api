@@ -490,8 +490,6 @@ class CollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'team_id',
                 'status',
             ];
@@ -660,8 +658,6 @@ class CollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'team_id',
                 'status',
             ];
@@ -859,8 +855,6 @@ class CollectionController extends Controller
                     'enabled',
                     'public',
                     'counter',
-                    'mongo_object_id',
-                    'mongo_id',
                     'team_id',
                     'status',
                 ];

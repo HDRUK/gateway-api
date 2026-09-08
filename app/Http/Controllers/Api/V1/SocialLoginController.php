@@ -9,8 +9,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
+use Illuminate\Database\QueryException;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
 
@@ -145,6 +147,10 @@ class SocialLoginController extends Controller
         }
 
         session(['redirectUrl' => $redirectUrl]);
+
+        if (strtolower($provider) === 'registry') {
+            return $this->registryLoginRedirect();
+        }
 
         if (strtolower($provider) === 'openathens') {
             $provider = 'open-athens';
@@ -364,7 +370,11 @@ class SocialLoginController extends Controller
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            if (strtolower($provider) === 'openathens') {
+            if (strtolower($provider) === 'registry') {
+                $socialUserDetails = $this->redeemRegistryHandoff($request);
+
+                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+            } elseif (strtolower($provider) === 'openathens') {
                 $provider = 'open-athens';
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
@@ -438,6 +448,27 @@ class SocialLoginController extends Controller
                 $redirectUrl = session('redirectUrl');
                 return redirect()->away($redirectUrl)->withCookies($cookies);
             }
+        } catch (QueryException $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            // registry/open-athens match an existing Gateway user by
+            // providerid only (see registryResponse()) - a second identity
+            // provider account under an email Gateway already knows about
+            // (e.g. the user re-registered with Registry after abandoning
+            // email verification) hits the unique constraint on `email` on
+            // insert rather than a graceful "already exists" response.
+            // Message format differs per driver (MySQL: "users_email_unique",
+            // SQLite in tests: "UNIQUE constraint failed: users.email"), so
+            // match on the column name rather than the MySQL index name.
+            if (stripos($e->getMessage(), 'email') !== false) {
+                return redirect()->away($baseRedirectUrl . '/error/409');
+            }
+
+            return redirect()->away($baseRedirectUrl . '/error/500');
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -445,7 +476,7 @@ class SocialLoginController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e->getMessage());
+            return redirect()->away($baseRedirectUrl . '/error/500');
         }
     }
 
@@ -533,6 +564,82 @@ class SocialLoginController extends Controller
     }
 
     /**
+     * Redirect the browser to Safe People Registry's own sign-in entry point.
+     * Registry never sends Keycloak's auth code to Gateway directly - it's
+     * bound to Registry's own redirect_uri - so Gateway's callback URL is
+     * passed through as `external_redirect` and Registry hands back a
+     * short-lived handoff code of its own once it has completed the exchange.
+     *
+     * @return mixed
+     */
+    private function registryLoginRedirect(): mixed
+    {
+        $callbackUrl = config('app.url') . '/api/v1/auth/registry/callback';
+
+        $registryUrl = rtrim(config('services.registry.web_url'), '/')
+            . config('services.registry.login_path')
+            . '?' . http_build_query(['external_redirect' => $callbackUrl]);
+
+        return redirect()->away($registryUrl);
+    }
+
+    /**
+     * Redeem the single-use handoff code minted by Safe People Registry for
+     * the authenticated user's claims. This call is server-to-server and
+     * HMAC-signed with a secret shared out-of-band with the Registry.
+     *
+     * @param Request $request
+     * @return array
+     */
+    private function redeemRegistryHandoff(Request $request): array
+    {
+        $code = $request->query('code');
+
+        if (!$code) {
+            throw new Exception('Missing handoff code from Safe People Registry');
+        }
+
+        $signature = base64_encode(hash_hmac('sha256', $code, config('services.registry.handoff_secret'), true));
+
+        $response = Http::withHeaders([
+            'x-signature' => $signature,
+        ])->post(rtrim(config('services.registry.api_url'), '/') . "/auth/gateway_handoff/{$code}/redeem");
+
+        if (!$response->successful()) {
+            throw new Exception('Failed to redeem Safe People Registry handoff code');
+        }
+
+        return $this->registryResponse($response->json('data') ?? [], 'registry');
+    }
+
+    /**
+     * Uniform response from Safe People Registry. Identity is matched on
+     * the Keycloak `sub` claim (providerid), not email - Registry email
+     * changes shouldn't silently merge into an unrelated Gateway account.
+     *
+     * `soursdDigitalIdentifier` is Registry's own persistent identifier for
+     * the person (distinct from the Keycloak `sub`), stashed on the Gateway
+     * user record for cross-referencing back to Registry.
+     *
+     * @param array $data
+     * @param string $provider
+     * @return array
+     */
+    private function registryResponse(array $data, string $provider): array
+    {
+        return [
+            'providerid' => $data['sub'] ?? '',
+            'name' => trim(($data['given_name'] ?? '') . ' ' . ($data['family_name'] ?? '')),
+            'firstname' => $data['given_name'] ?? '',
+            'lastname' => $data['family_name'] ?? '',
+            'email' => $data['email'] ?? '',
+            'provider' => $provider,
+            'password' => Hash::make(json_encode($data)),
+            'registry_digital_identifier' => $data['soursdDigitalIdentifier'] ?? null,
+        ];
+    }
+
+    /**
      * update user in database
      *
      * @param User $user
@@ -552,6 +659,9 @@ class SocialLoginController extends Controller
             $user->email = $data['email'];
             $user->provider = $data['provider'];
             $user->password = $data['password'];
+            if (array_key_exists('registry_digital_identifier', $data)) {
+                $user->registry_digital_identifier = $data['registry_digital_identifier'];
+            }
             $user->update();
         }
 
@@ -575,6 +685,9 @@ class SocialLoginController extends Controller
         $user->email = $value['email'];
         $user->provider = $value['provider'];
         $user->password = $value['password'];
+        if (array_key_exists('registry_digital_identifier', $value)) {
+            $user->registry_digital_identifier = $value['registry_digital_identifier'];
+        }
         if ($provider == 'open-athens') {
             $user->preferred_email = 'secondary';
         }

@@ -72,7 +72,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -83,7 +83,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -94,7 +94,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -105,7 +105,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
 
@@ -2410,6 +2410,93 @@ return [
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
+            'userId' => '[0-9]+',
+        ],
+    ],
+
+    // admin.team.user
+    [
+        'name' => 'admin.team.user.destroy',
+        'method' => 'delete',
+        'path' => '/admin/teams/{teamId}/users/{userId}',
+        'methodController' => 'AdminTeamUserController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'userId' => '[0-9]+',
+        ],
+    ],
+
+    // admin.user.deletion
+    [
+        'name' => 'admin.user.deletion_check',
+        'method' => 'get',
+        'path' => '/admin/users/{userId}/deletion-check',
+        'methodController' => 'AdminUserController@deletionCheck',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'admin.user.transfer_and_delete',
+        'method' => 'post',
+        'path' => '/admin/users/{userId}/transfer-and-delete',
+        'methodController' => 'AdminUserController@transferAndDelete',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'admin.user.picker',
+        'method' => 'get',
+        'path' => '/admin/users/picker',
+        'methodController' => 'AdminUserController@picker',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin.user.owned_entity_counts',
+        'method' => 'get',
+        'path' => '/admin/users/owned-entity-counts',
+        'methodController' => 'AdminUserController@ownedEntityCounts',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin.user.remove_from_teams',
+        'method' => 'post',
+        'path' => '/admin/users/{userId}/remove-from-teams',
+        'methodController' => 'AdminUserController@removeFromTeams',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
             'userId' => '[0-9]+',
         ],
     ],

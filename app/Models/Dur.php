@@ -141,12 +141,9 @@ class Dur extends BaseTypesenseModel
         'request_category_type',
         'request_frequency',
         'access_type',
-        'mongo_object_dar_id',
         'enabled',
         'last_activity',
         'counter',
-        'mongo_object_id',
-        'mongo_id',
         'user_id',
         'team_id',
         'created_at', // for migration from mongo database
@@ -281,6 +278,11 @@ class Dur extends BaseTypesenseModel
         )
         ->whereNull('dur_has_tools.deleted_at')
         ->where('tools.status', 'ACTIVE');
+    }
+
+    public function outputs(): HasMany
+    {
+        return $this->hasMany(DurOutput::class, 'dur_id')->orderBy('id');
     }
 
     public static function exportHeadings(): array

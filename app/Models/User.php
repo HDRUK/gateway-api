@@ -72,11 +72,10 @@ class User extends Authenticatable
         'orcid',
         'contact_feedback',
         'contact_news',
-        'mongo_id',
-        'mongo_object_id',
         'is_admin',
         'terms',
         'is_nhse_sde_approval',
+        'registry_digital_identifier',
     ];
 
     /**

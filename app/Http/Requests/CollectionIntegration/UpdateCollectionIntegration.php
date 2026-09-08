@@ -122,13 +122,6 @@ class UpdateCollectionIntegration extends BaseFormRequest
             'counter' => [
                 'integer'
             ],
-            'mongo_id' => [
-                'integer',
-            ],
-            'mongo_object_id' => [
-                'nullable',
-                'string',
-            ],
             'created_at' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],

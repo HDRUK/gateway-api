@@ -61,6 +61,35 @@ class UpdateDur extends FormRequest
             'non_gateway_outputs.*' => [
                 'string',
             ],
+            'outputs' => [
+                'array',
+            ],
+            'outputs.*.id' => [
+                'nullable',
+                'integer',
+                'exists:dur_outputs,id',
+            ],
+            'outputs.*.type' => [
+                'nullable',
+                'string',
+            ],
+            'outputs.*.title' => [
+                'nullable',
+                'string',
+            ],
+            'outputs.*.status' => [
+                'nullable',
+                'string',
+            ],
+            'outputs.*.detail' => [
+                'nullable',
+                'string',
+            ],
+            'outputs.*.url' => [
+                'nullable',
+                'string',
+                'url',
+            ],
             'project_title' => [
                 'nullable',
                 'string',
@@ -167,10 +196,6 @@ class UpdateDur extends FormRequest
                 'nullable',
                 'string',
             ],
-            'mongo_object_dar_id' => [
-                'nullable',
-                'string',
-            ],
             'user_id' => [
                 'integer',
                 'exists:users,id',
@@ -189,14 +214,6 @@ class UpdateDur extends FormRequest
                 'integer',
             ],
             'applicant_id' => [
-                'nullable',
-                'string',
-            ],
-            'mongo_object_id' => [
-                'nullable',
-                'string',
-            ],
-            'mongo_id' => [
                 'nullable',
                 'string',
             ],

@@ -14,9 +14,6 @@ class CreateTool extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'mongo_object_id' => [
-                'string',
-            ],
             'name' => [
                 'required',
                 'string',

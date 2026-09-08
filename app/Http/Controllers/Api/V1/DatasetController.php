@@ -133,7 +133,6 @@ class DatasetController extends Controller
             $matches = [];
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
-            $mongoPId = $request->query('mongo_pid', null);
             $withMetadata = $request->boolean('with_metadata', true);
 
             $sort = $request->query('sort', 'created:desc');
@@ -169,8 +168,6 @@ class DatasetController extends Controller
                 return $query->where('team_id', '=', $teamId);
             })->when($datasetId, function ($query) use ($datasetId) {
                 return $query->where('datasetid', '=', $datasetId);
-            })->when($mongoPId, function ($query) use ($mongoPId) {
-                return $query->where('mongo_pid', '=', $mongoPId);
             })->when(
                 $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                 function ($query) {
@@ -623,9 +620,6 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
-     *             @OA\Property(property="mongo_id", type="string", example="456"),
-     *             @OA\Property(property="mongo_pid", type="string", example="def789"),
      *             @OA\Property(property="datasetid", type="string", example="xyz1011"),
      *             @OA\Property(property="metadata", type="object")
      *          )

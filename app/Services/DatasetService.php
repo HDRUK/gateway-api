@@ -328,9 +328,6 @@ class DatasetService
         $dataset = MMC::createDataset([
             'user_id' => $input['user_id'],
             'team_id' => $input['team_id'],
-            'mongo_object_id' => $input['mongo_object_id'] ?? null,
-            'mongo_id' => $input['mongo_id'] ?? null,
-            'mongo_pid' => $input['mongo_pid'] ?? null,
             'datasetid' => $input['datasetid'] ?? null,
             'created' => now(),
             'updated' => now(),
