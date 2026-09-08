@@ -1,3 +1,25 @@
+## [2.50.0](https://github.com/HDRUK/gateway-api/compare/v2.49.0...v2.50.0) (2026-09-08)
+
+### ✨ Features
+
+* **GAT-2665:** Implements admin controls for user management admin page (#1790) ([04a4297](https://github.com/HDRUK/gateway-api/commit/04a429766aeb2c40c63db22c1b5abfa5a6bd756d)), closes [GAT-2665](undefinedGAT-2665)
+* **GAT-8492:** Removes references to old migration mongo columns (#1793) ([68f0401](https://github.com/HDRUK/gateway-api/commit/68f04012c58d0f83d12100342b45bb9b0341159c)), closes [GAT-8492](undefinedGAT-8492)
+* **GAT-8566:** Adds slack webhook for monitoring toggling of feature… (#1784) ([0dbd384](https://github.com/HDRUK/gateway-api/commit/0dbd384f00ee0ae7ff743bc772645804d576bd72)), closes [GAT-8566](undefinedGAT-8566)
+* **GAT-9495:** Add dur_outputs table to store data use outputs ([e6950db](https://github.com/HDRUK/gateway-api/commit/e6950db487fd375f05d6871bd54e06797e4b42d8)), closes [GAT-9495](undefinedGAT-9495)
+* **GAT-9495:** Backfill existing outputs to new structure ([cec161a](https://github.com/HDRUK/gateway-api/commit/cec161a5cd5c1c393922103effe0e67ef8faade2)), closes [GAT-9495](undefinedGAT-9495)
+* **GAT-9495:** Sync dur_outputs on DUR edit/update and expose in API responses ([756a455](https://github.com/HDRUK/gateway-api/commit/756a45569d91d814aadb1118e95315d62b0b83aa)), closes [GAT-9495](undefinedGAT-9495) [expose](undefinedose)
+* **GAT-9495:** Write dur_outputs rows from the DUR CSV importer ([4041db6](https://github.com/HDRUK/gateway-api/commit/4041db6f2de2405eca96d05420d61f6657ded1a2)), closes [GAT-9495](undefinedGAT-9495) [non_gateway_outputs](undefinedgateway_outputs)
+* **GAT-9510:** #6 - handle duplicate emails better (#1783) ([9b398c2](https://github.com/HDRUK/gateway-api/commit/9b398c2ba3dcdf2b27e8061b163b000a547bff06)), closes [GAT-9510](undefinedGAT-9510)
+* **GAT-9510:** Enables SSO for Registry auth (#1782) ([654060a](https://github.com/HDRUK/gateway-api/commit/654060a3913c550ae0bad0e680c7922585796997)), closes [GAT-9510](undefinedGAT-9510)
+
+### 🐛 Bug Fixes
+
+* **GAT_9494:** Fix migration and backfill ([c1c5beb](https://github.com/HDRUK/gateway-api/commit/c1c5beb8f4fbd6b328c1ce77bba2c5c3ec702d23))
+* **GAT-0000:** align CRUK dummy dataset fixtures with GWDM 2.1 schema. (#1785) ([1b916ac](https://github.com/HDRUK/gateway-api/commit/1b916acf1476480e4faa62c1d371e46e592200f0)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-9505:** Rejected and expired users can reapply ([d60e381](https://github.com/HDRUK/gateway-api/commit/d60e3815ad1e67cc8babe0ba08b8f8e8c0ac1b20)), closes [GAT-9505](undefinedGAT-9505)
+* **GAT-9999:** Authenticate Composer against GitHub before install (#1792) ([52e5e83](https://github.com/HDRUK/gateway-api/commit/52e5e8389a8031c70658dfdff7f333a9d979b906)), closes [GAT-9999](undefinedGAT-9999) [Composer](undefinedoser)
+* **GAT-9999:** Fixes false positives being alerted (#1791) ([e146c16](https://github.com/HDRUK/gateway-api/commit/e146c16370b81e7e6fc53b6e19c1b30e0eedb375)), closes [positives](undefinedositives)
+
 ## [2.49.0](https://github.com/HDRUK/gateway-api/compare/v2.48.0...v2.49.0) (2026-09-02)
 
 ### ✨ Features
