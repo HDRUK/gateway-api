@@ -207,7 +207,7 @@ return [
             'maxJobs' => 0,
             'memory' => 128,
             'tries' => 2,
-            'timeout' => 200,  // covers ScanFileUpload ($timeout=180)
+            'timeout' => 200,  // fixed/small-cost jobs only (e.g. ScanFileUpload, $timeout=180) — anything with variable/unbounded cost belongs on a dedicated queue instead
             'nice' => 0,
         ],
         'supervisor-enrichment' => [

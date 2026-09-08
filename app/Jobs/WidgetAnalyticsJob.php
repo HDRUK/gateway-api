@@ -19,6 +19,8 @@ class WidgetAnalyticsJob implements ShouldQueue, Silenced
 
     public $tries = 3;
 
+    public $timeout = 30;
+
     protected array $data;
 
     public function __construct(array $data)
