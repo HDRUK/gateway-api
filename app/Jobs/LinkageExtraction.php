@@ -25,6 +25,8 @@ class LinkageExtraction implements ShouldQueue
 
     public $backoff = 30;
 
+    public $timeout = 120;
+
     protected string $sourceDatasetId = '';
 
     protected string $sourceDatasetVersionId = '';

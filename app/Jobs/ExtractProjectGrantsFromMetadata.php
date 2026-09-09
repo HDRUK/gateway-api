@@ -30,6 +30,8 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
     use SerializesModels;
     use LoggingContext;
 
+    public $timeout = 120;
+
     private int $datasetVersionId = 0;
 
     private ?array $loggingContext = null;
@@ -39,6 +41,9 @@ class ExtractProjectGrantsFromMetadata implements ShouldQueue
      */
     public function __construct(int $datasetVersionId)
     {
+        // Dispatched alongside ExtractPublicationsFromMetadata/ExtractToolsFromMetadata
+        // for the same event — keep it on the same queue tier as its siblings.
+        $this->onQueue('enrichment');
         $this->datasetVersionId = $datasetVersionId;
 
         $this->loggingContext = $this->getLoggingContext(\request());

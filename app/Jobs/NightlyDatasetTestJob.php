@@ -4,16 +4,21 @@ namespace App\Jobs;
 
 use App\Models\Dataset;
 use App\Models\NightlyDatasetTest;
-use Http;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Http\Client\Pool;
-use Illuminate\Http\Client\Response;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Bus;
 use Laravel\Horizon\Contracts\Silenced;
 
+/**
+ * Dispatcher: builds chunks of active dataset ids and hands each one off to a
+ * TestDatasetChunk job via Bus::batch(), rather than running every chunk's
+ * HTTP checks in-process (see NightlyDatasetLinkCheckJob's sibling refactor
+ * for the same reasoning). This job itself now only does cheap DB work, so
+ * it stays on the fast/small default tier.
+ */
 class NightlyDatasetTestJob implements ShouldQueue, Silenced
 {
     use Dispatchable;
@@ -23,6 +28,8 @@ class NightlyDatasetTestJob implements ShouldQueue, Silenced
 
     public $tries = 1;
 
+    public $timeout = 120;
+
     public function handle(): void
     {
         // We run a single rolling window of results here, every night. Will only have
@@ -31,31 +38,20 @@ class NightlyDatasetTestJob implements ShouldQueue, Silenced
 
         $concurrency = (int) config('gateway.nightly_dataset_test_concurrency');
 
-        Dataset::where('status', Dataset::STATUS_ACTIVE)
-            ->select('id')
-            ->chunkById($concurrency, function ($datasets) {
-                $ids = $datasets->pluck('id');
+        $jobs = Dataset::where('status', Dataset::STATUS_ACTIVE)
+            ->pluck('id')
+            ->chunk(max(1, $concurrency))
+            ->map(fn ($chunk) => new TestDatasetChunk($chunk->values()->all()))
+            ->all();
 
-                $responses = Http::pool(fn (Pool $pool) => $ids->map(
-                    fn ($id) => $pool->as($id)
-                        ->timeout(30)
-                        ->get($this->datasetUrl($id))
-                ));
+        if (empty($jobs)) {
+            return;
+        }
 
-                foreach ($ids as $id) {
-                    $response = $responses[$id];
-
-                    NightlyDatasetTest::create([
-                        'dataset_id' => $id,
-                        'status_code' => $response instanceof Response ? $response->status() : null,
-                    ]);
-                }
-            });
-    }
-
-    private function datasetUrl(int $datasetId): string
-    {
-        return rtrim(config('gateway.gateway_url'), '/') . '/en/dataset/' . $datasetId;
+        Bus::batch($jobs)
+            ->name('nightly-dataset-test')
+            ->onQueue('indexing')
+            ->dispatch();
     }
 
     public function tags(): array
