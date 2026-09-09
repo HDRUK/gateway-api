@@ -37,7 +37,7 @@ class IndexElasticReindexBatchTest extends TestCase
     {
         Bus::fake();
 
-        $team = Team::first();
+        $team = Team::factory()->create();
 
         $active = Dataset::factory()->for($team)->create(['status' => Dataset::STATUS_ACTIVE]);
         $archived = Dataset::factory()->for($team)->create(['status' => Dataset::STATUS_ARCHIVED]);
@@ -61,7 +61,7 @@ class IndexElasticReindexBatchTest extends TestCase
     {
         Bus::fake();
 
-        $team = Team::first();
+        $team = Team::factory()->create();
         Dataset::factory()->for($team)->create(['status' => Dataset::STATUS_ARCHIVED]);
 
         $job = new IndexDataset('0');
