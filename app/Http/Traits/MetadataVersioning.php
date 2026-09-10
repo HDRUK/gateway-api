@@ -119,8 +119,10 @@ trait MetadataVersioning
         array $previousMetadata
     ): int {
 
+        $gwdmVersion = Config::get('metadata.GWDM.version');
+
         $metadataSaveObject = [
-            'gwdmVersion' => Config::get('metadata.GWDM.version'),
+            'gwdmVersion' => $gwdmVersion,
             'metadata' => $newMetadata,
             'original_metadata' => $previousMetadata,
         ];
@@ -133,9 +135,10 @@ trait MetadataVersioning
         // title/short_title are regular columns (converted from STORED GENERATED
         // in migration 2026_03_11_133601). Update them explicitly here to keep
         // them in sync with the metadata payload on every v2 overwrite.
-        $dv->metadata    = json_encode($metadataSaveObject);
-        $dv->title       = $newMetadata['summary']['title'] ?? null;
-        $dv->short_title = $newMetadata['summary']['shortTitle'] ?? ($newMetadata['summary']['title'] ?? null);
+        $dv->metadata     = json_encode($metadataSaveObject);
+        $dv->gwdm_version = $gwdmVersion;
+        $dv->title        = $newMetadata['summary']['title'] ?? null;
+        $dv->short_title  = $newMetadata['summary']['shortTitle'] ?? ($newMetadata['summary']['title'] ?? null);
         $dv->save();
 
         return $dv->id;
