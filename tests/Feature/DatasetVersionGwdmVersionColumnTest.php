@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Http\Traits\MetadataVersioning;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -45,6 +47,38 @@ class DatasetVersionGwdmVersionColumnTest extends TestCase
         ]));
 
         $this->assertSame('2.1', $dv->fresh()->gwdm_version);
+    }
+
+    public function test_update_metadata_version_keeps_gwdm_version_column_in_step_with_envelope(): void
+    {
+        Config::set('metadata.GWDM.version', '2.2');
+
+        $dataset = Dataset::query()->firstOrFail();
+
+        $nextVersion = (int) DatasetVersion::where('dataset_id', $dataset->id)->max('version') + 1;
+
+        $dv = DatasetVersion::withoutEvents(fn () => DatasetVersion::create([
+            'dataset_id' => $dataset->id,
+            'version' => $nextVersion,
+            'gwdm_version' => '2.0',
+            'metadata' => json_encode(['gwdmVersion' => '2.0']),
+        ]));
+
+        $updater = new class () {
+            use MetadataVersioning;
+        };
+
+        DatasetVersion::withoutEvents(fn () => $updater->updateMetadataVersion(
+            $dataset,
+            ['summary' => ['title' => 'Uplifted', 'shortTitle' => 'Up']],
+            [],
+        ));
+
+        $fresh = $dv->fresh();
+        $envelope = json_decode($fresh->getRawOriginal('metadata'), true);
+
+        $this->assertSame('2.2', $fresh->gwdm_version);
+        $this->assertSame('2.2', $envelope['gwdmVersion']);
     }
 
     public function test_reduced_linked_dataset_versions_reads_title_column_for_delta_row(): void
