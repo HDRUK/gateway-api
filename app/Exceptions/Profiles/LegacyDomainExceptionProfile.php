@@ -13,7 +13,9 @@ use Throwable;
  */
 class LegacyDomainExceptionProfile extends BaseExceptionProfile
 {
-    public function __construct(protected string $code) {}
+    public function __construct(protected string $code)
+    {
+    }
 
     public function code(): string
     {
