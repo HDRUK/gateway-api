@@ -99,7 +99,7 @@ return [
     */
 
     'environments' => [
-        'local' => ['channels' => []],
+        'local' => ['channels' => ['log']],
         'testing' => ['channels' => []],
     ],
 
