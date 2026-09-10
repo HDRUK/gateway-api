@@ -120,11 +120,17 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Reporting (correlation IDs, channel routing/log/GCP output) goes
-        // through the package. The client-facing response is deliberately
-        // NOT routed through it yet — kept byte-for-byte identical to the
-        // pre-package shape ({code: <int status>, message}) to avoid
-        // changing the API's response contract until that's a deliberate,
-        // separate decision.
+        // through the package. The client-facing response also now goes
+        // through it — for profile resolution (safe canned messages for
+        // unmapped/framework exceptions instead of leaking raw internals;
+        // unchanged messages for our own App\Exceptions\*, see
+        // App\Providers\ExceptionProfileServiceProvider) — but the payload
+        // is re-shaped back to the pre-package envelope: 'code' stays the
+        // numeric HTTP status (not the package's string error identifier),
+        // and the debug 'details' block is restored. correlation_id is the
+        // only genuinely new field. This keeps the response contract
+        // unchanged for existing consumers while gaining the package's
+        // safer defaults and observability.
         $exceptions->reportable(function (Throwable $e) {
             app(ErrorHandler::class)->handleReport($e);
 
@@ -132,24 +138,19 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (Throwable $e, Request $request) {
-            $statusCode = 500;
+            $response = app(ErrorHandler::class)->handleRender($e, $request);
+            $statusCode = $response->getStatusCode();
 
-            if ($e->getCode()) {
-                $statusCode = (int) $e->getCode();
-            }
-
-            $response = [
-                'code' => $statusCode,
-                'message' => $e->getMessage(),
-            ];
+            $payload = $response->getData(true);
+            $payload['code'] = $statusCode;
 
             if (Config::get('app.debug')) {
-                $response['details'] = [
+                $payload['details'] = [
                     'exception' => get_class($e),
                     'trace' => $e->getTrace(),
                 ];
             }
 
-            return response()->json($response, $statusCode);
+            return response()->json($payload, $statusCode);
         });
     })->create();

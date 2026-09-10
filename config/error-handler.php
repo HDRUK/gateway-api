@@ -7,7 +7,7 @@ use HDRUK\ErrorHandler\Profiles\BuiltIn\NotFoundHttpExceptionProfile;
 use HDRUK\ErrorHandler\Profiles\BuiltIn\QueryFailureProfile;
 use HDRUK\ErrorHandler\Profiles\BuiltIn\ThrottleRequestsProfile;
 use HDRUK\ErrorHandler\Profiles\BuiltIn\ValidationExceptionProfile;
-use HDRUK\ErrorHandler\Profiles\FallbackExceptionProfile;
+use App\Exceptions\Profiles\LegacyDomainExceptionProfile;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -71,7 +71,7 @@ return [
 
     'status_routing' => [
         429 => ['gcp'],
-        '4xx' => ['gcp'],
+        '4xx' => ['slack-warnings', 'gcp'],
         '5xx' => ['slack-critical', 'gcp'],
     ],
 
@@ -94,10 +94,12 @@ return [
     | list wins over everything above — e.g. never hit Slack/GCP locally,
     | stay silent in tests.
     |
+    | Set local channel to 'log' to bypass the remote alerts.
+    |
     */
 
     'environments' => [
-        'local' => ['channels' => ['log']],
+        'local' => ['channels' => []],
         'testing' => ['channels' => []],
     ],
 
@@ -126,9 +128,13 @@ return [
     ],
 
     /*
-    | Used for any exception with no mapping above.
+    | Used for any exception with no mapping above. This app throws plain
+    | Exception/RuntimeException with client-safe messages in many places
+    | outside the named App\Exceptions\* classes, so the fallback passes
+    | the message/code straight through (see LegacyDomainExceptionProfile)
+    | rather than the package's default canned message.
     */
-    'fallback' => FallbackExceptionProfile::class,
+    'fallback' => LegacyDomainExceptionProfile::class,
 
     /*
     |--------------------------------------------------------------------
