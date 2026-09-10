@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Services\Gwdm\Gwdm1xHandler;
 use App\Services\Gwdm\Gwdm20Handler;
 use App\Services\Gwdm\Gwdm21Handler;
+use App\Services\Gwdm\Gwdm22Handler;
 use App\Services\Gwdm\Gwdm2xHandler;
 use App\Services\Gwdm\GwdmHandlerFactory;
 use Tests\TestCase;
@@ -32,6 +33,7 @@ class GwdmHandlerFactoryTest extends TestCase
     {
         $this->assertInstanceOf(Gwdm20Handler::class, $this->factory()->resolve('2.0'));
         $this->assertInstanceOf(Gwdm21Handler::class, $this->factory()->resolve('2.1'));
+        $this->assertInstanceOf(Gwdm22Handler::class, $this->factory()->resolve('2.2'));
     }
 
     public function test_resolves_unknown_1_1_plus_version_to_2x_catch_all(): void
@@ -39,9 +41,9 @@ class GwdmHandlerFactoryTest extends TestCase
         $this->assertInstanceOf(Gwdm2xHandler::class, $this->factory()->resolve('1.5'));
     }
 
-    public function test_supported_versions_are_2_0_and_2_1_only(): void
+    public function test_supported_versions_are_2_x_only(): void
     {
-        $this->assertSame(['2.0', '2.1'], GwdmHandlerFactory::supportedVersions());
+        $this->assertSame(['2.0', '2.1', '2.2'], GwdmHandlerFactory::supportedVersions());
         $this->assertNotContains('3.0', GwdmHandlerFactory::supportedVersions());
     }
 }
