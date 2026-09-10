@@ -11,11 +11,16 @@
         {
             "type": "vcs",
             "url": "https://github.com/HDRUK/OpenID-Connect-PHP.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/HDRUK/laravel-error-handler.git"
         }
     ],
     "require": {
         "php": "^8.3",
         "darkaonline/l5-swagger": "^8.4",
+        "hdruk/laravel-error-handler": "dev-main",
         "elasticsearch/elasticsearch": "^8.10",
         "google/cloud-bigquery": "^1.35",
         "google/cloud-logging": "^1.30",
