@@ -1844,13 +1844,16 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
 
+        // No user-scoped "delete review file" route exists (only the
+        // team-scoped one above does), so this is a genuine unmatched
+        // route — a 404, not a 500.
         $response = $this->json(
             'DELETE',
             'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $uploadId2,
             [],
             $this->header
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        $response->assertStatus(404);
     }
 
     /**
