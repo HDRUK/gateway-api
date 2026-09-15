@@ -144,8 +144,11 @@ class SavedSearchController extends Controller
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
-            $savedSearch = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
-            if (!$jwtUserIsAdmin && $savedSearch['user_id'] != $jwtUser['id']) {
+            $savedSearch = SavedSearch::where(['id' => $id])->with(['filters'])->first();
+            if (!$savedSearch) {
+                throw new NotFoundException('Saved search not found');
+            }
+            if (!$jwtUserIsAdmin && $savedSearch->user_id != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this saved search');
             }
 
