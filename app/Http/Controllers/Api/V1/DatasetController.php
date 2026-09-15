@@ -48,7 +48,7 @@ class DatasetController extends Controller
      * low-cardinality categorical columns. Excludes identifiers, timestamps,
      * and counters, which are either meaningless to group by or a resource risk
      * if used as a GROUP BY key.
-     * 
+     *
      * Bit of guess work here, the only thing I can see that is actually used
      * for the basis of count() is status, but there may be others I missed.
      */
