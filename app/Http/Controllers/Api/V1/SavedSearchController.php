@@ -144,8 +144,11 @@ class SavedSearchController extends Controller
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
-            $savedSearch = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
-            if (!$jwtUserIsAdmin && $savedSearch['user_id'] != $jwtUser['id']) {
+            $savedSearch = SavedSearch::with('filters')->find($id);
+            if (!$savedSearch) {
+                throw new NotFoundException('Saved search not found');
+            }
+            if (!$jwtUserIsAdmin && $savedSearch->user_id != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this saved search');
             }
 
@@ -156,9 +159,14 @@ class SavedSearchController extends Controller
                 'description' => 'Saved Search get ' . $id,
             ]);
 
+            // 15/09/2026 - refactor candidate 
+            // - this was originally authored using `where('id',id)->get()` instead of `->find(id)`
+            // - this broke phpstan when checking the user_id against the jwtUser
+            // - now i have to return [$savedSearch] instead of $savedSearch
+            //   otherwise the CI and downstream breaks
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $savedSearch,
+                'data' => [$savedSearch], 
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
