@@ -421,6 +421,7 @@ class DatasetVersion extends BaseTypesenseModel
                 ['name' => 'dataProviderColl',              'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'collectionNames',              'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'dataUseTitles',                'type' => 'string[]', 'facet' => true, 'optional' => true],
+                ['name' => 'duoCodes',                     'type' => 'string[]', 'facet' => true, 'optional' => true],
                 ['name' => 'partnerContext',                'type' => 'string',   'optional' => true],
                 ['name' => 'startDate',                    'type' => 'int64',    'optional' => true],
                 ['name' => 'endDate',                      'type' => 'int64',    'optional' => true],
