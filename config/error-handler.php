@@ -71,7 +71,9 @@ return [
 
     'status_routing' => [
         429 => ['gcp'],
-        '4xx' => ['slack-warnings', 'gcp'],
+        400 => ['slack-warnings', 'gcp'],
+        401 => ['gcp'],
+        '4xx' => ['gcp'],
         '5xx' => ['slack-critical', 'gcp'],
     ],
 
