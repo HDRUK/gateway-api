@@ -1,18 +1,29 @@
 version: '3.8'
 services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: 'php artisan serve --host=0.0.0.0'
-    volumes:
-      - .:/app
+  typesense:
+    image: typesense/typesense:26.0
     ports:
-      - 8000:8000
-  
-  queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: 'php artisan queue:work --queue=federation,default'
-    
+      - "8108:8108"
+    volumes:
+      - typesense_data:/data
+    command: --data-dir /data --api-key=${TYPESENSE_API_KEY:-xyz} --enable-cors
+    restart: unless-stopped
+
+volumes:
+  typesense_data:
+
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   command: 'php artisan serve --host=0.0.0.0'
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - 8000:8000
+  #
+  # queue:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   command: 'php artisan queue:work --queue=federation,default'

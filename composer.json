@@ -11,11 +11,16 @@
         {
             "type": "vcs",
             "url": "https://github.com/HDRUK/OpenID-Connect-PHP.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/HDRUK/laravel-error-handler.git"
         }
     ],
     "require": {
         "php": "^8.3",
         "darkaonline/l5-swagger": "^8.4",
+        "hdruk/laravel-error-handler": "dev-main",
         "elasticsearch/elasticsearch": "^8.10",
         "google/cloud-bigquery": "^1.35",
         "google/cloud-logging": "^1.30",
@@ -111,8 +116,12 @@
         "phpcs": [
             "vendor/bin/phpcs --standard=PSR1 app"
         ],
+        "test:build-template": [
+            "APP_ENV=testing DB_CONNECTION=sqlite php artisan testing:build-template"
+        ],
         "pest": [
-            "php -d memory_limit=2048M vendor/bin/pest --bail --parallel --compact"
+            "@test:build-template",
+            "php -d memory_limit=2048M vendor/bin/pest --parallel --compact"
         ],
         "lint": [
             "vendor/bin/pint --preset psr12"

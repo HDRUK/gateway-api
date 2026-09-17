@@ -42,10 +42,6 @@ abstract class BaseTypesenseModel extends Model
 
     public function queueMakeSearchable($models): void
     {
-        if (!PennantFeature::active('TypesenseSearch')) {
-            return;
-        }
-
         $this->traitQueueMakeSearchable($models);
     }
 

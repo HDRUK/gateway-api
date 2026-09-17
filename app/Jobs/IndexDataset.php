@@ -12,6 +12,9 @@ class IndexDataset implements ShouldQueue
     use Queueable;
     use IndexElastic;
 
+    // See ReindexDataset::$timeout — same fixed-cost shape.
+    public $timeout = 60;
+
     private string $documentId;
 
     /**

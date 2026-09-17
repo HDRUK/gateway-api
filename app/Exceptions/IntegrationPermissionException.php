@@ -7,6 +7,8 @@ use Illuminate\Http\Response;
 
 class IntegrationPermissionException extends Exception
 {
+    public const ERROR_BOUNDS = 'ERR-INTEGRATION-PERMISSION-';
+
     public function __construct(
         string $message = '',
         int $code = Response::HTTP_BAD_REQUEST,

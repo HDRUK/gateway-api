@@ -7,6 +7,8 @@ use Illuminate\Http\Response;
 
 class UnprocessableException extends Exception
 {
+    public const ERROR_BOUNDS = 'ERR-UNPROCESSABLE-';
+
     public function __construct(
         string $message = '',
         int $code = Response::HTTP_UNPROCESSABLE_ENTITY,

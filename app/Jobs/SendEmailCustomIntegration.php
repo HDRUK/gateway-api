@@ -18,6 +18,7 @@ class SendEmailCustomIntegration implements ShouldQueue
 
     public $tries   = 3;
     public $backoff = [10, 30, 60];
+    public $timeout = 60;
 
     private int $federationId;
     private ?string $jobUuid;

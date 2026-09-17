@@ -11,6 +11,9 @@ class DeindexDataset implements ShouldQueue
     use Queueable;
     use IndexElastic;
 
+    // See ReindexDataset::$timeout — same fixed-cost shape.
+    public $timeout = 60;
+
     public function __construct(
         private readonly string $datasetId,
         private readonly ?int $teamId

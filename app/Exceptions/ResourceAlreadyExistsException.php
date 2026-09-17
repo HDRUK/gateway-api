@@ -7,6 +7,8 @@ use Illuminate\Http\Response;
 
 class ResourceAlreadyExistsException extends Exception
 {
+    public const ERROR_BOUNDS = 'ERR-RESOURCE-EXISTS-';
+
     public function __construct(
         string $message = 'Resource already exists',
         int $code = Response::HTTP_CONFLICT,

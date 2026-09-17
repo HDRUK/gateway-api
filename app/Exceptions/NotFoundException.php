@@ -7,6 +7,8 @@ use Illuminate\Http\Response;
 
 class NotFoundException extends Exception
 {
+    public const ERROR_BOUNDS = 'ERR-NOT-FOUND-';
+
     public function __construct(
         string $message = '',
         int $code = Response::HTTP_NOT_FOUND,

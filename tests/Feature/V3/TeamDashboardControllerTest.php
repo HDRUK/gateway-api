@@ -374,8 +374,11 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_entity_count_with_unknown_entity_returns_error(): void
     {
+        // The {entity} route constraint (config/routes_v3.php) rejects
+        // anything outside the known list before the controller runs, so
+        // this is a genuine unmatched route — a 404, not a 500.
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/unknown/count', [], $this->headerNonAdmin);
-        $response->assertStatus(500);
+        $response->assertStatus(404);
     }
 
     // -------------------------------------------------------------------------
