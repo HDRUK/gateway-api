@@ -1,3 +1,18 @@
+## [2.51.0](https://github.com/HDRUK/gateway-api/compare/v2.50.0...v2.51.0) (2026-09-17)
+
+### ✨ Features
+
+* **GAT-9422:** #1 - improve job handling by not defaulting to inheri… (#1799) ([1bfa552](https://github.com/HDRUK/gateway-api/commit/1bfa552a9c3ce1fc093bf65f18e63e1334c54134)), closes [GAT-9422](undefinedGAT-9422)
+* **GAT-9999:** Error handling to better retain sensitive information (#1807) ([cf634ba](https://github.com/HDRUK/gateway-api/commit/cf634baa0f50a63b469b2c72a2157d1b06cf3af0)), closes [GAT-9999](undefinedGAT-9999)
+* **GAT-9999:** Further build / test optimisations (#1797) ([c70517a](https://github.com/HDRUK/gateway-api/commit/c70517a9d608b74546c8e71855271e3e001aa231)), closes [GAT-9999](undefinedGAT-9999)
+* **GAT-9999:** Migrates our Laravel 11 routing to Laravel 12, ready … (#1801) ([2ae4dbf](https://github.com/HDRUK/gateway-api/commit/2ae4dbfe478be795812e82e593289beb2a9e3a52)), closes [GAT-9999](undefinedGAT-9999)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** add deployment step to refresh CRUK dummy datasets. (#1798) ([29ddbce](https://github.com/HDRUK/gateway-api/commit/29ddbcef3c027dbb8183c7ea9382f512cc6f8d24)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-9999:** Indexing was bound to the feature flag which is incorr… (#1806) ([ffe1900](https://github.com/HDRUK/gateway-api/commit/ffe19002c1c22e12fcece8d4fc4e63e5cad04a8e)), closes [GAT-9999](undefinedGAT-9999)
+* **GAT-9999:** Preempts rework of VALUES function in mysql before rem… (#1800) ([83a4ec2](https://github.com/HDRUK/gateway-api/commit/83a4ec2a8b0962caa0948caf0b353eff6b68ee2a)), closes [GAT-9999](undefinedGAT-9999)
+
 ## [2.50.0](https://github.com/HDRUK/gateway-api/compare/v2.49.0...v2.50.0) (2026-09-08)
 
 ### ✨ Features
