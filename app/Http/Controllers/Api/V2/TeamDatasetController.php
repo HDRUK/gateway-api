@@ -636,7 +636,7 @@ class TeamDatasetController extends Controller
             $inputSchema = $input['metadata']['schemaModel'] ?? null;
             $inputVersion = $input['metadata']['schemaVersion'] ?? null;
 
-            $submittedMetadata = $input['metadata']['metadata'];
+            $submittedMetadata = $payload['metadata'];
             $gwdmMetadata = null;
 
             $traserResponse = MMC::translateDataModelType(
@@ -682,7 +682,7 @@ class TeamDatasetController extends Controller
                     $datasetVersionId,
                 );
                 if (Config::get('ted.enabled')) {
-                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+                    $tedData = Config::get('ted.use_partial') ? $payload['metadata']['summary'] : $payload['metadata'];
 
                     TermExtraction::dispatch(
                         $currDataset->id,

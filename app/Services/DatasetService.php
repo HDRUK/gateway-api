@@ -508,7 +508,7 @@ class DatasetService
 
         $inputSchema = $input['metadata']['schemaModel'] ?? null;
         $inputVersion = $input['metadata']['schemaVersion'] ?? null;
-        $submittedMetadata = $input['metadata']['metadata'];
+        $submittedMetadata = $payload['metadata'];
         $isDraft = $input['status'] === Dataset::STATUS_DRAFT;
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
 
