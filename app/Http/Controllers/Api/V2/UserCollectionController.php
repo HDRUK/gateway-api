@@ -30,6 +30,7 @@ use App\Http\Requests\V2\Collection\UpdateCollection;
 use App\Http\Requests\V2\Collection\GetCollectionCountByUserAndStatus;
 use App\Models\CollectionHasUser;
 
+// LS: Refactor candidate - needs sorting out.
 class UserCollectionController extends Controller
 {
     use IndexElastic;
