@@ -1,3 +1,17 @@
+## [2.52.0](https://github.com/HDRUK/gateway-api/compare/v2.51.0...v2.52.0) (2026-09-18)
+
+### ✨ Features
+
+* **GAT-9338:** Updates for GWDM 2.2 and HDRUK 4.1.0 (#1802) ([47e27cb](https://github.com/HDRUK/gateway-api/commit/47e27cb135106eb21463f44bd913f86f00943815)), closes [GAT-9338](undefinedGAT-9338)
+* **GAT-9582:** Adds search highlighting to Typesense (#1811) ([41a431a](https://github.com/HDRUK/gateway-api/commit/41a431a62a28ab73b2094aaea410044a46fbd2cf)), closes [GAT-9582](undefinedGAT-9582)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** Fix phpstan error in SavedSearchController (#1810) ([cfaaf58](https://github.com/HDRUK/gateway-api/commit/cfaaf58b7d93d598f50d75a1669737c4a52ee09b))
+* **GAT-9338:** keep dataset_versions.gwdm_version in step with the stored envelope (#1803) ([49bb182](https://github.com/HDRUK/gateway-api/commit/49bb1824b1fcf8ce2a77319e897839109b6c34dc)), closes [GAT-9338](undefinedGAT-9338)
+* **GAT-9596:** Fixes a dataset onboarding issue highlighted by the SDE (#1813) ([d472593](https://github.com/HDRUK/gateway-api/commit/d4725936f33a62dbc1f92bab63994a710909b3f7))
+* **GAT-9999:** User collections werent being indexed by Typesense as … (#1812) ([d0a99c5](https://github.com/HDRUK/gateway-api/commit/d0a99c582fc2ded95fc542ef8c1465ebe29d4105)), closes [GAT-9999](undefinedGAT-9999)
+
 ## [2.51.0](https://github.com/HDRUK/gateway-api/compare/v2.50.0...v2.51.0) (2026-09-17)
 
 ### ✨ Features
