@@ -390,8 +390,18 @@ class DatasetVersion extends BaseTypesenseModel
     public function typesenseSearchParameters(): array
     {
         return [
-            'query_by' => 'title,shortTitle,abstract,keywords,publisherName,structuralTableNames,structuralColumnNames,structuralColumnDescriptions',
-            'query_by_weights' => '5,4,3,2,2,1,1,1',
+            'query_by' => 'title,shortTitle,abstract,description,keywords,publisherName,structuralTableNames,structuralColumnNames,structuralColumnDescriptions',
+            'query_by_weights' => '5,4,3,3,2,2,1,1,1',
+            // Restores the highlighted-snippet behaviour the old Elasticsearch
+            // search provided. Tags match ResultCard.styles.ts's `> em` CSS rule
+            // in the frontend - changing these requires a paired FE change.
+            'highlight_fields' => 'abstract,description',
+            'highlight_start_tag' => '<em>',
+            'highlight_end_tag' => '</em>',
+            // Explicit rather than relying on the Typesense default so
+            // "tumor" continues to match "tumour" per GAT ticket acceptance
+            // criteria even if that default ever changes upstream.
+            'num_typos' => 2,
         ];
     }
 

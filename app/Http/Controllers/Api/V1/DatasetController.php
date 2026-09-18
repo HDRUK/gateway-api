@@ -43,6 +43,26 @@ class DatasetController extends Controller
     use CheckAccess;
     use ModelHelpers;
 
+    /**
+     * Columns that may be passed as {field} to count(). Restricted to
+     * low-cardinality categorical columns. Excludes identifiers, timestamps,
+     * and counters, which are either meaningless to group by or a resource risk
+     * if used as a GROUP BY key.
+     *
+     * Bit of guess work here, the only thing I can see that is actually used
+     * for the basis of count() is status, but there may be others I missed.
+     */
+    private const ALLOWED_COUNT_FIELDS = [
+        'status',
+        'create_origin',
+        'partner_context',
+        'is_cohort_discovery',
+        'commercial_use',
+        'source',
+        'has_technical_details',
+        'state_id',
+    ];
+
     public function __construct(private readonly GwdmMetadataHandler $gwdmHandler)
     {
     }
@@ -303,6 +323,12 @@ class DatasetController extends Controller
      */
     public function count(Request $request, string $field): JsonResponse
     {
+        if (! in_array($field, self::ALLOWED_COUNT_FIELDS, true)) {
+            return response()->json([
+                'message' => 'Invalid field for count',
+            ], 422);
+        }
+
         try {
             $teamId = $request->query('team_id', null);
             $counts = Dataset::when($teamId, function ($query) use ($teamId) {
@@ -329,7 +355,7 @@ class DatasetController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e->getMessage());
+            throw new Exception($e->getMessage(), 0, $e);
         }
     }
 
