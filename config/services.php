@@ -76,6 +76,8 @@ return [
         'project_id' => env('GOOGLE_CLOUD_BIGQUERY_PROJECT_ID', 'gcp_bigquery_project_id'),
         'dashboard_dataset' => env('GOOGLE_CLOUD_BIGQUERY_DASHBOARD_DATASET', 'gcp_bigquery_dashboard_dataset'),
         'dashboard_table' => env('GOOGLE_CLOUD_BIGQUERY_DASHBOARD_TABLE', 'gcp_bigquery_dashboard_table'),
+        'search_dataset' => env('GOOGLE_CLOUD_BIGQUERY_SEARCH_DATASET', 'search'),
+        'search_analytics_table' => env('GOOGLE_CLOUD_BIGQUERY_SEARCH_ANALYTICS_TABLE', 'search_analytics'),
     ],
 
     'elasticclient' => [
