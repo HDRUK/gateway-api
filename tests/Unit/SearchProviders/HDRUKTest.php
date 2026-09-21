@@ -6,12 +6,15 @@ use Config;
 use Mockery;
 use Tests\TestCase;
 use App\Context\PartnerContext;
+use App\Jobs\LogSearchAnalytics;
+use App\Jobs\SearchAnalyticsData;
 use App\SearchProviders\HDRUK;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
 use App\Models\DataProviderColl;
 use App\Services\TypesenseService;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Pennant\Feature;
 
 class HDRUKTest extends TestCase
@@ -749,6 +752,53 @@ class HDRUKTest extends TestCase
         Http::assertSent(function ($request) {
             return str_contains($request->url(), '/search/datasets')
                 && $request['partnerContext'] === 'CRUK';
+        });
+    }
+
+    private function getSearchAnalyticsData(LogSearchAnalytics $job): SearchAnalyticsData
+    {
+        $property = (new \ReflectionClass($job))->getProperty('data');
+        $property->setAccessible(true);
+
+        return $property->getValue($job);
+    }
+
+    public function test_search_via_typesense_dispatches_log_search_analytics_for_datasets(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => true);
+
+        (new HDRUK())->search('asthma', 'datasets', ['dataSource' => 'ARDC']);
+
+        Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
+            $data = $this->getSearchAnalyticsData($job);
+
+            return $data->entityType === 'datasets'
+                && $data->searchTerm === 'asthma'
+                && $data->dataSource === 'ARDC';
+        });
+    }
+
+    public function test_search_via_typesense_dispatches_log_search_analytics_for_a_non_dataset_type(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => true);
+
+        (new HDRUK())->search('nlp', 'tools', []);
+
+        Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
+            $data = $this->getSearchAnalyticsData($job);
+
+            return $data->entityType === 'tools' && $data->searchTerm === 'nlp';
+        });
+    }
+
+    public function test_search_via_typesense_defaults_data_source_to_hdruk_when_absent(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => true);
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+
+        Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
+            return $this->getSearchAnalyticsData($job)->dataSource === 'HDRUK';
         });
     }
 }

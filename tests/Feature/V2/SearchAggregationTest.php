@@ -101,6 +101,18 @@ class SearchAggregationTest extends TestCase
         $response->assertStatus(400);
     }
 
+    public function test_returns_400_when_data_source_is_not_a_string(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['query' => 'asthma', 'type' => 'datasets', 'dataSource' => ['not', 'a', 'string']],
+            $this->header
+        );
+
+        $response->assertStatus(400);
+    }
+
     // -------------------------------------------------------------------------
     // Success — response structure
     // -------------------------------------------------------------------------
