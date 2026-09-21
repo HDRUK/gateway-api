@@ -35,6 +35,7 @@ class SearchController extends Controller
         $query  = $request->input('query') ?? '';
         $only   = $request->input('providers') ?? [];
         $params = $request->except(['query', 'type', 'providers']);
+        $params['dataSource'] = $request->input('dataSource') ?: 'HDRUK';
 
         // LS - Debug code to avoid spamming external parties while developing
         //
