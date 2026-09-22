@@ -54,7 +54,7 @@ class LogSearchAnalyticsTest extends TestCase
 
     public function test_handle_logs_and_does_not_propagate_when_bigquery_insert_fails(): void
     {
-        $handler = new TestHandler;
+        $handler = new TestHandler();
         $this->app->instance('log', new Logger(new MonologLogger('testing', [$handler])));
         Log::clearResolvedInstance('log');
 
