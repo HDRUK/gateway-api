@@ -12,5 +12,6 @@ final readonly class SearchAnalyticsData
         public string $dataSource,
         public array $entityIds,
         public int $entitiesReturned,
-    ) {}
+    ) {
+    }
 }

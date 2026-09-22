@@ -21,7 +21,9 @@ class LogSearchAnalytics implements ShouldQueue, Silenced
 
     public $timeout = 30;
 
-    public function __construct(private readonly SearchAnalyticsData $data) {}
+    public function __construct(private readonly SearchAnalyticsData $data)
+    {
+    }
 
     public function handle(BigQueryService $bigQuery): void
     {
