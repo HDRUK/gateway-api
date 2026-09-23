@@ -49,4 +49,25 @@ class BigQueryService
 
         return $rows;
     }
+
+    /**
+     * Streams a single row into a BigQuery table. Row-level failures are not
+     * thrown by the client library itself (only transport/auth errors are),
+     * they come back on the InsertResponse, so that's checked here and turned
+     * into an exception.
+     *
+     * @throws \RuntimeException when the insert is rejected by BigQuery
+     */
+    public function insertRow(string $dataset, string $table, array $row, ?string $insertId = null): void
+    {
+        $options = $insertId !== null ? ['insertId' => $insertId] : [];
+
+        $response = $this->client->dataset($dataset)->table($table)->insertRow($row, $options);
+
+        if (! $response->isSuccessful()) {
+            throw new \RuntimeException(
+                "Failed to insert row into {$dataset}.{$table}: ".json_encode($response->failedRows())
+            );
+        }
+    }
 }

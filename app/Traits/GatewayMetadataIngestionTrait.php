@@ -245,6 +245,25 @@ trait GatewayMetadataIngestionTrait
                             continue;
                         }
 
+                        if ($ds->status === Dataset::STATUS_ARCHIVED) {
+                            $conflictingActiveId = Dataset::where([
+                                'pid' => $pid,
+                                'team_id' => $gmi->getTeam(),
+                                'status' => Dataset::STATUS_ACTIVE,
+                            ])
+                                ->where('id', '!=', $ds->id)
+                                ->value('id');
+
+                            if ($conflictingActiveId) {
+                                $this->log('warning', "dataset {$pid} reappeared in REMOTE collection but ACTIVE dataset id={$conflictingActiveId} with the same PID already exists locally in place of ARCHIVED dataset id={$ds->id} - skipping re-publish to avoid duplicate PID");
+                                continue;
+                            }
+
+                            $ds->status = Dataset::STATUS_ACTIVE;
+                            $ds->save();
+                            $this->log('info', "dataset {$pid} REPUBLISHED (was ARCHIVED, reappeared in REMOTE collection)");
+                        }
+
                         $dv = $dvModel->toArray();
                         $localVersion = $dv['metadata']['metadata']['required']['version'] ?? null;
 

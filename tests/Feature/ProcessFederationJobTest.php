@@ -343,6 +343,71 @@ class ProcessFederationJobTest extends TestCase
         $this->assertSame(Dataset::STATUS_ACTIVE, $manualDataset->fresh()->status);
     }
 
+    private function makeVersion(Dataset $dataset, int $teamId, string $version = '1.0'): DatasetVersion
+    {
+        return DatasetVersion::create([
+            'dataset_id' => $dataset->id,
+            'metadata' => ['metadata' => ['required' => ['version' => $version]]],
+            'version' => 1,
+            'provider_team_id' => $teamId,
+            'application_type' => 'dataset',
+        ]);
+    }
+
+    public function test_archived_gmi_dataset_reappearing_in_remote_is_republished(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        $archived = $this->makeGmiDataset($team->id, 'reappeared-pid', Dataset::STATUS_ARCHIVED);
+        $this->makeVersion($archived, $team->id, '1.0');
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'reappeared-pid', 'version' => '1.0']],
+            ], 200),
+            $this->datasetUrlPattern('reappeared-pid') => Http::response(
+                ['metadata' => ['required' => ['version' => '1.0']]],
+                200
+            ),
+        ]);
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        $this->assertSame(Dataset::STATUS_ACTIVE, $archived->fresh()->status);
+    }
+
+    public function test_archived_gmi_dataset_not_republished_when_active_dataset_already_shares_pid(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        // Simulates: dataset was archived after dropping out of the remote catalogue, then a
+        // fresh dataset was independently (re)created under the same PID and is already live.
+        $archived = $this->makeGmiDataset($team->id, 'conflict-pid', Dataset::STATUS_ARCHIVED);
+        $this->makeVersion($archived, $team->id, '1.0');
+
+        $active = $this->makeGmiDataset($team->id, 'conflict-pid', Dataset::STATUS_ACTIVE);
+        $this->makeVersion($active, $team->id, '1.0');
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'conflict-pid', 'version' => '1.0']],
+            ], 200),
+            $this->datasetUrlPattern('conflict-pid') => Http::response(
+                ['metadata' => ['required' => ['version' => '1.0']]],
+                200
+            ),
+        ]);
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        // Neither record should be disturbed: the archived one must not be silently
+        // republished alongside an already-active dataset carrying the same PID.
+        $this->assertSame(Dataset::STATUS_ARCHIVED, $archived->fresh()->status);
+        $this->assertSame(Dataset::STATUS_ACTIVE, $active->fresh()->status);
+    }
+
     public function test_update_skips_gracefully_when_dataset_version_is_missing(): void
     {
         [$team, $federation] = $this->makeFederation();
