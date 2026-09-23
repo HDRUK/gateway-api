@@ -1,3 +1,14 @@
+## [2.53.0](https://github.com/HDRUK/gateway-api/compare/v2.52.0...v2.53.0) (2026-09-23)
+
+### ✨ Features
+
+* **GAT-9593:** add BigQuery row-insert capability to BigQueryService ([cc126bb](https://github.com/HDRUK/gateway-api/commit/cc126bb8801ea45bd09027247c4a25460911ec1e)), closes [GAT-9593](undefinedGAT-9593)
+* **GAT-9593:** log search analytics for Typesense searches ([66d5b48](https://github.com/HDRUK/gateway-api/commit/66d5b4855faf5eb65723ac3a1114e503efafc917)), closes [GAT-9593](undefinedGAT-9593)
+
+### 🐛 Bug Fixes
+
+* **GAT-9605:** Implements fix for GMI which did not republish re-emer… (#1816) ([0be0560](https://github.com/HDRUK/gateway-api/commit/0be0560fdfcbffe4e5e71e52a7b5d184dae17270))
+
 ## [2.52.0](https://github.com/HDRUK/gateway-api/compare/v2.51.0...v2.52.0) (2026-09-18)
 
 ### ✨ Features
