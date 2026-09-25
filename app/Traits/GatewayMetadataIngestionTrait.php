@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Events\FederationProcessed;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -21,13 +22,6 @@ use MetadataManagementController as MMC;
 trait GatewayMetadataIngestionTrait
 {
     use MetadataVersioning;
-
-    private bool $hadHistoryFailures = false;
-
-    public function hadHistoryFailures(): bool
-    {
-        return $this->hadHistoryFailures;
-    }
 
     public function pullCatalogueList(Federation|array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
@@ -89,7 +83,7 @@ trait GatewayMetadataIngestionTrait
         Collection $remoteItems,
         GatewayMetadataIngestionService $gmi,
         Federation $federation,
-        ?string $jobUuid,
+        string $jobUuid,
         int $attempts
     ): int {
         $this->log('info', 'testing REMOTE collection for LOCAL archive');
@@ -147,7 +141,7 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
-        ?string $jobUuid,
+        string $jobUuid,
         int $attempts,
         GwdmMetadataHandler $handler,
     ): int {
@@ -183,7 +177,7 @@ trait GatewayMetadataIngestionTrait
         array $data,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
-        ?string $jobUuid,
+        string $jobUuid,
         int $attempts,
         GwdmMetadataHandler $handler,
     ): bool {
@@ -257,7 +251,7 @@ trait GatewayMetadataIngestionTrait
         Federation $federation,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
-        ?string $jobUuid,
+        string $jobUuid,
         int $attempts
     ): int {
         $updatedCount = 0;
@@ -286,7 +280,7 @@ trait GatewayMetadataIngestionTrait
         Dataset $local,
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
-        ?string $jobUuid,
+        string $jobUuid,
         int $attempts,
     ): bool {
         try {
@@ -449,10 +443,6 @@ trait GatewayMetadataIngestionTrait
 
     public function sendToHistory(int $teamId, int $federationId, string $pid, string $jobUuid, array|string $message, int $status, int $attempts): void
     {
-        if ($status === 0) {
-            $this->hadHistoryFailures = true;
-        }
-
         FederationJobRun::create(
             [
                 'team_id' => $teamId,
@@ -466,6 +456,36 @@ trait GatewayMetadataIngestionTrait
                 'job_attempts' => $attempts,
             ]
         );
+    }
+
+    /**
+     * Concludes one federation execution: checks the per-dataset history
+     * recorded under $jobUuid (plus $batchHadFailures, for a failure that
+     * never reached sendToHistory at all — e.g. a chunk job hard-failing
+     * before its first item) and either records a soft failure on the
+     * federation directly, or dispatches FederationProcessed so
+     * ProcessFederationSuccess can clear the federation's error state,
+     * clear is_running, and send the success notification.
+     */
+    public function finaliseFederationRun(int $federationId, string $jobUuid, bool $batchHadFailures = false): void
+    {
+        $hadFailures = $batchHadFailures
+            || FederationJobRun::latestPerPidForExecution($federationId, $jobUuid)
+                ->contains(fn ($run) => $run->status === 0);
+
+        if ($hadFailures) {
+            $this->log('warning', "federation {$federationId} completed with per-item failures - see federation_job_runs for details");
+
+            Federation::where('id', $federationId)->update([
+                'is_running' => false,
+                'error' => true,
+                'error_text' => "Run completed with errors for one or more datasets. Please check the run history for job: {$jobUuid}",
+            ]);
+
+            return;
+        }
+
+        FederationProcessed::dispatch(Federation::find($federationId), $jobUuid);
     }
 
 }

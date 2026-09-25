@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Events\FederationProcessed;
 use App\Events\FederationProcessingFailed;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Federation;
@@ -15,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 use Throwable;
 
 class ProcessFederation implements ShouldQueue
@@ -29,6 +29,15 @@ class ProcessFederation implements ShouldQueue
     private readonly Federation $federation;
     private readonly GatewayMetadataIngestionService $gmi;
 
+    /**
+     * Minted once here, not derived from queue internals: the previous
+     * $this->job?->getJobId() wasn't guaranteed stable across retries, and
+     * $this->job->uuid() (used in failed()) was a different identifier
+     * again. A constructor property survives every retry unchanged, since
+     * Laravel re-runs handle() against the same serialized job payload.
+     */
+    public readonly string $jobUuid;
+
     public int $tries = 3;
     public int $backoff = 60;
     public int $timeout = 120;
@@ -40,6 +49,7 @@ class ProcessFederation implements ShouldQueue
     {
         $this->federation = $federation;
         $this->gmi = new GatewayMetadataIngestionService();
+        $this->jobUuid = (string) Str::uuid();
         $this->onQueue('federation');
     }
 
@@ -48,75 +58,73 @@ class ProcessFederation implements ShouldQueue
      */
     public function handle(GwdmMetadataHandler $handler): void
     {
-        $jobUuid = $this->job?->getJobId() ?? null;
         $attempts = $this->attempts();
 
-        $this->federation->update(['is_running' => true]);
+        // Claim is_running only on the first attempt. On a Laravel-driven
+        // retry (attempts() > 1) it's already true from attempt one — we
+        // never clear it between retries (see finaliseFederationRun /
+        // failed() below), so re-checking here would make a job wrongly
+        // reject its own retry. This also closes the previous race: is_running
+        // used to be cleared after every failed attempt, leaving a window
+        // where a second, unrelated dispatch (e.g. runNow()) could start
+        // processing the same federation concurrently while a retry was
+        // still pending.
+        if ($attempts === 1) {
+            $claimed = Federation::where('id', $this->federation->id)
+                ->where('is_running', false)
+                ->update(['is_running' => true]);
 
-        try {
-            // Here and not in constructor because this library makes excessive use
-            // of closures which can't be serialised by Laravel cache.
-            $gsms = app(GoogleSecretManagerService::class);
-            $remoteItems = $this->pullCatalogueList($this->federation, $gsms);
-
-            if ($remoteItems->isEmpty()) {
-                $this->log('warning', 'REMOTE catalogue returned empty "items" array - aborting');
-                FederationProcessed::dispatch($this->federation, $jobUuid);
+            if ($claimed === 0) {
+                $this->log('info', "federation {$this->federation->id} is already running - skipping this attempt");
                 return;
             }
-
-            $this->log('info', 'found items in remote collection ' . json_encode($remoteItems));
-            $this->gmi->setTeam($this->federation->team[0]->id);
-            $this->log('info', 'setting team context for federation pull ' . $this->gmi->getTeam());
-
-            $localItems = $this->getLocalDatasetsForFederatedTeam($this->gmi);
-
-            $this->log('info', 'retrieved local collection items ' . json_encode($localItems));
-
-            $created = $this->createLocalDatasetsMissingFromRemoteCatalogue(
-                $localItems,
-                $remoteItems,
-                $this->federation,
-                $gsms,
-                $this->gmi,
-                $jobUuid,
-                $attempts,
-                $handler,
-            );
-
-            // Refresh our potentially mutated list of local items
-            $localItems = $this->getLocalDatasetsForFederatedTeam($this->gmi);
-
-            $updated = $this->updateLocalDatasetsChangedInRemoteCatalogue(
-                $localItems,
-                $remoteItems,
-                $this->federation,
-                $gsms,
-                $this->gmi,
-                $jobUuid,
-                $attempts
-            );
-
-            // Refresh our potentially mutated list of local items
-            $localItems = $this->getLocalDatasetsForFederatedTeam($this->gmi);
-
-            $archived = $this->archiveLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems, $this->gmi, $this->federation, $jobUuid, $attempts);
-
-            $this->log('info', "metadata ingestion completed for team {$this->gmi->getTeam()} - created: {$created}, updated: {$updated}, archived: {$archived}");
-
-            if ($this->hadHistoryFailures()) {
-                $this->log('warning', "federation {$this->federation->id} completed with per-item failures - see federation_job_runs for details");
-                $this->federation->update([
-                    'error' => true,
-                    'error_text' => "Run completed with errors for one or more datasets. Please check the run history for job: {$jobUuid}",
-                ]);
-                return;
-            }
-
-            FederationProcessed::dispatch($this->federation, $jobUuid);
-        } finally {
-            $this->federation->update(['is_running' => false]);
         }
+
+        // Here and not in constructor because this library makes excessive use
+        // of closures which can't be serialised by Laravel cache.
+        $gsms = app(GoogleSecretManagerService::class);
+        $remoteItems = $this->pullCatalogueList($this->federation, $gsms);
+
+        if ($remoteItems->isEmpty()) {
+            $this->log('warning', 'REMOTE catalogue returned empty "items" array - aborting');
+            $this->finaliseFederationRun($this->federation->id, $this->jobUuid);
+            return;
+        }
+
+        $this->log('info', 'found items in remote collection ' . json_encode($remoteItems));
+        $this->gmi->setTeam($this->federation->team[0]->id);
+        $this->log('info', 'setting team context for federation pull ' . $this->gmi->getTeam());
+
+        $localItems = $this->getLocalDatasetsForFederatedTeam($this->gmi);
+
+        $this->log('info', 'retrieved local collection items ' . json_encode($localItems));
+
+        $created = $this->createLocalDatasetsMissingFromRemoteCatalogue(
+            $localItems,
+            $remoteItems,
+            $this->federation,
+            $gsms,
+            $this->gmi,
+            $this->jobUuid,
+            $attempts,
+            $handler,
+        );
+
+        $updated = $this->updateLocalDatasetsChangedInRemoteCatalogue(
+            $localItems,
+            $remoteItems,
+            $this->federation,
+            $gsms,
+            $this->gmi,
+            $this->jobUuid,
+            $attempts
+        );
+
+        $archived = $this->archiveLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems, $this->gmi, $this->federation, $this->jobUuid, $attempts);
+
+        $this->log('info', "metadata ingestion completed for team {$this->gmi->getTeam()} - created: {$created}, updated: {$updated}, archived: {$archived}");
+
+        $this->finaliseFederationRun($this->federation->id, $this->jobUuid);
     }
 
     public function failed(Throwable $exception): void
@@ -128,7 +136,10 @@ class ProcessFederation implements ShouldQueue
         ]);
 
         if ($this->attempts() >= $this->tries) {
-            FederationProcessingFailed::dispatch($this->federation, $exception, $this->job->uuid());
+            // ProcessFederationFailure (listening for this event) clears
+            // is_running — retries are exhausted, so there's no pending
+            // attempt left that still needs it held.
+            FederationProcessingFailed::dispatch($this->federation, $exception, $this->jobUuid);
         }
     }
 }
