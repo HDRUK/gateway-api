@@ -807,4 +807,134 @@ class ProcessFederationJobTest extends TestCase
 
         $this->assertSame(Dataset::STATUS_ACTIVE, $otherTeamDataset->fresh()->status);
     }
+    
+    private function makeTrait(): object
+    {
+        return new class () {
+            use \App\Traits\GatewayMetadataIngestionTrait;
+        };
+    }
+
+    public function test_create_federated_dataset_returns_true_and_records_history_on_success(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        Http::fake([
+            $this->datasetUrlPattern('new-pid') => Http::response($this->getMetadata(), 200),
+        ]);
+
+        $mockGmi = $this->createMock(GatewayMetadataIngestionService::class);
+        $mockGmi->method('getTeam')->willReturn($team->id);
+        $mockGmi->method('storeMetadata')->willReturn(true);
+
+        $created = $this->makeTrait()->createFederatedDataset(
+            $federation,
+            'new-pid',
+            ['persistentId' => 'new-pid', 'version' => '1.0'],
+            $this->createMock(GoogleSecretManagerService::class),
+            $mockGmi,
+            'job-uuid-create-success',
+            1,
+            app(GwdmMetadataHandler::class),
+        );
+
+        $this->assertTrue($created);
+        $this->assertDatabaseHas('federation_job_runs', [
+            'pid' => 'new-pid',
+            'job_uuid' => 'job-uuid-create-success',
+            'status' => 1,
+        ]);
+    }
+
+    public function test_create_federated_dataset_returns_false_when_dataset_fetch_is_not_200(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        Http::fake([
+            $this->datasetUrlPattern('missing-pid') => Http::response([], 404),
+        ]);
+
+        $gmi = app(GatewayMetadataIngestionService::class);
+        $gmi->setTeam($team->id);
+
+        $created = $this->makeTrait()->createFederatedDataset(
+            $federation,
+            'missing-pid',
+            ['persistentId' => 'missing-pid', 'version' => '1.0'],
+            $this->createMock(GoogleSecretManagerService::class),
+            $gmi,
+            'job-uuid-create-404',
+            1,
+            app(GwdmMetadataHandler::class),
+        );
+
+        $this->assertFalse($created);
+        $this->assertDatabaseMissing('datasets', ['pid' => 'missing-pid']);
+        $this->assertDatabaseMissing('federation_job_runs', ['pid' => 'missing-pid']);
+    }
+
+    public function test_update_federated_dataset_returns_true_and_updates_on_version_change(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $dataset = $this->makeGmiDataset($team->id, 'existing-pid');
+        DatasetVersion::create([
+            'dataset_id' => $dataset->id,
+            'metadata' => ['metadata' => ['required' => ['version' => '1.0']]],
+            'version' => 1,
+            'provider_team_id' => $team->id,
+            'application_type' => 'dataset',
+        ]);
+
+        Http::fake([
+            $this->datasetUrlPattern('existing-pid') => Http::response($this->getMetadata(), 200),
+        ]);
+
+        $gmi = app(GatewayMetadataIngestionService::class);
+        $gmi->setTeam($team->id);
+
+        $updated = $this->makeTrait()->updateFederatedDataset(
+            $federation,
+            'existing-pid',
+            ['persistentId' => 'existing-pid', 'version' => '2.0'],
+            $dataset,
+            $this->createMock(GoogleSecretManagerService::class),
+            $gmi,
+            'job-uuid-update-success',
+            1,
+        );
+
+        $this->assertTrue($updated);
+        $this->assertDatabaseHas('federation_job_runs', [
+            'pid' => 'existing-pid',
+            'job_uuid' => 'job-uuid-update-success',
+            'status' => 1,
+        ]);
+    }
+
+    public function test_archive_federated_dataset_returns_true_when_local_dataset_found(): void
+    {
+        [$team] = $this->makeFederation();
+        $dataset = $this->makeGmiDataset($team->id, 'to-archive-pid');
+
+        $gmi = app(GatewayMetadataIngestionService::class);
+        $gmi->setTeam($team->id);
+
+        $archived = $this->makeTrait()->archiveFederatedDataset('to-archive-pid', $gmi);
+
+        $this->assertTrue($archived);
+        $this->assertSame(Dataset::STATUS_ARCHIVED, $dataset->fresh()->status);
+    }
+
+    public function test_archive_federated_dataset_returns_false_when_no_local_dataset_matches(): void
+    {
+        [$team] = $this->makeFederation();
+
+        $gmi = app(GatewayMetadataIngestionService::class);
+        $gmi->setTeam($team->id);
+
+        $archived = $this->makeTrait()->archiveFederatedDataset('never-existed-pid', $gmi);
+
+        $this->assertFalse($archived);
+    }
+
 }

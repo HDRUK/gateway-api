@@ -99,34 +99,46 @@ trait GatewayMetadataIngestionTrait
         $toArchive = $localItems->keys()->diff($remoteItems->keys());
 
         foreach ($toArchive as $pid) {
-            try {
-                $this->log('info', "dataset {$pid} detected LOCALLY, but NOT in REMOTE collection - ARCHIVING");
-                $teamId = $gmi->getTeam();
-                $ds = Dataset::where([
-                    'pid' => $pid,
-                    'team_id' => $teamId,
-                    'create_origin' => 'GMI',
-                ])->first();
-
-                if (!$ds) {
-                    $this->log('info', "dataset with PID {$pid} was expected locally but not found in DB — skipping archive. This is likely a missmatch of team ids, team id on the incoming dataset: {$teamId}");
-                    continue;
-                }
-                $dsId = $ds->id;
-
-                $this->log('info', 'dataset for archiving ' . $dsId);
-                $ds->status = Dataset::STATUS_ARCHIVED;
-                $ds->save();
-                $this->log('info', "dataset {$dsId} archived");
-
-                unset($ds);
+            if ($this->archiveFederatedDataset($pid, $gmi)) {
                 $archivedCount++;
-            } catch (\Throwable $e) {
-                $this->log('error', "encountered internal error while ARCHIVING dataset {$pid}: " . $e->getMessage());
             }
         }
 
         return $archivedCount;
+    }
+
+    /**
+     * Archives one dataset that's no longer present in the remote catalogue.
+     * Returns true if a matching local dataset was found and archived.
+     */
+    public function archiveFederatedDataset(string $pid, GatewayMetadataIngestionService $gmi): bool
+    {
+        try {
+            $this->log('info', "dataset {$pid} detected LOCALLY, but NOT in REMOTE collection - ARCHIVING");
+            $teamId = $gmi->getTeam();
+            $ds = Dataset::where([
+                'pid' => $pid,
+                'team_id' => $teamId,
+                'create_origin' => 'GMI',
+            ])->first();
+
+            if (!$ds) {
+                $this->log('info', "dataset with PID {$pid} was expected locally but not found in DB — skipping archive. This is likely a missmatch of team ids, team id on the incoming dataset: {$teamId}");
+                return false;
+            }
+            $dsId = $ds->id;
+
+            $this->log('info', 'dataset for archiving ' . $dsId);
+            $ds->status = Dataset::STATUS_ARCHIVED;
+            $ds->save();
+            $this->log('info', "dataset {$dsId} archived");
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->log('error', "encountered internal error while ARCHIVING dataset {$pid}: " . $e->getMessage());
+
+            return false;
+        }
     }
 
     public function createLocalDatasetsMissingFromRemoteCatalogue(
@@ -152,68 +164,91 @@ trait GatewayMetadataIngestionTrait
                 continue;
             }
 
-            try {
-                $data = $remoteItems[$pid];
-                $response = Http::withHeaders($this->determineAuthType($federation, $gms))
-                    ->get($this->makeDatasetUrl($federation, $data));
-
-                $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection:
-                status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
-
-                if ($response->status() === 200) {
-                    // pre-check: start
-                    $team = Team::where('id', $gmi->getTeam())->first();
-                    $payload = [
-                        'extra' => [
-                            'id' => 'placeholder',
-                            'pid' => 'placeholder',
-                            'datasetType' => 'Health and disease',
-                            'publisherId' => 'placeholder',
-                            'publisherName' => $team->name,
-                        ],
-                        'metadata' => $response->object(),
-                    ];
-                    $traserResponse = MMC::translateDataModelType(
-                        json_encode($payload),
-                        Config::get('metadata.GWDM.name'),
-                        Config::get('metadata.GWDM.version')
-                    );
-
-                    if (!$traserResponse['wasTranslated']) {
-                        $findTraserResponse = MMC::findDataModel(json_encode($response->object()));
-                        $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $findTraserResponse, 0, $attempts);
-
-                        $this->log('info', "encountered internal error while CREATING dataset {$pid}: cannot not be translated");
-                        continue;
-                    }
-                    // pre-check: end
-
-                    $input = [
-                        'status' => 'ACTIVE',
-                        'create_origin' => 'GMI',
-                        'user_id' => Config::get('metadata.system_user_id'),
-                        'team_id' => $gmi->getTeam(),
-                        'metadata' => [
-                            'metadata' => $response->object(),
-                        ],
-                        'pid' => $pid,
-                    ];
-
-                    $result = $gmi->storeMetadata($input, $handler);
-
-                    $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'CREATED', 1, $attempts);
-
-                    $createdCount++;
-                    $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
-                }
-            } catch (\Throwable $e) {
-                $this->log('error', "encountered internal error while CREATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while creating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
+            if ($this->createFederatedDataset($federation, $pid, $remoteItems[$pid], $gms, $gmi, $jobUuid, $attempts, $handler)) {
+                $createdCount++;
             }
-
         }
 
         return $createdCount;
+    }
+
+    /**
+     * Fetches, translates, and stores one dataset that's present in the
+     * remote catalogue but not yet known locally. Returns true if it was
+     * created.
+     */
+    public function createFederatedDataset(
+        Federation $federation,
+        string $pid,
+        array $data,
+        GoogleSecretManagerService $gms,
+        GatewayMetadataIngestionService $gmi,
+        ?string $jobUuid,
+        int $attempts,
+        GwdmMetadataHandler $handler,
+    ): bool {
+        try {
+            $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                ->get($this->makeDatasetUrl($federation, $data));
+
+            $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection:
+            status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
+
+            if ($response->status() !== 200) {
+                return false;
+            }
+
+            // pre-check: start
+            $team = Team::where('id', $gmi->getTeam())->first();
+            $payload = [
+                'extra' => [
+                    'id' => 'placeholder',
+                    'pid' => 'placeholder',
+                    'datasetType' => 'Health and disease',
+                    'publisherId' => 'placeholder',
+                    'publisherName' => $team->name,
+                ],
+                'metadata' => $response->object(),
+            ];
+            $traserResponse = MMC::translateDataModelType(
+                json_encode($payload),
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version')
+            );
+
+            if (!$traserResponse['wasTranslated']) {
+                $findTraserResponse = MMC::findDataModel(json_encode($response->object()));
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $findTraserResponse, 0, $attempts);
+
+                $this->log('info', "encountered internal error while CREATING dataset {$pid}: cannot not be translated");
+                return false;
+            }
+            // pre-check: end
+
+            $input = [
+                'status' => 'ACTIVE',
+                'create_origin' => 'GMI',
+                'user_id' => Config::get('metadata.system_user_id'),
+                'team_id' => $gmi->getTeam(),
+                'metadata' => [
+                    'metadata' => $response->object(),
+                ],
+                'pid' => $pid,
+            ];
+
+            $result = $gmi->storeMetadata($input, $handler);
+
+            $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'CREATED', 1, $attempts);
+
+            $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->log('error', "encountered internal error while CREATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while creating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
+
+            return false;
+        }
     }
 
     public function updateLocalDatasetsChangedInRemoteCatalogue(
@@ -227,107 +262,138 @@ trait GatewayMetadataIngestionTrait
     ): int {
         $updatedCount = 0;
         foreach ($remoteItems as $pid => $data) {
-            if ($localItems->has($pid)) {
-                try {
-                    $local = $localItems[$pid];
-                    $response = Http::withHeaders($this->determineAuthType($federation, $gms))
-                        ->get($this->makeDatasetUrl($federation, $data));
-                    if ($response->status() === 200) {
-                        $team = Team::where('id', $gmi->getTeam())->first();
-                        $ds = Dataset::where([
-                            'pid' => $pid,
-                            'team_id' => $gmi->getTeam(),
-                        ])->first();
-                        $dvModel = DatasetVersion::where('dataset_id', $local->id)->orderBy('id', 'desc')->first();
+            if (!$localItems->has($pid)) {
+                continue;
+            }
 
-                        if (!$dvModel) {
-                            $this->log('warning', "dataset {$pid} has no version record locally - skipping update");
-                            continue;
-                        }
-
-                        if ($ds->status === Dataset::STATUS_ARCHIVED) {
-                            $conflictingActiveId = Dataset::where([
-                                'pid' => $pid,
-                                'team_id' => $gmi->getTeam(),
-                                'status' => Dataset::STATUS_ACTIVE,
-                            ])
-                                ->where('id', '!=', $ds->id)
-                                ->value('id');
-
-                            if ($conflictingActiveId) {
-                                $this->log('warning', "dataset {$pid} reappeared in REMOTE collection but ACTIVE dataset id={$conflictingActiveId} with the same PID already exists locally in place of ARCHIVED dataset id={$ds->id} - skipping re-publish to avoid duplicate PID");
-                                continue;
-                            }
-
-                            $ds->status = Dataset::STATUS_ACTIVE;
-                            $ds->save();
-                            $this->log('info', "dataset {$pid} REPUBLISHED (was ARCHIVED, reappeared in REMOTE collection)");
-                        }
-
-                        $dv = $dvModel->toArray();
-                        $localVersion = $dv['metadata']['metadata']['required']['version'] ?? null;
-
-                        if (!$localVersion) {
-                            $this->log('warning', "dataset {$pid} has no parseable version in local metadata - skipping update");
-                            continue;
-                        }
-
-                        $payload = [
-                            'extra' => [
-                                'id' => $ds->id,
-                                'pid' => $ds->pid,
-                                'datasetType' => 'Health and disease',
-                                'publisherId' => $team->pid,
-                                'publisherName' => $team->name,
-                            ],
-                            'metadata' => $response->object(),
-                        ];
-
-                        $this->log('info', "version compare of REMOTE v{$data['version']} and LOCAL v{$localVersion}");
-
-                        if (version_compare($data['version'], $localVersion, '<>')) {
-                            $this->log('info', "dataset {$pid} found version difference in REMOTE metadata of v{$data['version']} vs local {$localVersion} - UPDATING LOCAL");
-                            $traserResponse = MMC::translateDataModelType(
-                                json_encode($payload),
-                                Config::get('metadata.GWDM.name'),
-                                Config::get('metadata.GWDM.version')
-                            );
-
-                            if ($traserResponse['wasTranslated']) {
-                                $ds->update([
-                                    'updated' => Carbon::now(),
-                                ]);
-
-                                $versionNumber = $ds->lastMetadataVersionNumber()->version;
-                                $dsId = $this->updateMetadataVersion(
-                                    $ds,
-                                    $traserResponse['metadata'],
-                                    $data,
-                                );
-
-                                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'UPDATED', 1, $attempts);
-
-                                $updatedCount++;
-                            } else {
-                                $this->log('info', "dataset {$pid} FAILED traser");
-
-                                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $traserResponse, 0, $attempts);
-                            }
-
-                            $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
-                        } else {
-                            $this->log('info', "dataset {$pid} nothing to update - IGNORING");
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    $this->log('error', "encountered internal error while UPDATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-
-                    $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while updating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
-                }
+            if ($this->updateFederatedDataset($federation, $pid, $data, $localItems[$pid], $gms, $gmi, $jobUuid, $attempts)) {
+                $updatedCount++;
             }
         }
 
         return $updatedCount;
+    }
+
+    /**
+     * Re-fetches, re-translates, and re-stores one dataset whose remote
+     * version differs from what's stored locally. Returns true if it was
+     * updated.
+     */
+    public function updateFederatedDataset(
+        Federation $federation,
+        string $pid,
+        array $data,
+        Dataset $local,
+        GoogleSecretManagerService $gms,
+        GatewayMetadataIngestionService $gmi,
+        ?string $jobUuid,
+        int $attempts,
+    ): bool {
+        try {
+            $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                ->get($this->makeDatasetUrl($federation, $data));
+
+            if ($response->status() !== 200) {
+                return false;
+            }
+
+            $team = Team::where('id', $gmi->getTeam())->first();
+            $ds = Dataset::where([
+                'pid' => $pid,
+                'team_id' => $gmi->getTeam(),
+            ])->first();
+            $dvModel = DatasetVersion::where('dataset_id', $local->id)->orderBy('id', 'desc')->first();
+
+            if (!$dvModel) {
+                $this->log('warning', "dataset {$pid} has no version record locally - skipping update");
+                return false;
+            }
+
+            if ($ds->status === Dataset::STATUS_ARCHIVED) {
+                $conflictingActiveId = Dataset::where([
+                    'pid' => $pid,
+                    'team_id' => $gmi->getTeam(),
+                    'status' => Dataset::STATUS_ACTIVE,
+                ])
+                    ->where('id', '!=', $ds->id)
+                    ->value('id');
+
+                if ($conflictingActiveId) {
+                    $this->log('warning', "dataset {$pid} reappeared in REMOTE collection but ACTIVE dataset id={$conflictingActiveId} with the same PID already exists locally in place of ARCHIVED dataset id={$ds->id} - skipping re-publish to avoid duplicate PID");
+                    return false;
+                }
+
+                $ds->status = Dataset::STATUS_ACTIVE;
+                $ds->save();
+                $this->log('info', "dataset {$pid} REPUBLISHED (was ARCHIVED, reappeared in REMOTE collection)");
+            }
+
+            $dv = $dvModel->toArray();
+            $localVersion = $dv['metadata']['metadata']['required']['version'] ?? null;
+
+            if (!$localVersion) {
+                $this->log('warning', "dataset {$pid} has no parseable version in local metadata - skipping update");
+                return false;
+            }
+
+            $payload = [
+                'extra' => [
+                    'id' => $ds->id,
+                    'pid' => $ds->pid,
+                    'datasetType' => 'Health and disease',
+                    'publisherId' => $team->pid,
+                    'publisherName' => $team->name,
+                ],
+                'metadata' => $response->object(),
+            ];
+
+            $this->log('info', "version compare of REMOTE v{$data['version']} and LOCAL v{$localVersion}");
+
+            if (!version_compare($data['version'], $localVersion, '<>')) {
+                $this->log('info', "dataset {$pid} nothing to update - IGNORING");
+                return false;
+            }
+
+            $this->log('info', "dataset {$pid} found version difference in REMOTE metadata of v{$data['version']} vs local {$localVersion} - UPDATING LOCAL");
+            $traserResponse = MMC::translateDataModelType(
+                json_encode($payload),
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version')
+            );
+
+            $wasUpdated = false;
+
+            if ($traserResponse['wasTranslated']) {
+                $ds->update([
+                    'updated' => Carbon::now(),
+                ]);
+
+                $versionNumber = $ds->lastMetadataVersionNumber()->version;
+                $dsId = $this->updateMetadataVersion(
+                    $ds,
+                    $traserResponse['metadata'],
+                    $data,
+                );
+
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'UPDATED', 1, $attempts);
+
+                $wasUpdated = true;
+            } else {
+                $this->log('info', "dataset {$pid} FAILED traser");
+
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $traserResponse, 0, $attempts);
+            }
+
+            $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
+
+            return $wasUpdated;
+        } catch (\Throwable $e) {
+            $this->log('error', "encountered internal error while UPDATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+
+            $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while updating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
+
+            return false;
+        }
     }
 
     public function determineAuthType(Federation|array $federation, GoogleSecretManagerService $gsms, bool $testMode = false): array
