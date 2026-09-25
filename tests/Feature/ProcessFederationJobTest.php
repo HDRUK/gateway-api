@@ -211,28 +211,14 @@ class ProcessFederationJobTest extends TestCase
 
     public function test_run_with_per_item_history_failures_records_error_and_skips_success_event(): void
     {
-        [, $federation] = $this->makeFederation();
+        [$team, $federation] = $this->makeFederation();
         $this->mockGsms();
-
-        Http::fake([
-            $this->datasetUrlPattern('some-pid') => Http::response(['metadata' => []], 404),
-            $this->catalogueUrlPattern() => Http::response([
-                'items' => [['persistentId' => 'some-pid', 'version' => '1.0']],
-            ], 200),
-        ]);
+        $this->fakeRemoteCatalogue([]);
 
         Event::fake([FederationProcessed::class]);
 
-        // sendToHistory(status: 0) is what per-item create/update/archive
-        // failures actually call internally — force it here rather than
-        // reproducing a real translation failure, so this test exercises
-        // ProcessFederation's branch on hadHistoryFailures() in isolation.
-        $job = new class ($federation) extends ProcessFederation {
-            public function hadHistoryFailures(): bool
-            {
-                return true;
-            }
-        };
+        $job = new ProcessFederation($federation);
+        $job->sendToHistory($team->id, $federation->id, 'bad-pid', $job->jobUuid, 'some translation error', 0, 1);
 
         $job->handle(app(GwdmMetadataHandler::class));
 
@@ -241,11 +227,19 @@ class ProcessFederationJobTest extends TestCase
         $fresh = $federation->fresh();
         $this->assertFalse($fresh->is_running);
         $this->assertTrue($fresh->error);
-        $this->assertStringContainsString('job', $fresh->error_text);
+        $this->assertStringContainsString($job->jobUuid, $fresh->error_text);
     }
 
-    public function test_is_running_cleared_when_remote_returns_error(): void
+    public function test_is_running_stays_true_after_a_hard_failure_pending_retry(): void
     {
+        // A retry is Laravel re-running handle() against the SAME job
+        // dispatch (same jobUuid, attempts() incrementing) — is_running
+        // must stay claimed across that gap. Clearing it after every failed
+        // attempt (the old behavior) opened a window where a second,
+        // unrelated dispatch for this federation could start concurrently
+        // while a retry was still pending. It's only released once retries
+        // are truly exhausted, via failed() -> FederationProcessingFailed
+        // (covered by ProcessFederationFailureTest).
         [, $federation] = $this->makeFederation();
         $this->mockGsms();
 
@@ -258,6 +252,45 @@ class ProcessFederationJobTest extends TestCase
         } catch (\RuntimeException) {
             // expected — we're verifying is_running below, not the exception itself
         }
+
+        $this->assertTrue($federation->fresh()->is_running);
+    }
+
+    public function test_first_attempt_is_a_no_op_when_federation_is_already_running(): void
+    {
+        // The concurrency guard: a genuinely separate dispatch for a
+        // federation that's mid-run (e.g. a manual runNow() overlapping a
+        // scheduled run) must not touch anything — no catalogue call, no
+        // history rows, is_running left exactly as the other run set it.
+        [, $federation] = $this->makeFederation();
+        $federation->update(['is_running' => true]);
+        $this->mockGsms();
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response(['items' => []], 200),
+        ]);
+
+        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+
+        Http::assertNothingSent();
+        $this->assertTrue($federation->fresh()->is_running);
+        $this->assertDatabaseCount('federation_job_runs', 0);
+    }
+
+    public function test_second_attempt_does_not_reject_itself_as_already_running(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['is_running' => true]);
+        $this->mockGsms();
+        $this->fakeRemoteCatalogue([]);
+
+        $job = $this->getMockBuilder(ProcessFederation::class)
+            ->setConstructorArgs([$federation])
+            ->onlyMethods(['attempts'])
+            ->getMock();
+        $job->method('attempts')->willReturn(2);
+
+        $job->handle(app(GwdmMetadataHandler::class));
 
         $this->assertFalse($federation->fresh()->is_running);
     }
