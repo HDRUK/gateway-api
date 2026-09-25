@@ -26,14 +26,8 @@ class ProcessFederation implements ShouldQueue
     use MetadataVersioning;
     use GatewayMetadataIngestionTrait;
 
-    private ?Federation $federation = null;
-    private ?GoogleSecretManagerService $gsms = null;
-    private ?GatewayMetadataIngestionService $gmi = null;
-    private array $authHeaders = [];
-
-    private int $deleted = 0;
-    private int $updated = 0;
-    private int $created = 0;
+    private readonly Federation $federation;
+    private readonly GatewayMetadataIngestionService $gmi;
 
     public int $tries = 3;
     public int $backoff = 60;
@@ -62,8 +56,8 @@ class ProcessFederation implements ShouldQueue
         try {
             // Here and not in constructor because this library makes excessive use
             // of closures which can't be serialised by Laravel cache.
-            $this->gsms = app(GoogleSecretManagerService::class);
-            $remoteItems = $this->pullCatalogueList($this->federation, $this->gsms);
+            $gsms = app(GoogleSecretManagerService::class);
+            $remoteItems = $this->pullCatalogueList($this->federation, $gsms);
 
             if ($remoteItems->isEmpty()) {
                 $this->log('warning', 'REMOTE catalogue returned empty "items" array - aborting');
@@ -83,7 +77,7 @@ class ProcessFederation implements ShouldQueue
                 $localItems,
                 $remoteItems,
                 $this->federation,
-                $this->gsms,
+                $gsms,
                 $this->gmi,
                 $jobUuid,
                 $attempts,
@@ -97,7 +91,7 @@ class ProcessFederation implements ShouldQueue
                 $localItems,
                 $remoteItems,
                 $this->federation,
-                $this->gsms,
+                $gsms,
                 $this->gmi,
                 $jobUuid,
                 $attempts
