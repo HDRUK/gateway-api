@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Events\FederationProcessed;
+use App\Jobs\ArchiveFederatedDatasetsChunk;
+use App\Jobs\CreateFederatedDatasetJob;
 use App\Jobs\ProcessFederation;
+use App\Jobs\UpdateFederatedDatasetJob;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Federation;
@@ -12,6 +15,7 @@ use App\Models\TeamHasFederation;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 use App\Services\Gwdm\GwdmMetadataHandler;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -187,7 +191,7 @@ class ProcessFederationJobTest extends TestCase
         $this->mockGsms();
         $this->fakeRemoteCatalogue([]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $this->assertFalse($federation->fresh()->is_running);
     }
@@ -202,7 +206,7 @@ class ProcessFederationJobTest extends TestCase
         $this->mockGsms();
         $this->fakeRemoteCatalogue([]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $fresh = $federation->fresh();
         $this->assertFalse($fresh->error);
@@ -220,7 +224,7 @@ class ProcessFederationJobTest extends TestCase
         $job = new ProcessFederation($federation);
         $job->sendToHistory($team->id, $federation->id, 'bad-pid', $job->jobUuid, 'some translation error', 0, 1);
 
-        $job->handle(app(GwdmMetadataHandler::class));
+        $job->handle();
 
         Event::assertNotDispatched(FederationProcessed::class);
 
@@ -248,7 +252,7 @@ class ProcessFederationJobTest extends TestCase
         ]);
 
         try {
-            (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+            (new ProcessFederation($federation))->handle();
         } catch (\RuntimeException) {
             // expected — we're verifying is_running below, not the exception itself
         }
@@ -270,7 +274,7 @@ class ProcessFederationJobTest extends TestCase
             $this->catalogueUrlPattern() => Http::response(['items' => []], 200),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         Http::assertNothingSent();
         $this->assertTrue($federation->fresh()->is_running);
@@ -290,7 +294,7 @@ class ProcessFederationJobTest extends TestCase
             ->getMock();
         $job->method('attempts')->willReturn(2);
 
-        $job->handle(app(GwdmMetadataHandler::class));
+        $job->handle();
 
         $this->assertFalse($federation->fresh()->is_running);
     }
@@ -307,7 +311,7 @@ class ProcessFederationJobTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessageMatches('/non-200 status 503/');
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
     }
 
     public function test_runtime_exception_message_includes_url_and_body(): void
@@ -320,7 +324,7 @@ class ProcessFederationJobTest extends TestCase
         ]);
 
         try {
-            (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+            (new ProcessFederation($federation))->handle();
             $this->fail('Expected RuntimeException was not thrown');
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('504', $e->getMessage());
@@ -344,7 +348,7 @@ class ProcessFederationJobTest extends TestCase
             $this->datasetUrlPattern('shared-pid') => Http::response([], 404), // skip update
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $this->assertSame(Dataset::STATUS_ARCHIVED, $toArchive->fresh()->status);
     }
@@ -371,7 +375,7 @@ class ProcessFederationJobTest extends TestCase
             $this->datasetUrlPattern('shared-pid') => Http::response([], 404),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $this->assertSame(Dataset::STATUS_ACTIVE, $manualDataset->fresh()->status);
     }
@@ -405,7 +409,7 @@ class ProcessFederationJobTest extends TestCase
             ),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $this->assertSame(Dataset::STATUS_ACTIVE, $archived->fresh()->status);
     }
@@ -433,7 +437,7 @@ class ProcessFederationJobTest extends TestCase
             ),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         // Neither record should be disturbed: the archived one must not be silently
         // republished alongside an already-active dataset carrying the same PID.
@@ -457,7 +461,7 @@ class ProcessFederationJobTest extends TestCase
         ]);
 
         // Should complete without throwing
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $this->assertSame(
             Dataset::STATUS_ACTIVE,
@@ -490,7 +494,7 @@ class ProcessFederationJobTest extends TestCase
             $this->datasetUrlPattern('bad-meta-pid') => Http::response(['metadata' => []], 200),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $this->assertSame(
             Dataset::STATUS_ACTIVE,
@@ -519,10 +523,10 @@ class ProcessFederationJobTest extends TestCase
             use \App\Traits\GatewayMetadataIngestionTrait;
         };
 
-        $trait->createLocalDatasetsMissingFromRemoteCatalogue(
-            collect([]),
-            collect(['new-pid' => ['persistentId' => 'new-pid', 'version' => '1.0']]),
+        $trait->createFederatedDataset(
             $federation,
+            'new-pid',
+            ['persistentId' => 'new-pid', 'version' => '1.0'],
             $mockGsms,
             $mockGmi,
             'job_uuid',
@@ -558,10 +562,10 @@ class ProcessFederationJobTest extends TestCase
             use \App\Traits\GatewayMetadataIngestionTrait;
         };
 
-        $trait->createLocalDatasetsMissingFromRemoteCatalogue(
-            collect([]),
-            collect(['new-pid' => ['persistentId' => 'new-pid', 'version' => '1.0']]),
+        $trait->createFederatedDataset(
             $federation,
+            'new-pid',
+            ['persistentId' => 'new-pid', 'version' => '1.0'],
             $mockGsms,
             $mockGmi,
             'test-job-uuid',
@@ -608,10 +612,11 @@ class ProcessFederationJobTest extends TestCase
             }
         };
 
-        $trait->updateLocalDatasetsChangedInRemoteCatalogue(
-            collect([$dataset->pid => $dataset]),
-            collect(['existing-pid' => ['persistentId' => 'existing-pid', 'version' => '2.0']]),
+        $trait->updateFederatedDataset(
             $federation,
+            'existing-pid',
+            ['persistentId' => 'existing-pid', 'version' => '2.0'],
+            $dataset,
             $mockGsms,
             $mockGmi,
             'test-job-uuid',
@@ -658,7 +663,7 @@ class ProcessFederationJobTest extends TestCase
             ], 200),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), '/api/v1/datasets/new-pid')
@@ -694,7 +699,7 @@ class ProcessFederationJobTest extends TestCase
             ], 200),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         Http::assertSent(function ($request) {
             return str_contains($request->url(), '/api/v1/datasets/existing-pid')
@@ -723,7 +728,7 @@ class ProcessFederationJobTest extends TestCase
             datasetBodiesByPid: [],
         );
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         // Both the catalogue call and the per-dataset call must have carried
         // valid auth — if either had been sent without the header, the
@@ -757,7 +762,7 @@ class ProcessFederationJobTest extends TestCase
         $this->expectExceptionMessageMatches('/non-200 status 401/');
 
         try {
-            (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+            (new ProcessFederation($federation))->handle();
         } finally {
             $this->assertDatabaseMissing('datasets', ['pid' => 'server-verified-pid']);
         }
@@ -781,7 +786,7 @@ class ProcessFederationJobTest extends TestCase
             datasetBodiesByPid: [],
         );
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         Http::assertSent(fn ($request) => $request->url() === self::BASE_URL . self::DATASETS_PATH
             && $request->hasHeader('apikey', 'correct-api-key'));
@@ -811,7 +816,7 @@ class ProcessFederationJobTest extends TestCase
         $this->expectExceptionMessageMatches('/non-200 status 401/');
 
         try {
-            (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+            (new ProcessFederation($federation))->handle();
         } finally {
             $this->assertDatabaseMissing('datasets', ['pid' => 'server-verified-pid']);
         }
@@ -836,7 +841,7 @@ class ProcessFederationJobTest extends TestCase
             $this->datasetUrlPattern('shared-pid') => Http::response([], 404),
         ]);
 
-        (new ProcessFederation($federation))->handle(app(GwdmMetadataHandler::class));
+        (new ProcessFederation($federation))->handle();
 
         $this->assertSame(Dataset::STATUS_ACTIVE, $otherTeamDataset->fresh()->status);
     }
@@ -968,6 +973,44 @@ class ProcessFederationJobTest extends TestCase
         $archived = $this->makeTrait()->archiveFederatedDataset('never-existed-pid', $gmi);
 
         $this->assertFalse($archived);
+    }
+
+    public function test_dispatches_a_batch_with_the_right_job_for_each_pid(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        $existing = $this->makeGmiDataset($team->id, 'to-update-pid');
+        DatasetVersion::create([
+            'dataset_id' => $existing->id,
+            'metadata' => ['metadata' => ['required' => ['version' => '1.0']]],
+            'version' => 1,
+            'provider_team_id' => $team->id,
+            'application_type' => 'dataset',
+        ]);
+        $this->makeGmiDataset($team->id, 'to-archive-pid');
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [
+                    ['persistentId' => 'to-create-pid', 'version' => '1.0'],
+                    ['persistentId' => 'to-update-pid', 'version' => '2.0'],
+                ],
+            ], 200),
+        ]);
+
+        Bus::fake();
+
+        (new ProcessFederation($federation))->handle();
+
+        Bus::assertBatched(function ($batch) {
+            $byClass = collect($batch->jobs)->countBy(fn ($job) => $job::class);
+
+            return $batch->jobs->count() === 3
+                && $byClass->get(CreateFederatedDatasetJob::class) === 1
+                && $byClass->get(UpdateFederatedDatasetJob::class) === 1
+                && $byClass->get(ArchiveFederatedDatasetsChunk::class) === 1;
+        });
     }
 
 }

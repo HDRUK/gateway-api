@@ -78,29 +78,6 @@ trait GatewayMetadataIngestionTrait
         ])->get())->keyBy('pid');
     }
 
-    public function archiveLocalDatasetsNotInRemoteCatalogue(
-        Collection $localItems,
-        Collection $remoteItems,
-        GatewayMetadataIngestionService $gmi,
-        Federation $federation,
-        string $jobUuid,
-        int $attempts
-    ): int {
-        $this->log('info', 'testing REMOTE collection for LOCAL archive');
-
-        $archivedCount = 0;
-
-        $toArchive = $localItems->keys()->diff($remoteItems->keys());
-
-        foreach ($toArchive as $pid) {
-            if ($this->archiveFederatedDataset($pid, $gmi)) {
-                $archivedCount++;
-            }
-        }
-
-        return $archivedCount;
-    }
-
     /**
      * Archives one dataset that's no longer present in the remote catalogue.
      * Returns true if a matching local dataset was found and archived.
@@ -133,37 +110,6 @@ trait GatewayMetadataIngestionTrait
 
             return false;
         }
-    }
-
-    public function createLocalDatasetsMissingFromRemoteCatalogue(
-        Collection $localItems,
-        Collection $remoteItems,
-        Federation $federation,
-        GoogleSecretManagerService $gms,
-        GatewayMetadataIngestionService $gmi,
-        string $jobUuid,
-        int $attempts,
-        GwdmMetadataHandler $handler,
-    ): int {
-        $createdCount = 0;
-        $toCreate = $remoteItems->keys()->diff($localItems->keys());
-        foreach ($toCreate as $pid) {
-            $existDataset = Dataset::where([
-                    'pid' => $pid,
-                    'team_id' => $gmi->getTeam(),
-                ])
-                ->exists();
-            if ($existDataset) {
-                $this->log('info', "attempted to re-create a dataset that already exists @ {$pid}");
-                continue;
-            }
-
-            if ($this->createFederatedDataset($federation, $pid, $remoteItems[$pid], $gms, $gmi, $jobUuid, $attempts, $handler)) {
-                $createdCount++;
-            }
-        }
-
-        return $createdCount;
     }
 
     /**
@@ -243,29 +189,6 @@ trait GatewayMetadataIngestionTrait
 
             return false;
         }
-    }
-
-    public function updateLocalDatasetsChangedInRemoteCatalogue(
-        Collection $localItems,
-        Collection $remoteItems,
-        Federation $federation,
-        GoogleSecretManagerService $gms,
-        GatewayMetadataIngestionService $gmi,
-        string $jobUuid,
-        int $attempts
-    ): int {
-        $updatedCount = 0;
-        foreach ($remoteItems as $pid => $data) {
-            if (!$localItems->has($pid)) {
-                continue;
-            }
-
-            if ($this->updateFederatedDataset($federation, $pid, $data, $localItems[$pid], $gms, $gmi, $jobUuid, $attempts)) {
-                $updatedCount++;
-            }
-        }
-
-        return $updatedCount;
     }
 
     /**
