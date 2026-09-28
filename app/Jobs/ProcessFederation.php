@@ -7,13 +7,14 @@ use App\Http\Traits\MetadataVersioning;
 use App\Models\Federation;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
-use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Traits\GatewayMetadataIngestionTrait;
+use Illuminate\Bus\Batch;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -56,7 +57,7 @@ class ProcessFederation implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(GwdmMetadataHandler $handler): void
+    public function handle(): void
     {
         $attempts = $this->attempts();
 
@@ -99,32 +100,45 @@ class ProcessFederation implements ShouldQueue
 
         $this->log('info', 'retrieved local collection items ' . json_encode($localItems));
 
-        $created = $this->createLocalDatasetsMissingFromRemoteCatalogue(
-            $localItems,
-            $remoteItems,
-            $this->federation,
-            $gsms,
-            $this->gmi,
-            $this->jobUuid,
-            $attempts,
-            $handler,
-        );
+        $toCreate = $remoteItems->keys()->diff($localItems->keys());
+        $toUpdate = $remoteItems->keys()->intersect($localItems->keys());
+        $toArchive = $localItems->keys()->diff($remoteItems->keys());
 
-        $updated = $this->updateLocalDatasetsChangedInRemoteCatalogue(
-            $localItems,
-            $remoteItems,
-            $this->federation,
-            $gsms,
-            $this->gmi,
-            $this->jobUuid,
-            $attempts
-        );
+        $jobs = [];
 
-        $archived = $this->archiveLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems, $this->gmi, $this->federation, $this->jobUuid, $attempts);
+        foreach ($toCreate as $pid) {
+            $jobs[] = new CreateFederatedDatasetJob($this->federation, $pid, $remoteItems[$pid], $this->jobUuid, $attempts);
+        }
 
-        $this->log('info', "metadata ingestion completed for team {$this->gmi->getTeam()} - created: {$created}, updated: {$updated}, archived: {$archived}");
+        foreach ($toUpdate as $pid) {
+            $jobs[] = new UpdateFederatedDatasetJob($this->federation, $pid, $remoteItems[$pid], $localItems[$pid], $this->jobUuid, $attempts);
+        }
 
-        $this->finaliseFederationRun($this->federation->id, $this->jobUuid);
+        $archiveChunkSize = (int) config('gateway.federation_archive_chunk_size', 500);
+        foreach ($toArchive->chunk($archiveChunkSize) as $chunk) {
+            $jobs[] = new ArchiveFederatedDatasetsChunk($this->federation, $chunk->values()->all());
+        }
+
+        $this->log('info', "metadata ingestion batch composed for team {$this->gmi->getTeam()} - to create: {$toCreate->count()}, to update: {$toUpdate->count()}, to archive: {$toArchive->count()}");
+
+        $federationId = $this->federation->id;
+        $jobUuid = $this->jobUuid;
+
+        if (empty($jobs)) {
+            $this->finaliseFederationRun($federationId, $jobUuid);
+            return;
+        }
+
+        Bus::batch($jobs)
+            ->name("federation-{$federationId}-{$jobUuid}")
+            ->onQueue('federation')
+            ->allowFailures()
+            ->finally(function (Batch $batch) use ($federationId, $jobUuid) {
+                (new class {
+                    use GatewayMetadataIngestionTrait;
+                })->finaliseFederationRun($federationId, $jobUuid, $batch->hasFailures());
+            })
+            ->dispatch();
     }
 
     public function failed(Throwable $exception): void
