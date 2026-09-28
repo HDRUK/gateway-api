@@ -17,7 +17,8 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
 /**
- * Covers resolved dataset linkage title read-back via DatasetService/Gwdm2xHandler.
+ * Covers dataset/publication linkage extraction, free-text fallback, and
+ * resolved-title read-back via DatasetService/Gwdm2xHandler.
  *
  * Drives DatasetService/handlers directly; the x-gwdm-version header steers
  * the target GWDM version via GwdmVersionContext.
@@ -93,6 +94,81 @@ class DatasetVersionLinkageTest extends TestCase
         $this->assertTrue($created['translated']);
 
         return [$created['dataset_id'], $created['version_id']];
+    }
+
+    public function test_unresolved_linkage_roundtrips_title_and_url_via_get_linkages(): void
+    {
+        $this->disableObservers();
+
+        [, $versionId] = $this->createDataset($this->getMetadataV2p0());
+
+        // An unresolved (free-text) linkage: no target dataset, raw reference only.
+        DatasetVersionHasDatasetVersion::create([
+            'dataset_version_source_id' => $versionId,
+            'dataset_version_target_id' => null,
+            'linkage_type' => 'isDerivedFrom',
+            'direct_linkage' => 1,
+            'description' => 'Extracted from GWDM',
+            'raw_url' => 'https://example.org/dataset/unknown-ref',
+            'raw_pid' => 'free-text-pid',
+            'raw_title' => 'Free Text Linked Dataset',
+        ]);
+
+        $linkages = $this->handler()->getLinkages($versionId);
+
+        $this->assertCount(1, $linkages);
+        $this->assertSame('Free Text Linked Dataset', $linkages[0]['title']);
+        $this->assertSame('https://example.org/dataset/unknown-ref', $linkages[0]['url']);
+        $this->assertNull($linkages[0]['dataset_id']);
+        $this->assertSame('isDerivedFrom', $linkages[0]['linkage_type']);
+    }
+
+    public function test_extract_linkages_reads_blob_not_stale_sql_overlay(): void
+    {
+        $this->disableObservers();
+
+        // Stored blob linkage points to the "blob" reference.
+        $metadata = $this->getMetadataV2p0();
+        $metadata['metadata']['linkage']['datasetLinkage'] = [
+            'isDerivedFrom' => [
+                ['url' => 'https://example.org/dataset/99999999', 'title' => 'Blob Linked'],
+            ],
+        ];
+        $metadata['metadata']['linkage']['publicationAboutDataset'] = null;
+        $metadata['metadata']['linkage']['publicationUsingDataset'] = null;
+
+        [, $versionId] = $this->createDataset($metadata, Dataset::STATUS_DRAFT);
+
+        // Simulate pre-existing (stale) junction-table linkage that afterRead() would
+        // overlay on the read path. If extractLinkages() consumed that overlay it would
+        // rewrite STALE and drop the freshly-authored blob linkage.
+        DatasetVersionHasDatasetVersion::create([
+            'dataset_version_source_id' => $versionId,
+            'dataset_version_target_id' => null,
+            'linkage_type' => 'isDerivedFrom',
+            'direct_linkage' => 1,
+            'description' => 'Extracted from GWDM',
+            'raw_url' => 'https://example.org/dataset/STALE',
+            'raw_title' => 'STALE Linked',
+        ]);
+
+        $dv = DatasetVersion::find($versionId);
+        app(GwdmHandlerFactory::class)->resolve('2.0')->extractLinkages($dv);
+
+        $rows = DatasetVersionHasDatasetVersion::where('dataset_version_source_id', $versionId)
+            ->where('direct_linkage', 1)
+            ->where('description', 'Extracted from GWDM')
+            ->get();
+
+        // The blob reference wins; the stale SQL overlay must not survive.
+        $this->assertTrue(
+            $rows->contains(fn ($r) => str_contains((string) $r->raw_url, '99999999')),
+            'extractLinkages must write the blob-sourced linkage',
+        );
+        $this->assertFalse(
+            $rows->contains(fn ($r) => str_contains((string) $r->raw_url, 'STALE')),
+            'extractLinkages must not resurrect stale SQL-overlay linkage',
+        );
     }
 
     public function test_resolved_linkage_title_tracks_target_latest_version(): void
@@ -357,5 +433,82 @@ class DatasetVersionLinkageTest extends TestCase
             $linkage['publicationAboutDataset']
         );
         $this->assertSame(['10.1371/journal.pone.0338652'], $linkage['publicationUsingDataset']);
+    }
+
+    /**
+     * app:reconcile-linkages re-runs extraction so a DOI present in the blob but with no
+     * matching publications row is backfilled into SQL as an unresolved junction row
+     * (publication_id NULL, raw_doi set) — proving the command recovers linkages that
+     * pre-migration extraction would have dropped. Regression guard for GAT-9018.
+     */
+    public function test_reconcile_command_backfills_unresolved_publication_doi(): void
+    {
+        $this->disableObservers();
+
+        [$datasetId, $versionId] = $this->createDataset($this->getMetadataV2p0(), Dataset::STATUS_DRAFT);
+
+        // Write a snapshot blob whose linkage carries a DOI that resolves to no
+        // publications row (set directly to isolate the command from the translate mock).
+        $unknownDoi = '10.9999/unresolved-doi';
+        $this->overwriteVersionMetadata($versionId, [
+            'linkage' => [
+                'datasetLinkage' => null,
+                'publicationAboutDataset' => [$unknownDoi],
+                'publicationUsingDataset' => null,
+            ],
+        ]);
+
+        // Nothing extracted yet (observers disabled): no junction rows exist.
+        $this->assertSame(0, PublicationHasDatasetVersion::where('dataset_version_id', $versionId)->count());
+
+        $this->artisan('app:reconcile-linkages', [
+            '--dataset' => $datasetId,
+            '--sync' => true,
+            '--force' => true,
+        ])->assertExitCode(0);
+
+        // The unresolved DOI is now preserved as a raw_doi junction row (no publication_id).
+        $row = PublicationHasDatasetVersion::where('dataset_version_id', $versionId)
+            ->where('link_type', 'ABOUT')
+            ->first();
+
+        $this->assertNotNull($row, 'reconcile should create a junction row for the unresolved DOI');
+        $this->assertNull($row->publication_id);
+        $this->assertSame($unknownDoi, $row->raw_doi);
+
+        // And it round-trips through afterRead() (COALESCE(paper_doi, raw_doi)).
+        $linkage = $this->handler()->afterRead(DatasetVersion::find($versionId))['linkage'];
+        $this->assertContains($unknownDoi, $linkage['publicationAboutDataset']);
+    }
+
+    /**
+     * app:reconcile-linkages --dry-run reports what is in the blob but missing from SQL
+     * (with a reason) and changes nothing. Regression guard for GAT-9018.
+     */
+    public function test_reconcile_dry_run_reports_drift_without_writing(): void
+    {
+        $this->disableObservers();
+
+        [$datasetId, $versionId] = $this->createDataset($this->getMetadataV2p0(), Dataset::STATUS_DRAFT);
+
+        $unknownDoi = '10.9999/unresolved-doi';
+        $this->overwriteVersionMetadata($versionId, [
+            'linkage' => [
+                'datasetLinkage' => null,
+                'publicationAboutDataset' => [$unknownDoi],
+                'publicationUsingDataset' => null,
+            ],
+        ]);
+
+        $this->artisan('app:reconcile-linkages', [
+            '--dataset' => $datasetId,
+            '--dry-run' => true,
+        ])
+            ->expectsOutputToContain($unknownDoi)
+            ->expectsOutputToContain('no publication row')
+            ->assertExitCode(0);
+
+        // Dry-run must not write anything.
+        $this->assertSame(0, PublicationHasDatasetVersion::where('dataset_version_id', $versionId)->count());
     }
 }
