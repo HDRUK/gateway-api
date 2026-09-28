@@ -28,6 +28,7 @@ use App\Http\Requests\V2\Dataset\GetDataset;
 use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\EditTeamDataset;
 use App\Context\PartnerContext;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
@@ -44,8 +45,10 @@ class TeamDatasetController extends Controller
     use DatasetsV2Helpers;
     use TrimPayload;
 
-    public function __construct(private readonly PartnerContext $partnerContext)
-    {
+    public function __construct(
+        private readonly PartnerContext $partnerContext,
+        private readonly GwdmMetadataHandler $gwdmHandler,
+    ) {
     }
 
     /**
@@ -441,9 +444,6 @@ class TeamDatasetController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
-     *             @OA\Property(property="mongo_id", type="string", example="456"),
-     *             @OA\Property(property="mongo_pid", type="string", example="def789"),
      *             @OA\Property(property="metadata", type="object")
      *          )
      *       )
@@ -505,6 +505,7 @@ class TeamDatasetController extends Controller
                 $inputSchema,
                 $inputVersion,
                 $elasticIndexing,
+                $this->gwdmHandler,
                 $this->partnerContext->getPartner(),
             );
 
@@ -635,7 +636,7 @@ class TeamDatasetController extends Controller
             $inputSchema = $input['metadata']['schemaModel'] ?? null;
             $inputVersion = $input['metadata']['schemaVersion'] ?? null;
 
-            $submittedMetadata = $input['metadata']['metadata'];
+            $submittedMetadata = $payload['metadata'];
             $gwdmMetadata = null;
 
             $traserResponse = MMC::translateDataModelType(
@@ -681,7 +682,7 @@ class TeamDatasetController extends Controller
                     $datasetVersionId,
                 );
                 if (Config::get('ted.enabled')) {
-                    $tedData = Config::get('ted.use_partial') ? $input['metadata']['metadata']['summary'] : $input['metadata']['metadata'];
+                    $tedData = Config::get('ted.use_partial') ? $payload['metadata']['summary'] : $payload['metadata'];
 
                     TermExtraction::dispatch(
                         $currDataset->id,

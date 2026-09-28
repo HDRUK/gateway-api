@@ -72,7 +72,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -83,7 +83,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -94,7 +94,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
     [
@@ -105,7 +105,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens',
+            'provider' => 'google|azure|linkedin|openathens|registry',
         ],
     ],
 
@@ -138,7 +138,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -151,7 +150,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -166,7 +164,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -207,7 +204,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -220,7 +216,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -494,7 +489,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,filters.create',
         ],
         'constraint' => [],
@@ -507,7 +501,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,filters.update',
         ],
         'constraint' => [
@@ -522,7 +515,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,filters.update',
         ],
         'constraint' => [
@@ -579,7 +571,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,dar.update',
         ],
         'constraint' => [
@@ -594,7 +585,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,dar.update',
         ],
         'constraint' => [
@@ -744,7 +734,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -757,7 +746,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -771,7 +759,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -843,7 +830,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [],
@@ -856,7 +842,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [
@@ -871,7 +856,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [
@@ -903,7 +887,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.read',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [],
@@ -917,7 +900,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.read',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [
@@ -933,7 +915,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.create',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [],
@@ -947,7 +928,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.update',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [
@@ -963,7 +943,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.update',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [
@@ -1021,7 +1000,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,audit.create',
         ],
         'constraint' => [],
@@ -1034,7 +1012,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,audit.update',
         ],
         'constraint' => [
@@ -1049,7 +1026,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,audit.update',
         ],
         'constraint' => [
@@ -1106,7 +1082,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1119,7 +1094,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1134,7 +1108,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1191,7 +1164,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1204,7 +1176,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1219,7 +1190,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1270,7 +1240,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1283,7 +1252,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1298,7 +1266,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1384,7 +1351,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1397,7 +1363,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access.userId',
         ],
         'constraint' => [
@@ -1412,7 +1377,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1443,7 +1407,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1456,7 +1419,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1469,7 +1431,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1585,7 +1546,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -1597,7 +1557,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1612,7 +1571,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1667,7 +1625,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -1680,7 +1637,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1695,7 +1651,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -1755,7 +1710,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,collections.create',
             'sunset',
         ],
@@ -1769,7 +1723,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,collections.update',
             'sunset',
         ],
@@ -1785,7 +1738,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,collections.update',
             'sunset',
         ],
@@ -1932,7 +1884,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,audit.create',
         ],
         'constraint' => [],
@@ -1945,7 +1896,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,audit.update',
         ],
         'constraint' => [
@@ -1960,7 +1910,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,audit.update',
         ],
         'constraint' => [
@@ -2020,7 +1969,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.create',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [],
@@ -2034,7 +1982,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [
@@ -2050,7 +1997,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [
@@ -2108,7 +2054,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,applications.create',
         ],
         'constraint' => [],
@@ -2121,7 +2066,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,applications.update',
         ],
         'constraint' => [
@@ -2136,7 +2080,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,applications.update',
         ],
         'constraint' => [
@@ -2165,7 +2108,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,applications.update',
         ],
         'constraint' => [
@@ -2206,7 +2148,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -2219,7 +2160,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -2234,7 +2174,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -2291,7 +2230,18 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'emailtemplates',
+        'method' => 'post',
+        'path' => '/emailtemplates/preview',
+        'methodController' => 'EmailTemplateController@preview',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -2304,7 +2254,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -2319,7 +2268,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -2401,6 +2349,91 @@ return [
         ],
     ],
 
+    // admin.team.user
+    [
+        'name' => 'admin.team.user.destroy',
+        'method' => 'delete',
+        'path' => '/admin/teams/{teamId}/users/{userId}',
+        'methodController' => 'AdminTeamUserController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+            'userId' => '[0-9]+',
+        ],
+    ],
+
+    // admin.user.deletion
+    [
+        'name' => 'admin.user.deletion_check',
+        'method' => 'get',
+        'path' => '/admin/users/{userId}/deletion-check',
+        'methodController' => 'AdminUserController@deletionCheck',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'admin.user.transfer_and_delete',
+        'method' => 'post',
+        'path' => '/admin/users/{userId}/transfer-and-delete',
+        'methodController' => 'AdminUserController@transferAndDelete',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'admin.user.picker',
+        'method' => 'get',
+        'path' => '/admin/users/picker',
+        'methodController' => 'AdminUserController@picker',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin.user.owned_entity_counts',
+        'method' => 'get',
+        'path' => '/admin/users/owned-entity-counts',
+        'methodController' => 'AdminUserController@ownedEntityCounts',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'admin.user.remove_from_teams',
+        'method' => 'post',
+        'path' => '/admin/users/{userId}/remove-from-teams',
+        'methodController' => 'AdminUserController@removeFromTeams',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
+
     // dispatch.email
     [
         'name' => 'dispatch.email',
@@ -2410,7 +2443,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -2466,7 +2498,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            // 'sanitize.input',
             'check.access:permissions,datasets.create',
             'sunset',
         ],
@@ -2480,7 +2511,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            // 'sanitize.input',
             'check.access:permissions,datasets.update',
             'sunset',
         ],
@@ -2610,7 +2640,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.create',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [],
@@ -2624,7 +2653,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.update',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [],
@@ -2652,7 +2680,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'sunset',
         ],
         'constraint' => [],
@@ -2738,21 +2765,6 @@ return [
         'method' => 'put',
         'path' => '/teams/{teamId}/federations/{federationId}',
         'methodController' => 'FederationController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,integrations.metadata',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'federationId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.federation',
-        'method' => 'patch',
-        'path' => '/teams/{teamId}/federations/{federationId}',
-        'methodController' => 'FederationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -2921,7 +2933,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2935,7 +2946,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,cohort.update',
         ],
         'constraint' => [
@@ -3113,7 +3123,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -3125,7 +3134,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3139,7 +3147,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3192,7 +3199,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -3204,7 +3210,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3218,7 +3223,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3536,7 +3540,20 @@ return [
         'path' => '/project_grants',
         'methodController' => 'ProjectGrantController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'project_grants.store',
+        'method' => 'post',
+        'path' => '/project_grants',
+        'methodController' => 'ProjectGrantController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,project_grants.create',
+            'sunset',
+        ],
         'constraint' => [],
     ],
     [
@@ -3545,7 +3562,7 @@ return [
         'path' => '/project_grants/{id}',
         'methodController' => 'ProjectGrantController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['sunset'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -3595,7 +3612,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -3608,7 +3624,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3623,7 +3638,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3678,7 +3692,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -3691,7 +3704,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3706,7 +3718,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3761,7 +3772,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -3774,7 +3784,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3789,7 +3798,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3851,7 +3859,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -3864,7 +3871,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3879,7 +3885,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3909,7 +3914,6 @@ return [
         'methodController' => 'FormHydrationController@onboardingFormHydration',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -3943,7 +3947,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
@@ -3956,7 +3959,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -3971,7 +3973,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
@@ -4072,7 +4073,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -4084,7 +4084,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4098,7 +4097,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4137,7 +4135,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4151,7 +4148,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -4162,7 +4158,6 @@ return [
         'methodController' => 'AdminPanelController@triggerTermExtractionDirector',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -4264,7 +4259,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,file-based-data-access-application.create',
         ],
         'constraint' => [],
@@ -4277,7 +4271,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,file-based-data-access-application.update',
         ],
         'constraint' => [
@@ -4292,7 +4285,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,file-based-data-access-application.update',
         ],
         'constraint' => [
@@ -4307,7 +4299,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
@@ -4606,7 +4597,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -4618,7 +4608,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4633,7 +4622,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,data-access-applications.provider.update',
         ],
         'constraint' => [
@@ -4649,7 +4637,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -4664,7 +4651,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,data-access-applications.provider.update',
         ],
         'constraint' => [
@@ -4680,7 +4666,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -5044,7 +5029,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,data-access-template.create',
         ],
         'constraint' => [],
@@ -5057,7 +5041,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,data-access-template.update',
         ],
         'constraint' => [
@@ -5072,7 +5055,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,data-access-template.update',
         ],
         'constraint' => [
@@ -5143,7 +5125,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,question-bank.create',
         ],
         'constraint' => [],
@@ -5156,7 +5137,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,question-bank.update',
         ],
         'constraint' => [
@@ -5171,7 +5151,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,question-bank.update',
         ],
         'constraint' => [

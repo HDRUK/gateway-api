@@ -220,9 +220,13 @@ class DatasetService
             $dataset->linkages = [];
         }
 
-        $dataset->team->has_published_dar_template = DataAccessTemplate::where('team_id', $dataset->team->id)
-            ->where('published', 1)
-            ->exists();
+        // Guard against team having been soft-deleted, and thus the assignment would cause
+        // a crash.
+        if ($dataset->team) {
+            $dataset->team->has_published_dar_template = DataAccessTemplate::where('team_id', $dataset->team->id)
+                ->where('published', 1)
+                ->exists();
+        }
 
         return $dataset;
     }
@@ -328,9 +332,6 @@ class DatasetService
         $dataset = MMC::createDataset([
             'user_id' => $input['user_id'],
             'team_id' => $input['team_id'],
-            'mongo_object_id' => $input['mongo_object_id'] ?? null,
-            'mongo_id' => $input['mongo_id'] ?? null,
-            'mongo_pid' => $input['mongo_pid'] ?? null,
             'datasetid' => $input['datasetid'] ?? null,
             'created' => now(),
             'updated' => now(),
@@ -507,7 +508,7 @@ class DatasetService
 
         $inputSchema = $input['metadata']['schemaModel'] ?? null;
         $inputVersion = $input['metadata']['schemaVersion'] ?? null;
-        $submittedMetadata = $input['metadata']['metadata'];
+        $submittedMetadata = $payload['metadata'];
         $isDraft = $input['status'] === Dataset::STATUS_DRAFT;
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
 

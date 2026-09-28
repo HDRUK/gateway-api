@@ -19,6 +19,8 @@ class AdminControlTriggerTermExtractionDirector implements ShouldQueue
     use SerializesModels;
     use LoggingContext;
 
+    public $timeout = 120;
+
     private ?array $loggingContext = null;
 
     /**

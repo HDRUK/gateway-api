@@ -366,8 +366,6 @@ class PartnerContextTest extends TestCase
                 'orcid'            => 'https://orcid.org/00000000',
                 'contact_feedback' => 1,
                 'contact_news'     => 1,
-                'mongo_id'         => random_int(100000, 999999),
-                'mongo_object_id'  => uniqid(),
             ],
             $this->header,
         )->json('data');

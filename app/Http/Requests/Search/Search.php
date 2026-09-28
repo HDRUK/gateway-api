@@ -39,6 +39,7 @@ class Search extends BaseFormRequest
             'download' => 'boolean',
             'providers' => ['nullable', 'array'],
             'providers.*' => ['string'],
+            'dataSource' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

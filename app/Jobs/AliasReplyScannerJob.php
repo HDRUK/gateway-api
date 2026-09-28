@@ -20,6 +20,8 @@ class AliasReplyScannerJob implements ShouldQueue
     use TeamTransformation;
     use LoggingContext;
 
+    public $timeout = 180;
+
     private int $noMessagesFound = 0;
     private ?array $loggingContext = null;
 

@@ -37,15 +37,18 @@ class EmailTemplateTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            0 => [
-                'id',
-                'created_at',
-                'updated_at',
-                'deleted_at',
-                'identifier',
-                'enabled',
-                'body',
-                'subject',
+            'message',
+            'data' => [
+                0 => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'identifier',
+                    'enabled',
+                    'body',
+                    'subject',
+                ],
             ],
         ]);
     }
@@ -58,19 +61,16 @@ class EmailTemplateTest extends TestCase
     public function test_get_email_template_by_id_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
-                0 => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'identifier',
-                    'enabled',
-                    'body',
-                    'subject',
-                ]
+                'id',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'identifier',
+                'enabled',
+                'body',
+                'subject',
             ]
         ]);
         $response->assertStatus(200);

@@ -30,6 +30,7 @@ use App\Http\Requests\V2\Collection\GetCollection;
 use App\Http\Requests\V2\Collection\UpdateCollection;
 use App\Models\CollectionHasUser;
 
+// LS: Refactor candidate - needs sorting out.
 class CollectionController extends Controller
 {
     use RequestTransformation;
@@ -306,8 +307,6 @@ class CollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -457,8 +456,6 @@ class CollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -487,6 +484,16 @@ class CollectionController extends Controller
             // updated_on
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
+            }
+
+            $currentCollection = Collection::where('id', $id)->first();
+            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
+                // Collection::where()->update doesn't hit the observer for Scout to index
+                // changes within typesense. This fixes that.
+                $currentCollection->searchable();
+            } else {
+                // As above.
+                $currentCollection->unsearchable();
             }
 
             Auditor::log([
@@ -640,8 +647,6 @@ class CollectionController extends Controller
                     'enabled',
                     'public',
                     'counter',
-                    'mongo_object_id',
-                    'mongo_id',
                     'team_id',
                     'status',
                 ];
@@ -708,6 +713,15 @@ class CollectionController extends Controller
                 // add in a team
                 if (array_key_exists('team_id', $input)) {
                     Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
+                }
+
+                if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
+                    // Collection::where()->update doesn't hit the observer for Scout to index
+                    // changes within typesense. This fixes that.
+                    $updatedCollection->searchable();
+                } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
+                    // As above.
+                    $updatedCollection->unsearchable();
                 }
 
                 Auditor::log([

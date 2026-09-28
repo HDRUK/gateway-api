@@ -10,6 +10,7 @@ use App\Models\Notification;
 use App\Models\TeamHasAlias;
 use App\Models\TeamHasNotification;
 use App\Models\TeamUserHasNotification;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 trait TeamTransformation
 {
@@ -22,6 +23,40 @@ trait TeamTransformation
     public function getTeams(array $teams): array
     {
         $response = [];
+
+        $teamIds = array_column($teams, 'id');
+
+        $teamHasUserIds = [];
+        foreach ($teams as $team) {
+            foreach ($team['users'] as $user) {
+                if ($user['is_admin']) {
+                    continue;
+                }
+                $teamHasUserIds[] = (int)$user['pivot']['id'];
+            }
+        }
+
+        $rolesByTeamHasUserId = TeamHasUser::whereIn('id', $teamHasUserIds)
+            ->with('roles', 'roles.permissions')
+            ->get()
+            ->keyBy('id')
+            ->toArray();
+
+        $notificationsByTeamId = TeamHasNotification::whereIn('team_id', $teamIds)
+            ->get()
+            ->groupBy('team_id');
+
+        $notificationIds = $notificationsByTeamId->flatten()->pluck('notification_id')->unique()->values()->all();
+
+        $notificationsById = Notification::whereIn('id', $notificationIds)->get()->keyBy('id');
+
+        $aliasIdsByTeamId = TeamHasAlias::whereIn('team_id', $teamIds)
+            ->get()
+            ->groupBy('team_id');
+
+        $allAliasIds = $aliasIdsByTeamId->flatten()->pluck('alias_id')->unique()->values()->all();
+
+        $aliasesById = Alias::whereIn('id', $allAliasIds)->get()->keyBy('id');
 
         foreach ($teams as $team) {
             $tmpTeam = [
@@ -40,7 +75,6 @@ trait TeamTransformation
                 'contact_point' => $team['contact_point'],
                 'application_form_updated_by' => $team['application_form_updated_by'],
                 'application_form_updated_on' => $team['application_form_updated_on'],
-                'mongo_object_id' => $team['mongo_object_id'],
                 'notification_status' => $team['notification_status'],
                 'is_question_bank' => $team['is_question_bank'],
                 'is_provider' => $team['is_provider'],
@@ -78,18 +112,14 @@ trait TeamTransformation
                     'orcid' => $user['orcid'],
                     'contact_feedback' => $user['contact_feedback'],
                     'contact_news' => $user['contact_news'],
-                    'mongo_id' => $user['mongo_id'],
-                    'mongo_object_id' => $user['mongo_object_id'],
                     'terms' => $user['terms'],
                     'hubspot_id' => $user['hubspot_id'],
                 ];
 
                 $teamHasUserId = (int)$user['pivot']['id'];
 
-                $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles', 'roles.permissions')->get()->toArray();
-
                 $tmpPerm = [];
-                foreach ($roles[0]['roles'] as $role) {
+                foreach ($rolesByTeamHasUserId[$teamHasUserId]['roles'] ?? [] as $role) {
                     $tmpPerm[] = $role;
                 }
                 $tmp['roles'] = $tmpPerm;
@@ -101,21 +131,22 @@ trait TeamTransformation
 
             $tmpTeam['users'] = $tmpUser;
 
-            $notifications = TeamHasNotification::where('team_id', $tmpTeam['id'])->get()->toArray();
             $tmpNotification = [];
-            foreach ($notifications as $value) {
-                $notification = Notification::where('id', $value['notification_id'])->firstOrFail();
+            foreach ($notificationsByTeamId->get($tmpTeam['id'], collect()) as $value) {
+                $notification = $notificationsById->get($value['notification_id']);
+                if ($notification === null) {
+                    throw (new ModelNotFoundException())->setModel(Notification::class, [$value['notification_id']]);
+                }
                 $tmpNotification[] = $notification;
             }
             $tmpTeam['notifications'] = $tmpNotification;
 
-            $aliasIds = TeamHasAlias::where('team_id', $tmpTeam['id'])->pluck('alias_id');
-            $tmpTeam['aliases'] = Alias::whereIn('id', $aliasIds)->get()->toArray();
+            $teamAliasIds = $aliasIdsByTeamId->get($tmpTeam['id'], collect())->pluck('alias_id')->all();
+            $tmpTeam['aliases'] = $aliasesById->only($teamAliasIds)->sortBy('id')->values()->toArray();
 
             $response[] = $tmpTeam;
             unset($tmpTeam);
             unset($tmpUser);
-            unset($notifications);
             unset($tmpNotification);
         }
 

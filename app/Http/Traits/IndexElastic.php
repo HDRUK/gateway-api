@@ -26,6 +26,7 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
+use App\Jobs\ReindexElasticEntity;
 use App\Services\DatasetService;
 use App\Services\Gwdm\GwdmHandlerFactory;
 use Auditor;
@@ -33,6 +34,7 @@ use Config;
 use ElasticClientController as ECC;
 use Exception;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\Bus;
 
 trait IndexElastic
 {
@@ -448,6 +450,19 @@ trait IndexElastic
         }
     }
 
+    /**
+     * Reindexes a team's own document plus (a subset of) its related
+     * datasets/collections/durs/tools.
+     *
+     * The relation reindexing is dispatched as one ReindexElasticEntity job
+     * per entity via Bus::batch() rather than looping in-process: a team with
+     * a large relation set used to make this method's own runtime scale with
+     * that count, which is how it ended up timing out Horizon jobs that call
+     * it (ReindexDataset/IndexDataset/DeindexDataset) once a team grew large
+     * enough. Batching keeps this method's own cost constant regardless of
+     * team size; the actual reindex work happens later, on the `indexing`
+     * queue, spread across as many jobs as there are entities.
+     */
     public function reindexElasticDataProviderWithRelations(string $teamId, string $relation = 'undefined')
     {
         try {
@@ -459,40 +474,49 @@ trait IndexElastic
 
             $this->reindexElasticDataProvider($teamId);
 
+            $jobs = [];
+
             if ($relation === 'dataset' || $relation === 'undefined') {
-                $datasets = Dataset::where('team_id', $teamId)->select(['id', 'status'])->get();
-                foreach ($datasets as $dataset) {
-                    if ($dataset->status === Dataset::STATUS_ACTIVE) {
-                        $this->reindexElastic($dataset->id);
-                    }
+                $datasetIds = Dataset::where('team_id', $teamId)
+                    ->where('status', Dataset::STATUS_ACTIVE)
+                    ->pluck('id');
+                foreach ($datasetIds as $id) {
+                    $jobs[] = new ReindexElasticEntity('dataset', $id);
                 }
             }
 
             if ($relation === 'collection' || $relation === 'undefined') {
-                $collections = Collection::where('team_id', $teamId)->select(['id', 'status'])->get();
-                foreach ($collections as $collection) {
-                    if ($collection->status === Collection::STATUS_ACTIVE) {
-                        $this->indexElasticCollections($collection->id);
-                    }
+                $collectionIds = Collection::where('team_id', $teamId)
+                    ->where('status', Collection::STATUS_ACTIVE)
+                    ->pluck('id');
+                foreach ($collectionIds as $id) {
+                    $jobs[] = new ReindexElasticEntity('collection', $id);
                 }
             }
 
             if ($relation === 'dur' || $relation === 'undefined') {
-                $durs = Dur::where('team_id', $teamId)->select(['id', 'status'])->get();
-                foreach ($durs as $dur) {
-                    if ($dur->status === Dur::STATUS_ACTIVE) {
-                        $this->indexElasticDur($dur->id);
-                    }
+                $durIds = Dur::where('team_id', $teamId)
+                    ->where('status', Dur::STATUS_ACTIVE)
+                    ->pluck('id');
+                foreach ($durIds as $id) {
+                    $jobs[] = new ReindexElasticEntity('dur', $id);
                 }
             }
 
             if ($relation === 'tool' || $relation === 'undefined') {
-                $tools = Tool::where('team_id', $teamId)->select(['id', 'status'])->get();
-                foreach ($tools as $tool) {
-                    if ($tool->status === Tool::STATUS_ACTIVE) {
-                        $this->indexElasticTools($tool->id);
-                    }
+                $toolIds = Tool::where('team_id', $teamId)
+                    ->where('status', Tool::STATUS_ACTIVE)
+                    ->pluck('id');
+                foreach ($toolIds as $id) {
+                    $jobs[] = new ReindexElasticEntity('tool', $id);
                 }
+            }
+
+            if (! empty($jobs)) {
+                Bus::batch($jobs)
+                    ->name("reindex-team-{$teamId}-{$relation}")
+                    ->onQueue('indexing')
+                    ->dispatch();
             }
         } catch (Exception $e) {
             \Log::error('Error reindexing ElasticSearch', [

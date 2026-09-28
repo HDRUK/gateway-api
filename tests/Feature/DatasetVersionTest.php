@@ -105,8 +105,6 @@ class DatasetVersionTest extends TestCase
                 'orcid' => " https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header,
         );
@@ -233,8 +231,6 @@ class DatasetVersionTest extends TestCase
                 'orcid' => " https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header,
         );
@@ -348,8 +344,6 @@ class DatasetVersionTest extends TestCase
     //             'orcid' => " https://orcid.org/75697342",
     //             'contact_feedback' => 1,
     //             'contact_news' => 1,
-    //             'mongo_id' => 1234566,
-    //             'mongo_object_id' => "12345abcde",
     //         ],
     //         $this->header,
     //     );

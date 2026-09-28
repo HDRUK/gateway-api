@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\CohortRequestStatus;
+use App\Mail\Email;
 use App\Models\CohortRequest;
+use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
 use App\Models\OauthClient;
 use App\Models\Permission;
@@ -62,6 +65,7 @@ class CohortRequestTest extends TestCase
                     'user',
                     'request_status',
                     'request_expire_at',
+                    'has_access',
                     'created_at',
                     'updated_at',
                     'deleted_at',
@@ -91,6 +95,47 @@ class CohortRequestTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_get_all_cohort_requests_orders_by_priority_before_created_at(): void
+    {
+        $namePrefix = 'PriorityOrderTest';
+
+        $createCohortRequest = function (string $status, string $userName, Carbon $createdAt) {
+            $user = User::factory()->create(['name' => $userName]);
+
+            $cohortRequest = new CohortRequest([
+                'user_id' => $user->id,
+                'request_status' => $status,
+                'accept_declaration' => true,
+            ]);
+            $cohortRequest->timestamps = false;
+            $cohortRequest->created_at = $createdAt;
+            $cohortRequest->updated_at = $createdAt;
+            $cohortRequest->save();
+
+            return $userName;
+        };
+
+        $expectedOrder = [
+            $createCohortRequest('RENEWING', $namePrefix.' Renewing Recent', Carbon::now()->subDays(2)),
+            $createCohortRequest('PENDING', $namePrefix.' Pending Old', Carbon::now()->subDays(20)),
+            $createCohortRequest('EXPIRED', $namePrefix.' Expired Recent', Carbon::now()->subDay()),
+            $createCohortRequest('APPROVED', $namePrefix.' Approved Old', Carbon::now()->subDays(30)),
+        ];
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'?name='.urlencode($namePrefix).'&sort=priority:desc,created_at:desc',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+
+        $names = collect($response->decodeResponseJson()['data'])->pluck('name')->all();
+
+        $this->assertSame($expectedOrder, $names);
+    }
+
     /**
      * Get Cohort Request by id with success
      */
@@ -107,6 +152,20 @@ class CohortRequestTest extends TestCase
         ]);
 
         $response->assertStatus(200);
+    }
+
+    public function test_get_cohort_request_by_id_includes_has_access(): void
+    {
+        $userId = User::factory()->create()->id;
+        $this->approveTestUserForCohort($userId);
+        $cohortRequestId = CohortRequest::where('user_id', $userId)->first()->id;
+
+        $response = $this->json('GET', self::TEST_URL.'/'.$cohortRequestId, [], $this->header);
+
+        $content = $response->decodeResponseJson();
+
+        $response->assertStatus(200);
+        $this->assertTrue($content['data']['has_access']);
     }
 
     /**
@@ -149,6 +208,170 @@ class CohortRequestTest extends TestCase
         ]);
 
         $responseGetOne->assertStatus(200);
+    }
+
+    public function test_create_cohort_request_for_approved_user_starts_renewal(): void
+    {
+        Mail::fake();
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+        $this->approveTestUserForCohort($userId);
+
+        $cohortRequestBefore = CohortRequest::where(['user_id' => $userId])->first();
+        $logCountBefore = CohortRequestHasLog::where('cohort_request_id', $cohortRequestBefore->id)->count();
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['details' => 'Renewing before my access expires.'],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequest = CohortRequest::where(['user_id' => $userId])->first();
+        $this->assertSame(CohortRequestStatus::RENEWING, $cohortRequest->request_status);
+
+        $logCountAfter = CohortRequestHasLog::where('cohort_request_id', $cohortRequest->id)->count();
+        $this->assertSame($logCountBefore + 1, $logCountAfter, 'starting a renewal must create exactly one new log entry');
+    }
+
+    public function test_create_cohort_request_for_approved_user_leaves_expiry_and_permissions_untouched(): void
+    {
+        Mail::fake();
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+        $this->approveTestUserForCohort($userId);
+
+        $cohortRequestBefore = CohortRequest::where(['user_id' => $userId])->first();
+        $expiryBefore = $cohortRequestBefore->request_expire_at;
+        $permissionIdsBefore = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequestBefore->id,
+        ])->pluck('permission_id')->sort()->values()->all();
+
+        $this->json(
+            'POST',
+            self::TEST_URL,
+            ['details' => 'Renewing before my access expires.'],
+            $this->header,
+        )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequestAfter = CohortRequest::where(['user_id' => $userId])->first();
+        $permissionIdsAfter = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequestAfter->id,
+        ])->pluck('permission_id')->sort()->values()->all();
+
+        $this->assertSame($cohortRequestBefore->id, $cohortRequestAfter->id);
+        $this->assertEquals($expiryBefore, $cohortRequestAfter->request_expire_at);
+        $this->assertSame($permissionIdsBefore, $permissionIdsAfter);
+    }
+
+    public function test_create_cohort_request_while_already_renewing_is_idempotent(): void
+    {
+        Mail::fake();
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+        $this->approveTestUserForCohort($userId, 'RENEWING');
+
+        $cohortRequest = CohortRequest::where(['user_id' => $userId])->first();
+        $logCountBefore = CohortRequestHasLog::where('cohort_request_id', $cohortRequest->id)->count();
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['details' => 'Renewing again.'],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequest->refresh();
+        $this->assertSame(CohortRequestStatus::RENEWING, $cohortRequest->request_status);
+
+        $logCountAfter = CohortRequestHasLog::where('cohort_request_id', $cohortRequest->id)->count();
+        $this->assertSame($logCountBefore, $logCountAfter);
+    }
+
+    public function test_create_cohort_request_for_rejected_or_expired_user_resets_and_reapplies(): void
+    {
+        Mail::fake();
+
+        $statusesToTest = ['REJECTED', 'EXPIRED'];
+
+        foreach ($statusesToTest as $status) {
+            $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+            $userId = (int) $jwtUser['id'];
+            $this->approveTestUserForCohort($userId, $status);
+
+            $cohortRequestBefore = CohortRequest::where(['user_id' => $userId])->first();
+            $originalId = $cohortRequestBefore->id;
+            $logCountBefore = CohortRequestHasLog::where('cohort_request_id', $originalId)->count();
+
+            $response = $this->json(
+                'POST',
+                self::TEST_URL,
+                ['details' => 'Applying again after being '.strtolower($status).'.'],
+                $this->header,
+            );
+
+            $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+                ->assertJsonStructure(['message', 'data']);
+
+            $content = $response->decodeResponseJson();
+            $this->assertEquals(Config::get('statuscodes.STATUS_CREATED.message'), $content['message']);
+            $this->assertSame($originalId, $content['data'], "status {$status} should reuse the existing row id, not create a new one");
+
+            $this->assertSame(
+                1,
+                CohortRequest::where(['user_id' => $userId])->count(),
+                "status {$status} reapplication must not leave duplicate cohort_requests rows"
+            );
+
+            $cohortRequestAfter = CohortRequest::where(['user_id' => $userId])->first();
+            $this->assertSame($originalId, $cohortRequestAfter->id);
+            $this->assertSame(CohortRequestStatus::PENDING, $cohortRequestAfter->request_status);
+            $this->assertNull($cohortRequestAfter->request_expire_at);
+
+            $this->assertFalse(
+                CohortRequestHasPermission::where('cohort_request_id', $originalId)->exists(),
+                "status {$status} reapplication must clear any stale permission grants"
+            );
+
+            $logCountAfter = CohortRequestHasLog::where('cohort_request_id', $originalId)->count();
+            $this->assertSame($logCountBefore + 1, $logCountAfter, "status {$status} reapplication must create exactly one new log entry");
+        }
+
+        Mail::assertSent(Email::class, count($statusesToTest)); // one email send for each status
+    }
+
+    public function test_create_cohort_request_rejects_every_non_renewal_status(): void
+    {
+        Mail::fake();
+
+        foreach (['PENDING', 'BANNED', 'SUSPENDED'] as $status) {
+            $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+            $userId = (int) $jwtUser['id'];
+            $this->approveTestUserForCohort($userId, $status);
+
+            $response = $this->json(
+                'POST',
+                self::TEST_URL,
+                ['details' => 'Trying again.'],
+                $this->header,
+            );
+
+            $response->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+            $cohortRequest = CohortRequest::where(['user_id' => $userId])->first();
+            $this->assertSame(
+                $status,
+                $cohortRequest->request_status->value,
+                "status {$status} should be left untouched after a rejected renewal attempt"
+            );
+        }
     }
 
     /**
@@ -260,6 +483,57 @@ class CohortRequestTest extends TestCase
             $cohortRequest->nhse_sde_request_expire_at->timestamp,
             5,
             'nhse_sde_request_expire_at should be exactly 1825 days (5 years) from the time of approval.'
+        );
+    }
+
+    public function test_update_cohort_request_renewing_to_approved_extends_expiry(): void
+    {
+        Mail::fake();
+
+        $userId = User::factory()->create()->id;
+        $cohortRequest = CohortRequest::create([
+            'user_id' => $userId,
+            'request_status' => CohortRequestStatus::RENEWING,
+            'request_expire_at' => null,
+        ]);
+
+        $now = Carbon::now();
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL.'/'.$cohortRequest->id,
+            [
+                'request_status' => 'APPROVED',
+                'details' => 'Renewal approved.',
+                'nhse_sde_request_status' => null,
+            ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $cohortRequest = CohortRequest::find($cohortRequest->id);
+
+        $this->assertSame(CohortRequestStatus::APPROVED, $cohortRequest->request_status);
+        $this->assertNotNull($cohortRequest->request_expire_at);
+
+        $expectedExpiry = $now->copy()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days'));
+        $this->assertEqualsWithDelta(
+            $expectedExpiry->timestamp,
+            $cohortRequest->request_expire_at->timestamp,
+            5,
+            'request_expire_at should be extended by the standard expiry period when a renewal is approved.'
+        );
+
+        $permission = Permission::where([
+            'application' => 'cohort',
+            'name' => 'GENERAL_ACCESS',
+        ])->first();
+
+        $this->assertTrue(
+            CohortRequestHasPermission::where([
+                'cohort_request_id' => $cohortRequest->id,
+                'permission_id' => $permission->id,
+            ])->exists()
         );
     }
 
@@ -705,11 +979,11 @@ class CohortRequestTest extends TestCase
         }
     }
 
-    private function approveTestUserForCohort(int $userId): void
+    private function approveTestUserForCohort(int $userId, string $status = 'APPROVED'): void
     {
         $cohortRequest = CohortRequest::updateOrCreate(
             ['user_id' => $userId],
-            ['request_status' => 'APPROVED', 'accept_declaration' => true]
+            ['request_status' => $status, 'accept_declaration' => true]
         );
 
         $permission = Permission::where([
@@ -783,5 +1057,94 @@ class CohortRequestTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         // $response->assertSessionMissing('cr_uid');
+    }
+
+    public function test_check_access_cohort_discovery_allows_renewing_status(): void
+    {
+        Feature::flushCache();
+        Feature::activate('CohortDiscoveryService', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->createCohortServiceAccount();
+        $this->approveTestUserForCohort($userId, 'RENEWING');
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/cohort-discovery',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonStructure(['data' => ['redirect_url']]);
+    }
+
+    public function test_check_access_cohort_discovery_denies_when_status_is_pending(): void
+    {
+        Feature::flushCache();
+        Feature::activate('CohortDiscoveryService', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->createCohortServiceAccount();
+        $this->approveTestUserForCohort($userId, 'PENDING');
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/cohort-discovery',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertStringContainsString(
+            'not approved',
+            $response->json('message')
+        );
+    }
+
+    public function test_check_access_rquest_returns_redirect_url_for_approved_status(): void
+    {
+        Feature::flushCache();
+        Feature::activate('RQuest', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->approveTestUserForCohort($userId);
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/rquest',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonStructure(['data' => ['redirect_url']]);
+    }
+
+    public function test_check_access_rquest_allows_renewing_status(): void
+    {
+        Feature::flushCache();
+        Feature::activate('RQuest', true);
+
+        $jwtUser = $this->getUserFromJwt($this->getAuthorisationJwt());
+        $userId = (int) $jwtUser['id'];
+
+        $this->approveTestUserForCohort($userId, 'RENEWING');
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL.'/access/rquest',
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonStructure(['data' => ['redirect_url']]);
     }
 }

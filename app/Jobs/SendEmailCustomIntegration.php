@@ -3,9 +3,9 @@
 namespace App\Jobs;
 
 use App\Models\Dataset;
-use App\Models\EmailTemplate;
 use App\Models\Federation;
 use App\Models\FederationJobRun;
+use App\Services\EmailManager;
 use App\Traits\GatewayMetadataIngestionTrait;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,6 +18,7 @@ class SendEmailCustomIntegration implements ShouldQueue
 
     public $tries   = 3;
     public $backoff = [10, 30, 60];
+    public $timeout = 60;
 
     private int $federationId;
     private ?string $jobUuid;
@@ -70,13 +71,6 @@ class SendEmailCustomIntegration implements ShouldQueue
             $permSuffix     = $checkUser ? 'teamadmin_developer' : 'no_teamadmin_developer';
             $templateId     = "integration.job.{$this->outcome}.{$permSuffix}";
 
-            $template = EmailTemplate::where('identifier', $templateId)->first();
-
-            if (!$template) {
-                $this->log('warning', "send email after integration: template '{$templateId}' not found");
-                continue;
-            }
-
             $to = [
                 'to' => [
                     'email' => $userEmail,
@@ -97,7 +91,7 @@ class SendEmailCustomIntegration implements ShouldQueue
                 '[[JOB_ERROR]]'            => $this->errorMessage ?? '',
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            app(EmailManager::class)->send($templateId, $to, $replacements);
         }
     }
 

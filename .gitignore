@@ -18,7 +18,6 @@ yarn-error.log
 /.idea
 /.vscode
 /.phpunit.cache
-composer.lock
 package-lock.json
 .phpstorm.meta.php
 .phpunit.result.cache
@@ -29,3 +28,11 @@ application_default_credentials.json
 
 frankenphp
 /sdks
+
+# understand-anything: keep the knowledge graph tracked, ignore run-local cache/output
+app/.ua/.trash-*/
+app/.ua/intermediate/
+app/.ua/fingerprints.json
+
+# generated migrated+seeded template DB used by tests/Traits/RefreshDatabaseLite
+database/testing/

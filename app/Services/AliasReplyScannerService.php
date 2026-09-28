@@ -4,8 +4,6 @@ namespace App\Services;
 
 use Exception;
 use App\Models\User;
-use App\Jobs\SendEmailJob;
-use App\Models\EmailTemplate;
 use App\Models\EnquiryThread;
 use App\Models\EnquiryMessage;
 use Webklex\PHPIMAP\ClientManager;
@@ -251,7 +249,6 @@ class AliasReplyScannerService
         list($username, $domain) = explode('@', $imapUsername);
 
         try {
-            $template = EmailTemplate::where('identifier', $ident)->first();
             // TODO: once templates reworking is done, we will need to increase or standardise the replacements in use
             $replacements = array_merge(
                 [
@@ -273,13 +270,11 @@ class AliasReplyScannerService
                 ];
 
                 $from = $username . '+' . $threadDetail['thread']['unique_key'] . '@' . $domain;
-                $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
+                app(EmailManager::class)->send($ident, $to, $replacements, $from);
             }
             unset(
-                $template,
                 $replacements,
                 $from,
-                $something,
             );
         } catch (Exception $e) {
             $this->loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;

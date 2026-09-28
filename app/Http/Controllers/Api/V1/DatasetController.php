@@ -14,6 +14,7 @@ use App\Http\Traits\CheckAccess;
 use App\Http\Traits\GetValueByPossibleKeys;
 use App\Http\Traits\MetadataOnboard;
 use App\Http\Traits\MetadataVersioning;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use App\Models\Dataset;
@@ -41,6 +42,30 @@ class DatasetController extends Controller
     use MetadataOnboard;
     use CheckAccess;
     use ModelHelpers;
+
+    /**
+     * Columns that may be passed as {field} to count(). Restricted to
+     * low-cardinality categorical columns. Excludes identifiers, timestamps,
+     * and counters, which are either meaningless to group by or a resource risk
+     * if used as a GROUP BY key.
+     *
+     * Bit of guess work here, the only thing I can see that is actually used
+     * for the basis of count() is status, but there may be others I missed.
+     */
+    private const ALLOWED_COUNT_FIELDS = [
+        'status',
+        'create_origin',
+        'partner_context',
+        'is_cohort_discovery',
+        'commercial_use',
+        'source',
+        'has_technical_details',
+        'state_id',
+    ];
+
+    public function __construct(private readonly GwdmMetadataHandler $gwdmHandler)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -128,7 +153,6 @@ class DatasetController extends Controller
             $matches = [];
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
-            $mongoPId = $request->query('mongo_pid', null);
             $withMetadata = $request->boolean('with_metadata', true);
 
             $sort = $request->query('sort', 'created:desc');
@@ -164,8 +188,6 @@ class DatasetController extends Controller
                 return $query->where('team_id', '=', $teamId);
             })->when($datasetId, function ($query) use ($datasetId) {
                 return $query->where('datasetid', '=', $datasetId);
-            })->when($mongoPId, function ($query) use ($mongoPId) {
-                return $query->where('mongo_pid', '=', $mongoPId);
             })->when(
                 $request->has('withTrashed') || $filterStatus === 'ARCHIVED',
                 function ($query) {
@@ -301,6 +323,12 @@ class DatasetController extends Controller
      */
     public function count(Request $request, string $field): JsonResponse
     {
+        if (! in_array($field, self::ALLOWED_COUNT_FIELDS, true)) {
+            return response()->json([
+                'message' => 'Invalid field for count',
+            ], 422);
+        }
+
         try {
             $teamId = $request->query('team_id', null);
             $counts = Dataset::when($teamId, function ($query) use ($teamId) {
@@ -327,7 +355,7 @@ class DatasetController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            throw new Exception($e->getMessage());
+            throw new Exception($e->getMessage(), 0, $e);
         }
     }
 
@@ -618,9 +646,6 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
-     *             @OA\Property(property="mongo_id", type="string", example="456"),
-     *             @OA\Property(property="mongo_pid", type="string", example="def789"),
      *             @OA\Property(property="datasetid", type="string", example="xyz1011"),
      *             @OA\Property(property="metadata", type="object")
      *          )
@@ -684,7 +709,8 @@ class DatasetController extends Controller
             $team,
             $inputSchema,
             $inputVersion,
-            $elasticIndexing
+            $elasticIndexing,
+            $this->gwdmHandler,
         );
 
         if ($metadataResult['translated']) {

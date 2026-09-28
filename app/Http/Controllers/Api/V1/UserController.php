@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Hash;
 use Config;
 use Auditor;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\UserHasRole;
@@ -25,8 +25,7 @@ use App\Http\Traits\UserTransformation;
 use App\Http\Traits\RequestTransformation;
 use App\Models\EmailVerification;
 use Carbon\Carbon;
-use App\Models\EmailTemplate;
-use App\Jobs\SendEmailJob;
+use App\Services\EmailManager;
 
 class UserController extends Controller
 {
@@ -114,7 +113,21 @@ class UserController extends Controller
 
                     $users = ['data' => $users];
                 } elseif ($userIsAdmin) {
-                    $users = User::with(['roles', 'roles.permissions', 'teams', 'notifications'])->paginate($perPage, ['*'], 'page');
+                    $query = User::with(['roles', 'roles.permissions', 'teams', 'notifications']);
+
+                    if ($request->filled('search')) {
+                        $search = $request->query('search');
+                        $query->where(function ($userQuery) use ($search) {
+                            $userQuery->where('firstname', 'like', '%' . $search . '%')
+                                ->orWhere('lastname', 'like', '%' . $search . '%')
+                                ->orWhere('name', 'like', '%' . $search . '%')
+                                ->orWhereHas('teams', function ($teamQuery) use ($search) {
+                                    $teamQuery->where('name', 'like', '%' . $search . '%');
+                                });
+                        });
+                    }
+
+                    $users = $query->paginate($perPage, ['*'], 'page');
                 } else {
                     $users = User::select('id', 'name')->paginate($perPage, ['*'], 'page');
                 }
@@ -305,8 +318,6 @@ class UserController extends Controller
                 'orcid' => $input['orcid'],
                 'contact_feedback' => $input['contact_feedback'],
                 'contact_news' => $input['contact_news'],
-                'mongo_id' => $input['mongo_id'],
-                'mongo_object_id' => $input['mongo_object_id'],
                 'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
                 'is_nhse_sde_approval' => array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : 0,
             ];
@@ -458,8 +469,6 @@ class UserController extends Controller
                     'orcid' => $input['orcid'],
                     'contact_feedback' => $input['contact_feedback'],
                     'contact_news' => $input['contact_news'],
-                    'mongo_id' => $input['mongo_id'],
-                    'mongo_object_id' => $input['mongo_object_id'],
                     'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
                     'is_nhse_sde_approval' => array_key_exists('is_nhse_sde_approval', $input) ? $input['is_nhse_sde_approval'] : 0,
                 ];
@@ -480,21 +489,19 @@ class UserController extends Controller
                             'expires_at' => Carbon::now()->addHours(24),
                         ]);
 
-                        $template = EmailTemplate::where('identifier', '=', 'user.email_verification')->first();
-
                         $replacements = [
                             '[[UUID]]' => $newToken,
                             '[[USER_FIRST_NAME]]' => $input['firstname'] ?? $user->firstname,
                         ];
 
-                        if ($template && !empty($input['secondary_email'])) {
+                        if (!empty($input['secondary_email'])) {
                             $to = [
                             'to' => [
                               'email' => $input['secondary_email'],
                               'name' => $user['name'],
                             ],
                                   ];
-                            SendEmailJob::dispatch($to, $template, $replacements);
+                            app(EmailManager::class)->send('user.email_verification', $to, $replacements);
                         }
                     }
 
@@ -661,8 +668,6 @@ class UserController extends Controller
                 'orcid',
                 'contact_feedback',
                 'contact_news',
-                'mongo_id',
-                'mongo_object_id',
                 'terms',
                 'is_nhse_sde_approval',
             ];
@@ -855,24 +860,19 @@ class UserController extends Controller
             'is_secondary' => true,
         ]);
 
-        // Get email template
-        $template = EmailTemplate::where('identifier', '=', 'user.email_verification')->first();
-
         $replacements = [
             '[[UUID]]' => $newToken,
             '[[USER_FIRST_NAME]]' => $user->firstname,
         ];
 
-        if ($template) {
-            $to = [
-                'to' => [
-                    'email' => $user->secondary_email,
-                    'name' => $user->name,
-                ],
-            ];
+        $to = [
+            'to' => [
+                'email' => $user->secondary_email,
+                'name' => $user->name,
+            ],
+        ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
-        }
+        app(EmailManager::class)->send('user.email_verification', $to, $replacements);
 
         return response()->json([
             'message' => 'Verification email resent.',

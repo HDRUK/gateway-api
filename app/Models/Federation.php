@@ -67,6 +67,7 @@ class Federation extends Model
         'run_time_hour',
         'run_time_minute',
         'enabled',
+        'enabled_at',
         'tested',
         'pid',
         'is_running',
@@ -87,6 +88,7 @@ class Federation extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'enabled_at' => 'datetime',
         'tested' => 'boolean',
         'is_running' => 'boolean',
         'error' => 'boolean',

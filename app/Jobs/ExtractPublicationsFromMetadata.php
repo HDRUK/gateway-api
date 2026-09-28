@@ -30,6 +30,7 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
 
     public $tries   = 3;
     public $backoff = 30;
+    public $timeout = 120;
 
     private int $datasetVersionId = 0;
     private ?array $loggingContext = null;

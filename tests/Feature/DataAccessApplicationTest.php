@@ -702,8 +702,6 @@ class DataAccessApplicationTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -1488,8 +1486,6 @@ class DataAccessApplicationTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -1848,13 +1844,16 @@ class DataAccessApplicationTest extends TestCase
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
 
+        // No user-scoped "delete review file" route exists (only the
+        // team-scoped one above does), so this is a genuine unmatched
+        // route — a 404, not a 500.
         $response = $this->json(
             'DELETE',
             'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId . '/reviews/' . $reviewId . '/files/' . $uploadId2,
             [],
             $this->header
         );
-        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        $response->assertStatus(404);
     }
 
     /**
@@ -2957,8 +2956,6 @@ class DataAccessApplicationTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );

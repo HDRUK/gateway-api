@@ -178,6 +178,30 @@ php artisan db:seed --class=CohortServiceUserSeeder
 
 Copy the `id` and the `secret` for use with your oauth2 from the `oauth2_clients` table.
 
+## Codebase Knowledge Graph (understand-anything)
+
+This repo includes a generated knowledge graph of the codebase (`app/.ua/knowledge-graph.json`), produced by the [understand-anything](https://github.com/anthropics/claude-code) Claude Code skill. It powers architecture Q&A, guided tours, and diff-impact analysis for anyone using Claude Code against this repo.
+
+Only the graph itself (`app/.ua/knowledge-graph.json`, `app/.ua/meta.json`, `app/.ua/.understandignore`) is committed. Run-local cache and batch output (`app/.ua/.trash-*/`, `app/.ua/intermediate/`, `app/.ua/fingerprints.json`) are gitignored and regenerated automatically — you don't need them checked out to use the graph.
+
+### Regenerating the graph
+
+If you're using Claude Code, run the following from the repo root:
+
+```
+/understand
+```
+
+This re-scans the codebase and refreshes `app/.ua/knowledge-graph.json` in place (incrementally, using local fingerprints to only re-analyse changed files). Once refreshed, you can:
+
+-   Ask architecture questions: `/understand-chat`
+-   Explore a file/function in depth: `/understand-explain`
+-   Get an onboarding guide: `/understand-onboard`
+-   Analyse a diff or PR's impact: `/understand-diff`
+-   View it visually: `/understand-dashboard`
+
+No API keys or extra setup are required beyond having Claude Code installed — the graph is just a JSON artifact any teammate can query once it exists.
+
 ## Contributions
 
 Gateway API follows the existing Laravel coding standards which can be found at https://laravel.com/docs/10.x/contributions

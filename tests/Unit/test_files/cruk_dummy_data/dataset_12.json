@@ -1,4 +1,5 @@
 {
+    "identifier": "087654b3-2c0a-4b32-9c2e-1234567890b7",
     "gwdmVersion": "2.1",
     "metadata": {
         "required": {
@@ -95,7 +96,7 @@
         },
         "observations": [
             {
-                "observedNode": "Endoscopies",
+                "observedNode": "Events",
                 "measuredValue": 4500,
                 "observationDate": "2023-12-31",
                 "measuredProperty": "Count",

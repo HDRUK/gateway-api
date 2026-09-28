@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Hash;
 use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,6 +10,7 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\JwtController;
 use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
+use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
 class JwtMiddleware

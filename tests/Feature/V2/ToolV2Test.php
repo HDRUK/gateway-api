@@ -289,8 +289,6 @@ class ToolV2Test extends TestCase
                 'orcid' => " https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => '5ece82082abda8b3a06f1941',
             ],
             $this->header,
         );
@@ -386,9 +384,8 @@ class ToolV2Test extends TestCase
         );
         $responseCreateTool->assertStatus(201);
 
-        // Use the explicit team_id, mongo_id, and name for filtering tests
+        // Use the explicit team_id and name for filtering tests
         $toolA = Tool::where('name', 'Tool A')->first();
-        $mongoId = $toolA->mongo_id;
         $teamId = $toolA->team_id;
         $title = $toolA->name;
 

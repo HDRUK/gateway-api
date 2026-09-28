@@ -8,6 +8,7 @@ use App\Http\Traits\MetadataVersioning;
 use App\Models\Federation;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Traits\GatewayMetadataIngestionTrait;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,7 +52,7 @@ class ProcessFederation implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(GwdmMetadataHandler $handler): void
     {
         $jobUuid = $this->job?->getJobId() ?? null;
         $attempts = $this->attempts();
@@ -66,6 +67,7 @@ class ProcessFederation implements ShouldQueue
 
             if ($remoteItems->isEmpty()) {
                 $this->log('warning', 'REMOTE catalogue returned empty "items" array - aborting');
+                FederationProcessed::dispatch($this->federation, $jobUuid);
                 return;
             }
 
@@ -84,7 +86,8 @@ class ProcessFederation implements ShouldQueue
                 $this->gsms,
                 $this->gmi,
                 $jobUuid,
-                $attempts
+                $attempts,
+                $handler,
             );
 
             // Refresh our potentially mutated list of local items
@@ -106,6 +109,15 @@ class ProcessFederation implements ShouldQueue
             $archived = $this->archiveLocalDatasetsNotInRemoteCatalogue($localItems, $remoteItems, $this->gmi, $this->federation, $jobUuid, $attempts);
 
             $this->log('info', "metadata ingestion completed for team {$this->gmi->getTeam()} - created: {$created}, updated: {$updated}, archived: {$archived}");
+
+            if ($this->hadHistoryFailures()) {
+                $this->log('warning', "federation {$this->federation->id} completed with per-item failures - see federation_job_runs for details");
+                $this->federation->update([
+                    'error' => true,
+                    'error_text' => "Run completed with errors for one or more datasets. Please check the run history for job: {$jobUuid}",
+                ]);
+                return;
+            }
 
             FederationProcessed::dispatch($this->federation, $jobUuid);
         } finally {

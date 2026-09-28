@@ -6,12 +6,15 @@ use Config;
 use Mockery;
 use Tests\TestCase;
 use App\Context\PartnerContext;
+use App\Jobs\LogSearchAnalytics;
+use App\Jobs\SearchAnalyticsData;
 use App\SearchProviders\HDRUK;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
 use App\Models\DataProviderColl;
 use App\Services\TypesenseService;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Pennant\Feature;
 
 class HDRUKTest extends TestCase
@@ -399,6 +402,83 @@ class HDRUKTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Highlighting — restores the search-term highlighting the old
+    // Elasticsearch-backed search provided (GAT-9576 follow-up), lost when
+    // Typesense search stopped requesting/passing through highlight data.
+    // -------------------------------------------------------------------------
+
+    public function test_search_requests_highlighting_on_abstract_and_description_with_matching_tags(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['highlight_fields'] ?? null) === 'abstract,description'
+            && ($searches[0]['highlight_start_tag'] ?? null) === '<em>'
+            && ($searches[0]['highlight_end_tag'] ?? null) === '</em>'
+            && ($searches[0]['num_typos'] ?? null) === 2);
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+    }
+
+    /**
+     * mapHitsToElastic()/mapHighlightToElastic() are private — the response
+     * they build only reaches a public seam after going through a Hydrator,
+     * which requires real DB-backed models for every hit (it drops any hit
+     * it can't resolve). Reflection is the appropriate tool here: it tests
+     * the mapping logic itself, without standing up dataset/team/version
+     * fixtures purely to satisfy an unrelated hydration step.
+     */
+    private function invokeMapHitsToElastic(array $typesenseHits, string $type = 'datasets'): array
+    {
+        $method = new \ReflectionMethod(HDRUK::class, 'mapHitsToElastic');
+        $method->setAccessible(true);
+
+        return $method->invoke(new HDRUK(), $typesenseHits, $type);
+    }
+
+    public function test_maps_typesense_highlight_into_elastic_shaped_response(): void
+    {
+        $mapped = $this->invokeMapHitsToElastic([
+            [
+                'text_match' => 12345,
+                'document' => ['id' => '1', 'dataset_id' => '99'],
+                'highlight' => [
+                    'abstract' => ['snippet' => 'a study of <em>tumour</em> growth'],
+                    'description' => ['snippet' => 'no match here'],
+                ],
+            ],
+        ]);
+
+        $this->assertSame(
+            ['abstract' => ['a study of <em>tumour</em> growth'], 'description' => ['no match here']],
+            $mapped[0]['highlight'] ?? null,
+        );
+    }
+
+    public function test_omits_highlight_field_when_typesense_returns_no_highlight_for_it(): void
+    {
+        $mapped = $this->invokeMapHitsToElastic([
+            [
+                'text_match' => 1,
+                'document' => ['id' => '1', 'dataset_id' => '99'],
+                'highlight' => [],
+            ],
+        ]);
+
+        $this->assertSame([], $mapped[0]['highlight'] ?? null);
+    }
+
+    public function test_maps_highlight_as_empty_array_when_typesense_omits_the_key_entirely(): void
+    {
+        $mapped = $this->invokeMapHitsToElastic([
+            [
+                'text_match' => 1,
+                'document' => ['id' => '1', 'dataset_id' => '99'],
+            ],
+        ]);
+
+        $this->assertSame([], $mapped[0]['highlight'] ?? null);
+    }
+
+    // -------------------------------------------------------------------------
     // Multi-select faceting — a field's own filter must not collapse its own
     // facet counts down to just the selected value(s).
     // -------------------------------------------------------------------------
@@ -672,6 +752,53 @@ class HDRUKTest extends TestCase
         Http::assertSent(function ($request) {
             return str_contains($request->url(), '/search/datasets')
                 && $request['partnerContext'] === 'CRUK';
+        });
+    }
+
+    private function getSearchAnalyticsData(LogSearchAnalytics $job): SearchAnalyticsData
+    {
+        $property = (new \ReflectionClass($job))->getProperty('data');
+        $property->setAccessible(true);
+
+        return $property->getValue($job);
+    }
+
+    public function test_search_via_typesense_dispatches_log_search_analytics_for_datasets(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => true);
+
+        (new HDRUK())->search('asthma', 'datasets', ['dataSource' => 'ARDC']);
+
+        Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
+            $data = $this->getSearchAnalyticsData($job);
+
+            return $data->entityType === 'datasets'
+                && $data->searchTerm === 'asthma'
+                && $data->dataSource === 'ARDC';
+        });
+    }
+
+    public function test_search_via_typesense_dispatches_log_search_analytics_for_a_non_dataset_type(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => true);
+
+        (new HDRUK())->search('nlp', 'tools', []);
+
+        Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
+            $data = $this->getSearchAnalyticsData($job);
+
+            return $data->entityType === 'tools' && $data->searchTerm === 'nlp';
+        });
+    }
+
+    public function test_search_via_typesense_defaults_data_source_to_hdruk_when_absent(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => true);
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+
+        Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
+            return $this->getSearchAnalyticsData($job)->dataSource === 'HDRUK';
         });
     }
 }

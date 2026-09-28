@@ -20,6 +20,7 @@ class SendEmailJob implements ShouldQueue
 
     public $tries   = 3;
     public $backoff = [10, 30, 60];
+    public $timeout = 60;
 
     public $to = [];
     private $template = null;

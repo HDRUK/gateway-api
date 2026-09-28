@@ -72,11 +72,10 @@ class User extends Authenticatable
         'orcid',
         'contact_feedback',
         'contact_news',
-        'mongo_id',
-        'mongo_object_id',
         'is_admin',
         'terms',
         'is_nhse_sde_approval',
+        'registry_digital_identifier',
     ];
 
     /**
@@ -108,63 +107,105 @@ class User extends Authenticatable
 
     protected $appends = ['rquestroles', 'cohort_discovery_roles', 'cohort_discovery_nhs_sde'];
 
-    public function getCohortDiscoveryRolesAttribute()
+    /**
+     * Instance-scoped cache populated by preloadCohortDataForUsers() to avoid
+     * per-user queries when serializing many users at once. Instance-level
+     * (not static) so it carries no state across requests under Octane.
+     */
+    private ?array $cohortRoleCache = null;
+
+    private ?bool $cohortNhsSdeCache = null;
+
+    /**
+     * Batch-load cohort request roles and NHS SDE approval for a collection of
+     * users, so serializing them (which auto-computes the $appends below)
+     * doesn't issue per-user queries. Call before ->toArray()/response.
+     */
+    public static function preloadCohortDataForUsers(\Illuminate\Support\Collection $users): void
     {
-        $id = $this->id;
+        $userIds = $users->pluck('id')->unique()->values()->all();
 
-        $cohortRequest = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-        ])->first();
-
-        if (! $cohortRequest) {
-            return [];
+        if (empty($userIds)) {
+            return;
         }
 
-        $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id,
-        ])->pluck('permission_id')->toArray();
+        $accessGrantingCohortRequestByUser = CohortRequest::whereIn('user_id', $userIds)
+            ->whereIn('request_status', CohortRequest::ACCESS_GRANTING_STATUSES)
+            ->get()
+            ->filter(fn ($cohortRequest) => CohortRequest::grantsAccess($cohortRequest))
+            ->groupBy('user_id')
+            ->map(fn ($requests) => $requests->first());
 
-        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+        $cohortRequestIds = $accessGrantingCohortRequestByUser->pluck('id')->all();
 
-        return $cohortRequestRoles;
+        $permissionIdsByCohortRequest = CohortRequestHasPermission::whereIn('cohort_request_id', $cohortRequestIds)
+            ->get()
+            ->groupBy('cohort_request_id');
+
+        $allPermissionIds = $permissionIdsByCohortRequest->flatten()->pluck('permission_id')->unique()->values()->all();
+
+        $permissionNamesById = Permission::whereIn('id', $allPermissionIds)->pluck('name', 'id');
+
+        $nhsSdeApprovedUserIds = array_flip(
+            CohortRequest::whereIn('user_id', $userIds)
+                ->whereIn('request_status', CohortRequest::ACCESS_GRANTING_STATUSES)
+                ->where('nhse_sde_request_status', 'APPROVED')
+                ->whereNull('nhse_sde_request_expire_at')
+                ->get()
+                ->filter(fn ($cohortRequest) => CohortRequest::grantsAccess($cohortRequest))
+                ->pluck('user_id')
+                ->unique()
+                ->all()
+        );
+
+        foreach ($users as $user) {
+            $cohortRequest = $accessGrantingCohortRequestByUser->get($user->id);
+
+            if ($cohortRequest === null) {
+                $user->cohortRoleCache = [];
+            } else {
+                $user->cohortRoleCache = $permissionIdsByCohortRequest->get($cohortRequest->id, collect())
+                    ->pluck('permission_id')
+                    ->map(fn ($permissionId) => $permissionNamesById->get($permissionId))
+                    ->filter()
+                    ->values()
+                    ->all();
+            }
+
+            $user->cohortNhsSdeCache = isset($nhsSdeApprovedUserIds[$user->id]);
+        }
+    }
+
+    public function getCohortDiscoveryRolesAttribute()
+    {
+        if ($this->cohortRoleCache !== null) {
+            return $this->cohortRoleCache;
+        }
+
+        return CohortRequest::rolesForUser($this->id);
     }
 
     public function getRquestRolesAttribute()
     {
-        $id = $this->id;
-
-        $cohortRequest = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-        ])->first();
-
-        if (! $cohortRequest) {
-            return [];
+        if ($this->cohortRoleCache !== null) {
+            return $this->cohortRoleCache;
         }
 
-        $cohortRequestRoleIds = CohortRequestHasPermission::where([
-            'cohort_request_id' => $cohortRequest->id,
-        ])->pluck('permission_id')->toArray();
-
-        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
-
-        return $cohortRequestRoles;
+        return CohortRequest::rolesForUser($this->id);
     }
 
     public function getCohortDiscoveryNhsSdeAttribute()
     {
-        $id = $this->id;
+        if ($this->cohortNhsSdeCache !== null) {
+            return $this->cohortNhsSdeCache;
+        }
 
-        $nhsSdeApproved = CohortRequest::where([
-            'user_id' => $id,
-            'request_status' => 'APPROVED',
-            'nhse_sde_request_status' => 'APPROVED',
-        ])
-            ->whereNull('nhse_sde_request_expire_at')
-            ->exists();
+        $cohortRequest = CohortRequest::where(['user_id' => $this->id])->first();
 
-        return $nhsSdeApproved;
+        return $cohortRequest !== null
+            && CohortRequest::grantsAccess($cohortRequest)
+            && $cohortRequest->nhse_sde_request_status === 'APPROVED'
+            && $cohortRequest->nhse_sde_request_expire_at === null;
     }
 
     /**

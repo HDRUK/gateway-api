@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\SSO;
 
 use Exception;
-use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Models\CohortRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Models\CohortRequestHasPermission;
 
 class CustomUserController extends Controller
 {
@@ -32,29 +30,7 @@ class CustomUserController extends Controller
 
             $userId = $user->id;
 
-            $cohortRequest = CohortRequest::where([
-                'user_id' => $userId,
-                'request_status' => 'APPROVED',
-            ])->first();
-
-            if (!$cohortRequest) {
-                return [];
-            }
-
-            $cohortRequestRoleIds = CohortRequestHasPermission::select('permission_id')->where([
-                'cohort_request_id' => $cohortRequest->id
-            ])->get()->toArray();
-
-            $crRoleIds = [];
-            foreach ($cohortRequestRoleIds as $cohortRequestRoleId) {
-                $crRoleIds[] = $cohortRequestRoleId['permission_id'];
-            }
-
-            $permissions = Permission::select('name')->whereIn('id', $crRoleIds)->get()->toArray();
-            $cohortDiscoveryRoles = [];
-            foreach ($permissions as $role) {
-                $cohortDiscoveryRoles[] = $role['name'];
-            }
+            $cohortDiscoveryRoles = CohortRequest::rolesForUser($userId);
 
             return response()->json([
                 'id' => $user->id,

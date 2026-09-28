@@ -5,8 +5,12 @@ namespace App\Providers;
 use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\DataAccessApplication;
 use App\Observers\DataAccessApplicationObserver;
+use App\Services\Gwdm\GwdmHandlerFactory;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use Config;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 use Laravel\Pennant\Feature;
@@ -20,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->bind(GwdmMetadataHandler::class, fn ($app) => $app->make(GwdmHandlerFactory::class)
+            ->resolve(Config::get('metadata.GWDM.version')));
+
         if (Config::get('logging.sqlLog') === true) {
             \DB::listen(function ($query) {
                 $bindings = [];
@@ -70,6 +77,19 @@ class AppServiceProvider extends ServiceProvider
 
         Request::macro('jwtUser', function () {
             return $this->input('jwt_user', []);
+        });
+
+        $this->configureRateLimiting();
+    }
+
+    /**
+     * @return void
+     */
+    protected function configureRateLimiting()
+    {
+        // TODO - Change this when we're ready to introduce rate limiting proper
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(config('gateway.rate_limit'))->by($request->user()?->id ?: $request->ip());
         });
     }
 }

@@ -76,6 +76,8 @@ return [
         'project_id' => env('GOOGLE_CLOUD_BIGQUERY_PROJECT_ID', 'gcp_bigquery_project_id'),
         'dashboard_dataset' => env('GOOGLE_CLOUD_BIGQUERY_DASHBOARD_DATASET', 'gcp_bigquery_dashboard_dataset'),
         'dashboard_table' => env('GOOGLE_CLOUD_BIGQUERY_DASHBOARD_TABLE', 'gcp_bigquery_dashboard_table'),
+        'search_dataset' => env('GOOGLE_CLOUD_BIGQUERY_SEARCH_DATASET', 'search'),
+        'search_analytics_table' => env('GOOGLE_CLOUD_BIGQUERY_SEARCH_ANALYTICS_TABLE', 'search_analytics'),
     ],
 
     'elasticclient' => [
@@ -120,6 +122,17 @@ return [
         'url' => env('DTA_URL', ''),
     ],
 
+    // Safe People Registry acting as an identity source. The registry's own
+    // Keycloak client is never contacted directly by Gateway - the browser is
+    // sent to the Registry web app, which redeems the auth code itself and
+    // hands Gateway a short-lived, single-use code via its API instead.
+    'registry' => [
+        'web_url' => env('REGISTRY_WEB_URL', ''),
+        'login_path' => env('REGISTRY_WEB_LOGIN_PATH', '/en/keycloak'),
+        'api_url' => env('REGISTRY_API_URL', ''),
+        'handoff_secret' => env('REGISTRY_HANDOFF_SECRET'),
+    ],
+
     'mauro' => [
         'app_key' => env('MAURO_APP_KEY'),
         'api_url' => env('MAURO_API_URL'),
@@ -127,5 +140,9 @@ return [
 
     'media' => [
         'base_url' => env('MEDIA_URL', 'http://media.local'),
+    ],
+
+    'slack' => [
+        'feature_flag_webhook_url' => env('SLACK_FEATURE_FLAG_WEBHOOK_URL', ''),
     ],
 ];

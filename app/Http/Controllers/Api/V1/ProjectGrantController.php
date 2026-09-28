@@ -7,15 +7,20 @@ use Auditor;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\ProjectGrant;
+use App\Models\ProjectGrantVersion;
+use App\Models\ProjectGrantVersionHasDataset;
 use Illuminate\Http\JsonResponse;
 use App\Context\PartnerContext;
 use App\Services\ProjectGrantService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProjectGrant\CreateProjectGrant;
 use App\Exceptions\NotFoundException;
+use App\Http\Traits\CheckAccess;
 use App\Http\Traits\Responses;
 
 class ProjectGrantController extends Controller
 {
+    use CheckAccess;
     use Responses;
 
     public function __construct(
@@ -183,6 +188,102 @@ class ProjectGrantController extends Controller
             return $this->notFoundResponse($e->getMessage());
         } catch (Exception $e) {
             Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/project_grants",
+     *    operationId="create_project_grant",
+     *    tags={"Project Grant"},
+     *    summary="ProjectGrantController@store",
+     *    description="Create a project grant (and initial version)",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *        response="201",
+     *        description="Created",
+     *        @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="created"),
+     *          @OA\Property(property="data", type="object")
+     *        )
+     *    )
+     * )
+     */
+    public function store(CreateProjectGrant $request): JsonResponse
+    {
+        list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
+        $jwtUser = $request->input('jwt_user', []);
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
+
+        if (!is_null($teamId)) {
+            $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
+        }
+
+        try {
+            $input = $request->validated();
+
+            $grant = ProjectGrant::create([
+                'pid' => $input['pid'],
+                'user_id' => $currentUser,
+                'team_id' => (int) $teamId,
+            ]);
+
+            $versionNumber = array_key_exists('version', $input) ? (int) $input['version'] : 1;
+            $version = ProjectGrantVersion::create([
+                'project_grant_id' => $grant->id,
+                'version' => $versionNumber,
+                'project_grant_name' => $input['projectGrantName'],
+                'lead_researcher' => $input['leadResearcher'] ?? null,
+                'lead_research_institute' => $input['leadResearchInstitute'] ?? null,
+                'grant_numbers' => $input['grantNumbers'] ?? null,
+                'project_grant_start_date' => $input['projectGrantStartDate'] ?? null,
+                'project_grant_end_date' => $input['projectGrantEndDate'] ?? null,
+                'project_grant_scope' => $input['projectGrantScope'] ?? null,
+            ]);
+
+            if (!empty($input['datasets'])) {
+                foreach ($input['datasets'] as $datasetId) {
+                    ProjectGrantVersionHasDataset::firstOrCreate([
+                        'project_grant_id' => $grant->id,
+                        'dataset_id' => (int) $datasetId,
+                    ]);
+                }
+            }
+
+            if (!empty($input['publications'])) {
+                $version->publications()->sync($input['publications']);
+            }
+
+            if (!empty($input['tools'])) {
+                $version->tools()->sync($input['tools']);
+            }
+
+            Auditor::log([
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProjectGrant ' . $grant->id . ' created',
+            ]);
+
+            $withRelated = $request->boolean('with_related', true);
+            $created = $this->getProjectGrantById($grant->id, $withRelated);
+            $resourceClass = $this->partnerContext->resourceFor(ProjectGrant::class);
+
+            return response()->json([
+                'message' => 'created',
+                'data' => $resourceClass::make($created)->resolve($request),
+            ], 201);
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUser,
+                'team_id' => $teamId,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),

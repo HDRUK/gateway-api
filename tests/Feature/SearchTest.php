@@ -4,10 +4,13 @@ namespace Tests\Feature;
 
 use Config;
 use App\Models\Dur;
+use App\Models\Tool;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\Collection;
+use App\Models\DataProviderColl;
 use Illuminate\Support\Facades\Http;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -203,7 +206,12 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['shortTitle'] === 'Another asthma dataset');
 
-        // Test sorting by updated_at desc
+        // Test sorting by updated_at desc — pin explicit, deterministic timestamps rather than
+        // relying on the seeded rows' natural (and timing-sensitive) creation order.
+        Dataset::where('id', 3)->update(['updated_at' => now()->subMinutes(3)]);
+        Dataset::where('id', 2)->update(['updated_at' => now()->subMinutes(2)]);
+        Dataset::where('id', 1)->update(['updated_at' => now()]);
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=updated_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -418,7 +426,12 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'A tool');
 
-        // Test sorting by updated_at desc
+        // Test sorting by updated_at desc — pin explicit, deterministic timestamps rather than
+        // relying on the seeded rows' natural (and timing-sensitive) creation order.
+        Tool::where('id', 3)->update(['updated_at' => now()->subMinutes(3)]);
+        Tool::where('id', 2)->update(['updated_at' => now()->subMinutes(2)]);
+        Tool::where('id', 1)->update(['updated_at' => now()]);
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools" . '?sort=updated_at:desc', ["query" => "nlp"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -565,7 +578,12 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Collection');
 
-        // Test sorting by created_at desc
+        // Test sorting by updated_at desc — pin explicit, deterministic timestamps rather than
+        // relying on the seeded rows' natural (and timing-sensitive) creation order.
+        Collection::where('id', 3)->update(['updated_at' => now()->subMinutes(3)]);
+        Collection::where('id', 2)->update(['updated_at' => now()->subMinutes(2)]);
+        Collection::where('id', 1)->update(['updated_at' => now()]);
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections" . '?sort=updated_at:desc', ["query" => "nlp"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -776,7 +794,12 @@ class SearchTest extends TestCase
 
         $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Another Data Use');
 
-        // Test sorting by updated_at desc
+        // Test sorting by updated_at desc — pin explicit, deterministic timestamps rather than
+        // relying on the seeded rows' natural (and timing-sensitive) creation order.
+        Dur::where('id', 3)->update(['updated_at' => now()->subMinutes(3)]);
+        Dur::where('id', 2)->update(['updated_at' => now()->subMinutes(2)]);
+        Dur::where('id', 1)->update(['updated_at' => now()]);
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -1221,7 +1244,12 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Data Custodian Network One');
 
-        // Test sorting by updated_at desc
+        // Test sorting by updated_at desc — pin explicit, deterministic timestamps rather than
+        // relying on the seeded rows' natural (and timing-sensitive) creation order.
+        DataProviderColl::where('id', 3)->update(['updated_at' => now()->subMinutes(3)]);
+        DataProviderColl::where('id', 2)->update(['updated_at' => now()->subMinutes(2)]);
+        DataProviderColl::where('id', 1)->update(['updated_at' => now()]);
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_custodian_networks" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([

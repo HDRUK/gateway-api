@@ -5,12 +5,11 @@ namespace App\Console\Commands;
 use Config;
 use Auditor;
 use Exception;
-use App\Jobs\SendEmailJob;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestLog;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
-use App\Models\EmailTemplate;
+use App\Services\EmailManager;
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -52,7 +51,7 @@ class CohortUserExpiry extends Command
     private function handleExpiryCheck(CohortRequest $r, User $u, string $expiryField, array $warnings): void
     {
         $now = Carbon::now();
-        $trueExpiryDate = $this->calculateTrueExpiry($r, $expiryField);
+        $trueExpiryDate = $r->calculateTrueExpiry($expiryField);
 
         if ($trueExpiryDate === null) {
             Auditor::log([
@@ -68,14 +67,14 @@ class CohortUserExpiry extends Command
         switch ($expiryField) {
             case 'request_expire_at':
                 if ($trueExpiryDate <= $now) {
-                    if ($r->request_status === CohortRequest::REQUEST_APPROVED) {
+                    if (in_array($r->request_status, CohortRequest::ACCESS_GRANTING_STATUSES, true)) {
                         $this->expireRequest($r, $expiryField);
                         $this->removePermissions($r);
                         $this->createLog($r, $u);
                         $this->sendEmail($r->id, CohortRequest::REQUEST_EXPIRED, $trueExpiryDate);
                     }
                 } elseif (in_array($diff, $warnings)) {
-                    if ($r->request_status === CohortRequest::REQUEST_APPROVED) {
+                    if (in_array($r->request_status, CohortRequest::ACCESS_GRANTING_STATUSES, true)) {
                         $this->sendEmail($r->id, 'WILL_EXPIRE', $trueExpiryDate);
                     }
                 }
@@ -154,13 +153,13 @@ class CohortUserExpiry extends Command
             $user = User::where('id', $cohortRequestUserId)->first();
             $userEmail = ($user['preferred_email'] === 'primary') ?
                 $user['email'] : $user['secondary_email'];
-            $template = null;
+            $identifier = null;
             switch ($cohortRequestStatus) {
                 case 'WILL_EXPIRE':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.will.expire')->first();
+                    $identifier = 'cohort.discovery.access.will.expire';
                     break;
                 case 'EXPIRED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.expired')->first();
+                    $identifier = 'cohort.discovery.access.expired';
                     break;
             }
 
@@ -181,7 +180,9 @@ class CohortUserExpiry extends Command
                 '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            if ($identifier) {
+                app(EmailManager::class)->send($identifier, $to, $replacements);
+            }
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -193,25 +194,4 @@ class CohortUserExpiry extends Command
         }
     }
 
-    private function calculateTrueExpiry(CohortRequest $cohort, string $expiryField = 'request_expire_at'): Carbon|null
-    {
-        /** @var Carbon|null $explicitExpiry */
-        $explicitExpiry = $cohort->$expiryField;
-
-        if ($expiryField === 'nhse_sde_request_expire_at') {
-            $basedOnUpdatedAt = $cohort->nhse_sde_updated_at
-                ? $cohort->nhse_sde_updated_at->copy()->addDays((int) Config::get('cohort.cohort_nhse_sde_access_expiry_time_in_days'))
-                : null;
-        } else {
-            $basedOnUpdatedAt = $cohort->updated_at->copy()->addDays((int) Config::get('cohort.cohort_access_expiry_time_in_days'));
-        }
-
-        $candidates = array_filter([$basedOnUpdatedAt, $explicitExpiry]);
-
-        if (empty($candidates)) {
-            return null;
-        }
-
-        return Carbon::instance(min($candidates));
-    }
 }

@@ -75,7 +75,6 @@ class Publication extends BaseTypesenseModel
         'journal_name',
         'abstract',
         'url',
-        'mongo_id',
         'owner_id',
         'team_id',
         'status',

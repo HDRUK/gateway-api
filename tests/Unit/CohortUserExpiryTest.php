@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Config;
 use Tests\TestCase;
+use App\Enums\CohortRequestStatus;
 use App\Jobs\SendEmailJob;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
@@ -120,6 +121,156 @@ class CohortUserExpiryTest extends TestCase
         $this->assertDatabaseHas('cohort_request_has_permissions', [
             'cohort_request_id' => $req->id,
             'permission_id' => $perms->id,
+        ]);
+    }
+
+    public function test_it_can_expire_renewing_requests(): void
+    {
+        Mail::fake();
+
+        $req = CohortRequest::create([
+            'user_id' => 1,
+            'request_status' => CohortRequestStatus::RENEWING,
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
+            'request_expire_at' => null,
+            'created_at' => Carbon::now()->subDays(181),
+        ]);
+
+        $cr = CohortRequest::find($req->id);
+        $cr->updated_at = Carbon::now()->subDays(181);
+        $cr->save();
+
+        $perms = Permission::where([
+            'application' => 'cohort',
+            'name' => 'GENERAL_ACCESS',
+        ])->first();
+
+        CohortRequestHasPermission::create([
+            'cohort_request_id' => $req->id,
+            'permission_id' => $perms->id,
+        ]);
+
+        $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
+
+        $this->assertDatabaseHas('cohort_requests', [
+            'id' => $req->id,
+            'request_status' => 'EXPIRED',
+        ]);
+
+        $this->assertDatabaseHas('cohort_request_logs', [
+            'user_id' => 1,
+            'details' => 'Access expired',
+            'request_status' => 'EXPIRED',
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
+        ]);
+
+        $this->assertDatabaseMissing('cohort_request_has_permissions', [
+            'cohort_request_id' => $req->id,
+            'permission_id' => $perms->id,
+        ]);
+    }
+
+    public function test_it_doesnt_expire_valid_renewing_requests(): void
+    {
+        Mail::fake();
+
+        $req = CohortRequest::create([
+            'user_id' => 1,
+            'request_status' => CohortRequestStatus::RENEWING,
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
+            'request_expire_at' => null,
+            'created_at' => Carbon::now()->subDays(100),
+        ]);
+        $cr = CohortRequest::find($req->id);
+        $cr->updated_at = Carbon::now()->subDays(100);
+        $cr->save();
+
+        $perms = Permission::where([
+            'application' => 'cohort',
+            'name' => 'GENERAL_ACCESS',
+        ])->first();
+
+        CohortRequestHasPermission::create([
+            'cohort_request_id' => $req->id,
+            'permission_id' => $perms->id,
+        ]);
+
+        $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
+
+        $this->assertDatabaseHas('cohort_requests', [
+            'id' => $req->id,
+            'request_status' => 'RENEWING',
+            'request_expire_at' => null,
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
+        ]);
+
+        $this->assertDatabaseHas('cohort_request_has_permissions', [
+            'cohort_request_id' => $req->id,
+            'permission_id' => $perms->id,
+        ]);
+    }
+
+    public function test_it_sends_warning_email_when_renewing_request_nearing_expiry(): void
+    {
+        $req = CohortRequest::create([
+            'user_id' => 1,
+            'request_status' => CohortRequestStatus::RENEWING,
+            'nhse_sde_request_status' => null,
+            'request_expire_at' => null,
+            'nhse_sde_request_expire_at' => null,
+            'created_at' => Carbon::now()->subDays(179),
+        ]);
+
+        // updated_at + 180 days = now + 1 day; diff = 1; 1 is in the warning window [1,7,14]
+        $cr = CohortRequest::find($req->id);
+        $cr->updated_at = Carbon::now()->subDays(179);
+        $cr->save();
+
+        $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
+
+        Queue::assertPushed(SendEmailJob::class, 1);
+
+        // Status should NOT have changed to EXPIRED
+        $this->assertDatabaseHas('cohort_requests', [
+            'id' => $req->id,
+            'request_status' => 'RENEWING',
+        ]);
+    }
+
+    public function test_approved_and_renewing_requests_are_both_watched_in_same_run(): void
+    {
+        Mail::fake();
+
+        $approved = CohortRequest::create([
+            'user_id' => 1,
+            'request_status' => CohortRequestStatus::APPROVED,
+            'request_expire_at' => null,
+            'created_at' => Carbon::now()->subDays(181),
+        ]);
+        $approvedRecord = CohortRequest::find($approved->id);
+        $approvedRecord->updated_at = Carbon::now()->subDays(181);
+        $approvedRecord->save();
+
+        $renewing = CohortRequest::create([
+            'user_id' => 1,
+            'request_status' => CohortRequestStatus::RENEWING,
+            'request_expire_at' => null,
+            'created_at' => Carbon::now()->subDays(181),
+        ]);
+        $renewingRecord = CohortRequest::find($renewing->id);
+        $renewingRecord->updated_at = Carbon::now()->subDays(181);
+        $renewingRecord->save();
+
+        $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
+
+        $this->assertDatabaseHas('cohort_requests', [
+            'id' => $approved->id,
+            'request_status' => 'EXPIRED',
+        ]);
+
+        $this->assertDatabaseHas('cohort_requests', [
+            'id' => $renewing->id,
+            'request_status' => 'EXPIRED',
         ]);
     }
 

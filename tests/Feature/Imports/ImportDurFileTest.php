@@ -4,6 +4,8 @@ namespace Tests\Feature\Imports;
 
 use App\Imports\ImportDurFile;
 use App\Models\Dur;
+use App\Models\DurOutput;
+use App\Models\Team;
 use Mockery;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
@@ -371,5 +373,55 @@ class ImportDurFileTest extends TestCase
         $this->assertContains(3, $rows);
         $this->assertContains(4, $rows);
         $this->assertContains(5, $rows);
+    }
+
+    public function test_creates_a_dur_output_row_per_comma_separated_url(): void
+    {
+        $team = Team::factory()->create();
+        $import = new ImportDurFile(['user_id' => null, 'team_id' => $team->id]);
+        $import->model($this->validateHeaders());
+
+        $dur = $import->model($this->validateRow([30 => 'https://a.com, https://b.com']));
+
+        $urls = DurOutput::where('dur_id', $dur->id)->orderBy('url')->pluck('url')->all();
+        $this->assertEquals(['https://a.com', 'https://b.com'], $urls);
+    }
+
+    public function test_dur_output_rows_have_no_metadata_from_import(): void
+    {
+        $team = Team::factory()->create();
+        $import = new ImportDurFile(['user_id' => null, 'team_id' => $team->id]);
+        $import->model($this->validateHeaders());
+
+        $dur = $import->model($this->validateRow([30 => 'https://a.com']));
+
+        $output = DurOutput::where('dur_id', $dur->id)->first();
+        $this->assertNull($output->type);
+        $this->assertNull($output->title);
+        $this->assertNull($output->status);
+        $this->assertNull($output->detail);
+    }
+
+    public function test_skips_blank_urls_when_creating_dur_outputs(): void
+    {
+        $team = Team::factory()->create();
+        $import = new ImportDurFile(['user_id' => null, 'team_id' => $team->id]);
+        $import->model($this->validateHeaders());
+
+        $dur = $import->model($this->validateRow([30 => 'https://a.com, ,   ']));
+
+        $this->assertCount(1, DurOutput::where('dur_id', $dur->id)->get());
+    }
+
+    public function test_non_gateway_outputs_on_the_dur_is_unchanged_by_the_dur_outputs_addition(): void
+    {
+        $team = Team::factory()->create();
+        $import = new ImportDurFile(['user_id' => null, 'team_id' => $team->id]);
+        $import->model($this->validateHeaders());
+
+        $dur = $import->model($this->validateRow([30 => 'https://a.com, https://b.com']));
+
+        // Unchanged, pre-existing behaviour: no trimming on this legacy field.
+        $this->assertEquals(['https://a.com', ' https://b.com'], $dur->non_gateway_outputs);
     }
 }

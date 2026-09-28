@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:php8.4
+FROM dunglas/frankenphp:php8.4-trixie
 
 ENV COMPOSER_PROCESS_TIMEOUT=600
 

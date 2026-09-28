@@ -1310,6 +1310,64 @@ class DatasetTest extends TestCase
         $this->assertNull($dsv[0]->patch);
     }
 
+    /**
+     * Third-party integrations may submit the "metadata" field unwrapped, i.e. the
+     * GWDM content directly under "metadata" rather than nested under a further
+     * "metadata" key (as extractMetadata() already tolerates for the translation
+     * path). updateV2() must not 500 on this shape. Regression guard for GAT-9596.
+     */
+    public function test_update_dataset_accepts_unwrapped_metadata_shape(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET_V2,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $responseCreateDataset->decodeResponseJson()['data'];
+
+        // Unwrapped shape: the GWDM content sits directly under "metadata" with no
+        // nested "metadata" key, matching the flat payload reported by the partner.
+        $unwrappedMetadata = $this->metadataAlt['metadata'];
+        $unwrappedMetadata['summary']['title'] = 'unwrapped shape title';
+
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V2.'/'.$datasetId,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $unwrappedMetadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $dsv = DatasetVersion::where('dataset_id', $datasetId)->orderBy('version')->get();
+        $this->assertCount(1, $dsv);
+        $this->assertEquals('unwrapped shape title', $dsv[0]->title);
+
+        // original_metadata must be populated (not null) from the unwrapped submission,
+        // preserving its identifier field.
+        $originalMetadata = $dsv[0]->metadata['original_metadata'];
+        $this->assertNotNull($originalMetadata);
+        $this->assertEquals('unwrapped shape title', $originalMetadata['summary']['title']);
+    }
+
     public function test_update_team_dataset_overwrites_existing_version(): void
     {
         // create team
@@ -1364,6 +1422,82 @@ class DatasetTest extends TestCase
 
         // patch column must remain null (no delta stored in v2 path).
         $this->assertNull($dsv[0]->patch);
+    }
+
+    /**
+     * Same unwrapped-metadata regression as test_update_dataset_accepts_unwrapped_metadata_shape,
+     * but for TeamDatasetController@update, which has its own independent copy of the
+     * same bug (it does not route through DatasetService::updateV2). Regression guard
+     * for GAT-9596.
+     */
+    public function test_update_team_dataset_accepts_unwrapped_metadata_shape(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $responseCreateDataset = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId),
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $responseCreateDataset->decodeResponseJson()['data'];
+
+        $unwrappedMetadata = $this->metadataAlt['metadata'];
+        $unwrappedMetadata['summary']['title'] = 'unwrapped team shape title';
+
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $unwrappedMetadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $responseUpdateDataset->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $dsv = DatasetVersion::where('dataset_id', $datasetId)->orderBy('version')->get();
+        $this->assertCount(1, $dsv);
+        $this->assertEquals('unwrapped team shape title', $dsv[0]->title);
+    }
+
+    public function test_create_team_dataset_sets_title_and_short_title(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $responseCreateDataset = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId),
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $responseCreateDataset->decodeResponseJson()['data'];
+
+        $dsv = DatasetVersion::where('dataset_id', $datasetId)->first();
+        $expectedTitle = $this->metadata['metadata']['summary']['title'];
+
+        $this->assertNotNull($dsv->title, 'title must be set on the version created by metadataOnboard()');
+        $this->assertEquals($expectedTitle, $dsv->title);
+        $this->assertNotNull($dsv->short_title, 'short_title must be set on the version created by metadataOnboard()');
     }
 
     /**
@@ -1429,6 +1563,68 @@ class DatasetTest extends TestCase
         // Reconstructed from SQL and normalised to the bare DOI — not the raw blob, not the URL form.
         $this->assertContains('10.1111/tme.12750', $about);
         $this->assertNotContains('https://doi.org/10.1111/tme.12750', $about);
+    }
+
+
+    public function test_dataset_abstract_is_never_html_entity_encoded(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $abstract = "BHF Data Science Centre's CVD-COVID-UK consortium & partners";
+        $this->metadata['metadata']['summary']['abstract'] = $abstract;
+
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL_DATASET_V2,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $responseCreate->decodeResponseJson()['data'];
+
+        $getAbstract = function () use ($datasetId) {
+            $response = $this->json(
+                'GET',
+                self::TEST_URL_DATASET_V2.'/'.$datasetId.'?schema_model=GWDM&schema_version=2.0',
+                [],
+                $this->header,
+            );
+            $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+            $metadata = $response->decodeResponseJson()['data']['versions'][0]['metadata'];
+            if (is_string($metadata)) {
+                $metadata = json_decode($metadata, true);
+            }
+
+            return $metadata['metadata']['summary']['abstract'];
+        };
+
+        $this->assertEquals($abstract, $getAbstract());
+
+        // Resubmit the same value through the update route repeatedly
+        for ($i = 0; $i < 3; $i++) {
+            $responseUpdate = $this->json(
+                'PUT',
+                self::TEST_URL_DATASET_V2.'/'.$datasetId,
+                [
+                    'team_id' => $teamId,
+                    'user_id' => $userId,
+                    'metadata' => $this->metadata,
+                    'create_origin' => Dataset::ORIGIN_MANUAL,
+                    'status' => Dataset::STATUS_ACTIVE,
+                ],
+                $this->header,
+            );
+            $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+            $this->assertEquals($abstract, $getAbstract());
+        }
     }
 
     private function team_datasets_url(int $teamId)
@@ -1544,8 +1740,6 @@ class DatasetTest extends TestCase
                 'orcid' => ' https://orcid.org/75697342',
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'mongo_id' => 1234566,
-                'mongo_object_id' => '12345abcde',
             ],
             $this->header,
         );

@@ -10,6 +10,7 @@ use App\Models\FederationJobRun;
 use App\Models\Team;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
+use App\Services\Gwdm\GwdmMetadataHandler;
 use Carbon\Carbon;
 use Config;
 use Http;
@@ -20,6 +21,13 @@ use MetadataManagementController as MMC;
 trait GatewayMetadataIngestionTrait
 {
     use MetadataVersioning;
+
+    private bool $hadHistoryFailures = false;
+
+    public function hadHistoryFailures(): bool
+    {
+        return $this->hadHistoryFailures;
+    }
 
     public function pullCatalogueList(Federation|array $federation, GoogleSecretManagerService $gsms): Collection|array
     {
@@ -128,7 +136,8 @@ trait GatewayMetadataIngestionTrait
         GoogleSecretManagerService $gms,
         GatewayMetadataIngestionService $gmi,
         ?string $jobUuid,
-        int $attempts
+        int $attempts,
+        GwdmMetadataHandler $handler,
     ): int {
         $createdCount = 0;
         $toCreate = $remoteItems->keys()->diff($localItems->keys());
@@ -145,7 +154,8 @@ trait GatewayMetadataIngestionTrait
 
             try {
                 $data = $remoteItems[$pid];
-                $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                    ->get($this->makeDatasetUrl($federation, $data));
 
                 $this->log('info', "attempting to call dataset @ {$pid} from REMOTE collection:
                 status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
@@ -189,7 +199,7 @@ trait GatewayMetadataIngestionTrait
                         'pid' => $pid,
                     ];
 
-                    $result = $gmi->storeMetadata($input);
+                    $result = $gmi->storeMetadata($input, $handler);
 
                     $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'CREATED', 1, $attempts);
 
@@ -220,7 +230,8 @@ trait GatewayMetadataIngestionTrait
             if ($localItems->has($pid)) {
                 try {
                     $local = $localItems[$pid];
-                    $response = Http::get($this->makeDatasetUrl($federation, $data), $this->determineAuthType($federation, $gms));
+                    $response = Http::withHeaders($this->determineAuthType($federation, $gms))
+                        ->get($this->makeDatasetUrl($federation, $data));
                     if ($response->status() === 200) {
                         $team = Team::where('id', $gmi->getTeam())->first();
                         $ds = Dataset::where([
@@ -232,6 +243,25 @@ trait GatewayMetadataIngestionTrait
                         if (!$dvModel) {
                             $this->log('warning', "dataset {$pid} has no version record locally - skipping update");
                             continue;
+                        }
+
+                        if ($ds->status === Dataset::STATUS_ARCHIVED) {
+                            $conflictingActiveId = Dataset::where([
+                                'pid' => $pid,
+                                'team_id' => $gmi->getTeam(),
+                                'status' => Dataset::STATUS_ACTIVE,
+                            ])
+                                ->where('id', '!=', $ds->id)
+                                ->value('id');
+
+                            if ($conflictingActiveId) {
+                                $this->log('warning', "dataset {$pid} reappeared in REMOTE collection but ACTIVE dataset id={$conflictingActiveId} with the same PID already exists locally in place of ARCHIVED dataset id={$ds->id} - skipping re-publish to avoid duplicate PID");
+                                continue;
+                            }
+
+                            $ds->status = Dataset::STATUS_ACTIVE;
+                            $ds->save();
+                            $this->log('info', "dataset {$pid} REPUBLISHED (was ARCHIVED, reappeared in REMOTE collection)");
                         }
 
                         $dv = $dvModel->toArray();
@@ -312,7 +342,7 @@ trait GatewayMetadataIngestionTrait
                 case 'API_KEY':
                     $key = $gsms->getSecret($federation->auth_secret_key_location);
                     return [
-                        'apikey' => $key,
+                        'apikey' => json_decode($key, true)['api_key'],
                     ];
                 case 'NO_AUTH':
                     // Nothing to do
@@ -353,6 +383,10 @@ trait GatewayMetadataIngestionTrait
 
     public function sendToHistory(int $teamId, int $federationId, string $pid, string $jobUuid, array|string $message, int $status, int $attempts): void
     {
+        if ($status === 0) {
+            $this->hadHistoryFailures = true;
+        }
+
         FederationJobRun::create(
             [
                 'team_id' => $teamId,

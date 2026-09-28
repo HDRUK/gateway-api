@@ -7,6 +7,8 @@ use Illuminate\Http\Response;
 
 class InternalServerErrorException extends Exception
 {
+    public const ERROR_BOUNDS = 'ERR-INTERNAL-SERVER-';
+
     public function __construct(
         string $message = '',
         int $code = Response::HTTP_INTERNAL_SERVER_ERROR,

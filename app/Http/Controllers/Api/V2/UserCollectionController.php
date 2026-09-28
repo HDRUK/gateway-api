@@ -30,6 +30,7 @@ use App\Http\Requests\V2\Collection\UpdateCollection;
 use App\Http\Requests\V2\Collection\GetCollectionCountByUserAndStatus;
 use App\Models\CollectionHasUser;
 
+// LS: Refactor candidate - needs sorting out.
 class UserCollectionController extends Controller
 {
     use IndexElastic;
@@ -483,8 +484,6 @@ class UserCollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -521,6 +520,10 @@ class UserCollectionController extends Controller
 
             if ($collection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $collection->id);
+                // Re-index after datasets are attached so Typesense gets the full document.
+                // Collection::create() fires Scout immediately with empty datasetTitles;
+                // this call corrects that once all relations are in place.
+                $collection->fresh()->searchable();
             }
 
             Auditor::log([
@@ -652,8 +655,6 @@ class UserCollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -687,8 +688,13 @@ class UserCollectionController extends Controller
             $currentCollection = Collection::where('id', $id)->first();
             if ($currentCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
+                // Collection::where()->update doesn't hit the observer for Scout to index
+                // changes within typesense. This fixes that.
+                $currentCollection->searchable();
             } else {
                 $this->deleteCollectionFromElastic((int) $id);
+                // As above.
+                $currentCollection->unsearchable();
             }
 
             Auditor::log([
@@ -815,8 +821,6 @@ class UserCollectionController extends Controller
                 'enabled',
                 'public',
                 'counter',
-                'mongo_object_id',
-                'mongo_id',
                 'team_id',
                 'status',
             ];
@@ -873,8 +877,13 @@ class UserCollectionController extends Controller
             }
             if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
                 $this->indexElasticCollections((int) $id);
+                // Collection::where()->update doesn't hit the observer for Scout to index
+                // changes within typesense. This fixes that.
+                $updatedCollection->searchable();
             } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
                 $this->deleteCollectionFromElastic((int) $id);
+                // As above.
+                $updatedCollection->unsearchable();
             }
 
             Auditor::log([

@@ -203,6 +203,11 @@ class RoleSeeder extends Seeder
                     'papers.create',
                     'papers.update',
                     'papers.delete',
+
+                    'project_grants.read',
+                    'project_grants.create',
+                    'project_grants.update',
+                    'project_grants.delete',
                 ],
             ],
             'custodian.team.cohortAdmin' => [
@@ -254,6 +259,11 @@ class RoleSeeder extends Seeder
                     'papers.create',
                     'papers.update',
                     'papers.delete',
+
+                    'project_grants.read',
+                    'project_grants.create',
+                    'project_grants.update',
+                    'project_grants.delete',
 
                     'tools.read',
                     'tools.create',
@@ -334,6 +344,11 @@ class RoleSeeder extends Seeder
                     'papers.create',
                     'papers.update',
                     'papers.delete',
+
+                    'project_grants.read',
+                    'project_grants.create',
+                    'project_grants.update',
+                    'project_grants.delete',
 
                 ],
             ],

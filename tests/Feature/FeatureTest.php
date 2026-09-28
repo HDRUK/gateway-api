@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
@@ -67,6 +68,90 @@ class FeatureTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonStructure(['data']);
         $this->assertFalse(Feature::for(null)->active($name));
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL."/{$name}",
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+        $this->assertTrue(Feature::for(null)->active($name));
+    }
+
+    public function test_toggling_a_feature_posts_a_slack_notification(): void
+    {
+        config(['services.slack.feature_flag_webhook_url' => 'https://hooks.slack.com/services/TEST/TEST/TEST']);
+        config(['app.env' => 'testing']);
+        config(['gateway.gateway_url' => 'https://example.test']);
+
+        Http::fake([
+            'hooks.slack.com/*' => Http::response(['ok' => true], 200),
+        ]);
+
+        $name = fake()->unique()->slug(2);
+
+        Feature::for(null)->deactivate($name);
+        Feature::flushCache();
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL."/{$name}",
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+
+        Http::assertSent(function ($request) use ($name) {
+            return $request->url() === 'https://hooks.slack.com/services/TEST/TEST/TEST'
+                && str_contains($request['text'], 'Product: Gateway')
+                && str_contains($request['text'], "Feature Flag: {$name}")
+                && str_contains($request['text'], '🟢')
+                && str_contains($request['text'], 'State: 🟢 ON')
+                && str_contains($request['text'], 'Toggled by: John Doe')
+                && str_contains($request['text'], 'Environment: testing')
+                && str_contains($request['text'], 'When: '.now()->format('l jS M Y'))
+                && str_contains($request['text'], 'Link: https://example.test/en/account/profile/search-admin?tab=features');
+        });
+    }
+
+    public function test_toggling_a_feature_skips_slack_notification_when_webhook_not_configured(): void
+    {
+        config(['services.slack.feature_flag_webhook_url' => '']);
+
+        Http::fake();
+
+        $name = fake()->unique()->slug(2);
+
+        Feature::for(null)->deactivate($name);
+        Feature::flushCache();
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL."/{$name}",
+            [],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_toggling_a_feature_still_succeeds_if_slack_notification_fails(): void
+    {
+        config(['services.slack.feature_flag_webhook_url' => 'https://hooks.slack.com/services/TEST/TEST/TEST']);
+
+        Http::fake([
+            'hooks.slack.com/*' => Http::response('unavailable', 500),
+        ]);
+
+        $name = fake()->unique()->slug(2);
+
+        Feature::for(null)->deactivate($name);
+        Feature::flushCache();
 
         $response = $this->json(
             'PUT',

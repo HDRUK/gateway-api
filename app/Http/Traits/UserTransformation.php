@@ -96,8 +96,6 @@ trait UserTransformation
                 'orcid' => $user['orcid'],
                 'contact_feedback' => $user['contact_feedback'],
                 'contact_news' => $user['contact_news'],
-                'mongo_id' => $user['mongo_id'],
-                'mongo_object_id' => $user['mongo_object_id'],
                 'terms' => $user['terms'],
                 'roles' => $user['roles'],
                 'hubspot_id' => $user['hubspot_id'],

@@ -61,6 +61,7 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'use_upsert_alias' => env('DB_MYSQL_USE_UPSERT_ALIAS', true),
         ],
 
         'localomop' => [
@@ -81,6 +82,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
                 PDO::MYSQL_ATTR_LOCAL_INFILE => true,
             ]) : [],
+            'use_upsert_alias' => env('DB_MYSQL_USE_UPSERT_ALIAS', true),
         ],
 
         'cloudsql' => [
@@ -104,6 +106,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CERT => env('MYSQL_ATTR_SSL_CERT'),
                 PDO::MYSQL_ATTR_SSL_KEY => env('MYSQL_ATTR_SSL_KEY'),
             ],
+            'use_upsert_alias' => env('DB_MYSQL_USE_UPSERT_ALIAS', true),
         ],
 
         'cloudomop' => [
@@ -127,6 +130,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_KEY => env('MYSQL_ATTR_SSL_KEY'),
                 PDO::MYSQL_ATTR_LOCAL_INFILE => true,
             ],
+            'use_upsert_alias' => env('DB_MYSQL_USE_UPSERT_ALIAS', true),
         ],
 
         'pgsql' => [

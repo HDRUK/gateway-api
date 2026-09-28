@@ -1,0 +1,7 @@
+{
+    "identifier": "dataset.link.check.report",
+    "layout": "standard",
+    "header_text": "Broken links found in [[TEAM_NAME]] dataset metadata",
+    "subject": "Gateway link check: [[DATASET_COUNT]] dataset(s) with broken links for [[TEAM_NAME]]",
+    "body": "\n        <mj-section>\n            <mj-column width=\"100%\">\n                <mj-text line-height=\"20px\">\n                    Dear [[USER_FIRSTNAME]],\n                </mj-text>\n                <mj-text line-height=\"20px\">\n                    Our nightly link check found broken or unreachable links in the metadata of [[DATASET_COUNT]] dataset(s) belonging to [[TEAM_NAME]]. Details are below.\n                </mj-text>\n                <mj-text line-height=\"20px\">\n                    [[BROKEN_LINKS_LIST]]\n                </mj-text>\n                <mj-text line-height=\"20px\">\n                    Please review and update the affected dataset metadata as needed.\n                </mj-text>\n            </mj-column>\n        </mj-section>\n"
+}

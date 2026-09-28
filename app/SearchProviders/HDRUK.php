@@ -6,6 +6,8 @@ use Auditor;
 use Http;
 use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
+use App\Jobs\LogSearchAnalytics;
+use App\Jobs\SearchAnalyticsData;
 use App\Services\Search\FilterCache;
 use App\Services\Search\CollectionHydrator;
 use App\Services\Search\DataCustodianHydrator;
@@ -14,6 +16,7 @@ use App\Services\Search\DatasetHydrator;
 use App\Services\Search\DataUseHydrator;
 use App\Services\Search\PublicationHydrator;
 use App\Services\Search\ToolHydrator;
+use Illuminate\Support\Str;
 use Laravel\Pennant\Feature;
 
 class HDRUK implements SearchProvider
@@ -328,13 +331,25 @@ class HDRUK implements SearchProvider
         $elasticHits = $this->mapHitsToElastic($result['hits'] ?? [], $type);
         $hydrated    = $this->hydrate($elasticHits, $type, $params['view_type'] ?? 'full');
         $sorted      = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
+        $entityIds   = array_column($elasticHits, '_id');
+        $total       = $result['found'] ?? 0;
+
+        LogSearchAnalytics::dispatch(new SearchAnalyticsData(
+            uuid: (string) Str::uuid(),
+            entityType: $type,
+            searchTerm: $query,
+            filters: $clauses,
+            dataSource: $params['dataSource'] ?? 'HDRUK',
+            entityIds: $entityIds,
+            entitiesReturned: $total,
+        ));
 
         return [
             'source'       => 'typesense',
             'hits'         => $sorted,
-            'total'        => $result['found'] ?? 0,
+            'total'        => $total,
             'aggregations' => array_merge($this->mapFacetsToAggregations($facetCounts), $dateRangeAggs, $popSizeAgg),
-            'ids'          => array_column($elasticHits, '_id'),
+            'ids'          => $entityIds,
         ];
     }
 
@@ -400,11 +415,34 @@ class HDRUK implements SearchProvider
                 : $doc['id'];
 
             return [
-                '_id'     => $id,
-                '_score'  => $hit['text_match'] ?? 1,
-                '_source' => $doc,
+                '_id'       => $id,
+                '_score'    => $hit['text_match'] ?? 1,
+                '_source'   => $doc,
+                'highlight' => $this->mapHighlightToElastic($hit['highlight'] ?? []),
             ];
         }, $typesenseHits);
+    }
+
+    /**
+     * Reshape Typesense's per field highlight object into the Elasticsearch
+     * `{field: [snippet, ...]}` shape the frontend already expects. Fields with no
+     * highlight (not queried, or no match) are omitted rather than sent as
+     * empty arrays - the FE fallback chain already treats a missing field
+     * the same as an empty one, at least it looks that way.
+     */
+    private function mapHighlightToElastic(array $typesenseHighlight): array
+    {
+        $highlight = [];
+
+        foreach ($typesenseHighlight as $field => $fieldHighlight) {
+            $snippet = $fieldHighlight['snippet'] ?? null;
+
+            if ($snippet !== null) {
+                $highlight[$field] = [$snippet];
+            }
+        }
+
+        return $highlight;
     }
 
     /**

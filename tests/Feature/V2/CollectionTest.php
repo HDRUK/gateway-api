@@ -12,6 +12,9 @@ use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\CollectionHasUser;
 use App\Models\Publication;
+use Laravel\Pennant\Feature;
+use Laravel\Scout\EngineManager;
+use Laravel\Scout\Engines\Engine;
 use Tests\Traits\MockExternalApis;
 
 class CollectionTest extends TestCase
@@ -79,8 +82,6 @@ class CollectionTest extends TestCase
                     'created_at',
                     'updated_at',
                     'deleted_at',
-                    'mongo_object_id',
-                    'mongo_id',
                     'keywords',
                     'datasets',
                     'tools',
@@ -192,8 +193,6 @@ class CollectionTest extends TestCase
                 'created_at',
                 'updated_at',
                 'deleted_at',
-                'mongo_object_id',
-                'mongo_id',
                 'keywords',
                 'dataset_versions',
                 'tools',
@@ -1066,8 +1065,6 @@ class CollectionTest extends TestCase
                 'created_at',
                 'updated_at',
                 'deleted_at',
-                'mongo_object_id',
-                'mongo_id',
                 'keywords',
                 'dataset_versions',
                 'tools',
@@ -1549,8 +1546,6 @@ class CollectionTest extends TestCase
                 'created_at',
                 'updated_at',
                 'deleted_at',
-                'mongo_object_id',
-                'mongo_id',
                 'keywords',
                 'dataset_versions',
                 'tools',
@@ -1811,6 +1806,137 @@ class CollectionTest extends TestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * Regression: the update endpoint used Collection::where()->update() (query builder),
+     * which bypasses Eloquent model events and therefore Scout's ModelObserver.
+     * A collection created as DRAFT and later promoted to ACTIVE was never indexed
+     * by Typesense. The fix explicitly calls searchable()/unsearchable() at the same
+     * code sites as indexElasticCollections()/deleteCollectionFromElastic().
+     *
+     * These tests use the users/{userId}/collections route (UserCollectionController)
+     * which is the primary personal-collection management path.
+     */
+    public function test_promoting_draft_collection_to_active_triggers_scout_indexing(): void
+    {
+        $owner = $this->createCollectionOwner();
+        $ownerHeader = $owner['ownerHeader'];
+        $ownerId = $owner['userId'];
+        $datasets = $this->generateDatasets();
+        $imageLink = Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']);
+
+        // Create as DRAFT — should not be indexed
+        $responseIn = $this->json('POST', 'api/v2/users/' . $ownerId . '/collections', [
+            'name'        => 'Draft Collection',
+            'description' => 'Created as draft.',
+            'image_link'  => $imageLink,
+            'enabled'     => true,
+            'public'      => true,
+            'counter'     => 0,
+            'datasets'    => $datasets,
+            'tools'       => $this->generateTools(),
+            'keywords'    => $this->generateKeywords(),
+            'dur'         => $this->generateDurs(),
+            'publications' => $this->generatePublications(),
+            'status'      => 'DRAFT',
+        ], $ownerHeader);
+
+        $responseIn->assertStatus(201);
+        $id = (int) $responseIn['data'];
+        $this->assertDatabaseHas('collections', ['id' => $id, 'status' => 'DRAFT']);
+
+        // Spy on the Scout engine to verify an explicit searchable() call reaches it.
+        // The update controller uses a query-builder update() that bypasses model events,
+        // so without the explicit call the engine would never see this promotion.
+        $indexedIds = [];
+        $engine = $this->createMock(Engine::class);
+        $engine->method('update')->willReturnCallback(function ($models) use (&$indexedIds) {
+            foreach ($models as $model) {
+                $indexedIds[] = $model->getScoutKey();
+            }
+        });
+        $manager = $this->createMock(EngineManager::class);
+        $manager->method('engine')->willReturn($engine);
+        $this->app->instance(EngineManager::class, $manager);
+
+        // Promote to ACTIVE
+        $responseUpdate = $this->json('PUT', 'api/v2/users/' . $ownerId . '/collections/' . $id, [
+            'name'        => 'Now Active Collection',
+            'description' => 'Promoted to active.',
+            'image_link'  => $imageLink,
+            'enabled'     => true,
+            'public'      => true,
+            'counter'     => 0,
+            'datasets'    => $datasets,
+            'tools'       => $this->generateTools(),
+            'keywords'    => $this->generateKeywords(),
+            'dur'         => $this->generateDurs(),
+            'publications' => $this->generatePublications(),
+            'status'      => 'ACTIVE',
+        ], $ownerHeader);
+
+        $responseUpdate->assertStatus(200);
+        $this->assertDatabaseHas('collections', ['id' => $id, 'status' => 'ACTIVE']);
+        $this->assertContains((string) $id, $indexedIds, 'Expected Scout engine to receive the collection after DRAFT → ACTIVE promotion, but it was not indexed.');
+    }
+
+    public function test_demoting_active_collection_to_draft_triggers_scout_removal(): void
+    {
+        // unsearchable() is gated behind the TypesenseSearch Pennant flag in
+        // BaseTypesenseModel::queueRemoveFromSearch — activate it for this test.
+        Feature::activate('TypesenseSearch');
+
+        $owner = $this->createCollectionOwner();
+        $ownerHeader = $owner['ownerHeader'];
+        $ownerId = $owner['userId'];
+        $imageLink = Config::get('services.media.base_url') . '/collections/' . fake()->lexify('????_????_????.') . fake()->randomElement(['jpg', 'jpeg', 'png', 'gif']);
+
+        // Create as ACTIVE
+        $responseIn = $this->json('POST', 'api/v2/users/' . $ownerId . '/collections', [
+            'name'        => 'Active Collection',
+            'description' => 'Starts active.',
+            'image_link'  => $imageLink,
+            'enabled'     => true,
+            'public'      => true,
+            'counter'     => 0,
+            'datasets'    => $this->generateDatasets(),
+            'tools'       => $this->generateTools(),
+            'keywords'    => $this->generateKeywords(),
+            'dur'         => $this->generateDurs(),
+            'publications' => $this->generatePublications(),
+            'status'      => 'ACTIVE',
+        ], $ownerHeader);
+
+        $responseIn->assertStatus(201);
+        $id = (int) $responseIn['data'];
+
+        // Spy on unsearchable() — engine->delete() should be called when demoted
+        $removedIds = [];
+        $engine = $this->createMock(Engine::class);
+        $engine->method('delete')->willReturnCallback(function ($models) use (&$removedIds) {
+            foreach ($models as $model) {
+                $removedIds[] = $model->getScoutKey();
+            }
+        });
+        $manager = $this->createMock(EngineManager::class);
+        $manager->method('engine')->willReturn($engine);
+        $this->app->instance(EngineManager::class, $manager);
+
+        // Demote to DRAFT
+        $responseUpdate = $this->json('PUT', 'api/v2/users/' . $ownerId . '/collections/' . $id, [
+            'name'        => 'Now Draft Collection',
+            'description' => 'Demoted to draft.',
+            'image_link'  => $imageLink,
+            'enabled'     => true,
+            'public'      => true,
+            'counter'     => 0,
+            'status'      => 'DRAFT',
+        ], $ownerHeader);
+
+        $responseUpdate->assertStatus(200);
+        $this->assertDatabaseHas('collections', ['id' => $id, 'status' => 'DRAFT']);
+        $this->assertContains((string) $id, $removedIds, 'Expected Scout engine to remove the collection after ACTIVE → DRAFT demotion, but it was not removed.');
+    }
+
     private function generateKeywords()
     {
         $return = [];
@@ -1903,8 +2029,6 @@ class CollectionTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -1951,8 +2075,6 @@ class CollectionTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/12345678",
-                'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );

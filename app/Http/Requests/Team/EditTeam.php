@@ -74,10 +74,6 @@ class EditTeam extends BaseFormRequest
             'notifications' => [
                 'array',
             ],
-            'mongo_object_id' => [
-                'nullable',
-                'string',
-            ],
             'is_question_bank' => [
                 'boolean',
             ],

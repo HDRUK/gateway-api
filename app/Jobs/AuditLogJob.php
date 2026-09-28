@@ -25,6 +25,8 @@ class AuditLogJob implements ShouldQueue, Silenced
      */
     public $tries = 5;
 
+    public $timeout = 60;
+
     protected array $data;
 
     public function __construct(array $auditLog)

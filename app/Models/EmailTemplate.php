@@ -43,32 +43,4 @@ class EmailTemplate extends Model
      * @var boolean
      */
     public $timestamps = true;
-
-    /**
-     * Represents the descriptive text to describe this email object
-     *
-     * @var string
-     */
-    public $identifier = '';
-
-    /**
-     * Whether or not this model is enabled or disabled
-     *
-     * @var boolean
-     */
-    public $enabled = true;
-
-    /**
-     * Represents the body of the entire message of this email object
-     *
-     * @var string
-     */
-    public $body = '';
-
-    /**
-     * Represents the subject for this message of this email object
-     *
-     * @var string
-     */
-    public $subject = '';
 }

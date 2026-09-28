@@ -78,7 +78,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'mongo_object_id',
                     'name',
                     'url',
                     'description',
@@ -122,7 +121,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
         $response->assertJsonStructure([
             'data' => [
                 'id',
-                'mongo_object_id',
                 'name',
                 'url',
                 'description',
@@ -154,7 +152,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
-            'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
@@ -221,7 +218,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
         // insert
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockDataIns = array(
-            'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
@@ -262,7 +258,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
 
         // update
         $mockDataUpdate = array(
-            'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Ea fuga ab aperiam nihil quis.',
             'url' => 'http://dach.com/odio-facilis-ex-culpa',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
@@ -327,7 +322,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
-            'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
@@ -368,7 +362,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
 
         // update
         $mockDataUpdate = array(
-            'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Ea fuga ab aperiam nihil quis.',
             'url' => 'http://dach.com/odio-facilis-ex-culpa',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
@@ -464,7 +457,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
@@ -498,7 +490,6 @@ class ToolIntegrationDeprecatedTest extends TestCase
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
-            'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',

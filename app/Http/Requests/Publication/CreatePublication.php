@@ -84,10 +84,6 @@ class CreatePublication extends BaseFormRequest
                 'integer',
                 'exists:users,id',
             ],
-            'mongo_id' => [
-                'nullable',
-                'string',
-            ],
             'team_id' => [
                 'nullable',
                 'integer',

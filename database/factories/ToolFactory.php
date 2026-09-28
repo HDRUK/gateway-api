@@ -24,7 +24,6 @@ class ToolFactory extends Factory
         $licenseId = License::all()->random()->id;
 
         return [
-            'mongo_object_id' => fake()->regexify('[a-z0-9]{24}'),
             'name' => fake()->text(255),
             'url' => fake()->url(),
             'description' => fake()->text(255),
