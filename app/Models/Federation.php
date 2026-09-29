@@ -71,6 +71,7 @@ class Federation extends Model
         'tested',
         'pid',
         'is_running',
+        'current_batch_id',
         'error',
         'error_text',
     ];
@@ -78,9 +79,12 @@ class Federation extends Model
     /**
      * Fields that must never appear in serialised API responses.
      * auth_secret_key is only ever used transiently for federation tests.
+     * current_batch_id is an internal lookup key for job_batches — only the
+     * derived progress data should ever be exposed, never the raw batch id.
      */
     protected $hidden = [
         'auth_secret_key',
+        'current_batch_id',
     ];
 
     /**
