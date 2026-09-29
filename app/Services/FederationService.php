@@ -15,8 +15,10 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Models\User;
 use Exception;
+use Illuminate\Bus\Batch;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 
 class FederationService
 {
@@ -82,6 +84,15 @@ class FederationService
         }
 
         return batchProgress($batch);
+    }
+
+    private function findBatchForExecution(int $federationId, string $jobUuid): ?Batch
+    {
+        $batchId = DB::table('job_batches')
+            ->where('name', "federation-{$federationId}-{$jobUuid}")
+            ->value('id');
+
+        return $batchId ? Bus::findBatch($batchId) : null;
     }
 
     public function create(int $teamId, array $input): Federation
@@ -225,7 +236,6 @@ class FederationService
             $rows = FederationJobRun::latestPerPidForExecution($federationId, $execution->job_uuid);
 
             $failed = $rows->filter(fn ($row) => $row->status === 0);
-            $pending = $rows->filter(fn ($row) => is_null($row->status));
 
             $failedDatasets = $failed->map(fn ($row) => [
                 'pid' => $row->pid,
@@ -236,24 +246,33 @@ class FederationService
 
             $onlyFailure = count($failedDatasets) === 1 ? $failedDatasets[0] : null;
 
+            $startedAt = $execution->started_at;
+            $finishedAt = $execution->finished_at;
+
             if ($onlyFailure) {
                 $status = 'failed';
                 $message = $onlyFailure['message'];
             } elseif (count($failedDatasets) > 1) {
                 $status = 'failed';
                 $message = count($failedDatasets) . " of {$rows->count()} datasets failed";
-            } elseif ($pending->count() > 0) {
-                $status = 'in_progress';
-                $message = null;
             } else {
-                $status = 'success';
-                $message = null;
+                $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
+
+                if ($batch && !$batch->finished()) {
+                    $status = 'in_progress';
+                    $message = null;
+                    $startedAt = $batch->createdAt->toDateTimeString();
+                    $finishedAt = null;
+                } else {
+                    $status = 'success';
+                    $message = null;
+                }
             }
 
             return [
                 'job_uuid' => $execution->job_uuid,
-                'started_at' => $execution->started_at,
-                'finished_at' => $execution->finished_at,
+                'started_at' => $startedAt,
+                'finished_at' => $finishedAt,
                 'status' => $status,
                 'message' => $message,
                 'failed_datasets' => $failedDatasets,
