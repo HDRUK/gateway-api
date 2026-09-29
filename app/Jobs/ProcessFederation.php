@@ -129,7 +129,7 @@ class ProcessFederation implements ShouldQueue
             return;
         }
 
-        Bus::batch($jobs)
+        $batch = Bus::batch($jobs)
             ->name("federation-{$federationId}-{$jobUuid}")
             ->onQueue('federation')
             ->allowFailures()
@@ -139,6 +139,8 @@ class ProcessFederation implements ShouldQueue
                 })->finaliseFederationRun($federationId, $jobUuid, $batch->hasFailures());
             })
             ->dispatch();
+
+        Federation::where('id', $federationId)->update(['current_batch_id' => $batch->id]);
     }
 
     public function failed(Throwable $exception): void

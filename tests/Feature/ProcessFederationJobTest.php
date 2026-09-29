@@ -1013,4 +1013,46 @@ class ProcessFederationJobTest extends TestCase
         });
     }
 
+    public function test_current_batch_id_is_recorded_after_a_real_batch_is_dispatched(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'new-pid', 'version' => '1.0']],
+            ], 200),
+            $this->datasetUrlPattern('new-pid') => Http::response([], 404),
+        ]);
+
+        (new ProcessFederation($federation))->handle();
+
+        $fresh = $federation->fresh();
+        $this->assertNotNull($fresh->current_batch_id);
+        $this->assertDatabaseHas('job_batches', ['id' => $fresh->current_batch_id]);
+    }
+
+    public function test_current_batch_id_stays_null_when_remote_returns_no_items(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+        $this->fakeRemoteCatalogue([]);
+
+        (new ProcessFederation($federation))->handle();
+
+        $this->assertNull($federation->fresh()->current_batch_id);
+    }
+
+    public function test_current_batch_id_is_left_untouched_when_a_later_run_dispatches_no_jobs(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['current_batch_id' => 'previous-batch-id']);
+        $this->mockGsms();
+        $this->fakeRemoteCatalogue([]);
+
+        (new ProcessFederation($federation))->handle();
+
+        $this->assertSame('previous-batch-id', $federation->fresh()->current_batch_id);
+    }
+
 }
