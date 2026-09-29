@@ -25,6 +25,10 @@ return [
         'code' => 404,
         'message' => 'not found',
     ],
+    'STATUS_CONFLICT' => [
+        'code' => 409,
+        'message' => 'conflict',
+    ],
     'STATUS_SERVER_ERROR' => [
         'code' => 500,
         'message' => 'internal server error',
