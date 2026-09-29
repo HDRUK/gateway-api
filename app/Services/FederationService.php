@@ -16,6 +16,7 @@ use App\Models\TeamUserHasRole;
 use App\Models\User;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Bus;
 
 class FederationService
 {
@@ -36,6 +37,7 @@ class FederationService
                 $federation->auth_type
             ));
             $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id));
+            $federation->setAttribute('progress', $this->currentProgress($federation));
             return $federation;
         });
 
@@ -44,21 +46,42 @@ class FederationService
 
     public function getForTeam(int $teamId, int $federationId): array
     {
-        $federation = Federation::whereHas('team', function ($query) use ($teamId) {
+        $federationModel = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
         })->where('id', $federationId)->with(['team', 'notifications.userNotification'])->first();
 
-        if (is_null($federation)) {
+        if (is_null($federationModel)) {
             throw new Exception('Federation not found!');
         }
 
-        $federation = $federation->toArray();
+        $federation = $federationModel->toArray();
         $federation['auth_secret_key'] = $this->decryptAuthSecretKey(
             $federation['auth_secret_key_location'] ?? null,
             $federation['auth_type'] ?? null
         );
+        $federation['progress'] = $this->currentProgress($federationModel);
 
         return $federation;
+    }
+
+    /**
+     * Progress of the federation's currently in-flight sync, or null if
+     * it isn't running, hasn't dispatched a batch yet, or current_batch_id
+     * still points at a previous, already-finished run.
+     */
+    private function currentProgress(Federation $federation): ?array
+    {
+        if (!$federation->is_running || !$federation->current_batch_id) {
+            return null;
+        }
+
+        $batch = Bus::findBatch($federation->current_batch_id);
+
+        if (is_null($batch) || $batch->finished()) {
+            return null;
+        }
+
+        return batchProgress($batch);
     }
 
     public function create(int $teamId, array $input): Federation

@@ -194,3 +194,19 @@ if (! function_exists('decodeHtmlEntitiesRecursive')) {
         return $data;
     }
 }
+
+if (!function_exists('batchProgress')) {
+    /**
+     * @return array{total: int, processed: int, failed: int, pending: int, started_at: string}
+     */
+    function batchProgress(\Illuminate\Bus\Batch $batch): array
+    {
+        return [
+            'total' => $batch->totalJobs,
+            'processed' => $batch->processedJobs(),
+            'failed' => $batch->failedJobs,
+            'pending' => $batch->pendingJobs,
+            'started_at' => $batch->createdAt->toDateTimeString(),
+        ];
+    }
+}
