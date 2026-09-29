@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\FederationAlreadyRunningException;
 use App\Exceptions\FederationSecretException;
+use App\Exceptions\NotFoundException;
 use App\Http\Traits\RequestTransformation;
 use App\Jobs\ProcessFederation;
 use App\Models\Federation;
@@ -177,14 +179,17 @@ class FederationService
 
     public function runNow(int $federationId): void
     {
-        $checkFederation = Federation::where([
-            'id' => $federationId,
-            'enabled' => 1,
-            'tested' => 1,
-            'is_running' => 0,
-        ])->first();
-        if (is_null($checkFederation)) {
-            throw new Exception('Federation not found!');
+        $federation = Federation::where('id', $federationId)
+            ->where('enabled', 1)
+            ->where('tested', 1)
+            ->first();
+
+        if (is_null($federation)) {
+            throw new NotFoundException('Federation not found!');
+        }
+
+        if ($federation->is_running) {
+            throw new FederationAlreadyRunningException();
         }
 
         $service = new GatewayMetadataIngestionService();

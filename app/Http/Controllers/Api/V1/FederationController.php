@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\FederationAlreadyRunningException;
 use App\Exceptions\FederationSecretException;
+use App\Exceptions\NotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
@@ -633,6 +635,20 @@ class FederationController extends Controller
      *          @OA\Property(property="status", type="integer", example="401"),
      *          @OA\Property(property="title", type="string", example="Test Unsuccessful"),
      *       )
+     *    ),
+     *    @OA\Response(
+     *       response="404",
+     *       description="Federation not found, not enabled, or not tested",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Federation not found!"),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="409",
+     *       description="Federation is already running an integration synchronisation",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Federation is already running an integration synchronisation."),
+     *       )
      *    )
      * )
      */
@@ -657,6 +673,14 @@ class FederationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (FederationAlreadyRunningException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_CONFLICT.code'));
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
