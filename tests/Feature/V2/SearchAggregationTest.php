@@ -2,9 +2,14 @@
 
 namespace Tests\Feature\V2;
 
+use App\Jobs\LogSearchAnalytics;
+use App\Models\DatasetVersion;
+use App\Services\TypesenseService;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Pennant\Feature;
+use Tests\Fakes\FakeTypesenseService;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
@@ -225,4 +230,51 @@ class SearchAggregationTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_typesense_publisher_aggregation_includes_every_publisher_beyond_the_top_ten(): void
+    {
+        $publishers = $this->indexOnePublisherPerDataset(11);
+
+        $response = $this->json('POST', self::TEST_URL, ['type' => 'datasets'], $this->header);
+
+        $response->assertStatus(200);
+        $this->assertEqualsCanonicalizing($publishers, $this->publisherAggregationKeys($response->json()));
+    }
+
+    public function test_typesense_publisher_aggregation_includes_every_publisher_when_a_publisher_filter_is_active(): void
+    {
+        $publishers = $this->indexOnePublisherPerDataset(11);
+
+        $response = $this->json('POST', self::TEST_URL, [
+            'type'    => 'datasets',
+            'filters' => ['dataset' => ['publisherName' => [$publishers[0]]]],
+        ], $this->header);
+
+        $response->assertStatus(200);
+        $this->assertEqualsCanonicalizing($publishers, $this->publisherAggregationKeys($response->json()));
+    }
+
+    /**
+     * @return string[] the indexed publisher names
+     */
+    private function indexOnePublisherPerDataset(int $count): array
+    {
+        $publishers = array_map(fn ($i) => "Publisher {$i}", range(1, $count));
+
+        $this->app->instance(
+            TypesenseService::class,
+            (new FakeTypesenseService())->withDocuments(
+                (new DatasetVersion())->searchableAs(),
+                array_map(fn ($name) => ['publisherName' => $name], $publishers)
+            )
+        );
+        Queue::fake([LogSearchAnalytics::class]);
+        Feature::activate('TypesenseSearch');
+
+        return $publishers;
+    }
+
+    private function publisherAggregationKeys(array $body): array
+    {
+        return array_column($body['data']['results']['HDRUK']['aggregations']['publisherName']['buckets'] ?? [], 'key');
+    }
 }

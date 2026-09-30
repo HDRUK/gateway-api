@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\DatasetVersion;
+use App\Services\TypesenseService;
 use Config;
+use Laravel\Pennant\Feature;
+use Tests\Fakes\FakeTypesenseService;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
@@ -333,5 +337,26 @@ class FilterTest extends TestCase
             $content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
+    }
+
+    public function test_typesense_publisher_filter_lists_every_publisher_beyond_the_top_ten()
+    {
+        $publishers = array_map(fn ($i) => "Publisher {$i}", range(1, 11));
+        $this->app->instance(
+            TypesenseService::class,
+            (new FakeTypesenseService())->withDocuments(
+                (new DatasetVersion())->searchableAs(),
+                array_map(fn ($name) => ['publisherName' => $name], $publishers)
+            )
+        );
+        Feature::flushCache();
+        Feature::activate('TypesenseSearch');
+
+        $response = $this->get('api/v1/filters?per_page=500', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $filter = collect($response->json('data'))
+            ->first(fn ($f) => $f['type'] === 'dataset' && $f['keys'] === 'publisherName');
+        $this->assertEqualsCanonicalizing($publishers, array_column($filter['buckets'], 'key'));
     }
 }
