@@ -139,6 +139,40 @@ class DatasetVersionSearchableTest extends TestCase
         );
     }
 
+    public function test_to_searchable_array_publisher_name_is_the_owning_team_name(): void
+    {
+        $team = Team::first();
+        $user = User::first();
+
+        // Payload names a different publisher but points gatewayId at the owning team.
+        $metadata = $this->getMetadataV2p0();
+        $metadata['metadata']['summary']['publisher'] = [
+            'gatewayId' => (string) $team->id,
+            'name' => 'Example Publisher Ltd',
+            'rorId' => null,
+        ];
+        $this->assertNotSame('Example Publisher Ltd', $team->name);
+
+        request()->headers->set('x-gwdm-version', '2.0');
+        $created = $this->service()->create(
+            [
+                'metadata' => $metadata,
+                'status' => Dataset::STATUS_ACTIVE,
+                'user_id' => $user->id,
+                'team_id' => $team->id,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+            ],
+            $team,
+            null,
+            null,
+            false,
+        );
+
+        $version = DatasetVersion::where('dataset_id', $created['dataset_id'])->first();
+
+        $this->assertSame($team->name, $version->toSearchableArray()['publisherName']);
+    }
+
     public function test_to_searchable_array_matches_between_snapshot_and_delta(): void
     {
         $team = Team::first();
