@@ -718,9 +718,8 @@ class ProcessFederationJobTest extends TestCase
         // The simulated server only accepts requests carrying the exact bearer
         // token above — it 401s the initial catalogue connection AND any
         // subsequent per-dataset lookup if either is missing the header. The
-        // per-dataset response is a benign 404 ("nothing to translate") so
-        // this test stays focused on the auth gate rather than exercising the
-        // unrelated metadata-translation/dataset-creation internals.
+        // per-dataset response is a 404 so this test stays focused on the auth
+        // gate rather than the metadata-translation/dataset-creation internals.
         $this->fakeAuthenticatingRemoteServer(
             authType: 'BEARER',
             expectedCredential: 'correct-token',
@@ -737,9 +736,6 @@ class ProcessFederationJobTest extends TestCase
             && $request->hasHeader('Authorization', 'Bearer correct-token'));
         Http::assertSent(fn ($request) => str_contains($request->url(), '/server-verified-pid')
             && $request->hasHeader('Authorization', 'Bearer correct-token'));
-
-        // No auth failure was recorded for this dataset.
-        $this->assertDatabaseMissing('federation_job_runs', ['pid' => 'server-verified-pid', 'status' => 0]);
     }
 
     public function test_initial_catalogue_connection_is_rejected_by_server_on_bad_bearer_auth(): void
@@ -792,8 +788,6 @@ class ProcessFederationJobTest extends TestCase
             && $request->hasHeader('apikey', 'correct-api-key'));
         Http::assertSent(fn ($request) => str_contains($request->url(), '/server-verified-pid')
             && $request->hasHeader('apikey', 'correct-api-key'));
-
-        $this->assertDatabaseMissing('federation_job_runs', ['pid' => 'server-verified-pid', 'status' => 0]);
     }
 
     public function test_initial_catalogue_connection_is_rejected_by_server_on_bad_api_key_auth(): void
@@ -908,7 +902,11 @@ class ProcessFederationJobTest extends TestCase
 
         $this->assertFalse($created);
         $this->assertDatabaseMissing('datasets', ['pid' => 'missing-pid']);
-        $this->assertDatabaseMissing('federation_job_runs', ['pid' => 'missing-pid']);
+        $this->assertDatabaseHas('federation_job_runs', [
+            'pid' => 'missing-pid',
+            'job_uuid' => 'job-uuid-create-404',
+            'status' => 0,
+        ]);
     }
 
     public function test_update_federated_dataset_returns_true_and_updates_on_version_change(): void
@@ -1053,6 +1051,63 @@ class ProcessFederationJobTest extends TestCase
         (new ProcessFederation($federation))->handle();
 
         $this->assertSame('previous-batch-id', $federation->fresh()->current_batch_id);
+    }
+
+    public function test_create_dataset_endpoint_404_is_recorded_as_a_failed_run(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        Http::fake([
+            $this->datasetUrlPattern('missing-pid') => Http::response('404 - not found', 404),
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'missing-pid', 'version' => '1.0']],
+            ], 200),
+        ]);
+
+        Event::fake([FederationProcessed::class]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        Event::assertNotDispatched(FederationProcessed::class);
+        $this->assertTrue($federation->fresh()->error);
+        $this->assertDatabaseHas('federation_job_runs', [
+            'federation_id' => $federation->id,
+            'job_uuid' => $job->jobUuid,
+            'pid' => 'missing-pid',
+            'status' => 0,
+        ]);
+    }
+
+    public function test_update_dataset_endpoint_404_is_recorded_as_a_failed_run(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        $dataset = $this->makeGmiDataset($team->id, 'missing-pid');
+        $this->makeVersion($dataset, $team->id, '1.0');
+
+        Http::fake([
+            $this->datasetUrlPattern('missing-pid') => Http::response('404 - not found', 404),
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'missing-pid', 'version' => '2.0']],
+            ], 200),
+        ]);
+
+        Event::fake([FederationProcessed::class]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        Event::assertNotDispatched(FederationProcessed::class);
+        $this->assertTrue($federation->fresh()->error);
+        $this->assertDatabaseHas('federation_job_runs', [
+            'federation_id' => $federation->id,
+            'job_uuid' => $job->jobUuid,
+            'pid' => 'missing-pid',
+            'status' => 0,
+        ]);
     }
 
 }
