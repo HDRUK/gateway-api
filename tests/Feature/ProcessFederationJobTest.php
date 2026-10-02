@@ -16,6 +16,7 @@ use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 use App\Services\Gwdm\GwdmMetadataHandler;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -876,6 +877,43 @@ class ProcessFederationJobTest extends TestCase
             'job_uuid' => 'job-uuid-create-success',
             'status' => 1,
         ]);
+    }
+
+    public function test_create_federated_dataset_records_current_gwdm_version_on_its_version_row(): void
+    {
+        // Any non-default version exposes the bug; the column default is '2.0'.
+        Config::set('metadata.GWDM.version', '2.2');
+        Config::set('metadata.system_user_id', $this->currentUser['id']);
+
+        [$team, $federation] = $this->makeFederation();
+
+        // No 2.2 fixture exists; traser is mocked so the payload shape is irrelevant here.
+        Http::fake([
+            $this->datasetUrlPattern('gwdm-version-pid') => Http::response($this->getMetadataV2p1()['metadata'], 200),
+        ]);
+
+        $gmi = app(GatewayMetadataIngestionService::class);
+        $gmi->setTeam($team->id);
+
+        $created = $this->makeTrait()->createFederatedDataset(
+            $federation,
+            'gwdm-version-pid',
+            ['persistentId' => 'gwdm-version-pid', 'version' => '1.0'],
+            $this->createMock(GoogleSecretManagerService::class),
+            $gmi,
+            'job-uuid-gwdm-version',
+            1,
+            app(GwdmMetadataHandler::class),
+        );
+
+        $this->assertTrue($created);
+
+        $version = Dataset::where('pid', 'gwdm-version-pid')->sole()
+            ->versions()->sole();
+        $envelope = json_decode($version->getRawOriginal('metadata'), true);
+
+        $this->assertSame('2.2', $envelope['gwdmVersion']);
+        $this->assertSame('2.2', $version->gwdm_version);
     }
 
     public function test_create_federated_dataset_returns_false_when_dataset_fetch_is_not_200(): void
