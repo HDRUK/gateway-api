@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Exceptions\AliasReplyScannerException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\EmailTemplateException;
+use App\Exceptions\FederationAlreadyRunningException;
 use App\Exceptions\FederationSecretException;
 use App\Exceptions\IntegrationPermissionException;
 use App\Exceptions\InternalServerErrorException;
@@ -40,6 +41,7 @@ class ExceptionProfileServiceProvider extends ServiceProvider
             AliasReplyScannerException::class => [],
             BadRequestException::class => [],
             EmailTemplateException::class => [],
+            FederationAlreadyRunningException::class => [],
             FederationSecretException::class => [],
             IntegrationPermissionException::class => [],
             InternalServerErrorException::class => [],

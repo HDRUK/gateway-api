@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\FederationAlreadyRunningException;
 use App\Exceptions\FederationSecretException;
+use App\Exceptions\NotFoundException;
 use App\Http\Traits\RequestTransformation;
 use App\Jobs\ProcessFederation;
 use App\Models\Federation;
@@ -15,7 +17,10 @@ use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use App\Models\User;
 use Exception;
+use Illuminate\Bus\Batch;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 
 class FederationService
 {
@@ -36,6 +41,7 @@ class FederationService
                 $federation->auth_type
             ));
             $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id));
+            $federation->setAttribute('progress', $this->currentProgress($federation));
             return $federation;
         });
 
@@ -44,21 +50,51 @@ class FederationService
 
     public function getForTeam(int $teamId, int $federationId): array
     {
-        $federation = Federation::whereHas('team', function ($query) use ($teamId) {
+        $federationModel = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
         })->where('id', $federationId)->with(['team', 'notifications.userNotification'])->first();
 
-        if (is_null($federation)) {
+        if (is_null($federationModel)) {
             throw new Exception('Federation not found!');
         }
 
-        $federation = $federation->toArray();
+        $federation = $federationModel->toArray();
         $federation['auth_secret_key'] = $this->decryptAuthSecretKey(
             $federation['auth_secret_key_location'] ?? null,
             $federation['auth_type'] ?? null
         );
+        $federation['progress'] = $this->currentProgress($federationModel);
 
         return $federation;
+    }
+
+    /**
+     * Progress of the federation's currently in-flight sync, or null if
+     * it isn't running, hasn't dispatched a batch yet, or current_batch_id
+     * still points at a previous, already-finished run.
+     */
+    private function currentProgress(Federation $federation): ?array
+    {
+        if (!$federation->is_running || !$federation->current_batch_id) {
+            return null;
+        }
+
+        $batch = Bus::findBatch($federation->current_batch_id);
+
+        if (is_null($batch) || $batch->finished()) {
+            return null;
+        }
+
+        return batchProgress($batch);
+    }
+
+    private function findBatchForExecution(int $federationId, string $jobUuid): ?Batch
+    {
+        $batchId = DB::table('job_batches')
+            ->where('name', "federation-{$federationId}-{$jobUuid}")
+            ->value('id');
+
+        return $batchId ? Bus::findBatch($batchId) : null;
     }
 
     public function create(int $teamId, array $input): Federation
@@ -177,14 +213,17 @@ class FederationService
 
     public function runNow(int $federationId): void
     {
-        $checkFederation = Federation::where([
-            'id' => $federationId,
-            'enabled' => 1,
-            'tested' => 1,
-            'is_running' => 0,
-        ])->first();
-        if (is_null($checkFederation)) {
-            throw new Exception('Federation not found!');
+        $federation = Federation::where('id', $federationId)
+            ->where('enabled', 1)
+            ->where('tested', 1)
+            ->first();
+
+        if (is_null($federation)) {
+            throw new NotFoundException('Federation not found!');
+        }
+
+        if ($federation->is_running) {
+            throw new FederationAlreadyRunningException();
         }
 
         $service = new GatewayMetadataIngestionService();
@@ -202,7 +241,6 @@ class FederationService
             $rows = FederationJobRun::latestPerPidForExecution($federationId, $execution->job_uuid);
 
             $failed = $rows->filter(fn ($row) => $row->status === 0);
-            $pending = $rows->filter(fn ($row) => is_null($row->status));
 
             $failedDatasets = $failed->map(fn ($row) => [
                 'pid' => $row->pid,
@@ -213,24 +251,33 @@ class FederationService
 
             $onlyFailure = count($failedDatasets) === 1 ? $failedDatasets[0] : null;
 
+            $startedAt = $execution->started_at;
+            $finishedAt = $execution->finished_at;
+
             if ($onlyFailure) {
                 $status = 'failed';
                 $message = $onlyFailure['message'];
             } elseif (count($failedDatasets) > 1) {
                 $status = 'failed';
                 $message = count($failedDatasets) . " of {$rows->count()} datasets failed";
-            } elseif ($pending->count() > 0) {
-                $status = 'in_progress';
-                $message = null;
             } else {
-                $status = 'success';
-                $message = null;
+                $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
+
+                if ($batch && !$batch->finished()) {
+                    $status = 'in_progress';
+                    $message = null;
+                    $startedAt = $batch->createdAt->toDateTimeString();
+                    $finishedAt = null;
+                } else {
+                    $status = 'success';
+                    $message = null;
+                }
             }
 
             return [
                 'job_uuid' => $execution->job_uuid,
-                'started_at' => $execution->started_at,
-                'finished_at' => $execution->finished_at,
+                'started_at' => $startedAt,
+                'finished_at' => $finishedAt,
                 'status' => $status,
                 'message' => $message,
                 'failed_datasets' => $failedDatasets,

@@ -16,6 +16,7 @@ use App\Services\Search\DatasetHydrator;
 use App\Services\Search\DataUseHydrator;
 use App\Services\Search\PublicationHydrator;
 use App\Services\Search\ToolHydrator;
+use App\Services\TypesenseService;
 use Illuminate\Support\Str;
 use Laravel\Pennant\Feature;
 
@@ -195,11 +196,7 @@ class HDRUK implements SearchProvider
             // up the other term(s). Raising this lets Typesense keep dropping
             // tokens until it has found a reasonable number of results across
             // ALL the query's distinct terms, not just the first one matched.
-            'drop_tokens_threshold'            => 15,
-            // Typesense truncates facet values to 100 chars by default —
-            // the FE then sends the truncated string as a filter value, which
-            // never matches the full stored value. 0 = no truncation.
-            'facet_value_truncation_threshold' => 0,
+            'drop_tokens_threshold' => 15,
         ], $model->typesenseSearchParameters(), [
             'per_page' => (int) ($params['per_page'] ?? 20),
             'page'     => (int) ($params['page'] ?? 1),
@@ -207,7 +204,7 @@ class HDRUK implements SearchProvider
 
         $facetFields = array_values(array_filter(explode(',', config("typesense.facet_map.{$type}", ''))));
         if (!empty($facetFields)) {
-            $searchParams['facet_by'] = implode(',', $facetFields);
+            $searchParams = array_merge($searchParams, TypesenseService::facetParams($facetFields));
         }
 
         $clauses = $this->buildFilterClauses($type, $params);
@@ -240,15 +237,12 @@ class HDRUK implements SearchProvider
 
             $searches[] = array_merge(
                 [
-                    'collection'                       => $collection,
-                    'q'                                => $q,
-                    'query_by'                         => $searchParams['query_by'],
-                    'facet_by'                         => $field,
-                    'per_page'                         => 0,
-                    // Keep truncation off so bucket keys match the stored values
-                    // — see TypesenseService::facetCounts() for the same fix.
-                    'facet_value_truncation_threshold' => 0,
+                    'collection' => $collection,
+                    'q'          => $q,
+                    'query_by'   => $searchParams['query_by'],
+                    'per_page'   => 0,
                 ],
+                TypesenseService::facetParams([$field]),
                 $exclusionFilterBy !== '' ? ['filter_by' => $exclusionFilterBy] : []
             );
         }
@@ -293,7 +287,7 @@ class HDRUK implements SearchProvider
             }
         }
 
-        $multiResult = app(\App\Services\TypesenseService::class)->multiSearch($searches);
+        $multiResult = app(TypesenseService::class)->multiSearch($searches);
         $results     = $multiResult['results'] ?? [];
         $result      = $results[0] ?? [];
 

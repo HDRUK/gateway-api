@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string|null $short_title
@@ -18,8 +18,11 @@ class DatasetVersionHasDatasetVersion extends Model
     use HasFactory;
 
     public const LINKAGE_TYPE_DATASETS = 'linkedDatasets';
+
     public const LINKAGE_TYPE_DERIVED_FROM = 'isDerivedFrom';
+
     public const LINKAGE_TYPE_PART_OF = 'isPartOf';
+
     public const LINKAGE_TYPE_MEMBER_OF = 'isMemberOf';
 
     protected $fillable = [
@@ -28,6 +31,9 @@ class DatasetVersionHasDatasetVersion extends Model
         'linkage_type',
         'direct_linkage',
         'description',
+        'raw_url',
+        'raw_pid',
+        'raw_title',
     ];
 
     /**
@@ -55,7 +61,6 @@ class DatasetVersionHasDatasetVersion extends Model
     /**
      * Get the second dataset linked by this linkage.
      */
-
     public function dataset2()
     {
         return $this->belongsTo(Dataset::class, 'dataset_version_target_id');

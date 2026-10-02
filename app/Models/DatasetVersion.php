@@ -248,7 +248,7 @@ class DatasetVersion extends BaseTypesenseModel
     {
         return $this->belongsTo(Dataset::class, 'dataset_id', 'id')
             ->where('status', 'ACTIVE')
-            ->select(['id', 'status', 'is_cohort_discovery']);
+            ->select(['id', 'status', 'is_cohort_discovery', 'team_id']);
     }
 
     public function linkedCollections(): BelongsToMany
@@ -356,6 +356,8 @@ class DatasetVersion extends BaseTypesenseModel
             'geographicLocation' => $this->spatialCoverage->pluck('region')->all(),
             'partnerContext'      => $this->dataset?->partner_context ?? 'HDRUK',
             'isCohortDiscovery'  => (bool) ($this->dataset?->is_cohort_discovery ?? false),
+            // Owning team wins over the free-text metadata publisher name.
+            'publisherName'      => $this->dataset?->team?->name ?? '',
             'dataProviderColl'   => $this->dataset?->team?->dataProviderColls?->pluck('name')->all() ?? [],
             'collectionNames'    => $this->relationLoaded('linkedCollections')
                 ? $this->linkedCollections->pluck('name')->filter()->values()->all()

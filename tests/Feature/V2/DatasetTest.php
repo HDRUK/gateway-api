@@ -1362,8 +1362,7 @@ class DatasetTest extends TestCase
         $this->assertEquals('unwrapped shape title', $dsv[0]->title);
 
         // original_metadata must be populated (not null) from the unwrapped submission,
-        // preserving its identifier field. Not a full deep-equality check against the
-        // fixture since SanitizeMiddleware HTML-entity-encodes string input in transit.
+        // preserving its identifier field.
         $originalMetadata = $dsv[0]->metadata['original_metadata'];
         $this->assertNotNull($originalMetadata);
         $this->assertEquals('unwrapped shape title', $originalMetadata['summary']['title']);
@@ -1564,6 +1563,68 @@ class DatasetTest extends TestCase
         // Reconstructed from SQL and normalised to the bare DOI — not the raw blob, not the URL form.
         $this->assertContains('10.1111/tme.12750', $about);
         $this->assertNotContains('https://doi.org/10.1111/tme.12750', $about);
+    }
+
+
+    public function test_dataset_abstract_is_never_html_entity_encoded(): void
+    {
+        $notificationID = $this->createNotification();
+        $teamId = $this->createTeam([], [$notificationID]);
+        $userId = $this->createUser();
+
+        $abstract = "BHF Data Science Centre's CVD-COVID-UK consortium & partners";
+        $this->metadata['metadata']['summary']['abstract'] = $abstract;
+
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL_DATASET_V2,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $datasetId = $responseCreate->decodeResponseJson()['data'];
+
+        $getAbstract = function () use ($datasetId) {
+            $response = $this->json(
+                'GET',
+                self::TEST_URL_DATASET_V2.'/'.$datasetId.'?schema_model=GWDM&schema_version=2.0',
+                [],
+                $this->header,
+            );
+            $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+            $metadata = $response->decodeResponseJson()['data']['versions'][0]['metadata'];
+            if (is_string($metadata)) {
+                $metadata = json_decode($metadata, true);
+            }
+
+            return $metadata['metadata']['summary']['abstract'];
+        };
+
+        $this->assertEquals($abstract, $getAbstract());
+
+        // Resubmit the same value through the update route repeatedly
+        for ($i = 0; $i < 3; $i++) {
+            $responseUpdate = $this->json(
+                'PUT',
+                self::TEST_URL_DATASET_V2.'/'.$datasetId,
+                [
+                    'team_id' => $teamId,
+                    'user_id' => $userId,
+                    'metadata' => $this->metadata,
+                    'create_origin' => Dataset::ORIGIN_MANUAL,
+                    'status' => Dataset::STATUS_ACTIVE,
+                ],
+                $this->header,
+            );
+            $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+            $this->assertEquals($abstract, $getAbstract());
+        }
     }
 
     private function team_datasets_url(int $teamId)

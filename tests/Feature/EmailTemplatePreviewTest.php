@@ -46,9 +46,9 @@ class EmailTemplatePreviewTest extends TestCase
         $this->assertStringContainsString('Hello Jane', $content['data']['html']);
         $this->assertStringNotContainsString('[[USER_FIRSTNAME]]', $content['data']['html']);
 
-        // The SanitizeMiddleware htmlentities-encodes all string input; the controller
-        // must html_entity_decode it back before sending to the MJML service, or every
-        // preview receives '&lt;mjml&gt;...' instead of real markup and fails to render.
+        // The controller must html_entity_decode the body before sending to the MJML
+        // service, or every preview receives '&lt;mjml&gt;...' instead of real markup
+        // and fails to render.
         $this->assertStringContainsString('<mjml><mj-body>', $content['data']['html']);
         $this->assertStringNotContainsString('&lt;mjml&gt;', $content['data']['html']);
     }

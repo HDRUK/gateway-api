@@ -39,6 +39,11 @@ class TypesenseService
         'yourself', 'yourselves',
     ];
 
+    /**
+     * Facet values returned per field; Typesense's own default is 10.
+     */
+    public const MAX_FACET_VALUES = 250;
+
     private Client $client;
 
     public function __construct(?Client $client = null)
@@ -102,6 +107,20 @@ class TypesenseService
     }
 
     /**
+     * Shared facet settings for every search that requests facet_by.
+     *
+     * @param  string[]  $fields
+     */
+    public static function facetParams(array $fields): array
+    {
+        return [
+            'facet_by'                         => implode(',', $fields),
+            'max_facet_values'                 => self::MAX_FACET_VALUES,
+            'facet_value_truncation_threshold' => 0,
+        ];
+    }
+
+    /**
      * Returns facet counts for one or more fields on a collection, in the
      * same {field: {buckets: [{key, doc_count}]}} shape the Elasticsearch
      * filter service returns — so callers can drop this straight into an
@@ -113,15 +132,10 @@ class TypesenseService
             return [];
         }
 
-        $result = $this->rawSearch($collection, '*', [
-            'facet_by'                      => implode(',', $fields),
-            'per_page'                      => 0,
-            'max_facet_values'              => 250,
-            // Typesense truncates facet values to 100 chars by default —
-            // the FE then sends the truncated string as a filter value, which
-            // never matches the full stored value. 0 = no truncation.
-            'facet_value_truncation_threshold' => 0,
-        ]);
+        $result = $this->rawSearch($collection, '*', array_merge(
+            self::facetParams($fields),
+            ['per_page' => 0]
+        ));
 
         $facets = [];
         foreach ($result['facet_counts'] ?? [] as $facet) {
