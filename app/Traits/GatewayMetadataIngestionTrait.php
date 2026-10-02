@@ -135,6 +135,7 @@ trait GatewayMetadataIngestionTrait
             status={$response->status()}, url={$this->makeDatasetUrl($federation, $data)}");
 
             if ($response->status() !== 200) {
+                $this->recordDatasetFetchFailure($federation, $data, $pid, $response->status(), $gmi, $jobUuid, $attempts);
                 return false;
             }
 
@@ -211,6 +212,7 @@ trait GatewayMetadataIngestionTrait
                 ->get($this->makeDatasetUrl($federation, $data));
 
             if ($response->status() !== 200) {
+                $this->recordDatasetFetchFailure($federation, $data, $pid, $response->status(), $gmi, $jobUuid, $attempts);
                 return false;
             }
 
@@ -351,6 +353,20 @@ trait GatewayMetadataIngestionTrait
                     return [];
             }
         }
+    }
+
+    private function recordDatasetFetchFailure(
+        Federation $federation,
+        array $data,
+        string $pid,
+        int $status,
+        GatewayMetadataIngestionService $gmi,
+        string $jobUuid,
+        int $attempts,
+    ): void {
+        $url = $this->makeDatasetUrl($federation, $data);
+        $this->log('warning', "dataset {$pid} fetch from REMOTE returned status={$status}, url={$url}");
+        $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "Remote dataset endpoint returned status {$status} for {$url}", 0, $attempts);
     }
 
     public function makeDatasetUrl(Federation $federation, array $data): string
