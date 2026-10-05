@@ -132,7 +132,8 @@ trait MetadataOnboard
             $input['metadata']['metadata']['required'] = $required;
 
             //include a note of what the metadata was (i.e. which GWDM version)
-            $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
+            $gwdmVersion = Config::get('metadata.GWDM.version');
+            $input['metadata']['gwdmVersion'] = $gwdmVersion;
 
             [$title, $shortTitle] = $handler->extractTitleFields($input['metadata']['metadata']);
 
@@ -140,6 +141,7 @@ trait MetadataOnboard
                 'dataset_id' => $dataset->id,
                 'metadata' => json_encode($input['metadata']),
                 'version' => 1,
+                'gwdm_version' => $gwdmVersion,
                 'title' => $title,
                 'short_title' => $shortTitle,
             ]);

@@ -23,7 +23,7 @@ class DatasetVersionGwdmVersionColumnTest extends TestCase
         return Dataset::query()->firstOrFail()->id;
     }
 
-    public function test_gwdm_version_column_exists_and_defaults_to_2_0(): void
+    public function test_gwdm_version_column_exists_and_defaults_to_2_2(): void
     {
         $this->assertTrue(Schema::hasColumn('dataset_versions', 'gwdm_version'));
 
@@ -34,7 +34,7 @@ class DatasetVersionGwdmVersionColumnTest extends TestCase
         ]));
 
         // No explicit gwdm_version supplied -> the column default applies.
-        $this->assertSame('2.0', $dv->fresh()->gwdm_version);
+        $this->assertSame('2.2', $dv->fresh()->gwdm_version);
     }
 
     public function test_gwdm_version_is_mass_assignable(): void
