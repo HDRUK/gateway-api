@@ -264,6 +264,21 @@ class FederationHistoryTest extends TestCase
         $this->assertNull($content['data'][0]['finished_at']);
     }
 
+    public function test_status_is_failed_when_a_job_failed_without_recording_a_dataset_failure(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        $this->makeRun($team, $federation, 'uuid-hard-fail', 'pid-1', 1, 'CREATED', now()->toDateTimeString());
+        $this->seedBatch($this->batchName($federation->id, 'uuid-hard-fail'), total: 2, pending: 1, failed: 1, finishedAt: null);
+
+        $response = $this->get($this->historyUrl($team->id, $federation->id), $this->header);
+        $content = $response->decodeResponseJson();
+
+        $this->assertSame('failed', $content['data'][0]['status']);
+        $this->assertNotNull($content['data'][0]['message']);
+        $this->assertNotNull($content['data'][0]['finished_at']);
+    }
+
     public function test_failed_status_wins_over_in_progress_when_the_batch_is_also_unfinished(): void
     {
         [$team, $federation] = $this->makeFederation();

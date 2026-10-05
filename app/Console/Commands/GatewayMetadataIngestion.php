@@ -6,9 +6,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\ProcessFederation;
 use App\Services\GatewayMetadataIngestionService;
+use App\Traits\GatewayMetadataIngestionTrait;
 
 class GatewayMetadataIngestion extends Command
 {
+    use GatewayMetadataIngestionTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -30,6 +33,11 @@ class GatewayMetadataIngestion extends Command
     {
         Log::info('Starting gateway metadata ingestion...');
         $gmi = new GatewayMetadataIngestionService();
+
+        $reconciled = $this->reconcileStuckFederationRuns();
+        if ($reconciled > 0) {
+            Log::warning("Reconciled {$reconciled} stuck federation run(s)");
+        }
 
         // First pull all active federations
         $federations = $gmi->getActiveFederations();
