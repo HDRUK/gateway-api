@@ -1,3 +1,24 @@
+## [2.54.0](https://github.com/HDRUK/gateway-api/compare/v2.53.0...v2.54.0) (2026-10-05)
+
+### ✨ Features
+
+* **GAT-9598:** add one-off command to decode entity-encoded dataset metadata ([6e0e7d4](https://github.com/HDRUK/gateway-api/commit/6e0e7d4441e36fdbf9f549de11a89da1008c70da)), closes [GAT-9598](undefinedGAT-9598) [UpdateMetadataToSameFormat](undefinedoSameFormat) [across](undefinedoss)
+* **GAT-9612:** record the dispatched batch id on federations ([a60f9f1](https://github.com/HDRUK/gateway-api/commit/a60f9f1df990c97b92d8ab0c2a02eb7cbb0eed79)), closes [GAT-9612](undefinedGAT-9612) [exposing](undefinedosing)
+
+### 🐛 Bug Fixes
+
+* **GAT-8642:** Updated Base OS version (#1819) ([c8e622a](https://github.com/HDRUK/gateway-api/commit/c8e622ac3ddc9245f8fd9936141623d288e91156)), closes [GAT-8642](undefinedGAT-8642)
+* **GAT-9219:** Index dataset publisherName from the owning team ([7046f20](https://github.com/HDRUK/gateway-api/commit/7046f205a8f83736b7f36556cfe57883d4fcfbfb)), closes [GAT-9219](undefinedGAT-9219)
+* **GAT-9245:** Saving unresolvable linkages (#1748) ([769ff02](https://github.com/HDRUK/gateway-api/commit/769ff02850310120974c5972dd3cba4cc2ed0978)), closes [GAT-9245](undefinedGAT-9245)
+* **GAT-9598:** remove SanitizeMiddleware to stop compounding HTML-entity encoding ([5ed4b67](https://github.com/HDRUK/gateway-api/commit/5ed4b6748f6001a13a3f3505a1622ef54d5e846e)), closes [GAT-9598](undefinedGAT-9598) [across](undefinedoss)
+* **GAT-9607):** Return distinct status codes for run-now rejections ([644ff97](https://github.com/HDRUK/gateway-api/commit/644ff97161fcab741cc6bdb33693fd6c60de445f)), closes [GAT-9607](undefinedGAT-9607)
+* **GAT-9609:** return all facet values in Typesense search aggregations ([f56f011](https://github.com/HDRUK/gateway-api/commit/f56f011536bd0a1ac06bdaaed2b40ec6bbd34d57)), closes [GAT-9609](undefinedGAT-9609) [aggregations](undefinedgations) [aggregations](undefinedgations)
+* **GAT-9612:** Derive history status/timestamps from job_batches ([4862c96](https://github.com/HDRUK/gateway-api/commit/4862c965fa759947f2c526487ca58c856166776d)), closes [GAT-9612](undefinedGAT-9612)
+* **GAT-9612:** dispatch federation dataset ingestion as batched jobs ([2e0c89f](https://github.com/HDRUK/gateway-api/commit/2e0c89f3a3285eac6762083921109e60fffbb321)), closes [GAT-9612](undefinedGAT-9612)
+* **GAT-9612:** Expose federation sync progress on show/index endpoints ([ce127b8](https://github.com/HDRUK/gateway-api/commit/ce127b88e16910f6d953466454af647e1d58cbcc)), closes [GAT-9612](undefinedGAT-9612) [Expose](undefinedose)
+* **GAT-9612:** make federation is_running claim atomic and jobUuid stable ([fbddeba](https://github.com/HDRUK/gateway-api/commit/fbddebafd23667c77267b3ec7d326968545fc50b)), closes [GAT-9612](undefinedGAT-9612)
+* **GAT-9612:** Record a failed run when a federated dataset fetch is non-200 ([fb6a5a1](https://github.com/HDRUK/gateway-api/commit/fb6a5a19f62747a68c05da0d843ce1471fc4c198)), closes [GAT-9612](undefinedGAT-9612)
+
 ## [2.53.0](https://github.com/HDRUK/gateway-api/compare/v2.52.0...v2.53.0) (2026-09-23)
 
 ### ✨ Features
