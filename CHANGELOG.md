@@ -1,3 +1,9 @@
+## [2.54.1](https://github.com/HDRUK/gateway-api/compare/v2.54.0...v2.54.1) (2026-10-05)
+
+### 🐛 Bug Fixes
+
+* **GAT-9642:** write gwdm_version on dataset creation and default the column to 2.2 ([5a1a4ad](https://github.com/HDRUK/gateway-api/commit/5a1a4ad1339029841b6791922b51cb1f3024071f)), closes [GAT-9642](undefinedGAT-9642)
+
 ## [2.54.0](https://github.com/HDRUK/gateway-api/compare/v2.53.0...v2.54.0) (2026-10-05)
 
 ### ✨ Features
