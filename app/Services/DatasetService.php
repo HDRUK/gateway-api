@@ -411,6 +411,7 @@ class DatasetService
         string $createOrigin,
         bool $elasticIndexing,
         Team $team,
+        bool $validateInput = true,
     ): int {
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
@@ -433,7 +434,7 @@ class DatasetService
             $targetGwdmVersion,
             $inputSchema,
             $inputVersion,
-            ! $isDraft,
+            ! $isDraft && $validateInput,
             ! $isDraft,
         );
 
@@ -496,6 +497,7 @@ class DatasetService
         string $createOrigin,
         bool $elasticIndexing,
         Team $team,
+        bool $validateInput = true,
     ): int {
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
@@ -518,7 +520,7 @@ class DatasetService
             $targetGwdmVersion,
             $inputSchema,
             $inputVersion,
-            ! $isDraft,
+            ! $isDraft && $validateInput,
             ! $isDraft,
         );
 

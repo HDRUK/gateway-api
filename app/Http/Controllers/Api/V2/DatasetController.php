@@ -375,6 +375,7 @@ class DatasetController extends Controller
                 createOrigin: $createOrigin,
                 elasticIndexing: $request->boolean('elastic_indexing', false),
                 team: $team,
+                validateInput: $request->boolean('validate_input', true),
             );
 
             Auditor::log([
