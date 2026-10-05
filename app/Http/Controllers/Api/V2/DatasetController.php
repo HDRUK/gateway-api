@@ -331,6 +331,13 @@ class DatasetController extends Controller
      *       name="id", in="path", description="dataset id", required=true, example="1",
      *       @OA\Schema(type="integer"),
      *    ),
+     *    @OA\Parameter(
+     *       name="validate_input",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="boolean"),
+     *       description="Set to false to skip TRASER input validation (ignored for draft datasets, which always skip validation)"
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       @OA\MediaType(
