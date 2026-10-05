@@ -10,7 +10,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [
@@ -26,7 +25,6 @@ return [
         'methodController'    => 'DatasetController@listVersions',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            'sanitize.input',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -39,7 +37,6 @@ return [
         'methodController'    => 'DatasetController@showVersion',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
-            'sanitize.input',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -55,7 +52,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [

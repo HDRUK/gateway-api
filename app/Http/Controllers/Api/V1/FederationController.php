@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\FederationAlreadyRunningException;
 use App\Exceptions\FederationSecretException;
+use App\Exceptions\NotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
@@ -72,6 +74,14 @@ class FederationController extends Controller
      *                   @OA\Property(property="is_running", type="boolean", example="0"),
      *                   @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="last_run_at", type="datetime", example="2026-07-25 09:12:04", nullable=true),
+     *                   @OA\Property(property="progress", type="object", nullable=true,
+     *                      description="Only present while a sync is actively in progress",
+     *                      @OA\Property(property="total", type="integer", example="128"),
+     *                      @OA\Property(property="processed", type="integer", example="63"),
+     *                      @OA\Property(property="failed", type="integer", example="2"),
+     *                      @OA\Property(property="pending", type="integer", example="65"),
+     *                      @OA\Property(property="started_at", type="datetime", example="2026-09-29 09:12:04"),
+     *                   ),
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations?page=1"),
@@ -180,6 +190,14 @@ class FederationController extends Controller
      *              @OA\Property(property="tested", type="boolean", example="0"),
      *              @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *              @OA\Property(property="is_running", type="boolean", example="0"),
+     *              @OA\Property(property="progress", type="object", nullable=true,
+     *                 description="Only present while a sync is actively in progress",
+     *                 @OA\Property(property="total", type="integer", example="128"),
+     *                 @OA\Property(property="processed", type="integer", example="63"),
+     *                 @OA\Property(property="failed", type="integer", example="2"),
+     *                 @OA\Property(property="pending", type="integer", example="65"),
+     *                 @OA\Property(property="started_at", type="datetime", example="2026-09-29 09:12:04"),
+     *              ),
      *           ),
      *        ),
      *    ),
@@ -633,6 +651,20 @@ class FederationController extends Controller
      *          @OA\Property(property="status", type="integer", example="401"),
      *          @OA\Property(property="title", type="string", example="Test Unsuccessful"),
      *       )
+     *    ),
+     *    @OA\Response(
+     *       response="404",
+     *       description="Federation not found, not enabled, or not tested",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Federation not found!"),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="409",
+     *       description="Federation is already running an integration synchronisation",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Federation is already running an integration synchronisation."),
+     *       )
      *    )
      * )
      */
@@ -657,6 +689,14 @@ class FederationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (FederationAlreadyRunningException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_CONFLICT.code'));
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

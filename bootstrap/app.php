@@ -92,7 +92,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             'jwt.verify' => \App\Http\Middleware\JwtMiddleware::class,
-            'sanitize.input' => \App\Http\Middleware\SanitizeMiddleware::class,
             'check.access' => \App\Http\Middleware\CheckAccessMiddleware::class,
             'check.access.userId' => \App\Http\Middleware\CheckUserIdMatches::class,
             'sunset' => \App\Http\Middleware\SunsetHeader::class,
