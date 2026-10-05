@@ -73,7 +73,7 @@ class ProcessFederation implements ShouldQueue
         if ($attempts === 1) {
             $claimed = Federation::where('id', $this->federation->id)
                 ->where('is_running', false)
-                ->update(['is_running' => true]);
+                ->update(['is_running' => true, 'current_batch_id' => null]);
 
             if ($claimed === 0) {
                 $this->log('info', "federation {$this->federation->id} is already running - skipping this attempt");
@@ -130,7 +130,7 @@ class ProcessFederation implements ShouldQueue
         }
 
         $batch = Bus::batch($jobs)
-            ->name("federation-{$federationId}-{$jobUuid}")
+            ->name(federationBatchName($federationId, $jobUuid))
             ->onQueue('federation')
             ->allowFailures()
             ->finally(function (Batch $batch) use ($federationId, $jobUuid) {

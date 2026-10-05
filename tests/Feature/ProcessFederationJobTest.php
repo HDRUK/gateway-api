@@ -1079,7 +1079,7 @@ class ProcessFederationJobTest extends TestCase
         $this->assertNull($federation->fresh()->current_batch_id);
     }
 
-    public function test_current_batch_id_is_left_untouched_when_a_later_run_dispatches_no_jobs(): void
+    public function test_a_later_run_that_dispatches_no_jobs_unlinks_the_previous_batch(): void
     {
         [, $federation] = $this->makeFederation();
         $federation->update(['current_batch_id' => 'previous-batch-id']);
@@ -1088,7 +1088,28 @@ class ProcessFederationJobTest extends TestCase
 
         (new ProcessFederation($federation))->handle();
 
-        $this->assertSame('previous-batch-id', $federation->fresh()->current_batch_id);
+        $this->assertNull($federation->fresh()->current_batch_id);
+    }
+
+    public function test_a_later_run_that_fails_before_dispatching_unlinks_the_previous_batch(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['current_batch_id' => 'previous-batch-id']);
+        $this->mockGsms();
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response('upstream unavailable', 503),
+        ]);
+
+        try {
+            (new ProcessFederation($federation))->handle();
+            $this->fail('Expected the catalogue fetch to throw');
+        } catch (\RuntimeException) {
+        }
+
+        $fresh = $federation->fresh();
+        $this->assertTrue($fresh->is_running);
+        $this->assertNull($fresh->current_batch_id);
     }
 
     public function test_create_dataset_endpoint_404_is_recorded_as_a_failed_run(): void
@@ -1146,6 +1167,36 @@ class ProcessFederationJobTest extends TestCase
             'pid' => 'missing-pid',
             'status' => 0,
         ]);
+    }
+
+    public function test_finalising_a_successful_run_twice_sends_one_success_notification(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['is_running' => true]);
+
+        Event::fake([FederationProcessed::class]);
+
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-twice');
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-twice');
+
+        Event::assertDispatchedTimes(FederationProcessed::class, 1);
+        $this->assertFalse($federation->fresh()->is_running);
+    }
+
+    public function test_finalising_a_run_that_has_already_ended_changes_nothing(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['is_running' => false, 'error' => false, 'error_text' => null]);
+
+        Event::fake([FederationProcessed::class]);
+
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-late', batchHadFailures: true);
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-late');
+
+        Event::assertNotDispatched(FederationProcessed::class);
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->error);
+        $this->assertNull($fresh->error_text);
     }
 
 }
