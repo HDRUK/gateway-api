@@ -1199,4 +1199,18 @@ class ProcessFederationJobTest extends TestCase
         $this->assertNull($fresh->error_text);
     }
 
+    public function test_finalising_a_cancelled_run_ends_it_without_a_success_notification(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['is_running' => true, 'error' => false, 'error_text' => null]);
+
+        Event::fake([FederationProcessed::class]);
+
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-cancelled', batchCancelled: true);
+
+        Event::assertNotDispatched(FederationProcessed::class);
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->is_running);
+        $this->assertFalse($fresh->error);
+    }
 }

@@ -40,7 +40,7 @@ class ReconcileStuckFederationsTest extends TestCase
         return $federation;
     }
 
-    private function seedBatch(string $id, string $name, int $total, int $pending, int $failed, ?int $finishedAt = null): void
+    private function seedBatch(string $id, string $name, int $total, int $pending, int $failed, ?int $finishedAt = null, ?int $cancelledAt = null): void
     {
         DB::table('job_batches')->insert([
             'id' => $id,
@@ -50,7 +50,7 @@ class ReconcileStuckFederationsTest extends TestCase
             'failed_jobs' => $failed,
             'failed_job_ids' => '[]',
             'options' => serialize([]),
-            'cancelled_at' => null,
+            'cancelled_at' => $cancelledAt,
             'created_at' => now()->subMinutes(10)->timestamp,
             'finished_at' => $finishedAt,
         ]);
@@ -116,5 +116,20 @@ class ReconcileStuckFederationsTest extends TestCase
         $this->runIngestion();
 
         $this->assertTrue($federation->fresh()->is_running);
+    }
+
+    public function test_a_running_federation_whose_cancelled_batch_has_drained_is_ended_without_a_success_notification(): void
+    {
+        Event::fake([FederationProcessed::class]);
+        $federation = $this->makeRunningFederation('cancelled-batch');
+        // Skipped jobs count as successes, so a drained cancelled batch looks all-succeeded.
+        $this->seedBatch('cancelled-batch', "federation-{$federation->id}-uuid-cancelled", total: 3, pending: 0, failed: 0, finishedAt: now()->timestamp, cancelledAt: now()->timestamp);
+
+        $this->runIngestion();
+
+        Event::assertNotDispatched(FederationProcessed::class);
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->is_running);
+        $this->assertFalse($fresh->error);
     }
 }

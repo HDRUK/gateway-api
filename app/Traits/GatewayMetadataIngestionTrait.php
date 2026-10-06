@@ -408,8 +408,20 @@ trait GatewayMetadataIngestionTrait
      * ProcessFederationSuccess can clear the federation's error state,
      * clear is_running, and send the success notification.
      */
-    public function finaliseFederationRun(int $federationId, string $jobUuid, bool $batchHadFailures = false): void
+    public function finaliseFederationRun(int $federationId, string $jobUuid, bool $batchHadFailures = false, bool $batchCancelled = false): void
     {
+        if ($batchCancelled) {
+            $finalised = Federation::where('id', $federationId)
+                ->where('is_running', true)
+                ->update(['is_running' => false]);
+
+            $this->log('info', $finalised === 0
+                ? "federation {$federationId} run {$jobUuid} already finalised - skipping"
+                : "federation {$federationId} run {$jobUuid} stopped after its batch was cancelled");
+
+            return;
+        }
+
         $hadFailures = $batchHadFailures
             || FederationJobRun::latestPerPidForExecution($federationId, $jobUuid)
                 ->contains(fn ($run) => $run->status === 0);
@@ -471,7 +483,7 @@ trait GatewayMetadataIngestionTrait
                 }
 
                 $this->log('warning', "federation {$federation->id} still running with no jobs left in batch {$batch->id} - finalising run {$jobUuid}");
-                $this->finaliseFederationRun($federation->id, $jobUuid, $batch->hasFailures());
+                $this->finaliseFederationRun($federation->id, $jobUuid, $batch->hasFailures(), $batch->cancelled());
 
                 return true;
             });
