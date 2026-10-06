@@ -16,6 +16,7 @@ use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 use App\Services\Gwdm\GwdmMetadataHandler;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -878,6 +879,43 @@ class ProcessFederationJobTest extends TestCase
         ]);
     }
 
+    public function test_create_federated_dataset_records_current_gwdm_version_on_its_version_row(): void
+    {
+        // Any non-default version exposes the bug; the column default is '2.0'.
+        Config::set('metadata.GWDM.version', '2.2');
+        Config::set('metadata.system_user_id', $this->currentUser['id']);
+
+        [$team, $federation] = $this->makeFederation();
+
+        // No 2.2 fixture exists; traser is mocked so the payload shape is irrelevant here.
+        Http::fake([
+            $this->datasetUrlPattern('gwdm-version-pid') => Http::response($this->getMetadataV2p1()['metadata'], 200),
+        ]);
+
+        $gmi = app(GatewayMetadataIngestionService::class);
+        $gmi->setTeam($team->id);
+
+        $created = $this->makeTrait()->createFederatedDataset(
+            $federation,
+            'gwdm-version-pid',
+            ['persistentId' => 'gwdm-version-pid', 'version' => '1.0'],
+            $this->createMock(GoogleSecretManagerService::class),
+            $gmi,
+            'job-uuid-gwdm-version',
+            1,
+            app(GwdmMetadataHandler::class),
+        );
+
+        $this->assertTrue($created);
+
+        $version = Dataset::where('pid', 'gwdm-version-pid')->sole()
+            ->versions()->sole();
+        $envelope = json_decode($version->getRawOriginal('metadata'), true);
+
+        $this->assertSame('2.2', $envelope['gwdmVersion']);
+        $this->assertSame('2.2', $version->gwdm_version);
+    }
+
     public function test_create_federated_dataset_returns_false_when_dataset_fetch_is_not_200(): void
     {
         [$team, $federation] = $this->makeFederation();
@@ -1041,7 +1079,7 @@ class ProcessFederationJobTest extends TestCase
         $this->assertNull($federation->fresh()->current_batch_id);
     }
 
-    public function test_current_batch_id_is_left_untouched_when_a_later_run_dispatches_no_jobs(): void
+    public function test_a_later_run_that_dispatches_no_jobs_unlinks_the_previous_batch(): void
     {
         [, $federation] = $this->makeFederation();
         $federation->update(['current_batch_id' => 'previous-batch-id']);
@@ -1050,7 +1088,28 @@ class ProcessFederationJobTest extends TestCase
 
         (new ProcessFederation($federation))->handle();
 
-        $this->assertSame('previous-batch-id', $federation->fresh()->current_batch_id);
+        $this->assertNull($federation->fresh()->current_batch_id);
+    }
+
+    public function test_a_later_run_that_fails_before_dispatching_unlinks_the_previous_batch(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['current_batch_id' => 'previous-batch-id']);
+        $this->mockGsms();
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response('upstream unavailable', 503),
+        ]);
+
+        try {
+            (new ProcessFederation($federation))->handle();
+            $this->fail('Expected the catalogue fetch to throw');
+        } catch (\RuntimeException) {
+        }
+
+        $fresh = $federation->fresh();
+        $this->assertTrue($fresh->is_running);
+        $this->assertNull($fresh->current_batch_id);
     }
 
     public function test_create_dataset_endpoint_404_is_recorded_as_a_failed_run(): void
@@ -1108,6 +1167,36 @@ class ProcessFederationJobTest extends TestCase
             'pid' => 'missing-pid',
             'status' => 0,
         ]);
+    }
+
+    public function test_finalising_a_successful_run_twice_sends_one_success_notification(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['is_running' => true]);
+
+        Event::fake([FederationProcessed::class]);
+
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-twice');
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-twice');
+
+        Event::assertDispatchedTimes(FederationProcessed::class, 1);
+        $this->assertFalse($federation->fresh()->is_running);
+    }
+
+    public function test_finalising_a_run_that_has_already_ended_changes_nothing(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $federation->update(['is_running' => false, 'error' => false, 'error_text' => null]);
+
+        Event::fake([FederationProcessed::class]);
+
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-late', batchHadFailures: true);
+        $this->makeTrait()->finaliseFederationRun($federation->id, 'job-uuid-late');
+
+        Event::assertNotDispatched(FederationProcessed::class);
+        $fresh = $federation->fresh();
+        $this->assertFalse($fresh->error);
+        $this->assertNull($fresh->error_text);
     }
 
 }

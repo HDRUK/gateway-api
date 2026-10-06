@@ -195,6 +195,30 @@ if (! function_exists('decodeHtmlEntitiesRecursive')) {
     }
 }
 
+if (!function_exists('federationBatchName')) {
+    function federationBatchName(int $federationId, string $jobUuid): string
+    {
+        return "federation-{$federationId}-{$jobUuid}";
+    }
+}
+
+if (!function_exists('federationJobUuidFromBatchName')) {
+    function federationJobUuidFromBatchName(int $federationId, string $batchName): ?string
+    {
+        $prefix = federationBatchName($federationId, '');
+
+        return str_starts_with($batchName, $prefix) ? substr($batchName, strlen($prefix)) : null;
+    }
+}
+
+if (!function_exists('batchHasJobsLeftToRun')) {
+    // Not $batch->finished(): Laravel only sets finished_at when every job succeeds.
+    function batchHasJobsLeftToRun(\Illuminate\Bus\Batch $batch): bool
+    {
+        return ($batch->pendingJobs - $batch->failedJobs) > 0;
+    }
+}
+
 if (!function_exists('batchProgress')) {
     /**
      * @return array{total: int, processed: int, failed: int, pending: int, started_at: string}

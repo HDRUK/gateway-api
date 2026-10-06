@@ -81,7 +81,7 @@ class FederationService
 
         $batch = Bus::findBatch($federation->current_batch_id);
 
-        if (is_null($batch) || $batch->finished()) {
+        if (is_null($batch) || !batchHasJobsLeftToRun($batch)) {
             return null;
         }
 
@@ -91,7 +91,7 @@ class FederationService
     private function findBatchForExecution(int $federationId, string $jobUuid): ?Batch
     {
         $batchId = DB::table('job_batches')
-            ->where('name', "federation-{$federationId}-{$jobUuid}")
+            ->where('name', federationBatchName($federationId, $jobUuid))
             ->value('id');
 
         return $batchId ? Bus::findBatch($batchId) : null;
@@ -263,11 +263,14 @@ class FederationService
             } else {
                 $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
 
-                if ($batch && !$batch->finished()) {
+                if ($batch && batchHasJobsLeftToRun($batch)) {
                     $status = 'in_progress';
                     $message = null;
                     $startedAt = $batch->createdAt->toDateTimeString();
                     $finishedAt = null;
+                } elseif ($batch?->hasFailures()) {
+                    $status = 'failed';
+                    $message = "{$batch->failedJobs} of {$batch->totalJobs} jobs failed unexpectedly. Please contact support and reference job: {$execution->job_uuid}";
                 } else {
                     $status = 'success';
                     $message = null;

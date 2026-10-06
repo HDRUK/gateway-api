@@ -16,6 +16,8 @@ use Carbon\Carbon;
 use Config;
 use Http;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use MetadataManagementController as MMC;
 
@@ -412,19 +414,74 @@ trait GatewayMetadataIngestionTrait
             || FederationJobRun::latestPerPidForExecution($federationId, $jobUuid)
                 ->contains(fn ($run) => $run->status === 0);
 
+        $finalised = Federation::where('id', $federationId)
+            ->where('is_running', true)
+            ->update($hadFailures
+                ? [
+                    'is_running' => false,
+                    'error' => true,
+                    'error_text' => "Run completed with errors for one or more datasets. Please check the run history for job: {$jobUuid}",
+                ]
+                : ['is_running' => false]);
+
+        if ($finalised === 0) {
+            $this->log('info', "federation {$federationId} run {$jobUuid} already finalised - skipping");
+            return;
+        }
+
         if ($hadFailures) {
             $this->log('warning', "federation {$federationId} completed with per-item failures - see federation_job_runs for details");
-
-            Federation::where('id', $federationId)->update([
-                'is_running' => false,
-                'error' => true,
-                'error_text' => "Run completed with errors for one or more datasets. Please check the run history for job: {$jobUuid}",
-            ]);
-
             return;
         }
 
         FederationProcessed::dispatch(Federation::find($federationId), $jobUuid);
+    }
+
+    public function reconcileStuckFederationRuns(): int
+    {
+        $reconciled = 0;
+
+        $running = Federation::where('is_running', true)
+            ->whereNotNull('current_batch_id')
+            ->get(['id', 'current_batch_id']);
+
+        foreach ($running as $federation) {
+            $batch = Bus::findBatch($federation->current_batch_id);
+
+            if (is_null($batch) || batchHasJobsLeftToRun($batch)) {
+                continue;
+            }
+
+            $jobUuid = federationJobUuidFromBatchName($federation->id, $batch->name);
+
+            if (is_null($jobUuid)) {
+                $this->log('warning', "federation {$federation->id} batch {$batch->id} has an unexpected name '{$batch->name}' - not reconciling");
+                continue;
+            }
+
+            $wasReconciled = DB::transaction(function () use ($federation, $batch, $jobUuid) {
+                $stillStuck = Federation::where('id', $federation->id)
+                    ->where('is_running', true)
+                    ->where('current_batch_id', $batch->id)
+                    ->lockForUpdate()
+                    ->exists();
+
+                if (!$stillStuck) {
+                    return false;
+                }
+
+                $this->log('warning', "federation {$federation->id} still running with no jobs left in batch {$batch->id} - finalising run {$jobUuid}");
+                $this->finaliseFederationRun($federation->id, $jobUuid, $batch->hasFailures());
+
+                return true;
+            });
+
+            if ($wasReconciled) {
+                $reconciled++;
+            }
+        }
+
+        return $reconciled;
     }
 
 }
