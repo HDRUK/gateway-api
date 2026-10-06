@@ -560,9 +560,13 @@ class TeamWidgetController extends Controller
             if (!empty($publicationIds)) {
                 $placeholders = implode(',', array_fill(0, count($publicationIds), '?'));
                 $publications = DB::select(
-                    "SELECT id, paper_title, authors, year_of_publication, journal_name, url FROM publications WHERE id IN ($placeholders)",
-                    $publicationIds
+                    "SELECT id, paper_title, authors, year_of_publication, journal_name, abstract FROM publications WHERE id IN ($placeholders) AND status = ? AND deleted_at IS NULL",
+                    [...$publicationIds, Publication::STATUS_ACTIVE]
                 );
+
+                foreach ($publications as $publication) {
+                    $publication->abstract = preg_replace('/<h4>(.*?)<\/h4>/', '', $publication->abstract);
+                }
             } else {
                 $publications = [];
             }
