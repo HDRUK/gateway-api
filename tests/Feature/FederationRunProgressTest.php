@@ -36,7 +36,7 @@ class FederationRunProgressTest extends TestCase
         return $federation;
     }
 
-    private function seedBatch(string $id, int $total, int $pending, int $failed, ?int $finishedAt): void
+    private function seedBatch(string $id, int $total, int $pending, int $failed, ?int $finishedAt, ?int $cancelledAt = null): void
     {
         DB::table('job_batches')->insert([
             'id' => $id,
@@ -46,7 +46,7 @@ class FederationRunProgressTest extends TestCase
             'failed_jobs' => $failed,
             'failed_job_ids' => '[]',
             'options' => serialize([]),
-            'cancelled_at' => null,
+            'cancelled_at' => $cancelledAt,
             'created_at' => now()->subMinutes(5)->timestamp,
             'finished_at' => $finishedAt,
         ]);
@@ -168,5 +168,20 @@ class FederationRunProgressTest extends TestCase
             $this->assertSame(65, $item['progress']['pending']);
             $this->assertNotNull($item['progress']['started_at']);
         }
+    }
+
+    public function test_progress_is_null_once_the_batch_is_cancelled(): void
+    {
+        $team = Team::factory()->create();
+        $federation = $this->makeFederation($team, [
+            'is_running' => true,
+            'current_batch_id' => 'cancelled-batch',
+        ]);
+        // Queued jobs are still draining, but the run has been stopped.
+        $this->seedBatch('cancelled-batch', total: 107, pending: 60, failed: 0, finishedAt: now()->timestamp, cancelledAt: now()->timestamp);
+
+        $showItem = $this->get($this->showUrl($team->id, $federation->id), $this->header)->decodeResponseJson()['data'];
+
+        $this->assertNull($showItem['progress']);
     }
 }

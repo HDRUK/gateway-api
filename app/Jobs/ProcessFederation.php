@@ -136,7 +136,7 @@ class ProcessFederation implements ShouldQueue
             ->finally(function (Batch $batch) use ($federationId, $jobUuid) {
                 (new class {
                     use GatewayMetadataIngestionTrait;
-                })->finaliseFederationRun($federationId, $jobUuid, $batch->hasFailures());
+                })->finaliseFederationRun($federationId, $jobUuid, $batch->hasFailures(), $batch->cancelled());
             })
             ->dispatch();
 

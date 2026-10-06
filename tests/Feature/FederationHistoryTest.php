@@ -64,7 +64,7 @@ class FederationHistoryTest extends TestCase
         return "federation-{$federationId}-{$jobUuid}";
     }
 
-    private function seedBatch(string $name, int $total, int $pending, int $failed, ?int $finishedAt, ?int $createdAt = null): void
+    private function seedBatch(string $name, int $total, int $pending, int $failed, ?int $finishedAt, ?int $createdAt = null, ?int $cancelledAt = null): void
     {
         DB::table('job_batches')->insert([
             'id' => 'batch-' . $name,
@@ -74,7 +74,7 @@ class FederationHistoryTest extends TestCase
             'failed_jobs' => $failed,
             'failed_job_ids' => '[]',
             'options' => serialize([]),
-            'cancelled_at' => null,
+            'cancelled_at' => $cancelledAt,
             'created_at' => $createdAt ?? now()->subMinutes(5)->timestamp,
             'finished_at' => $finishedAt,
         ]);
@@ -291,5 +291,19 @@ class FederationHistoryTest extends TestCase
 
         $this->assertSame('failed', $content['data'][0]['status']);
         $this->assertSame('boom', $content['data'][0]['message']);
+    }
+
+    public function test_a_run_stopped_by_disabling_shows_as_failed_with_the_reason(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        $this->makeRun($team, $federation, 'uuid-stopped', 'pid-1', 1, 'CREATED', now()->toDateTimeString());
+        $this->seedBatch($this->batchName($federation->id, 'uuid-stopped'), total: 10, pending: 0, failed: 0, finishedAt: now()->timestamp, cancelledAt: now()->timestamp);
+
+        $response = $this->get($this->historyUrl($team->id, $federation->id), $this->header);
+        $content = $response->decodeResponseJson();
+
+        $this->assertSame('failed', $content['data'][0]['status']);
+        $this->assertSame('Stopped because the integration was disabled', $content['data'][0]['message']);
     }
 }

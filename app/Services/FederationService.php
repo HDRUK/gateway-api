@@ -81,7 +81,7 @@ class FederationService
 
         $batch = Bus::findBatch($federation->current_batch_id);
 
-        if (is_null($batch) || !batchHasJobsLeftToRun($batch)) {
+        if (is_null($batch) || $batch->cancelled() || !batchHasJobsLeftToRun($batch)) {
             return null;
         }
 
@@ -162,6 +162,10 @@ class FederationService
 
         Federation::where('id', $federationId)->update($updateArray);
 
+        if (!$updateArray['enabled']) {
+            $this->stopCurrentRun($federationId);
+        }
+
         $this->updateSecrets($federationId, $input);
 
         $this->replaceNotifications($federationId, $input['notifications']);
@@ -171,6 +175,23 @@ class FederationService
         $this->sendEmail($federationId, 'UPDATE');
 
         return $response;
+    }
+
+    private function stopCurrentRun(int $federationId): void
+    {
+        $batchId = Federation::where('id', $federationId)
+            ->where('is_running', true)
+            ->value('current_batch_id');
+
+        if (is_null($batchId)) {
+            return;
+        }
+
+        $batch = Bus::findBatch($batchId);
+
+        if ($batch && !$batch->cancelled() && batchHasJobsLeftToRun($batch)) {
+            $batch->cancel();
+        }
     }
 
     public function clearErrorForTeam(int $teamId, int $federationId): void
@@ -253,16 +274,18 @@ class FederationService
 
             $startedAt = $execution->started_at;
             $finishedAt = $execution->finished_at;
+            $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
 
-            if ($onlyFailure) {
+            if ($batch?->cancelled()) {
+                $status = 'failed';
+                $message = 'Stopped because the integration was disabled';
+            } elseif ($onlyFailure) {
                 $status = 'failed';
                 $message = $onlyFailure['message'];
             } elseif (count($failedDatasets) > 1) {
                 $status = 'failed';
                 $message = count($failedDatasets) . " of {$rows->count()} datasets failed";
             } else {
-                $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
-
                 if ($batch && batchHasJobsLeftToRun($batch)) {
                     $status = 'in_progress';
                     $message = null;
