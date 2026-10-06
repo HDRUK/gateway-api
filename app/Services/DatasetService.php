@@ -412,6 +412,7 @@ class DatasetService
         bool $elasticIndexing,
         Team $team,
         bool $validateInput = true,
+        bool $validateOutput = true,
     ): int {
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
@@ -435,7 +436,7 @@ class DatasetService
             $inputSchema,
             $inputVersion,
             ! $isDraft && $validateInput,
-            ! $isDraft,
+            ! $isDraft && $validateOutput,
         );
 
         if (! $traserResponse['wasTranslated']) {
@@ -498,6 +499,7 @@ class DatasetService
         bool $elasticIndexing,
         Team $team,
         bool $validateInput = true,
+        bool $validateOutput = true,
     ): int {
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
@@ -521,7 +523,7 @@ class DatasetService
             $inputSchema,
             $inputVersion,
             ! $isDraft && $validateInput,
-            ! $isDraft,
+            ! $isDraft && $validateOutput,
         );
 
         if (! $traserResponse['wasTranslated']) {
