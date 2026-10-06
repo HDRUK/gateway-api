@@ -60,6 +60,7 @@ class DatasetController extends Controller
                 elasticIndexing: $request->boolean('elastic_indexing', false),
                 team: $team,
                 validateInput: $request->boolean('validate_input', true),
+                validateOutput: $request->boolean('validate_output', true),
             );
 
             Auditor::log([

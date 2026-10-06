@@ -338,6 +338,13 @@ class DatasetController extends Controller
      *       @OA\Schema(type="boolean"),
      *       description="Set to false to skip TRASER input validation (ignored for draft datasets, which always skip validation)"
      *    ),
+     *    @OA\Parameter(
+     *       name="validate_output",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="boolean"),
+     *       description="Set to false to skip TRASER output validation (ignored for draft datasets, which always skip validation)"
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       @OA\MediaType(
@@ -383,6 +390,7 @@ class DatasetController extends Controller
                 elasticIndexing: $request->boolean('elastic_indexing', false),
                 team: $team,
                 validateInput: $request->boolean('validate_input', true),
+                validateOutput: $request->boolean('validate_output', true),
             );
 
             Auditor::log([
