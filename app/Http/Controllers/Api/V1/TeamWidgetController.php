@@ -11,6 +11,8 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Tool;
 use App\Models\Dur;
+use App\Models\Publication;
+use App\Models\Team;
 use App\Models\WidgetAnalytic;
 use App\Jobs\WidgetAnalyticsJob;
 use Illuminate\Support\Facades\DB;
@@ -174,6 +176,7 @@ class TeamWidgetController extends Controller
                 'included_data_uses',
                 'included_scripts',
                 'included_collections',
+                'included_publications',
                 'data_custodian_entities_ids',
                 'permitted_domains',
             ] as $field) {
@@ -210,7 +213,7 @@ class TeamWidgetController extends Controller
      *      operationId="fetch_widget_data_sources",
      *      tags={"Widgets"},
      *      summary="WidgetController@getWidgetData",
-     *      description="Fetch lightweight data (id, name, etc.) for multiple teams across datasets, tools, collections, and DURS",
+     *      description="Fetch lightweight data (id, name, etc.) for multiple teams across datasets, tools, collections, DURS and publications",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="teamId",
@@ -234,7 +237,8 @@ class TeamWidgetController extends Controller
      *              @OA\Property(property="datasets", type="array", @OA\Items(type="object")),
      *              @OA\Property(property="tools", type="array", @OA\Items(type="object")),
      *              @OA\Property(property="collections", type="array", @OA\Items(type="object")),
-     *              @OA\Property(property="durs", type="array", @OA\Items(type="object"))
+     *              @OA\Property(property="durs", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="publications", type="array", @OA\Items(type="object"))
      *          )
      *      ),
      *      @OA\Response(
@@ -308,6 +312,17 @@ class TeamWidgetController extends Controller
                     'team_name' => optional($dur->team)->name,
                 ]);
 
+            $teamNames = Team::whereIn('id', $teamIds)->pluck('name', 'id');
+
+            $publications = Publication::whereIn('team_id', $teamIds)
+                ->where('status', Publication::STATUS_ACTIVE)
+                ->get(['id', 'paper_title', 'team_id'])
+                ->map(fn ($publication) => [
+                    'id' => $publication->id,
+                    'name' => $publication->paper_title,
+                    'team_id' => $publication->team_id,
+                    'team_name' => $teamNames[$publication->team_id] ?? null,
+                ]);
 
 
             return response()->json([ 'data' => [
@@ -315,6 +330,7 @@ class TeamWidgetController extends Controller
                 'tools' => $tools,
                 'collections' => $collections,
                 'durs' => $durs,
+                'publications' => $publications,
             ]], Config::get('statuscodes.STATUS_OK.code'));
         } catch (\Exception $e) {
             Auditor::log([
@@ -335,7 +351,7 @@ class TeamWidgetController extends Controller
      *      path="/api/v1/teams/{teamId}/widgets/{id}/data",
      *      operationId="retrieve_widget_data",
      *      summary="Retrieve data related to a widget",
-     *      description="Fetches datasets, data uses, scripts, and collections linked to a widget",
+     *      description="Fetches datasets, data uses, scripts, collections and publications linked to a widget",
      *      tags={"Widgets"},
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -373,7 +389,8 @@ class TeamWidgetController extends Controller
      *              @OA\Property(property="datasets", type="array", @OA\Items(type="object")),
      *              @OA\Property(property="data_uses", type="array", @OA\Items(type="object")),
      *              @OA\Property(property="scripts", type="array", @OA\Items(type="object")),
-     *              @OA\Property(property="collections", type="array", @OA\Items(type="object"))
+     *              @OA\Property(property="collections", type="array", @OA\Items(type="object")),
+     *              @OA\Property(property="publications", type="array", @OA\Items(type="object"))
      *          )
      *      ),
      *      @OA\Response(response=404, description="Widget not found")
@@ -421,11 +438,13 @@ class TeamWidgetController extends Controller
             $dataUseIds     = is_string($widget->included_data_uses) ? array_filter(explode(',', $widget->included_data_uses)) : ($widget->included_data_uses ?? []);
             $scriptIds      = is_string($widget->included_scripts) ? array_filter(explode(',', $widget->included_scripts)) : ($widget->included_scripts ?? []);
             $collectionIds  = is_string($widget->included_collections) ? array_filter(explode(',', $widget->included_collections)) : ($widget->included_collections ?? []);
+            $publicationIds = is_string($widget->included_publications) ? array_filter(explode(',', $widget->included_publications)) : ($widget->included_publications ?? []);
 
             $datasetIds     = array_map('intval', $datasetIds);
             $dataUseIds     = array_map('intval', $dataUseIds);
             $scriptIds      = array_map('intval', $scriptIds);
             $collectionIds  = array_map('intval', $collectionIds);
+            $publicationIds = array_map('intval', $publicationIds);
             if (!empty($datasetIds)) {
                 $ids = implode(',', $datasetIds);
 
@@ -538,6 +557,22 @@ class TeamWidgetController extends Controller
                 $collections = [];
             }
 
+            if (!empty($publicationIds)) {
+                $placeholders = implode(',', array_fill(0, count($publicationIds), '?'));
+                $publications = DB::select(
+                    "SELECT id, paper_title, authors, year_of_publication, journal_name, abstract FROM publications WHERE id IN ($placeholders) AND status = ? AND deleted_at IS NULL",
+                    [...$publicationIds, Publication::STATUS_ACTIVE]
+                );
+
+                foreach ($publications as $publication) {
+                    if ($publication->abstract !== null) {
+                        $publication->abstract = preg_replace('/<h4>(.*?)<\/h4>/', '', $publication->abstract);
+                    }
+                }
+            } else {
+                $publications = [];
+            }
+
             Auditor::log([
                 'team_id' => $teamId,
                 'action_type' => 'GET',
@@ -557,6 +592,7 @@ class TeamWidgetController extends Controller
                 'data_uses' => $dataUses,
                 'scripts' => $scripts,
                 'collections' => $collections,
+                'publications' => $publications,
                 'widget' => [
                     'widget_name' => $widget->widget_name,
                     'size_width'  => $widget->size_width,
@@ -652,6 +688,13 @@ class TeamWidgetController extends Controller
      *             @OA\Items(type="integer", example=99),
      *             example={99,100}
      *         ),
+     *
+     *         @OA\Property(
+     *             property="included_publications",
+     *             type="array",
+     *             @OA\Items(type="integer", example=3),
+     *             example={3,4}
+     *         ),
      *         @OA\Property(
      *             property="data_custodian_entities_ids",
      *             type="array",
@@ -707,6 +750,7 @@ class TeamWidgetController extends Controller
                 'included_data_uses'   => 'nullable|array',
                 'included_scripts'     => 'nullable|array',
                 'included_collections' => 'nullable|array',
+                'included_publications' => 'nullable|array',
                 'branding_primary'     => 'nullable|string',
                 'branding_secondary'   => 'nullable|string',
                 'branding_neutral'     => 'nullable|string',
@@ -718,6 +762,7 @@ class TeamWidgetController extends Controller
                         'included_data_uses',
                         'included_scripts',
                         'included_collections',
+                        'included_publications',
                         'permitted_domains',
                         'data_custodian_entities_ids'
                     ];
@@ -832,6 +877,13 @@ class TeamWidgetController extends Controller
      *                 type="array",
      *                 @OA\Items(type="integer", example=99),
      *                 example={99,100}
+     *             ),
+     *
+     *             @OA\Property(
+     *                 property="included_publications",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=3),
+     *                 example={3,4}
      *             )
      *         )
      *     ),
@@ -876,12 +928,13 @@ class TeamWidgetController extends Controller
                 'included_data_uses'   => 'sometimes|array|nullable',
                 'included_scripts'     => 'sometimes|array|nullable',
                 'included_collections' => 'sometimes|array|nullable',
+                'included_publications' => 'sometimes|array|nullable',
                 'data_custodian_entities_ids' => 'sometimes|array|nullable',
                 'branding_primary' => 'sometimes|string|nullable',
                 'branding_secondary' => 'sometimes|string|nullable',
                 'branding_neutral' => 'sometimes|string|nullable',
             ]);
-            foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'data_custodian_entities_ids'] as $field) {
+            foreach (['permitted_domains', 'included_datasets', 'included_data_uses', 'included_scripts', 'included_collections', 'included_publications', 'data_custodian_entities_ids'] as $field) {
                 if (isset($validated[$field]) && is_array($validated[$field])) {
                     $validated[$field] = implode(',', $validated[$field]);
                 }
@@ -1020,7 +1073,7 @@ class TeamWidgetController extends Controller
      *             required={"event_type"},
      *             @OA\Property(property="event_type", type="string", enum={"page_view","code_copied","gateway_click","search"}),
      *             @OA\Property(property="entity_id", type="integer", nullable=true),
-     *             @OA\Property(property="entity_type", type="string", nullable=true, enum={"dataset","tool","collection","dur"}),
+     *             @OA\Property(property="entity_type", type="string", nullable=true, enum={"dataset","tool","collection","dur","publication"}),
      *             @OA\Property(property="source_domain", type="string", nullable=true)
      *         )
      *     ),
@@ -1046,7 +1099,7 @@ class TeamWidgetController extends Controller
             $validated = $request->validate([
                 'event_type'    => 'required|string|in:' . implode(',', WidgetAnalytic::FRONTEND_EVENTS),
                 'entity_id'     => 'nullable|integer',
-                'entity_type'   => 'nullable|string|in:dataset,tool,collection,dur',
+                'entity_type'   => 'nullable|string|in:dataset,tool,collection,dur,publication',
                 'source_domain' => 'nullable|string|max:255',
             ]);
 
