@@ -195,6 +195,22 @@ if (! function_exists('decodeHtmlEntitiesRecursive')) {
     }
 }
 
+if (!function_exists('declaredMetadataSchema')) {
+    /**
+     * @return array{name: string, version: string}|null
+     */
+    function declaredMetadataSchema(array $catalogueItem): ?array
+    {
+        $url = $catalogueItem['@schema'] ?? null;
+
+        if (!is_string($url) || !preg_match('#/models/([^/]+)/([^/]+)/schema\.json$#', $url, $matches)) {
+            return null;
+        }
+
+        return ['name' => $matches[1], 'version' => $matches[2]];
+    }
+}
+
 if (!function_exists('federationBatchName')) {
     function federationBatchName(int $federationId, string $jobUuid): string
     {

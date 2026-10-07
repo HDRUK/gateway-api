@@ -160,8 +160,13 @@ trait GatewayMetadataIngestionTrait
             );
 
             if (!$traserResponse['wasTranslated']) {
-                $findTraserResponse = MMC::findDataModel(json_encode($response->object()));
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $findTraserResponse, 0, $attempts);
+                $metadataJson = json_encode($response->object());
+                $failure = $this->translationFailureForHistory(
+                    $traserResponse,
+                    $data,
+                    fn (string $schema, string $version) => MMC::validationErrors($metadataJson, $schema, $version)
+                );
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, 0, $attempts);
 
                 $this->log('info', "encountered internal error while CREATING dataset {$pid}: cannot not be translated");
                 return false;
@@ -302,7 +307,13 @@ trait GatewayMetadataIngestionTrait
             } else {
                 $this->log('info', "dataset {$pid} FAILED traser");
 
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $traserResponse, 0, $attempts);
+                $metadataJson = json_encode($response->object());
+                $failure = $this->translationFailureForHistory(
+                    $traserResponse,
+                    $data,
+                    fn (string $schema, string $version) => MMC::validationErrors($metadataJson, $schema, $version)
+                );
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, 0, $attempts);
             }
 
             $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
@@ -380,6 +391,41 @@ trait GatewayMetadataIngestionTrait
     public function log(string $level, string $message): void
     {
         Log::{$level}($message);
+    }
+
+    /**
+     * What to record when traser can't translate a dataset: only the errors that blocked it.
+     *
+     * @param array{traser_message?: mixed} $traserResponse MMC::translateDataModelType() result
+     * @param array<string, mixed> $catalogueItem the dataset's entry in the remote catalogue
+     * @param \Closure(string, string): array $validateAgainst traser's errors for one schema (name, version); only called when a schema is declared
+     */
+    public function translationFailureForHistory(array $traserResponse, array $catalogueItem, \Closure $validateAgainst): array|string
+    {
+        $traser = $traserResponse['traser_message'] ?? null;
+        $message = is_array($traser) ? ($traser['message'] ?? null) : $traser;
+        $details = is_array($traser) ? ($traser['details'] ?? null) : null;
+
+        // Output validation failed: the GWDM errors are what blocked it.
+        if (is_array($details) && array_is_list($details) && $details !== []) {
+            return [[
+                'name' => Config::get('metadata.GWDM.name'),
+                'version' => Config::get('metadata.GWDM.version'),
+                'errors' => $details,
+            ]];
+        }
+
+        // No input schema matched: report only the schema the provider declared.
+        if (is_array($details) && isset($details['available_schemas'])) {
+            $declared = declaredMetadataSchema($catalogueItem);
+            $errors = $declared ? $validateAgainst($declared['name'], $declared['version']) : [];
+
+            return $errors !== []
+                ? [['name' => $declared['name'], 'version' => $declared['version'], 'errors' => $errors]]
+                : "Doesn't match any supported metadata schema";
+        }
+
+        return is_string($message) && $message !== '' ? $message : 'An error occurred while processing this dataset.';
     }
 
     public function sendToHistory(int $teamId, int $federationId, string $pid, string $jobUuid, array|string $message, int $status, int $attempts): void
