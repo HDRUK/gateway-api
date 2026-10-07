@@ -315,7 +315,7 @@ class TeamWidgetController extends Controller
             $teamNames = Team::whereIn('id', $teamIds)->pluck('name', 'id');
 
             $publications = Publication::whereIn('team_id', $teamIds)
-                ->where('status', 'ACTIVE')
+                ->where('status', Publication::STATUS_ACTIVE)
                 ->get(['id', 'paper_title', 'team_id'])
                 ->map(fn ($publication) => [
                     'id' => $publication->id,
@@ -565,7 +565,9 @@ class TeamWidgetController extends Controller
                 );
 
                 foreach ($publications as $publication) {
-                    $publication->abstract = preg_replace('/<h4>(.*?)<\/h4>/', '', $publication->abstract);
+                    if ($publication->abstract !== null) {
+                        $publication->abstract = preg_replace('/<h4>(.*?)<\/h4>/', '', $publication->abstract);
+                    }
                 }
             } else {
                 $publications = [];
