@@ -125,7 +125,14 @@ class FederationJobRun extends Model
             }
 
             if (isset($raw['traser_message'])) {
-                return [['schema' => null, 'message' => (string) $raw['traser_message']]];
+                // traser returns {message, details} on failure, older rows may hold a plain string.
+                $traserMessage = is_array($raw['traser_message'])
+                    ? ($raw['traser_message']['message'] ?? null)
+                    : $raw['traser_message'];
+
+                if (is_string($traserMessage) && $traserMessage !== '') {
+                    return [['schema' => null, 'message' => $traserMessage]];
+                }
             }
         }
 

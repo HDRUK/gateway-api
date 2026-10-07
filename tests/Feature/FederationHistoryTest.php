@@ -186,6 +186,26 @@ class FederationHistoryTest extends TestCase
         $this->assertStringContainsString('must NOT have additional properties', $content['data'][0]['message']);
     }
 
+    public function test_a_stored_translate_failure_shows_traser_message_rather_than_array(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        $this->makeRun($team, $federation, 'uuid-translate', 'pid-translate', 0, [
+            'metadata' => null,
+            'statusCode' => 400,
+            'wasTranslated' => false,
+            'traser_message' => [
+                'details' => ['available_schemas' => ['GWDM' => ['2.0'], 'HDRUK' => ['2.1.2']]],
+                'message' => 'Input metadata object matched no known schemas',
+            ],
+        ], now()->toDateTimeString());
+
+        $response = $this->get($this->historyUrl($team->id, $federation->id), $this->header);
+        $content = $response->decodeResponseJson();
+
+        $this->assertSame('Input metadata object matched no known schemas', $content['data'][0]['message']);
+    }
+
     public function test_only_the_latest_attempt_per_dataset_counts(): void
     {
         [$team, $federation] = $this->makeFederation();
