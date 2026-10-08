@@ -401,6 +401,52 @@ class HDRUKTest extends TestCase
         (new HDRUK())->search('term one, term two', 'datasets', []);
     }
 
+    public function test_search_randomises_order_for_an_empty_query_with_default_sort(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) => ($searches[0]['sort_by'] ?? null) === '_rand():asc'
+        );
+
+        (new HDRUK())->search('', 'datasets', []);
+    }
+
+    public function test_search_randomises_order_for_an_empty_query_with_explicit_score_sort(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) => ($searches[0]['sort_by'] ?? null) === '_rand():asc'
+        );
+
+        (new HDRUK())->search('', 'datasets', ['sort' => 'score:desc']);
+    }
+
+    public function test_search_randomises_order_for_an_empty_query_with_biosample_filter(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) => ($searches[0]['sort_by'] ?? null) === '_rand():asc'
+                && ($searches[0]['filter_by'] ?? null) === 'containsBioSamples:=true'
+        );
+
+        (new HDRUK())->search('', 'datasets', ['containsBioSamples' => 'containsBioSamples']);
+    }
+
+    public function test_search_does_not_randomise_order_for_an_empty_query_with_field_sort(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) => !array_key_exists('sort_by', $searches[0])
+        );
+
+        (new HDRUK())->search('', 'datasets', ['sort' => 'title:asc']);
+    }
+
+    public function test_search_does_not_randomise_order_for_a_text_query(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(
+            fn ($searches) => !array_key_exists('sort_by', $searches[0])
+        );
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+    }
+
     // -------------------------------------------------------------------------
     // Highlighting — restores the search-term highlighting the old
     // Elasticsearch-backed search provided (GAT-9576 follow-up), lost when
