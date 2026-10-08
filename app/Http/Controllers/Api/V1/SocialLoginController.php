@@ -248,11 +248,11 @@ class SocialLoginController extends Controller
                 $_REQUEST['state'] = $state;
                 $_SESSION['openid_connect_state'] = $state;
 
-                $oidc = new OpenIDConnectClient(
-                    Config::get('services.openathens.issuer'),
-                    Config::get('services.openathens.client_id'),
-                    Config::get('services.openathens.client_secret')
-                );
+                $oidc = app(OpenIDConnectClient::class, [
+                    'provider_url' => Config::get('services.openathens.issuer'),
+                    'client_id' => Config::get('services.openathens.client_id'),
+                    'client_secret' => Config::get('services.openathens.client_secret'),
+                ]);
                 $oidc->providerConfigParam([
                     'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
                     'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
@@ -386,11 +386,11 @@ class SocialLoginController extends Controller
                 $_REQUEST['state'] = $state;
                 $_SESSION['openid_connect_state'] = $state;
 
-                $oidc = new OpenIDConnectClient(
-                    Config::get('services.openathens.issuer'),
-                    Config::get('services.openathens.client_id'),
-                    Config::get('services.openathens.client_secret')
-                );
+                $oidc = app(OpenIDConnectClient::class, [
+                    'provider_url' => Config::get('services.openathens.issuer'),
+                    'client_id' => Config::get('services.openathens.client_id'),
+                    'client_secret' => Config::get('services.openathens.client_secret'),
+                ]);
                 $oidc->providerConfigParam([
                     'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
                     'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
@@ -546,21 +546,47 @@ class SocialLoginController extends Controller
      *
      * @param array $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, provider: string, password: string}
      */
     private function openathensResponse(array $data, string $provider): array
     {
-        $targetedId = is_array($data['eduPersonTargetedID']) ? $data['eduPersonTargetedID'][0] : $data['eduPersonTargetedID'];
+        $providerId = $this->openAthensIdentifier($data);
         $affiliation = is_array($data['eduPersonScopedAffiliation']) ? $data['eduPersonScopedAffiliation'][0] : $data['eduPersonScopedAffiliation'];
         return [
-            'providerid' => $targetedId,
+            'providerid' => $providerId,
             'name' => '',
             'firstname' => '',
             'lastname' => '',
-            'email' => $targetedId . $affiliation,
+            'email' => $providerId . $affiliation,
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
+    }
+
+    /**
+     * The persistent OpenAthens identifier: eduPersonTargetedID, else pairwiseID
+     *
+     * @see https://docs.openathens.net/providers/common-openid-connect-claims
+     * @see https://docs.openathens.net/providers/eduperson-attributes
+     *
+     * @param array $data
+     * @return non-empty-string
+     * @throws Exception when neither holds exactly one non-blank string
+     */
+    private function openAthensIdentifier(array $data): string
+    {
+        foreach (['eduPersonTargetedID', 'pairwiseID'] as $claim) {
+            $value = $data[$claim] ?? null;
+            if (is_array($value) && array_is_list($value) && count($value) === 1) {
+                $value = $value[0];
+            }
+
+            if (is_string($value) && trim($value) !== '') {
+                return $value;
+            }
+        }
+
+        throw new Exception('OpenAthens response has no usable eduPersonTargetedID or pairwiseID');
     }
 
     /**
