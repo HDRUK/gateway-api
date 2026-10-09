@@ -159,12 +159,15 @@ class SocialLoginController extends Controller
                 session(['redirectUrl' => $request->query('target_link_uri')]);
             }
 
+            $state = bin2hex(random_bytes(16));
+            session(['openathens_state' => $state]);
+
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
                 'redirect_uri' => $openAthensRedirectUrl,
                 'response_type' => 'code',
                 'scope' => 'openid',
-                'state' => bin2hex(random_bytes(16))
+                'state' => $state,
             ];
             $oaUrl = config('services.openathens.issuer') . '/oidc/auth?' . http_build_query($params);
 
@@ -244,9 +247,13 @@ class SocialLoginController extends Controller
                 $input = $request->all();
                 $code = array_key_exists('code', $input) ? $input['code'] : '';
                 $_REQUEST['code'] = $code;
-                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $state = $request->input('state');
+                $issuedState = $request->session()->pull('openathens_state');
+                if (!is_string($issuedState) || !is_string($state) || !hash_equals($issuedState, $state)) {
+                    throw new Exception('OpenAthens state does not match the login request');
+                }
                 $_REQUEST['state'] = $state;
-                $_SESSION['openid_connect_state'] = $state;
+                $_SESSION['openid_connect_state'] = $issuedState;
 
                 $oidc = app(OpenIDConnectClient::class, [
                     'provider_url' => Config::get('services.openathens.issuer'),
@@ -384,9 +391,13 @@ class SocialLoginController extends Controller
                 $input = $request->all();
                 $code = array_key_exists('code', $input) ? $input['code'] : '';
                 $_REQUEST['code'] = $code;
-                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $state = $request->input('state');
+                $issuedState = $request->session()->pull('openathens_state');
+                if (!is_string($issuedState) || !is_string($state) || !hash_equals($issuedState, $state)) {
+                    throw new Exception('OpenAthens state does not match the login request');
+                }
                 $_REQUEST['state'] = $state;
-                $_SESSION['openid_connect_state'] = $state;
+                $_SESSION['openid_connect_state'] = $issuedState;
 
                 $oidc = app(OpenIDConnectClient::class, [
                     'provider_url' => Config::get('services.openathens.issuer'),

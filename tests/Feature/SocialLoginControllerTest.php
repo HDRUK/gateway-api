@@ -173,10 +173,90 @@ class SocialLoginControllerTest extends TestCase
         $this->assertSame($newUser->id, $this->loggedInUserId($response));
     }
 
-    private function openAthensCallback(string $path = '/api/v1/auth/openathens/callback'): TestResponse
+    public function test_openathens_login_round_trip_succeeds_with_the_state_it_issued(): void
     {
-        return $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
+        $existingUser = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $login = $this->get('/api/v1/auth/openathens?redirect=/search');
+        parse_str((string) parse_url($login->headers->get('Location'), PHP_URL_QUERY), $authorizeParams);
+
+        $response = $this->get('/api/v1/auth/openathens/callback?' . http_build_query(['code' => 'some-code', 'state' => $authorizeParams['state']]));
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existingUser->id, $this->loggedInUserId($response));
+    }
+
+    public static function callbackPaths(): array
+    {
+        return [
+            'gateway' => ['/api/v1/auth/openathens/callback'],
+            'dta' => ['/api/v1/auth/dta/openathens/callback'],
+        ];
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_rejects_a_state_it_did_not_issue(string $path): void
+    {
+        $existingUser = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'preferred_email' => 'primary']);
+        $usersBefore = User::count();
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path, 'a-different-state');
+
+        $this->assertOpenAthensLoginRejected($response, $path);
+        $this->assertSame($usersBefore, User::count());
+        $this->assertSame('primary', $existingUser->fresh()->preferred_email);
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_rejects_a_callback_without_a_login_in_this_session(string $path): void
+    {
+        User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
             ->get($path . '?code=some-code&state=some-state');
+
+        $this->assertOpenAthensLoginRejected($response, $path);
+    }
+
+    public function test_openathens_callback_rejects_a_missing_state(): void
+    {
+        User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->withSession(['redirectUrl' => 'https://gateway.test/search', 'openathens_state' => 'some-state'])
+            ->get('/api/v1/auth/openathens/callback?code=some-code');
+
+        $this->assertOpenAthensLoginRejected($response, '/api/v1/auth/openathens/callback');
+    }
+
+    public function test_openathens_callback_does_not_accept_the_same_state_twice(): void
+    {
+        User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $this->openAthensCallback()->assertRedirect('https://gateway.test/search');
+        $replay = $this->get('/api/v1/auth/openathens/callback?code=some-code&state=some-state');
+
+        $this->assertOpenAthensLoginRejected($replay, '/api/v1/auth/openathens/callback');
+    }
+
+    private function assertOpenAthensLoginRejected(TestResponse $response, string $path): void
+    {
+        if (str_contains($path, '/dta/')) {
+            $response->assertStatus(500);
+        } else {
+            $response->assertRedirect('https://gateway.test/error/500');
+        }
+        $response->assertCookieMissing('token');
+    }
+
+    private function openAthensCallback(string $path = '/api/v1/auth/openathens/callback', string $state = 'some-state'): TestResponse
+    {
+        return $this->withSession(['redirectUrl' => 'https://gateway.test/search', 'openathens_state' => 'some-state'])
+            ->get($path . '?code=some-code&state=' . $state);
     }
 
     private function fakeOpenAthensUserInfo(string $userInfoJson): void
