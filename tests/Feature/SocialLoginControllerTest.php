@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserHasRole;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Jumbojett\OpenIDConnectClient;
@@ -431,6 +434,96 @@ class SocialLoginControllerTest extends TestCase
         return $this->getUserFromJwt($token->getValue())['id'];
     }
 
+    private const ISSUED_REGISTRY_STATE = '0123456789abcdef0123456789abcdef';
+    private const HANDOFF_CODE = 'Ab3dEf6hIj9lMn2pQr5tUv8xYz1bCd4fGh7jKl0n';
+
+    public function test_registry_login_round_trip_succeeds_with_the_state_it_issued(): void
+    {
+        $this->fakeRegistryRedeem(['sub' => 'registry-sub', 'given_name' => 'Test', 'family_name' => 'User', 'email' => 'new.person@example.com']);
+
+        $login = $this->get('/api/v1/auth/registry');
+        parse_str((string) parse_url($login->headers->get('Location'), PHP_URL_QUERY), $registryParams);
+        $callbackPath = (string) parse_url($registryParams['external_redirect'], PHP_URL_PATH);
+
+        $response = $this->get($callbackPath . '?code=' . self::HANDOFF_CODE);
+
+        $response->assertRedirect('https://gateway.test');
+        $newUser = User::where('provider', 'registry')->where('providerid', 'registry-sub')->sole();
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+    }
+
+    public function test_registry_callback_rejects_a_state_it_did_not_issue(): void
+    {
+        $this->fakeRegistryRedeem(['sub' => 'registry-sub', 'email' => 'new.person@example.com']);
+
+        $response = $this->withSession(['registry_state' => self::ISSUED_REGISTRY_STATE])
+            ->get('/api/v1/auth/registry/callback/fedcba9876543210fedcba9876543210?code=' . self::HANDOFF_CODE);
+
+        $this->assertRegistryLoginRejectedWithoutRedeeming($response);
+    }
+
+    public function test_registry_callback_rejects_a_callback_without_a_login_in_this_session(): void
+    {
+        $this->fakeRegistryRedeem(['sub' => 'registry-sub', 'email' => 'new.person@example.com']);
+
+        $response = $this->get('/api/v1/auth/registry/callback/' . self::ISSUED_REGISTRY_STATE . '?code=' . self::HANDOFF_CODE);
+
+        $this->assertRegistryLoginRejectedWithoutRedeeming($response);
+    }
+
+    public function test_registry_callback_does_not_accept_the_same_state_twice(): void
+    {
+        $this->fakeRegistryRedeem(['sub' => 'registry-sub', 'given_name' => 'Test', 'family_name' => 'User', 'email' => 'new.person@example.com']);
+
+        $this->registryCallbackWithIssuedState(self::HANDOFF_CODE)->assertRedirect('https://gateway.test/search');
+        $replay = $this->get('/api/v1/auth/registry/callback/' . self::ISSUED_REGISTRY_STATE . '?code=' . self::HANDOFF_CODE);
+
+        $replay->assertRedirect('https://gateway.test/error/500');
+        $replay->assertCookieMissing('token');
+    }
+
+    public static function callbacksWithoutAUsableState(): array
+    {
+        return [
+            'no state' => ['/api/v1/auth/registry/callback'],
+            'state that is not 32 hex characters' => ['/api/v1/auth/registry/callback/not-a-state'],
+        ];
+    }
+
+    #[DataProvider('callbacksWithoutAUsableState')]
+    public function test_registry_callback_without_a_usable_state_is_not_routed(string $path): void
+    {
+        $this->fakeRegistryRedeem(['sub' => 'registry-sub', 'email' => 'new.person@example.com']);
+
+        $response = $this->withSession(['registry_state' => self::ISSUED_REGISTRY_STATE])
+            ->get($path . '?code=' . self::HANDOFF_CODE);
+
+        $response->assertNotFound();
+        $response->assertCookieMissing('token');
+        Http::assertNothingSent();
+    }
+
+    public static function malformedHandoffCodes(): array
+    {
+        return [
+            'path traversal' => ['../../other-endpoint'],
+            'too short' => ['Ab3dEf6h'],
+            'too long' => [self::HANDOFF_CODE . 'X'],
+            'non alphanumeric' => [substr(self::HANDOFF_CODE, 0, 39) . '%'],
+            'missing' => [''],
+        ];
+    }
+
+    #[DataProvider('malformedHandoffCodes')]
+    public function test_registry_callback_rejects_a_malformed_handoff_code_without_calling_registry(string $code): void
+    {
+        $this->fakeRegistryRedeem(['sub' => 'registry-sub', 'email' => 'new.person@example.com']);
+
+        $response = $this->registryCallbackWithIssuedState(rawurlencode($code));
+
+        $this->assertRegistryLoginRejectedWithoutRedeeming($response);
+    }
+
     public function test_registry_callback_redirects_to_conflict_page_on_duplicate_email(): void
     {
         $existingUser = User::factory()->create([
@@ -439,18 +532,14 @@ class SocialLoginControllerTest extends TestCase
             'provider' => 'registry',
         ]);
 
-        Http::fake([
-            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([
-                'data' => [
-                    'sub' => 'a-brand-new-sub',
-                    'given_name' => 'Duplicate',
-                    'family_name' => 'User',
-                    'email' => $existingUser->email,
-                ],
-            ], 200),
+        $this->fakeRegistryRedeem([
+            'sub' => 'a-brand-new-sub',
+            'given_name' => 'Duplicate',
+            'family_name' => 'User',
+            'email' => $existingUser->email,
         ]);
 
-        $response = $this->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+        $response = $this->registryCallbackWithIssuedState(self::HANDOFF_CODE);
 
         $response->assertRedirect('https://gateway.test/error/409');
 
@@ -467,7 +556,7 @@ class SocialLoginControllerTest extends TestCase
             'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([], 404),
         ]);
 
-        $response = $this->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+        $response = $this->registryCallbackWithIssuedState(self::HANDOFF_CODE);
 
         $response->assertRedirect('https://gateway.test/error/500');
     }
@@ -476,17 +565,13 @@ class SocialLoginControllerTest extends TestCase
     {
         $serviceAccount = User::factory()->create(['provider' => 'service', 'providerid' => null]);
 
-        Http::fake([
-            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([
-                'data' => [
-                    'given_name' => 'No',
-                    'family_name' => 'Sub',
-                    'email' => 'no-sub@example.com',
-                ],
-            ], 200),
+        $this->fakeRegistryRedeem([
+            'given_name' => 'No',
+            'family_name' => 'Sub',
+            'email' => 'no-sub@example.com',
         ]);
 
-        $response = $this->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+        $response = $this->registryCallbackWithIssuedState(self::HANDOFF_CODE);
 
         $response->assertRedirect('https://gateway.test/error/500');
         $response->assertCookieMissing('token');
@@ -507,19 +592,14 @@ class SocialLoginControllerTest extends TestCase
     {
         $otherUser = User::factory()->create(['provider' => $otherProvider, 'providerid' => 'the-sub']);
 
-        Http::fake([
-            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([
-                'data' => [
-                    'sub' => 'the-sub',
-                    'given_name' => 'Registry',
-                    'family_name' => 'User',
-                    'email' => 'registry-user@example.com',
-                ],
-            ], 200),
+        $this->fakeRegistryRedeem([
+            'sub' => 'the-sub',
+            'given_name' => 'Registry',
+            'family_name' => 'User',
+            'email' => 'registry-user@example.com',
         ]);
 
-        $response = $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
-            ->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+        $response = $this->registryCallbackWithIssuedState(self::HANDOFF_CODE);
 
         $response->assertRedirect('https://gateway.test/search');
         $newUser = User::where('provider', 'registry')->where('providerid', 'the-sub')->sole();
@@ -649,6 +729,122 @@ class SocialLoginControllerTest extends TestCase
         $this->assertSame('new.address@example.com', $existing->fresh()->email);
     }
 
+    public static function socialLoginFlows(): array
+    {
+        $providers = [
+            'google' => ['google', 'google', ['sub' => 'provider-id', 'name' => 'Test User', 'given_name' => 'Test', 'family_name' => 'User', 'email' => 'new.person@example.com']],
+            'linkedin' => ['linkedin', 'linkedin-openid', ['sub' => 'provider-id', 'name' => 'Test User', 'given_name' => 'Test', 'family_name' => 'User', 'email' => 'new.person@example.com']],
+            'azure' => ['azure', 'azure', ['id' => 'provider-id', 'displayName' => 'Test User', 'userPrincipalName' => 'test.user@tenant.example.com', 'mail' => 'new.person@example.com', 'givenName' => 'Test', 'surname' => 'User']],
+        ];
+
+        $flows = [];
+        foreach (['gateway' => '/api/v1/auth', 'dta' => '/api/v1/auth/dta'] as $entryPoint => $basePath) {
+            foreach ($providers as $name => [$segment, $socialiteDriver, $profile]) {
+                $flows["{$entryPoint} {$name}"] = [$basePath . '/' . $segment, $socialiteDriver, $profile];
+            }
+        }
+
+        return $flows;
+    }
+
+    #[DataProvider('socialLoginFlows')]
+    public function test_social_login_round_trip_succeeds_with_the_state_it_issued(string $loginPath, string $socialiteDriver, array $profile): void
+    {
+        $this->fakeSocialProvider($socialiteDriver, $profile);
+
+        $state = $this->startSocialLogin($loginPath);
+        $response = $this->get($loginPath . '/callback?' . http_build_query(['code' => 'some-code', 'state' => $state]));
+
+        $response->assertRedirect($this->frontEndUrl($loginPath) . '/search');
+        $newUser = User::where('provider', $socialiteDriver)->where('providerid', 'provider-id')->sole();
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+    }
+
+    #[DataProvider('socialLoginFlows')]
+    public function test_social_callback_rejects_a_state_it_did_not_issue(string $loginPath, string $socialiteDriver, array $profile): void
+    {
+        $this->fakeSocialProvider($socialiteDriver, $profile);
+
+        $this->startSocialLogin($loginPath);
+        $response = $this->get($loginPath . '/callback?' . http_build_query(['code' => 'some-code', 'state' => 'a-different-state']));
+
+        $this->assertSocialLoginRejected($response, $loginPath);
+    }
+
+    #[DataProvider('socialLoginFlows')]
+    public function test_social_callback_rejects_a_callback_without_a_login_in_this_session(string $loginPath, string $socialiteDriver, array $profile): void
+    {
+        $this->fakeSocialProvider($socialiteDriver, $profile);
+
+        $response = $this->withSession(['redirectUrl' => $this->frontEndUrl($loginPath) . '/search'])
+            ->get($loginPath . '/callback?' . http_build_query(['code' => 'some-code', 'state' => 'some-state']));
+
+        $this->assertSocialLoginRejected($response, $loginPath);
+    }
+
+    #[DataProvider('socialLoginFlows')]
+    public function test_social_callback_rejects_a_missing_state(string $loginPath, string $socialiteDriver, array $profile): void
+    {
+        $this->fakeSocialProvider($socialiteDriver, $profile);
+
+        $this->startSocialLogin($loginPath);
+        $response = $this->get($loginPath . '/callback?' . http_build_query(['code' => 'some-code']));
+
+        $this->assertSocialLoginRejected($response, $loginPath);
+    }
+
+    #[DataProvider('socialLoginFlows')]
+    public function test_social_callback_does_not_accept_the_same_state_twice(string $loginPath, string $socialiteDriver, array $profile): void
+    {
+        $this->fakeSocialProvider($socialiteDriver, $profile);
+
+        $state = $this->startSocialLogin($loginPath);
+        $callbackUrl = $loginPath . '/callback?' . http_build_query(['code' => 'some-code', 'state' => $state]);
+        $this->get($callbackUrl)->assertRedirect($this->frontEndUrl($loginPath) . '/search');
+        Socialite::forgetDrivers();
+        $replay = $this->get($callbackUrl);
+
+        $replay->assertRedirect($this->frontEndUrl($loginPath) . '/error/500');
+        $replay->assertCookieMissing('token');
+    }
+
+    private function fakeSocialProvider(string $socialiteDriver, array $profile): void
+    {
+        $oneLogin = fn () => [
+            new GuzzleResponse(200, [], (string) json_encode(['access_token' => 'fake-access-token'])),
+            new GuzzleResponse(200, [], (string) json_encode($profile)),
+        ];
+
+        config([
+            "services.{$socialiteDriver}.client_id" => 'fake-client-id',
+            "services.{$socialiteDriver}.client_secret" => 'fake-client-secret',
+            "services.{$socialiteDriver}.redirect" => "https://api.gateway.test/api/v1/auth/{$socialiteDriver}/callback",
+            "services.{$socialiteDriver}.guzzle" => ['handler' => HandlerStack::create(new MockHandler([...$oneLogin(), ...$oneLogin()]))],
+        ]);
+    }
+
+    private function startSocialLogin(string $loginPath): string
+    {
+        $login = $this->get($loginPath . '?redirect=/search');
+        parse_str((string) parse_url($login->headers->get('Location'), PHP_URL_QUERY), $authorizeParams);
+        // Octane resets Socialite's drivers between requests in production.
+        Socialite::forgetDrivers();
+
+        return $authorizeParams['state'];
+    }
+
+    private function frontEndUrl(string $loginPath): string
+    {
+        return str_contains($loginPath, '/dta/') ? 'https://dta.test' : 'https://gateway.test';
+    }
+
+    private function assertSocialLoginRejected(TestResponse $response, string $loginPath): void
+    {
+        $response->assertRedirect($this->frontEndUrl($loginPath) . '/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertFalse(User::where('providerid', 'provider-id')->exists());
+    }
+
     private function googleUser(string $id, string $email): SocialiteUser
     {
         $raw = [
@@ -681,5 +877,25 @@ class SocialLoginControllerTest extends TestCase
             'email' => $email,
             'avatar' => null,
         ]);
+    }
+
+    private function fakeRegistryRedeem(array $data): void
+    {
+        Http::fake([
+            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response(['data' => $data], 200),
+        ]);
+    }
+
+    private function registryCallbackWithIssuedState(string $code): TestResponse
+    {
+        return $this->withSession(['registry_state' => self::ISSUED_REGISTRY_STATE, 'redirectUrl' => 'https://gateway.test/search'])
+            ->get('/api/v1/auth/registry/callback/' . self::ISSUED_REGISTRY_STATE . '?code=' . $code);
+    }
+
+    private function assertRegistryLoginRejectedWithoutRedeeming(TestResponse $response): void
+    {
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        Http::assertNothingSent();
     }
 }

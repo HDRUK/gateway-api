@@ -105,7 +105,19 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin|openathens|registry',
+            'provider' => 'google|azure|linkedin|openathens',
+        ],
+    ],
+    [
+        'name' => 'login.social',
+        'method' => 'get',
+        'path' => '/auth/{provider}/callback/{state}',
+        'methodController' => 'SocialLoginController@callback',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'provider' => 'registry',
+            'state' => '[a-f0-9]{32}',
         ],
     ],
 
