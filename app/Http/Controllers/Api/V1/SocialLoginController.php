@@ -299,7 +299,19 @@ class SocialLoginController extends Controller
                         $socialUserDetails = $this->azureResponse($socialUser, $provider);
                         break;
                 }
-                $user = User::where('email', $socialUserDetails['email'])->first();
+
+                if (strtolower($provider) === 'azure') {
+                    $user = User::where('provider', 'azure')
+                        ->where('providerid', $socialUserDetails['providerid'])
+                        ->orderByDesc('updated_at')
+                        ->orderByDesc('id')
+                        ->first();
+                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+                        return redirect()->away(config('services.dta.url') . '/error/409');
+                    }
+                } else {
+                    $user = User::where('email', $socialUserDetails['email'])->first();
+                }
             }
 
             if (!$user) {
@@ -437,7 +449,19 @@ class SocialLoginController extends Controller
                         $socialUserDetails = $this->azureResponse($socialUser, $provider);
                         break;
                 }
-                $user = User::where('email', $socialUserDetails['email'])->first();
+
+                if (strtolower($provider) === 'azure') {
+                    $user = User::where('provider', 'azure')
+                        ->where('providerid', $socialUserDetails['providerid'])
+                        ->orderByDesc('updated_at')
+                        ->orderByDesc('id')
+                        ->first();
+                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+                        return redirect()->away($baseRedirectUrl . '/error/409');
+                    }
+                } else {
+                    $user = User::where('email', $socialUserDetails['email'])->first();
+                }
             }
 
             if (!$user) {
@@ -540,13 +564,18 @@ class SocialLoginController extends Controller
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: mixed, firstname: mixed, lastname: mixed, email: mixed, provider: string, password: string}
      */
     private function azureResponse(object $data, string $provider): array
     {
+        $providerId = $data->getId();
+        if (!is_string($providerId) || trim($providerId) === '') {
+            throw new Exception('Azure response has no usable user id');
+        }
+
         $emailAddress = $data['mail'] ? $data['mail'] : $data->getEmail();
         return [
-            'providerid' => $data->getId(),
+            'providerid' => $providerId,
             'name' => $data->getName(),
             'firstname' => $data->offsetGet('givenName'),
             'lastname' => $data->offsetGet('surname'),
