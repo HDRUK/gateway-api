@@ -8,8 +8,11 @@ use Illuminate\Http\JsonResponse;
 use App\Exceptions\UnprocessableException;
 use App\Http\Controllers\Controller;
 use App\Services\AdminUserService;
+use App\Services\UserSessions;
+use App\Enums\SessionRevokeReason;
 use App\Http\Requests\Admin\GetUserDeletionCheck;
 use App\Http\Requests\Admin\RemoveUserFromTeams;
+use App\Http\Requests\Admin\RevokeUserSessions;
 use App\Http\Requests\Admin\TransferAndDeleteUser;
 
 class AdminUserController extends Controller
@@ -162,6 +165,45 @@ class AdminUserController extends Controller
             ]);
 
             throw $e;
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)($jwtUser['id'] ?? 0),
+                'target_user_id' => $userId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * End every Gateway session a user holds.
+     *
+     * @param \App\Http\Requests\Admin\RevokeUserSessions $request
+     * @param integer $userId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function revokeSessions(RevokeUserSessions $request, int $userId): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+        try {
+            $revoked = UserSessions::revokeAllForUser($userId, SessionRevokeReason::ADMIN);
+
+            Auditor::log([
+                'user_id' => (int)($jwtUser['id'] ?? 0),
+                'target_user_id' => $userId,
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Revoked ' . $revoked['sessions'] . ' session(s) and ' . $revoked['oauth_tokens'] . ' OAuth token(s)',
+            ]);
+
+            return response()->json([
+                'data' => $revoked,
+            ], 200);
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),

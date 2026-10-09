@@ -3,6 +3,7 @@
 use App\Jobs\AliasReplyScannerJob;
 use App\Jobs\NightlyDatasetLinkCheckJob;
 use App\Jobs\NightlyDatasetTestJob;
+use App\Models\UserSession;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/cohort_user_expiry', function (Request $reqest) {
@@ -56,6 +57,14 @@ Route::get('/nightly_dataset_test', function (Request $request) {
 
 Route::get('/nightly_dataset_link_check', function (Request $request) {
     NightlyDatasetLinkCheckJob::dispatch();
+
+    return response()->json([
+        'message' => 'ok',
+    ], 200);
+});
+
+Route::get('/prune_user_sessions', function (Request $request) {
+    Artisan::call('model:prune', ['--model' => [UserSession::class]]);
 
     return response()->json([
         'message' => 'ok',

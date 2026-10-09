@@ -6,5 +6,5 @@ enum SessionRevokeReason: string
 {
     case LOGOUT = 'logout';
     case ADMIN = 'admin';
-    case EMERGENCY = 'emergency';
+    case REVOKE_ALL = 'revoke_all';
 }

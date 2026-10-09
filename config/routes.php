@@ -2433,6 +2433,20 @@ return [
             'userId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'admin.user.revoke_sessions',
+        'method' => 'post',
+        'path' => '/admin/users/{userId}/revoke-sessions',
+        'methodController' => 'AdminUserController@revokeSessions',
+        'namespaceController' => 'App\Http\Controllers\Api\V1\Admin',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'userId' => '[0-9]+',
+        ],
+    ],
 
     // dispatch.email
     [
