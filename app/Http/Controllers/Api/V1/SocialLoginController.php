@@ -159,12 +159,15 @@ class SocialLoginController extends Controller
                 session(['redirectUrl' => $request->query('target_link_uri')]);
             }
 
+            $state = bin2hex(random_bytes(16));
+            session(['openathens_state' => $state]);
+
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
                 'redirect_uri' => $openAthensRedirectUrl,
                 'response_type' => 'code',
                 'scope' => 'openid',
-                'state' => bin2hex(random_bytes(16))
+                'state' => $state,
             ];
             $oaUrl = config('services.openathens.issuer') . '/oidc/auth?' . http_build_query($params);
 
@@ -244,15 +247,19 @@ class SocialLoginController extends Controller
                 $input = $request->all();
                 $code = array_key_exists('code', $input) ? $input['code'] : '';
                 $_REQUEST['code'] = $code;
-                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $state = $request->input('state');
+                $issuedState = $request->session()->pull('openathens_state');
+                if (!is_string($issuedState) || !is_string($state) || !hash_equals($issuedState, $state)) {
+                    throw new Exception('OpenAthens state does not match the login request');
+                }
                 $_REQUEST['state'] = $state;
-                $_SESSION['openid_connect_state'] = $state;
+                $_SESSION['openid_connect_state'] = $issuedState;
 
-                $oidc = new OpenIDConnectClient(
-                    Config::get('services.openathens.issuer'),
-                    Config::get('services.openathens.client_id'),
-                    Config::get('services.openathens.client_secret')
-                );
+                $oidc = app(OpenIDConnectClient::class, [
+                    'provider_url' => Config::get('services.openathens.issuer'),
+                    'client_id' => Config::get('services.openathens.client_id'),
+                    'client_secret' => Config::get('services.openathens.client_secret'),
+                ]);
                 $oidc->providerConfigParam([
                     'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
                     'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
@@ -267,7 +274,9 @@ class SocialLoginController extends Controller
                 $socialUser = json_decode(json_encode($response), true);
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
 
-                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+                $user = User::where('provider', 'open-athens')
+                    ->where('providerid', $socialUserDetails['providerid'])
+                    ->first();
             } else {
                 $providerURL = config("services.$provider.redirect");
                 if (config('app.env') !== 'local') {
@@ -290,7 +299,19 @@ class SocialLoginController extends Controller
                         $socialUserDetails = $this->azureResponse($socialUser, $provider);
                         break;
                 }
-                $user = User::where('email', $socialUserDetails['email'])->first();
+
+                if (strtolower($provider) === 'azure') {
+                    $user = User::where('provider', 'azure')
+                        ->where('providerid', $socialUserDetails['providerid'])
+                        ->orderByDesc('updated_at')
+                        ->orderByDesc('id')
+                        ->first();
+                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+                        return redirect()->away(config('services.dta.url') . '/error/409');
+                    }
+                } else {
+                    $user = User::where('email', $socialUserDetails['email'])->first();
+                }
             }
 
             if (!$user) {
@@ -382,15 +403,19 @@ class SocialLoginController extends Controller
                 $input = $request->all();
                 $code = array_key_exists('code', $input) ? $input['code'] : '';
                 $_REQUEST['code'] = $code;
-                $state = array_key_exists('state', $input) ? $input['state'] : '';
+                $state = $request->input('state');
+                $issuedState = $request->session()->pull('openathens_state');
+                if (!is_string($issuedState) || !is_string($state) || !hash_equals($issuedState, $state)) {
+                    throw new Exception('OpenAthens state does not match the login request');
+                }
                 $_REQUEST['state'] = $state;
-                $_SESSION['openid_connect_state'] = $state;
+                $_SESSION['openid_connect_state'] = $issuedState;
 
-                $oidc = new OpenIDConnectClient(
-                    Config::get('services.openathens.issuer'),
-                    Config::get('services.openathens.client_id'),
-                    Config::get('services.openathens.client_secret')
-                );
+                $oidc = app(OpenIDConnectClient::class, [
+                    'provider_url' => Config::get('services.openathens.issuer'),
+                    'client_id' => Config::get('services.openathens.client_id'),
+                    'client_secret' => Config::get('services.openathens.client_secret'),
+                ]);
                 $oidc->providerConfigParam([
                     'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
                     'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
@@ -405,7 +430,9 @@ class SocialLoginController extends Controller
                 $socialUser = json_decode(json_encode($response), true);
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
 
-                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+                $user = User::where('provider', 'open-athens')
+                    ->where('providerid', $socialUserDetails['providerid'])
+                    ->first();
             } else {
                 $socialUser = Socialite::driver($provider)->user();
 
@@ -422,7 +449,19 @@ class SocialLoginController extends Controller
                         $socialUserDetails = $this->azureResponse($socialUser, $provider);
                         break;
                 }
-                $user = User::where('email', $socialUserDetails['email'])->first();
+
+                if (strtolower($provider) === 'azure') {
+                    $user = User::where('provider', 'azure')
+                        ->where('providerid', $socialUserDetails['providerid'])
+                        ->orderByDesc('updated_at')
+                        ->orderByDesc('id')
+                        ->first();
+                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+                        return redirect()->away($baseRedirectUrl . '/error/409');
+                    }
+                } else {
+                    $user = User::where('email', $socialUserDetails['email'])->first();
+                }
             }
 
             if (!$user) {
@@ -525,13 +564,18 @@ class SocialLoginController extends Controller
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: mixed, firstname: mixed, lastname: mixed, email: mixed, provider: string, password: string}
      */
     private function azureResponse(object $data, string $provider): array
     {
+        $providerId = $data->getId();
+        if (!is_string($providerId) || trim($providerId) === '') {
+            throw new Exception('Azure response has no usable user id');
+        }
+
         $emailAddress = $data['mail'] ? $data['mail'] : $data->getEmail();
         return [
-            'providerid' => $data->getId(),
+            'providerid' => $providerId,
             'name' => $data->getName(),
             'firstname' => $data->offsetGet('givenName'),
             'lastname' => $data->offsetGet('surname'),
@@ -546,21 +590,47 @@ class SocialLoginController extends Controller
      *
      * @param array $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, provider: string, password: string}
      */
     private function openathensResponse(array $data, string $provider): array
     {
-        $targetedId = is_array($data['eduPersonTargetedID']) ? $data['eduPersonTargetedID'][0] : $data['eduPersonTargetedID'];
+        $providerId = $this->openAthensIdentifier($data);
         $affiliation = is_array($data['eduPersonScopedAffiliation']) ? $data['eduPersonScopedAffiliation'][0] : $data['eduPersonScopedAffiliation'];
         return [
-            'providerid' => $targetedId,
+            'providerid' => $providerId,
             'name' => '',
             'firstname' => '',
             'lastname' => '',
-            'email' => $targetedId . $affiliation,
+            'email' => $providerId . $affiliation,
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
+    }
+
+    /**
+     * The persistent OpenAthens identifier: eduPersonTargetedID, else pairwiseID
+     *
+     * @see https://docs.openathens.net/providers/common-openid-connect-claims
+     * @see https://docs.openathens.net/providers/eduperson-attributes
+     *
+     * @param array $data
+     * @return non-empty-string
+     * @throws Exception when neither holds exactly one non-blank string
+     */
+    private function openAthensIdentifier(array $data): string
+    {
+        foreach (['eduPersonTargetedID', 'pairwiseID'] as $claim) {
+            $value = $data[$claim] ?? null;
+            if (is_array($value) && array_is_list($value) && count($value) === 1) {
+                $value = $value[0];
+            }
+
+            if (is_string($value) && trim($value) !== '') {
+                return $value;
+            }
+        }
+
+        throw new Exception('OpenAthens response has no usable eduPersonTargetedID or pairwiseID');
     }
 
     /**
