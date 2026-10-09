@@ -309,8 +309,18 @@ class SocialLoginController extends Controller
                     if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
                         return redirect()->away(config('services.dta.url') . '/error/409');
                     }
+                } elseif (in_array(strtolower($provider), ['google', 'linkedin-openid'], true)) {
+                    $user = User::where('provider', strtolower($provider))
+                        ->where('providerid', $socialUserDetails['providerid'])
+                        ->orderByDesc('updated_at')
+                        ->orderByDesc('id')
+                        ->first();
+                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+                        return redirect()->away(config('services.dta.url') . '/error/409');
+                    }
                 } else {
-                    $user = User::where('email', $socialUserDetails['email'])->first();
+                    // This should never happen because the route is only registered for supported providers, but just in case...
+                    throw new Exception('Unsupported login provider');
                 }
             }
 
@@ -459,8 +469,18 @@ class SocialLoginController extends Controller
                     if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
                         return redirect()->away($baseRedirectUrl . '/error/409');
                     }
+                } elseif (in_array(strtolower($provider), ['google', 'linkedin-openid'], true)) {
+                    $user = User::where('provider', strtolower($provider))
+                        ->where('providerid', $socialUserDetails['providerid'])
+                        ->orderByDesc('updated_at')
+                        ->orderByDesc('id')
+                        ->first();
+                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+                        return redirect()->away($baseRedirectUrl . '/error/409');
+                    }
                 } else {
-                    $user = User::where('email', $socialUserDetails['email'])->first();
+                    // This should never happen because the route is only registered for supported providers, but just in case...
+                    throw new Exception('Unsupported login provider');
                 }
             }
 
@@ -524,12 +544,17 @@ class SocialLoginController extends Controller
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: mixed, firstname: mixed, lastname: mixed, email: mixed, provider: string, password: string}
      */
     private function googleResponse(object $data, string $provider): array
     {
+        $providerId = $data->getId();
+        if (!is_string($providerId) || trim($providerId) === '') {
+            throw new Exception('Google response has no usable user id');
+        }
+
         return [
-            'providerid' => $data->getId(),
+            'providerid' => $providerId,
             'name' => $data->getName(),
             'firstname' => $data->user['given_name'] ?? '',
             'lastname' => $data->user['family_name'] ?? '',
@@ -544,12 +569,17 @@ class SocialLoginController extends Controller
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, provider: string, password: string}
      */
     private function linkedinOpenIdResponse(object $data, string $provider): array
     {
+        $providerId = $data->getId();
+        if (!is_string($providerId) || trim($providerId) === '') {
+            throw new Exception('LinkedIn response has no usable user id');
+        }
+
         return [
-            'providerid' => (string)$data->getId(),
+            'providerid' => $providerId,
             'name' => (string)$data->getName(),
             'firstname' => (string)$data->user['given_name'],
             'lastname' => (string)$data->user['family_name'],

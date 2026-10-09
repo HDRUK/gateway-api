@@ -34,6 +34,12 @@ class SocialLoginControllerTest extends TestCase
             'services.azure.client_id' => 'fake-azure-client-id',
             'services.azure.client_secret' => 'fake-azure-client-secret',
             'services.azure.redirect' => 'https://api.gateway.test/api/v1/auth/azure/callback',
+            'services.google.client_id' => 'fake-google-client-id',
+            'services.google.client_secret' => 'fake-google-client-secret',
+            'services.google.redirect' => 'https://api.gateway.test/api/v1/auth/google/callback',
+            'services.linkedin-openid.client_id' => 'fake-linkedin-client-id',
+            'services.linkedin-openid.client_secret' => 'fake-linkedin-client-secret',
+            'services.linkedin-openid.redirect' => 'https://api.gateway.test/api/v1/auth/linkedin/callback',
         ]);
     }
 
@@ -406,6 +412,147 @@ class SocialLoginControllerTest extends TestCase
             [$before->provider, $before->providerid, $before->password, $before->email],
             [$after->provider, $after->providerid, $after->password, $after->email]
         );
+    }
+
+    public static function emailLinkedProviders(): array
+    {
+        return [
+            'google' => ['google', 'google'],
+            'linkedin' => ['linkedin', 'linkedin-openid'],
+        ];
+    }
+
+    public static function emailLinkedProvidersAndCallbacks(): array
+    {
+        $cases = [];
+        foreach (self::emailLinkedProviders() as $name => [$segment, $provider]) {
+            $cases[$name . ' via gateway'] = [$segment, $provider, '/api/v1/auth/' . $segment . '/callback'];
+            $cases[$name . ' via dta'] = [$segment, $provider, '/api/v1/auth/dta/' . $segment . '/callback'];
+        }
+
+        return $cases;
+    }
+
+    public static function emailLinkedProvidersAndExistingAccounts(): array
+    {
+        $cases = [];
+        foreach (self::emailLinkedProviders() as $name => [$segment, $provider]) {
+            $others = ['azure', 'registry', 'open-athens', 'service', 'cruk', $provider === 'google' ? 'linkedin-openid' : 'google'];
+            foreach ($others as $existingProvider) {
+                $cases[$name . ' with ' . $existingProvider . ' account'] = [$segment, $provider, $existingProvider];
+            }
+        }
+
+        return $cases;
+    }
+
+    #[DataProvider('emailLinkedProvidersAndExistingAccounts')]
+    public function test_social_callback_shows_account_exists_when_email_belongs_to_another_account(string $segment, string $provider, string $existingProvider): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => $existingProvider, 'providerid' => 'existing-provider-id']);
+        Socialite::fake($provider, $this->socialUser('other-sub', 'existing.user@example.com'));
+
+        $response = $this->socialLoginCallback('/api/v1/auth/' . $segment . '/callback');
+
+        $response->assertRedirect('https://gateway.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    #[DataProvider('emailLinkedProviders')]
+    public function test_dta_social_callback_shows_account_exists_when_email_belongs_to_another_account(string $segment, string $provider): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => 'azure', 'providerid' => 'existing-provider-id']);
+        Socialite::fake($provider, $this->socialUser('other-sub', 'existing.user@example.com'));
+
+        $response = $this->socialLoginCallback('/api/v1/auth/dta/' . $segment . '/callback');
+
+        $response->assertRedirect('https://dta.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    #[DataProvider('emailLinkedProviders')]
+    public function test_social_callback_rejects_a_login_without_a_subject_id(string $segment, string $provider): void
+    {
+        $usersBefore = User::count();
+        Socialite::fake($provider, $this->socialUser('', 'new.person@example.com'));
+
+        $response = $this->socialLoginCallback('/api/v1/auth/' . $segment . '/callback');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    #[DataProvider('emailLinkedProvidersAndCallbacks')]
+    public function test_social_callback_keeps_an_existing_user_in_their_account_after_their_email_changes(string $segment, string $provider, string $path): void
+    {
+        $existing = User::factory()->create(['email' => 'old.address@example.com', 'provider' => $provider, 'providerid' => 'sub-1']);
+        Socialite::fake($provider, $this->socialUser('sub-1', 'new.address@example.com'));
+
+        $response = $this->socialLoginCallback($path);
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existing->id, $this->loggedInUserId($response));
+        $this->assertSame('new.address@example.com', $existing->fresh()->email);
+    }
+
+    #[DataProvider('emailLinkedProvidersAndCallbacks')]
+    public function test_social_callback_creates_an_account_for_a_new_user(string $segment, string $provider, string $path): void
+    {
+        Socialite::fake($provider, $this->socialUser('sub-new', 'new.person@example.com'));
+
+        $response = $this->socialLoginCallback($path);
+
+        $response->assertRedirect('https://gateway.test/search');
+        $newUser = User::where('provider', $provider)->where('providerid', 'sub-new')->sole();
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+    }
+
+    #[DataProvider('emailLinkedProvidersAndCallbacks')]
+    public function test_social_callback_logs_into_the_most_recently_used_account_when_a_subject_id_has_several(string $segment, string $provider, string $path): void
+    {
+        User::factory()->create([
+            'email' => 'stale.address@example.com', 'provider' => $provider, 'providerid' => 'sub-shared',
+            'updated_at' => now()->subYear(),
+        ]);
+        $mostRecent = User::factory()->create([
+            'email' => 'current.address@example.com', 'provider' => $provider, 'providerid' => 'sub-shared',
+            'updated_at' => now()->subDay(),
+        ]);
+        Socialite::fake($provider, $this->socialUser('sub-shared', 'current.address@example.com'));
+
+        $response = $this->socialLoginCallback($path);
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($mostRecent->id, $this->loggedInUserId($response));
+    }
+
+    private function socialUser(string $sub, string $email): SocialiteUser
+    {
+        $raw = [
+            'sub' => $sub,
+            'name' => 'Test User',
+            'email' => $email,
+            'email_verified' => true,
+            'given_name' => 'Test',
+            'family_name' => 'User',
+        ];
+
+        return (new SocialiteUser())->setRaw($raw)->map([
+            'id' => $raw['sub'],
+            'nickname' => null,
+            'name' => $raw['name'],
+            'email' => $raw['email'],
+            'avatar' => null,
+        ]);
+    }
+
+    private function socialLoginCallback(string $path): TestResponse
+    {
+        return $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
+            ->get($path . '?code=some-code&state=some-state');
     }
 
     private function loggedInUserId(TestResponse $response): int
