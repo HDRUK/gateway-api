@@ -19,6 +19,7 @@ class FeatureSeeder extends Seeder
         'V3_CustodianDashboard' => false,
         'TypesenseSearch' => false,
         'SafePeopleRegistrySSOEnabled' => false,
+        'LoginDisabled' => false,
     ];
 
     public function run(): void
