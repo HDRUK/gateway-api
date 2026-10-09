@@ -1,3 +1,16 @@
+## [2.55.0](https://github.com/HDRUK/gateway-api/compare/v2.54.1...v2.55.0) (2026-10-09)
+
+### ✨ Features
+
+* **GAT-7146:** Feature flag to disable login (#1852) ([aaae0a8](https://github.com/HDRUK/gateway-api/commit/aaae0a893fbf77991e41cd49d379764cabab0b22)), closes [GAT-7146](undefinedGAT-7146)
+
+### 🐛 Bug Fixes
+
+* **GAT-9679:** add session state check (#1846) ([d31d7e9](https://github.com/HDRUK/gateway-api/commit/d31d7e93a04ebd0fde41f4de8425d3b2d3ab2304)), closes [GAT-9679](undefinedGAT-9679)
+* **GAT-9679:** Match OpenAthens logins against OpenAthens accounts only (#1844) ([d99cd70](https://github.com/HDRUK/gateway-api/commit/d99cd703e243e701bdbf599f4ad08d3f2cb309f6)), closes [GAT-9679](undefinedGAT-9679)
+* **GAT-9679:** Validate OpenAthens identifier and support pairwiseID (#1843) ([d6cbede](https://github.com/HDRUK/gateway-api/commit/d6cbeded238f3535168ad76ff434c19d7b9d8a9d)), closes [GAT-9679](undefinedGAT-9679)
+* **GAT-9681:** Match Microsoft logins by account ID ([939cf2f](https://github.com/HDRUK/gateway-api/commit/939cf2faa32520af85667fe208b2e9cb9d411e5a)), closes [GAT-9681](undefinedGAT-9681) [Microsoft](undefinedosoft) [Microsoft](undefinedosoft) [Gateway](undefinedGateway) [Microsoft](undefinedosoft) [Microsoft](undefinedosoft) [Gateway](undefinedGateway) [most](undefinedost) [Microsoft](undefinedosoft) [Gateway](undefinedGateway) [Gateway](undefinedGateway)
+
 ## [2.54.1](https://github.com/HDRUK/gateway-api/compare/v2.54.0...v2.54.1) (2026-10-05)
 
 ### 🐛 Bug Fixes
