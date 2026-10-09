@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Jumbojett\OpenIDConnectClient;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\User as SocialiteUser;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fakes\FakeOpenAthensClient;
 use Tests\TestCase;
@@ -28,6 +30,10 @@ class SocialLoginControllerTest extends TestCase
             'services.openathens.issuer' => 'https://openathens.test',
             'services.openathens.redirect' => 'https://api.gateway.test/api/v1/auth/openathens/callback',
             'services.dta.url' => 'https://dta.test',
+            'services.dta.api_url' => 'https://api.dta.test',
+            'services.azure.client_id' => 'fake-azure-client-id',
+            'services.azure.client_secret' => 'fake-azure-client-secret',
+            'services.azure.redirect' => 'https://api.gateway.test/api/v1/auth/azure/callback',
         ]);
     }
 
@@ -262,6 +268,144 @@ class SocialLoginControllerTest extends TestCase
     private function fakeOpenAthensUserInfo(string $userInfoJson): void
     {
         $this->app->bind(OpenIDConnectClient::class, fn () => new FakeOpenAthensClient($userInfoJson));
+    }
+
+    public static function existingNonAzureProviders(): array
+    {
+        return [
+            'google' => ['google'],
+            'registry' => ['registry'],
+            'open-athens' => ['open-athens'],
+            'service' => ['service'],
+            'cruk' => ['cruk'],
+        ];
+    }
+
+    #[DataProvider('existingNonAzureProviders')]
+    public function test_azure_callback_does_not_log_into_an_account_it_only_shares_an_email_with(string $existingProvider): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => $existingProvider, 'providerid' => 'existing-provider-id']);
+        Socialite::fake('azure', $this->microsoftUser('attacker-oid', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/azure/callback');
+
+        $response->assertRedirect('https://gateway.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_dta_azure_callback_does_not_log_into_an_account_it_only_shares_an_email_with(): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => 'google', 'providerid' => 'existing-provider-id']);
+        Socialite::fake('azure', $this->microsoftUser('attacker-oid', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/dta/azure/callback');
+
+        $response->assertRedirect('https://dta.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_azure_callback_rejects_a_login_without_a_microsoft_id(): void
+    {
+        $usersBefore = User::count();
+        Socialite::fake('azure', $this->microsoftUser('', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/azure/callback');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public static function azureCallbackPaths(): array
+    {
+        return [
+            'gateway' => ['/api/v1/auth/azure/callback'],
+            'dta' => ['/api/v1/auth/dta/azure/callback'],
+        ];
+    }
+
+    #[DataProvider('azureCallbackPaths')]
+    public function test_azure_callback_logs_an_existing_azure_user_into_their_own_account_after_their_email_changes(string $path): void
+    {
+        $existing = User::factory()->create(['email' => 'old.address@example.com', 'provider' => 'azure', 'providerid' => 'oid-1']);
+        Socialite::fake('azure', $this->microsoftUser('oid-1', 'new.address@example.com'));
+
+        $response = $this->azureCallback($path);
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existing->id, $this->loggedInUserId($response));
+        $this->assertSame('new.address@example.com', $existing->fresh()->email);
+    }
+
+    #[DataProvider('azureCallbackPaths')]
+    public function test_azure_callback_creates_an_account_for_a_new_microsoft_user(string $path): void
+    {
+        Socialite::fake('azure', $this->microsoftUser('oid-new', 'new.person@example.com'));
+
+        $response = $this->azureCallback($path);
+
+        $response->assertRedirect('https://gateway.test/search');
+        $newUser = User::where('provider', 'azure')->where('providerid', 'oid-new')->sole();
+        $this->assertSame('new.person@example.com', $newUser->email);
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+    }
+
+    #[DataProvider('azureCallbackPaths')]
+    public function test_azure_callback_logs_into_the_most_recently_used_account_when_a_microsoft_id_has_several(string $path): void
+    {
+        User::factory()->create([
+            'email' => 'stale.address@example.com', 'provider' => 'azure', 'providerid' => 'oid-shared',
+            'updated_at' => now()->subYear(),
+        ]);
+        $mostRecent = User::factory()->create([
+            'email' => 'current.address@example.com', 'provider' => 'azure', 'providerid' => 'oid-shared',
+            'updated_at' => now()->subDay(),
+        ]);
+        Socialite::fake('azure', $this->microsoftUser('oid-shared', 'current.address@example.com'));
+
+        $response = $this->azureCallback($path);
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($mostRecent->id, $this->loggedInUserId($response));
+    }
+
+    private function microsoftUser(string $id, string $mail): SocialiteUser
+    {
+        $raw = [
+            'id' => $id,
+            'displayName' => 'Test User',
+            'userPrincipalName' => 'test.user@tenant.example.com',
+            'mail' => $mail,
+            'givenName' => 'Test',
+            'surname' => 'User',
+        ];
+
+        return (new SocialiteUser())->setRaw($raw)->map([
+            'id' => $raw['id'],
+            'nickname' => null,
+            'name' => $raw['displayName'],
+            'email' => $raw['userPrincipalName'],
+            'principalName' => $raw['userPrincipalName'],
+            'mail' => $raw['mail'],
+            'avatar' => null,
+        ]);
+    }
+
+    private function azureCallback(string $path): TestResponse
+    {
+        return $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
+            ->get($path . '?code=some-code&state=some-state');
+    }
+
+    private function assertAccountUnchanged(User $before): void
+    {
+        $after = $before->fresh();
+        $this->assertSame(
+            [$before->provider, $before->providerid, $before->password, $before->email],
+            [$after->provider, $after->providerid, $after->password, $after->email]
+        );
     }
 
     private function loggedInUserId(TestResponse $response): int
