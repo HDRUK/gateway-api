@@ -267,7 +267,9 @@ class SocialLoginController extends Controller
                 $socialUser = json_decode(json_encode($response), true);
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
 
-                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+                $user = User::where('provider', 'open-athens')
+                    ->where('providerid', $socialUserDetails['providerid'])
+                    ->first();
             } else {
                 $providerURL = config("services.$provider.redirect");
                 if (config('app.env') !== 'local') {
@@ -405,7 +407,9 @@ class SocialLoginController extends Controller
                 $socialUser = json_decode(json_encode($response), true);
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
 
-                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+                $user = User::where('provider', 'open-athens')
+                    ->where('providerid', $socialUserDetails['providerid'])
+                    ->first();
             } else {
                 $socialUser = Socialite::driver($provider)->user();
 

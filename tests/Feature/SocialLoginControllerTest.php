@@ -135,6 +135,44 @@ class SocialLoginControllerTest extends TestCase
         $this->assertSame($existingUser->id, $this->loggedInUserId($response));
     }
 
+    public static function otherProviders(): array
+    {
+        return [
+            'google' => ['google'],
+            'registry' => ['registry'],
+            'service' => ['service'],
+        ];
+    }
+
+    #[DataProvider('otherProviders')]
+    public function test_openathens_callback_does_not_log_into_another_providers_account_with_the_same_id(string $otherProvider): void
+    {
+        $otherUser = User::factory()->create(['provider' => $otherProvider, 'providerid' => 'the-id', 'preferred_email' => 'primary']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback();
+
+        $response->assertRedirect('https://gateway.test/account/profile');
+        $newUser = User::where('provider', 'open-athens')->where('providerid', 'the-id')->sole();
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+        $this->assertSame(
+            [$otherProvider, 'the-id', 'primary'],
+            [$otherUser->fresh()->provider, $otherUser->fresh()->providerid, $otherUser->fresh()->preferred_email]
+        );
+    }
+
+    public function test_dta_openathens_callback_does_not_log_into_another_providers_account_with_the_same_id(): void
+    {
+        User::factory()->create(['provider' => 'google', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback('/api/v1/auth/dta/openathens/callback');
+
+        $response->assertRedirect('https://dta.test/account/profile');
+        $newUser = User::where('provider', 'open-athens')->where('providerid', 'the-id')->sole();
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+    }
+
     private function openAthensCallback(string $path = '/api/v1/auth/openathens/callback'): TestResponse
     {
         return $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
