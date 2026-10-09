@@ -83,6 +83,56 @@ class UserSessionRevocationTest extends TestCase
         $this->postJson($this->revokeUrl(User::max('id') + 1), [], $this->header)->assertStatus(400);
     }
 
+    public function test_revoking_all_sessions_ends_every_active_session(): void
+    {
+        $firstUser = User::factory()->create();
+        $secondUser = User::factory()->create();
+        $firstToken = $this->tokenFor($firstUser);
+        $secondToken = $this->tokenFor($secondUser, LoginMethod::AZURE);
+        [$firstAccessTokenId, $firstRefreshTokenId] = $this->passportTokensFor($firstUser);
+        [$secondAccessTokenId] = $this->passportTokensFor($secondUser);
+
+        $this->artisan('app:revoke-all-sessions', ['--reason' => 'Test reason', '--force' => true])
+            ->assertSuccessful();
+
+        $this->getJson(self::PROTECTED_URL, $this->bearer($firstToken))->assertUnauthorized();
+        $this->getJson(self::PROTECTED_URL, $this->bearer($secondToken))->assertUnauthorized();
+        $this->assertTrue(Passport::token()->findOrFail($firstAccessTokenId)->revoked);
+        $this->assertTrue(Passport::token()->findOrFail($secondAccessTokenId)->revoked);
+        $this->assertTrue((bool) Passport::refreshToken()->findOrFail($firstRefreshTokenId)->revoked);
+    }
+
+    public function test_signing_in_after_all_sessions_are_revoked_works(): void
+    {
+        $user = User::factory()->create();
+        $this->tokenFor($user);
+
+        $this->artisan('app:revoke-all-sessions', ['--reason' => 'Test reason', '--force' => true])
+            ->assertSuccessful();
+
+        $this->getJson(self::PROTECTED_URL, $this->bearer($this->tokenFor($user)))->assertOk();
+    }
+
+    public function test_revoking_all_sessions_changes_nothing_unless_confirmed(): void
+    {
+        $token = $this->tokenFor(User::factory()->create());
+
+        $this->artisan('app:revoke-all-sessions', ['--reason' => 'Test reason'])
+            ->expectsConfirmation('This signs out every user and revokes every OAuth token. Continue?', 'no')
+            ->assertFailed();
+
+        $this->getJson(self::PROTECTED_URL, $this->bearer($token))->assertOk();
+    }
+
+    public function test_revoking_all_sessions_requires_a_reason(): void
+    {
+        $token = $this->tokenFor(User::factory()->create());
+
+        $this->artisan('app:revoke-all-sessions', ['--force' => true])->assertFailed();
+
+        $this->getJson(self::PROTECTED_URL, $this->bearer($token))->assertOk();
+    }
+
     private function revokeUrl(int $userId): string
     {
         return '/api/v1/admin/users/' . $userId . '/revoke-sessions';
