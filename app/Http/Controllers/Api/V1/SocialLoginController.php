@@ -402,6 +402,12 @@ class SocialLoginController extends Controller
                 $provider = 'linkedin-openid';
             }
             if (strtolower($provider) === 'registry') {
+                $state = $request->route('state');
+                $issuedState = $request->session()->pull('registry_state');
+                if (!is_string($issuedState) || !is_string($state) || !hash_equals($issuedState, $state)) {
+                    throw new Exception('Safe People Registry state does not match the login request');
+                }
+
                 $socialUserDetails = $this->redeemRegistryHandoff($request);
 
                 $user = User::where('providerid', $socialUserDetails['providerid'])->first();
@@ -674,7 +680,10 @@ class SocialLoginController extends Controller
      */
     private function registryLoginRedirect(): mixed
     {
-        $callbackUrl = config('app.url') . '/api/v1/auth/registry/callback';
+        $state = bin2hex(random_bytes(16));
+        session(['registry_state' => $state]);
+
+        $callbackUrl = config('app.url') . '/api/v1/auth/registry/callback/' . $state;
 
         $registryUrl = rtrim(config('services.registry.web_url'), '/')
             . config('services.registry.login_path')
@@ -695,8 +704,8 @@ class SocialLoginController extends Controller
     {
         $code = $request->query('code');
 
-        if (!$code) {
-            throw new Exception('Missing handoff code from Safe People Registry');
+        if (!is_string($code) || !preg_match('/^[A-Za-z0-9]{40}\z/', $code)) {
+            throw new Exception('Missing or malformed handoff code from Safe People Registry');
         }
 
         $signature = base64_encode(hash_hmac('sha256', $code, config('services.registry.handoff_secret'), true));
