@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\LoginMethod;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -42,7 +43,7 @@ class AppendJWTTokenResponse
 
             $jwtClass = new JwtController();
             /** @phpstan-ignore-next-line */
-            $jwt = $jwtClass->generateToken($token->claims()->get('sub'));
+            $jwt = $jwtClass->generateToken((int) $token->claims()->get('sub'), LoginMethod::OAUTH);
 
             return response()->json([
                 'token' => $jwt,

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\UnauthorizedException;
 use App\Http\Traits\UserRolePermissions;
+use App\Enums\LoginMethod;
 use App\Models\User;
+use App\Models\UserSession;
 use Carbon\CarbonImmutable;
 use Config;
 use Exception;
@@ -61,7 +63,7 @@ class JwtController extends Controller
         return $this->jwt = $value;
     }
 
-    public function generateToken($userId)
+    public function generateToken(int $userId, LoginMethod $method): string
     {
         try {
             $currentTime = CarbonImmutable::now();
@@ -84,11 +86,17 @@ class JwtController extends Controller
                 $userClaim['cohort_admin_teams'] = $user->cohortAdminTeams->toArray();
             }
 
+            $session = UserSession::create([
+                'user_id' => $user->id,
+                'login_method' => $method,
+                'expires_at' => $expireTime,
+            ]);
+
             $token = $this->config->builder()
                 ->issuedBy((string) config('app.url')) // iss claim
                 ->permittedFor((string) config('app.url')) // aud claim
                 ->relatedTo((string) config('app.name')) // aud claim
-                ->identifiedBy(md5(microtime())) // jti claim
+                ->identifiedBy($session->id) // jti claim: the session this token belongs to
                 ->issuedAt($currentTime) // iat claim
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim

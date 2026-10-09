@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Enums\LoginMethod;
 use App\Models\User;
 use Tests\Traits\MockExternalApis;
 use App\Http\Controllers\JwtController;
@@ -27,7 +28,7 @@ class JwtControllerTest extends TestCase
     {
         $jwtClass = new JwtController();
         $userId = User::all()->random()->id;
-        $jwt = $jwtClass->generateToken($userId);
+        $jwt = $jwtClass->generateToken($userId, LoginMethod::PASSWORD);
 
         $this->assertIsString($jwt);
     }
@@ -36,7 +37,7 @@ class JwtControllerTest extends TestCase
     {
         $jwtClass = new JwtController();
         $userId = User::all()->random()->id;
-        $jwt = $jwtClass->generateToken($userId);
+        $jwt = $jwtClass->generateToken($userId, LoginMethod::PASSWORD);
         $jwtClass->setJwt($jwt);
         $jwtDecoded = $jwtClass->decode();
 

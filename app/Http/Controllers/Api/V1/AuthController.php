@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
+use App\Enums\LoginMethod;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -397,6 +398,8 @@ class AuthController extends Controller
      */
     private function createJwt(User $user): string
     {
-        return $this->jwt->generateToken($user->id);
+        $method = $user->provider === Config::get('constants.provider.cruk') ? LoginMethod::CRUK : LoginMethod::PASSWORD;
+
+        return $this->jwt->generateToken($user->id, $method);
     }
 }

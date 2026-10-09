@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\SessionRevokeReason;
+use App\Services\UserSessions;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cookie;
 
 class LogoutController extends Controller
 {
@@ -40,9 +43,14 @@ class LogoutController extends Controller
      */
     public function logout(Request $request): mixed
     {
+        $sessionId = $request->input('jwt_session_id');
+        if (is_string($sessionId)) {
+            UserSessions::revokeSession($sessionId, SessionRevokeReason::LOGOUT);
+        }
         $request->session()->flush();
+
         return response()->json([
             'message' => 'OK',
-        ], 200);
+        ], 200)->withCookie(Cookie::forget('token'));
     }
 }
