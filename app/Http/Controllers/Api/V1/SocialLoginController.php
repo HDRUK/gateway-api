@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+use App\Enums\LoginMethod;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -320,7 +321,7 @@ class SocialLoginController extends Controller
                 $user = $this->updateUser($user, $socialUserDetails, $provider);
             }
 
-            $jwt = $this->createJwt($user);
+            $jwt = $this->createJwt($user, $provider);
             Auditor::log([
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
@@ -470,7 +471,7 @@ class SocialLoginController extends Controller
                 $user = $this->updateUser($user, $socialUserDetails, $provider);
             }
 
-            $jwt = $this->createJwt($user);
+            $jwt = $this->createJwt($user, $provider);
 
             Auditor::log([
                 'target_user_id' => $user->id,
@@ -770,10 +771,20 @@ class SocialLoginController extends Controller
      * create JWT token
      *
      * @param User $user
+     * @param string $provider the normalised provider the user signed in with
      * @return string
      */
-    private function createJwt(User $user): string
+    private function createJwt(User $user, string $provider): string
     {
-        return $this->jwt->generateToken($user->id);
+        $method = match ($provider) {
+            'google' => LoginMethod::GOOGLE,
+            'linkedin-openid' => LoginMethod::LINKEDIN,
+            'azure' => LoginMethod::AZURE,
+            'open-athens' => LoginMethod::OPENATHENS,
+            'registry' => LoginMethod::REGISTRY,
+            default => throw new Exception('Unsupported login provider'),
+        };
+
+        return $this->jwt->generateToken($user->id, $method);
     }
 }

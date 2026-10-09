@@ -10,6 +10,7 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\JwtController;
 use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
+use App\Services\UserSessions;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -37,31 +38,7 @@ class JwtMiddleware
         // Cater for auth token coming in via cookie - as sent originally during
         // the socialite oauth flow
         if ($request->cookie('token')) {
-            $authorization = $request->cookie('token');
-            $jwtController = new JwtController();
-            $jwtController->setJwt($authorization);
-            $isValidJwt = $jwtController->isValid();
-
-            if (!$isValidJwt) {
-                throw new UnauthorizedException();
-            }
-
-            $request->merge(['jwt' => $authorization]);
-
-            $payloadJwt = $jwtController->decode();
-            $userJwt = $payloadJwt['user'];
-
-            $user = $this->validateUserId((int) $userJwt['id']);
-
-            if (!$user) {
-                throw new NotFoundException('User not found.');
-            }
-
-            $request->merge(
-                [
-                    'jwt_user' => $this->buildJwtUserPayload($request, $user),
-                ],
-            );
+            $this->authenticateJwt($request, $request->cookie('token'));
 
             return $next($request);
         }
@@ -102,32 +79,8 @@ class JwtMiddleware
             $splitAuthorization = explode(' ', $authorization);
 
             if (strtolower(trim($splitAuthorization[0])) === 'bearer') {
-                $jwtBearer = $splitAuthorization[1];
+                $this->authenticateJwt($request, $splitAuthorization[1]);
 
-                $jwtController = new JwtController();
-                $jwtController->setJwt($jwtBearer);
-                $isValidJwt = $jwtController->isValid();
-
-                if (!$isValidJwt) {
-                    throw new UnauthorizedException();
-                }
-
-                $request->merge(['jwt' => $jwtBearer]);
-
-                $payloadJwt = $jwtController->decode();
-                $userJwt = $payloadJwt['user'];
-
-                $user = $this->validateUserId((int) $userJwt['id']);
-
-                if (!$user) {
-                    throw new NotFoundException('User not found.');
-                }
-
-                $request->merge(
-                    [
-                        'jwt_user' => $this->buildJwtUserPayload($request, $user),
-                    ],
-                );
                 return $next($request);
             }
         }
@@ -135,6 +88,30 @@ class JwtMiddleware
         throw new UnauthorizedException();
     }
 
+
+    private function authenticateJwt(Request $request, string $jwt): void
+    {
+        $jwtController = new JwtController();
+        $jwtController->setJwt($jwt);
+        $jwtController->isValid();
+
+        $payloadJwt = $jwtController->decode();
+        $sessionId = $payloadJwt['jti'] ?? null;
+        if (!is_string($sessionId) || !UserSessions::isActive($sessionId)) {
+            throw new UnauthorizedException('Session is no longer active');
+        }
+
+        $user = $this->validateUserId((int) $payloadJwt['user']['id']);
+        if (!$user) {
+            throw new NotFoundException('User not found.');
+        }
+
+        $request->merge([
+            'jwt' => $jwt,
+            'jwt_session_id' => $sessionId,
+            'jwt_user' => $this->buildJwtUserPayload($request, $user),
+        ]);
+    }
 
     private function validateUserId(int $userId)
     {

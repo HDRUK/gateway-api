@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\LoginMethod;
 use Config;
 use App\Models\User;
 use Exception;
@@ -37,7 +38,7 @@ class CrukAuthService
             'is_admin' => 0,
         ]);
 
-        $accessToken = $this->jwt->generateToken($user->id);
+        $accessToken = $this->jwt->generateToken($user->id, LoginMethod::CRUK);
 
         return [
             'access_token' => $accessToken,
@@ -62,7 +63,7 @@ class CrukAuthService
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        $accessToken = $this->jwt->generateToken($user->id);
+        $accessToken = $this->jwt->generateToken($user->id, LoginMethod::CRUK);
 
         return [
             'access_token' => $accessToken,
