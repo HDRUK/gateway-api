@@ -371,6 +371,88 @@ class SocialLoginControllerTest extends TestCase
         $this->assertSame($mostRecent->id, $this->loggedInUserId($response));
     }
 
+    public function test_google_callback_rejects_a_response_without_a_usable_user_id(): void
+    {
+        $usersBefore = User::count();
+        Socialite::fake('google', $this->googleUser('', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public function test_linkedin_callback_rejects_a_response_without_a_usable_user_id(): void
+    {
+        $usersBefore = User::count();
+        Socialite::fake('linkedin-openid', $this->linkedinUser('', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/linkedin/callback');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public static function existingNonGoogleProviders(): array
+    {
+        return [
+            'azure' => ['azure'],
+            'open-athens' => ['open-athens'],
+            'service' => ['service'],
+        ];
+    }
+
+    #[DataProvider('existingNonGoogleProviders')]
+    public function test_google_callback_does_not_log_into_an_account_it_only_shares_an_email_with(string $existingProvider): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => $existingProvider, 'providerid' => 'existing-provider-id']);
+        Socialite::fake('google', $this->googleUser('attacker-sub', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_dta_google_callback_does_not_log_into_an_account_it_only_shares_an_email_with(): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => 'azure', 'providerid' => 'existing-provider-id']);
+        Socialite::fake('google', $this->googleUser('attacker-sub', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/dta/google/callback');
+
+        $response->assertRedirect('https://dta.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_linkedin_callback_does_not_log_into_an_account_it_only_shares_an_email_with(): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => 'google', 'providerid' => 'existing-provider-id']);
+        Socialite::fake('linkedin-openid', $this->linkedinUser('attacker-sub', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/linkedin/callback');
+
+        $response->assertRedirect('https://gateway.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_google_callback_logs_an_existing_google_user_into_their_own_account_after_their_email_changes(): void
+    {
+        $existing = User::factory()->create(['email' => 'old.address@example.com', 'provider' => 'google', 'providerid' => 'sub-1']);
+        Socialite::fake('google', $this->googleUser('sub-1', 'new.address@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existing->id, $this->loggedInUserId($response));
+        $this->assertSame('new.address@example.com', $existing->fresh()->email);
+    }
+
     private function microsoftUser(string $id, string $mail): SocialiteUser
     {
         $raw = [
@@ -398,6 +480,41 @@ class SocialLoginControllerTest extends TestCase
         return $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
             ->get($path . '?code=some-code&state=some-state');
     }
+
+    private function googleUser(string $id, string $email): SocialiteUser
+    {
+        $raw = [
+            'sub' => $id,
+            'given_name' => 'Test',
+            'family_name' => 'User',
+        ];
+
+        return (new SocialiteUser())->setRaw($raw)->map([
+            'id' => $id,
+            'nickname' => null,
+            'name' => 'Test User',
+            'email' => $email,
+            'avatar' => null,
+        ]);
+    }
+
+    private function linkedinUser(string $id, string $email): SocialiteUser
+    {
+        $raw = [
+            'sub' => $id,
+            'given_name' => 'Test',
+            'family_name' => 'User',
+        ];
+
+        return (new SocialiteUser())->setRaw($raw)->map([
+            'id' => $id,
+            'nickname' => null,
+            'name' => 'Test User',
+            'email' => $email,
+            'avatar' => null,
+        ]);
+    }
+
 
     private function assertAccountUnchanged(User $before): void
     {

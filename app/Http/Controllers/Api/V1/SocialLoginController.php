@@ -17,6 +17,7 @@ use App\Models\UserHasRole;
 use Illuminate\Database\QueryException;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
+use App\Exceptions\SocialLoginConflictException;
 
 class SocialLoginController extends Controller
 {
@@ -455,18 +456,7 @@ class SocialLoginController extends Controller
                         break;
                 }
 
-                if (strtolower($provider) === 'azure') {
-                    $user = User::where('provider', 'azure')
-                        ->where('providerid', $socialUserDetails['providerid'])
-                        ->orderByDesc('updated_at')
-                        ->orderByDesc('id')
-                        ->first();
-                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
-                        return redirect()->away($baseRedirectUrl . '/error/409');
-                    }
-                } else {
-                    $user = User::where('email', $socialUserDetails['email'])->first();
-                }
+                $user = $this->findUserByProviderOrConflict($provider, $socialUserDetails, $baseRedirectUrl);
             }
 
             if (!$user) {
@@ -492,6 +482,14 @@ class SocialLoginController extends Controller
                 $redirectUrl = session('redirectUrl');
                 return redirect()->away($redirectUrl)->withCookies($cookies);
             }
+        } catch (SocialLoginConflictException $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
+                'description' => "[{$provider}] " . $e->getMessage(),
+            ]);
+
+            return redirect()->away($e->getRedirectUrl());
         } catch (QueryException $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
@@ -525,16 +523,49 @@ class SocialLoginController extends Controller
     }
 
     /**
+     * Resolve an existing user for a provider that stores a persistent
+     * providerid, tying the most recently used account if more than one
+     * shares it. If no provider+providerid match exists but the email
+     * already belongs to a different account, refuse to silently convert
+     * that account to this provider.
+     *
+     * @param string $provider
+     * @param array $socialUserDetails
+     * @param string $redirectBaseUrl
+     * @return ?User
+     * @throws SocialLoginConflictException when the email belongs to another account
+     */
+    private function findUserByProviderOrConflict(string $provider, array $socialUserDetails, string $redirectBaseUrl): ?User
+    {
+        $user = User::where('provider', $provider)
+            ->where('providerid', $socialUserDetails['providerid'])
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+            throw new SocialLoginConflictException($redirectBaseUrl . '/error/409');
+        }
+
+        return $user;
+    }
+
+    /**
      * Uniform response from Google
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: mixed, firstname: mixed, lastname: mixed, email: mixed, provider: string, password: string}
      */
     private function googleResponse(object $data, string $provider): array
     {
+        $providerId = $data->getId();
+        if (!is_string($providerId) || trim($providerId) === '') {
+            throw new Exception('Google response has no usable user id');
+        }
+
         return [
-            'providerid' => $data->getId(),
+            'providerid' => $providerId,
             'name' => $data->getName(),
             'firstname' => $data->user['given_name'] ?? '',
             'lastname' => $data->user['family_name'] ?? '',
@@ -549,12 +580,17 @@ class SocialLoginController extends Controller
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, provider: string, password: string}
      */
     private function linkedinOpenIdResponse(object $data, string $provider): array
     {
+        $providerId = (string) $data->getId();
+        if (trim($providerId) === '') {
+            throw new Exception('LinkedIn response has no usable user id');
+        }
+
         return [
-            'providerid' => (string)$data->getId(),
+            'providerid' => $providerId,
             'name' => (string)$data->getName(),
             'firstname' => (string)$data->user['given_name'],
             'lastname' => (string)$data->user['family_name'],
