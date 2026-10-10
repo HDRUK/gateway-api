@@ -306,4 +306,18 @@ class RoleTest extends TestCase
         $this->assertFalse((bool) count($existsRole), 'Response was successfully');
         $this->assertFalse((bool) count($existsPermsForRole), 'Response was successfully');
     }
+
+    /**
+     * The three admin-tier roles are seeded as privileged; an ordinary
+     * role is not.
+     *
+     * @return void
+     */
+    public function test_admin_tier_roles_are_seeded_as_privileged(): void
+    {
+        $this->assertTrue(Role::where('name', 'hdruk.admin')->value('is_privileged'));
+        $this->assertTrue(Role::where('name', 'hdruk.superadmin')->value('is_privileged'));
+        $this->assertTrue(Role::where('name', 'hdruk.cohort.admin')->value('is_privileged'));
+        $this->assertFalse((bool) Role::where('name', 'custodian.team.admin')->value('is_privileged'));
+    }
 }

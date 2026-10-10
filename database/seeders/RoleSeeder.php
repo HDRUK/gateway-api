@@ -18,12 +18,14 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             'hdruk.superadmin' => [
+                'is_privileged' => true,
                 'permissions' => [
                     'perms' => 'all',
                 ],
             ],
             'hdruk.admin' => [
                 'full_name' => 'HDR UK Admin',
+                'is_privileged' => true,
                 'permissions' => [
                     'datasets.read',
                     'datasets.delete',
@@ -133,6 +135,7 @@ class RoleSeeder extends Seeder
             ],
             'hdruk.cohort.admin' => [
                 'full_name' => 'HDR UK - Cohort Discovery Manager',
+                'is_privileged' => true,
                 'permissions' => [
                     'cohort.create',
                     'cohort.read',
@@ -405,6 +408,7 @@ class RoleSeeder extends Seeder
                     'name' => $k,
                     'enabled' => true,
                     'full_name' => array_key_exists('full_name', $v) ? $v['full_name'] : null,
+                    'is_privileged' => array_key_exists('is_privileged', $v) ? $v['is_privileged'] : false,
                 ]
             );
 
