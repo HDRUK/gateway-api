@@ -136,7 +136,7 @@ class UserAdminsSeeder extends Seeder
         $this->createUser(
             'HDR',
             'Cohort-Admin',
-            'hdrcohortadmin@gmail.com',
+            'hdrcohortadmin@hdruk.cloud',
             '$2y$10$ECryx53uja9dgVYVy7n/auJf4MRqBMRWKZauddQvR2APG625MUwIm',
             false,
             [
@@ -147,7 +147,7 @@ class UserAdminsSeeder extends Seeder
         $this->createUser(
             'HDR',
             'Admin',
-            'hdrukadmin@gmail.com',
+            'hdrukadmin@hdruk.cloud',
             '$2y$10$as5OWj6YOfl56kvhbz179eu1eo49bYwxbdgggSbMm.1/XTGcDjluK',
             false,
             [

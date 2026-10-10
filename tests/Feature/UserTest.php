@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use Hash;
 use Tests\TestCase;
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserHasRole;
+use App\Exceptions\BadRequestException;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Http;
@@ -546,6 +549,100 @@ class UserTest extends TestCase
         $response->assertStatus(403);
 
 
+    }
+
+    private function userUpdatePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'firstname' => 'Just',
+            'lastname' => 'Test',
+            'email' => 'just.test.123456789@test.com',
+            'secondary_email' => 'just.test.1234567890@test.com',
+            'preferred_email' => 'primary',
+            'sector_id' => 1,
+            'organisation' => 'Updated Organisation',
+            'bio' => 'Test Biography',
+            'domain' => 'https://testdomain.com',
+            'link' => 'https://testlink.com/link',
+            'orcid' => 'https://orcid.org/75697342',
+            'contact_feedback' => 0,
+            'contact_news' => 0,
+            'terms' => true,
+        ], $overrides);
+    }
+
+    public function test_admin_account_email_cannot_be_changed_to_a_non_allow_listed_domain(): void
+    {
+        $targetAdmin = User::factory()->create(['is_admin' => true, 'email' => 'someone@hdruk.ac.uk']);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $targetAdmin->id,
+            $this->userUpdatePayload(['email' => 'attacker@evil.com']),
+            $this->header
+        );
+
+        $response->assertStatus(500);
+        $this->assertSame('someone@hdruk.ac.uk', $targetAdmin->fresh()->email);
+    }
+
+    public function test_admin_account_email_can_be_changed_to_another_allow_listed_domain(): void
+    {
+        $targetAdmin = User::factory()->create(['is_admin' => true, 'email' => 'someone@hdruk.ac.uk']);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $targetAdmin->id,
+            $this->userUpdatePayload(['email' => 'someone@hdruk.cloud']),
+            $this->header
+        );
+
+        $response->assertStatus(202);
+        $this->assertSame('someone@hdruk.cloud', $targetAdmin->fresh()->email);
+    }
+
+    public function test_non_admin_account_email_can_be_changed_to_any_domain(): void
+    {
+        $targetUser = User::factory()->create(['is_admin' => false]);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $targetUser->id,
+            $this->userUpdatePayload(['email' => 'anyone@evil.com']),
+            $this->header
+        );
+
+        $response->assertStatus(202);
+        $this->assertSame('anyone@evil.com', $targetUser->fresh()->email);
+    }
+
+    public function test_role_holder_account_email_cannot_be_changed_to_a_non_allow_listed_domain(): void
+    {
+        $roleHolder = User::factory()->create(['is_admin' => false, 'email' => 'someone@hdruk.ac.uk']);
+        UserHasRole::create([
+            'user_id' => $roleHolder->id,
+            'role_id' => Role::where('name', 'hdruk.admin')->value('id'),
+        ]);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $roleHolder->id,
+            $this->userUpdatePayload(['email' => 'attacker@evil.com']),
+            $this->header
+        );
+
+        $response->assertStatus(500);
+        $this->assertSame('someone@hdruk.ac.uk', $roleHolder->fresh()->email);
+    }
+
+    public function test_is_admin_cannot_be_set_true_on_a_non_allow_listed_domain_account(): void
+    {
+        $user = User::factory()->create(['is_admin' => false, 'email' => 'someone@evil.com']);
+
+        $this->expectException(BadRequestException::class);
+
+        $user->is_admin = true;
+        $user->save();
     }
 
     public function test_non_admin_user_cannot_read_others(): void
