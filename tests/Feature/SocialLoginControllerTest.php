@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserHasRole;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Jumbojett\OpenIDConnectClient;
@@ -134,6 +136,45 @@ class SocialLoginControllerTest extends TestCase
         User::factory()->create(['provider' => 'service', 'providerid' => null]);
         $existingUser = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
         $this->fakeOpenAthensUserInfo($userInfoJson);
+
+        $response = $this->openAthensCallback();
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existingUser->id, $this->loggedInUserId($response));
+    }
+
+    public function test_openathens_callback_rejects_a_login_for_an_is_admin_account(): void
+    {
+        $adminAccount = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'is_admin' => true]);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback();
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($adminAccount);
+    }
+
+    public function test_openathens_callback_rejects_a_login_for_an_account_holding_a_privileged_role(): void
+    {
+        $roleHolder = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        UserHasRole::create([
+            'user_id' => $roleHolder->id,
+            'role_id' => Role::where('name', 'hdruk.admin')->value('id'),
+        ]);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback();
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($roleHolder);
+    }
+
+    public function test_openathens_callback_allows_a_login_for_a_non_privileged_account(): void
+    {
+        $existingUser = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
 
         $response = $this->openAthensCallback();
 
