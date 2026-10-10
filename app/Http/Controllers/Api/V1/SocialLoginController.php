@@ -394,7 +394,9 @@ class SocialLoginController extends Controller
             if (strtolower($provider) === 'registry') {
                 $socialUserDetails = $this->redeemRegistryHandoff($request);
 
-                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+                $user = User::where('provider', 'registry')
+                    ->where('providerid', $socialUserDetails['providerid'])
+                    ->first();
             } elseif (strtolower($provider) === 'openathens') {
                 $provider = 'open-athens';
                 if (session_status() === PHP_SESSION_NONE) {
@@ -693,12 +695,12 @@ class SocialLoginController extends Controller
      *
      * @param array $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, provider: string, password: string, registry_digital_identifier: mixed}
      */
     private function registryResponse(array $data, string $provider): array
     {
         return [
-            'providerid' => $data['sub'] ?? '',
+            'providerid' => $this->registryIdentifier($data),
             'name' => trim(($data['given_name'] ?? '') . ' ' . ($data['family_name'] ?? '')),
             'firstname' => $data['given_name'] ?? '',
             'lastname' => $data['family_name'] ?? '',
@@ -707,6 +709,23 @@ class SocialLoginController extends Controller
             'password' => Hash::make(json_encode($data)),
             'registry_digital_identifier' => $data['soursdDigitalIdentifier'] ?? null,
         ];
+    }
+
+    /**
+     * The Safe People Registry persistent identifier: Keycloak `sub` claim.
+     *
+     * @param array $data
+     * @return non-empty-string
+     * @throws Exception when `sub` is missing or not a non-blank string
+     */
+    private function registryIdentifier(array $data): string
+    {
+        $value = $data['sub'] ?? null;
+        if (is_string($value) && trim($value) !== '') {
+            return $value;
+        }
+
+        throw new Exception('Registry response has no usable sub claim');
     }
 
     /**
