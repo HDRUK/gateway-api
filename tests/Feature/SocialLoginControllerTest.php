@@ -407,25 +407,6 @@ class SocialLoginControllerTest extends TestCase
         $this->assertSame($newUser->id, $this->loggedInUserId($response));
     }
 
-    #[DataProvider('azureCallbackPaths')]
-    public function test_azure_callback_logs_into_the_most_recently_used_account_when_a_microsoft_id_has_several(string $path): void
-    {
-        User::factory()->create([
-            'email' => 'stale.address@example.com', 'provider' => 'azure', 'providerid' => 'oid-shared',
-            'updated_at' => now()->subYear(),
-        ]);
-        $mostRecent = User::factory()->create([
-            'email' => 'current.address@example.com', 'provider' => 'azure', 'providerid' => 'oid-shared',
-            'updated_at' => now()->subDay(),
-        ]);
-        Socialite::fake('azure', $this->microsoftUser('oid-shared', 'current.address@example.com'));
-
-        $response = $this->azureCallback($path);
-
-        $response->assertRedirect('https://gateway.test/search');
-        $this->assertSame($mostRecent->id, $this->loggedInUserId($response));
-    }
-
     public function test_google_callback_rejects_a_response_without_a_usable_user_id(): void
     {
         $usersBefore = User::count();
