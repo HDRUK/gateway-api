@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -435,6 +436,40 @@ class SocialLoginController extends Controller
 
             return redirect()->away($baseRedirectUrl . '/error/500');
         }
+    }
+
+    /**
+     * OpenAthens logins come from any institutional IdP in the federation,
+     * not a single tenant Gateway configures and trusts the way it does
+     * Azure AD - refuse to complete a login that resolves to a privileged
+     * account, regardless of whether the identity-matching logic above is
+     * correct, as an independent backstop against this class of account
+     * confusion.
+     *
+     * @param ?User $user
+     * @return void
+     * @throws Exception when the resolved account is privileged
+     */
+    private function assertNotPrivilegedOpenAthensLogin(?User $user): void
+    {
+        if (!$user) {
+            return;
+        }
+
+        if ($user->is_admin || $this->hasPrivilegedRole($user)) {
+            throw new Exception('OpenAthens login is not permitted for privileged accounts');
+        }
+    }
+
+    /**
+     * @param User $user
+     * @return bool
+     */
+    private function hasPrivilegedRole(User $user): bool
+    {
+        $roleIds = Role::where('is_privileged', true)->pluck('id');
+
+        return UserHasRole::where('user_id', $user->id)->whereIn('role_id', $roleIds)->exists();
     }
 
     /**
