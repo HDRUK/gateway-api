@@ -456,4 +456,59 @@ class SocialLoginControllerTest extends TestCase
 
         $response->assertRedirect('https://gateway.test/error/500');
     }
+
+    public function test_registry_callback_rejects_a_response_without_a_sub_claim(): void
+    {
+        $serviceAccount = User::factory()->create(['provider' => 'service', 'providerid' => null]);
+
+        Http::fake([
+            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([
+                'data' => [
+                    'given_name' => 'No',
+                    'family_name' => 'Sub',
+                    'email' => 'no-sub@example.com',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertNotSame('registry', $serviceAccount->fresh()->provider);
+    }
+
+    public static function otherProvidersForRegistry(): array
+    {
+        return [
+            'google' => ['google'],
+            'open-athens' => ['open-athens'],
+            'service' => ['service'],
+        ];
+    }
+
+    #[DataProvider('otherProvidersForRegistry')]
+    public function test_registry_callback_does_not_log_into_another_providers_account_with_the_same_id(string $otherProvider): void
+    {
+        $otherUser = User::factory()->create(['provider' => $otherProvider, 'providerid' => 'the-sub']);
+
+        Http::fake([
+            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([
+                'data' => [
+                    'sub' => 'the-sub',
+                    'given_name' => 'Registry',
+                    'family_name' => 'User',
+                    'email' => 'registry-user@example.com',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
+            ->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+
+        $response->assertRedirect('https://gateway.test/search');
+        $newUser = User::where('provider', 'registry')->where('providerid', 'the-sub')->sole();
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+        $this->assertSame([$otherProvider, 'the-sub'], [$otherUser->fresh()->provider, $otherUser->fresh()->providerid]);
+    }
 }
