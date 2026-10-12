@@ -232,119 +232,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        $openAthensRedirectUrl = config('services.openathens.redirect');
-
-        $user = null;
-        try {
-            if (strtolower($provider) === 'linkedin') {
-                $provider = 'linkedin-openid';
-            }
-            if (strtolower($provider) === 'openathens') {
-                $provider = 'open-athens';
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
-                }
-                $input = $request->all();
-                $code = array_key_exists('code', $input) ? $input['code'] : '';
-                $_REQUEST['code'] = $code;
-                $state = $request->input('state');
-                $issuedState = $request->session()->pull('openathens_state');
-                if (!is_string($issuedState) || !is_string($state) || !hash_equals($issuedState, $state)) {
-                    throw new Exception('OpenAthens state does not match the login request');
-                }
-                $_REQUEST['state'] = $state;
-                $_SESSION['openid_connect_state'] = $issuedState;
-
-                $oidc = app(OpenIDConnectClient::class, [
-                    'provider_url' => Config::get('services.openathens.issuer'),
-                    'client_id' => Config::get('services.openathens.client_id'),
-                    'client_secret' => Config::get('services.openathens.client_secret'),
-                ]);
-                $oidc->providerConfigParam([
-                    'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
-                    'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
-                    'token_endpoint' => config('services.openathens.issuer') . '/oidc/token',
-                    'userinfo_endpoint' => config('services.openathens.issuer') . '/oidc/userinfo',
-                ]);
-
-                $oidc->setRedirectUrl($openAthensRedirectUrl);
-                $oidc->authenticate();
-
-                $response = $oidc->requestUserInfo();
-                $socialUser = json_decode(json_encode($response), true);
-                $socialUserDetails = $this->openathensResponse($socialUser, $provider);
-
-                $user = User::where('provider', 'open-athens')
-                    ->where('providerid', $socialUserDetails['providerid'])
-                    ->first();
-            } else {
-                $providerURL = config("services.$provider.redirect");
-                if (config('app.env') !== 'local') {
-                    $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.api_url').'/api/v1/auth/dta', $providerURL);
-                }                $socialUser = Socialite::driver($provider)
-                ->with(['redirect_uri' => $providerURL])
-                ->stateless()
-                ->user();
-
-                $socialUserDetails = [];
-                switch (strtolower($provider)) {
-                    case 'google':
-                        $socialUserDetails = $this->googleResponse($socialUser, $provider);
-                        break;
-
-                    case 'linkedin-openid':
-                        $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
-                        break;
-                    case 'azure':
-                        $socialUserDetails = $this->azureResponse($socialUser, $provider);
-                        break;
-                }
-
-                if (strtolower($provider) === 'azure') {
-                    $user = User::where('provider', 'azure')
-                        ->where('providerid', $socialUserDetails['providerid'])
-                        ->orderByDesc('updated_at')
-                        ->orderByDesc('id')
-                        ->first();
-                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
-                        return redirect()->away(config('services.dta.url') . '/error/409');
-                    }
-                } else {
-                    $user = User::where('email', $socialUserDetails['email'])->first();
-                }
-            }
-
-            if (!$user) {
-                $user = $this->saveUser($socialUserDetails, $provider);
-            } else {
-                $user = $this->updateUser($user, $socialUserDetails, $provider);
-            }
-
-            $jwt = $this->createJwt($user);
-            Auditor::log([
-                'target_user_id' => $user->id,
-                'action_type' => 'LOGIN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
-            ]);
-
-            $cookies = [Cookie::make('token', $jwt)];
-
-            if ($user['name'] === '' || $user['email'] === '') {
-                return redirect()->away(config('services.dta.url') . '/account/profile')->withCookies($cookies);
-            } else {
-                $redirectUrl = session('redirectUrl');
-                return redirect()->away($redirectUrl ?? config('services.dta.url'))->withCookies($cookies);
-            }
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
+        return $this->resolveSocialLogin($request, $provider, isDta: true);
     }
 
     /**
@@ -384,14 +272,30 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        $baseRedirectUrl = config('gateway.gateway_url');
-        $openAthensRedirectUrl =  config('services.openathens.redirect');
+        return $this->resolveSocialLogin($request, $provider, isDta: false);
+    }
+
+    /**
+     * Shared implementation behind callback() and dtaCallback() - the two
+     * previously diverged into near-duplicate bodies, which is how the DTA
+     * path ended up without registry support and without the QueryException
+     * / 409 handling the non-DTA path has.
+     *
+     * @param Request $request
+     * @param string $provider
+     * @param bool $isDta
+     * @return mixed
+     */
+    private function resolveSocialLogin(Request $request, string $provider, bool $isDta): mixed
+    {
+        $baseRedirectUrl = $isDta ? config('services.dta.url') : config('gateway.gateway_url');
+        $openAthensRedirectUrl = config('services.openathens.redirect');
         $user = null;
         try {
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            if (strtolower($provider) === 'registry') {
+            if (!$isDta && strtolower($provider) === 'registry') {
                 $socialUserDetails = $this->redeemRegistryHandoff($request);
 
                 $user = User::where('provider', 'registry')
@@ -436,7 +340,18 @@ class SocialLoginController extends Controller
                     ->where('providerid', $socialUserDetails['providerid'])
                     ->first();
             } else {
-                $socialUser = Socialite::driver($provider)->user();
+                if ($isDta) {
+                    $providerURL = config("services.$provider.redirect");
+                    if (config('app.env') !== 'local') {
+                        $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.api_url').'/api/v1/auth/dta', $providerURL);
+                    }
+                    $socialUser = Socialite::driver($provider)
+                        ->with(['redirect_uri' => $providerURL])
+                        ->stateless()
+                        ->user();
+                } else {
+                    $socialUser = Socialite::driver($provider)->user();
+                }
 
                 $socialUserDetails = [];
                 switch (strtolower($provider)) {
@@ -477,7 +392,7 @@ class SocialLoginController extends Controller
             Auditor::log([
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
@@ -487,13 +402,13 @@ class SocialLoginController extends Controller
                 return redirect()->away($baseRedirectUrl . '/account/profile')->withCookies($cookies);
             } else {
                 $redirectUrl = session('redirectUrl');
-                return redirect()->away($redirectUrl)->withCookies($cookies);
+                return redirect()->away($redirectUrl ?? $baseRedirectUrl)->withCookies($cookies);
             }
         } catch (QueryException $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
+                'description' => "[{$provider}] " . $e->getMessage(),
             ]);
 
             // registry/open-athens match an existing Gateway user by
@@ -513,8 +428,8 @@ class SocialLoginController extends Controller
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
+                'description' => "[{$provider}] " . $e->getMessage(),
             ]);
 
             return redirect()->away($baseRedirectUrl . '/error/500');

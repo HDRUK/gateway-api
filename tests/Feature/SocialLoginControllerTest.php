@@ -99,7 +99,7 @@ class SocialLoginControllerTest extends TestCase
 
         $response = $this->openAthensCallback('/api/v1/auth/dta/openathens/callback');
 
-        $response->assertStatus(500);
+        $response->assertRedirect('https://dta.test/error/500');
         $response->assertCookieMissing('token');
         $this->assertNotSame('secondary', $serviceAccount->fresh()->preferred_email);
     }
@@ -139,6 +139,19 @@ class SocialLoginControllerTest extends TestCase
 
         $response->assertRedirect('https://gateway.test/search');
         $this->assertSame($existingUser->id, $this->loggedInUserId($response));
+    }
+
+    public function test_dta_callback_redirects_to_conflict_page_on_duplicate_email(): void
+    {
+        $existingUser = User::factory()->create(['email' => 'collision@example.com']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "collision@example.com", "eduPersonScopedAffiliation": ""}');
+
+        $response = $this->openAthensCallback('/api/v1/auth/dta/openathens/callback');
+
+        $response->assertRedirect('https://dta.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertSame(1, User::where('email', 'collision@example.com')->count());
+        $this->assertSame($existingUser->provider, $existingUser->fresh()->provider);
     }
 
     public static function otherProviders(): array
@@ -252,7 +265,7 @@ class SocialLoginControllerTest extends TestCase
     private function assertOpenAthensLoginRejected(TestResponse $response, string $path): void
     {
         if (str_contains($path, '/dta/')) {
-            $response->assertStatus(500);
+            $response->assertRedirect('https://dta.test/error/500');
         } else {
             $response->assertRedirect('https://gateway.test/error/500');
         }
