@@ -1,0 +1,59 @@
+flowchart TD
+    IN([version string\ne.g. '2.1']) --> RESOLVE
+
+    RESOLVE["GwdmHandlerFactory\n─────────────────────\nresolve(string $version)"]
+
+    RESOLVE --> V1{version_compare\n$version &lt; '1.1'?}
+    V1 -- "true\n(legacy < 1.1)" --> H1X["Gwdm1xHandler\n─────────────────────\nnew Gwdm1xHandler($version)"]
+    V1 -- "false" --> V20{$version === '2.0'?}
+    V20 -- "true" --> H20["Gwdm20Handler\n─────────────────────\nnew Gwdm20Handler($version)"]
+    V20 -- "false" --> V21{$version === '2.1'?}
+    V21 -- "true" --> H21["Gwdm21Handler\n─────────────────────\nnew Gwdm21Handler($version)"]
+    V21 -- "false" --> V30{$version === '3.0'?}
+    V30 -- "true" --> H30["Gwdm30Handler\n─────────────────────\nnew Gwdm30Handler($version)\n[STUB — afterStore not yet active]"]
+    V30 -- "false\n(default: any 1.1+\nnot explicitly matched)" --> H2X["Gwdm2xHandler\n─────────────────────\nnew Gwdm2xHandler($version)"]
+
+    H1X --> OUT1([GwdmMetadataHandler])
+    H20 --> OUT2([GwdmMetadataHandler])
+    H21 --> OUT3([GwdmMetadataHandler])
+    H30 --> OUT4([GwdmMetadataHandler])
+    H2X --> OUT5([GwdmMetadataHandler])
+
+    subgraph HIERARCHY["Class Hierarchy"]
+        direction TB
+        ABSTRACT["GwdmMetadataHandler\n─────────────────────\nabstract class\n\nprepareMetadata()\nbuildRequiredBlock()\nbuildPublisher()\nbuildEnvelope()\nextractTitleFields()\nafterStore() — no-op\nafterRead() — no-op\n─────────────────────\nprotected buildRevisions()\nprotected formatVersion()"]
+
+        LEG1X["Gwdm1xHandler\n─────────────────────\nextends GwdmMetadataHandler\n\npublisher: { publisherId, publisherName }\nrequired: no 'version' field\n\n(legacy ingestion only)"]
+        BASE2X["Gwdm2xHandler\n─────────────────────\nextends GwdmMetadataHandler\n\npublisher: { gatewayId, name }\nrequired: includes 'version'"]
+
+        CLS20["Gwdm20Handler\n─────────────────────\nextends Gwdm2xHandler\n\n(identical to 2x base;\nhook point for future 2.0 divergence)"]
+        CLS21["Gwdm21Handler\n─────────────────────\nextends Gwdm2xHandler\n\n(identical to 2x base;\nhook point for future 2.1 divergence)"]
+        CLS30["Gwdm30Handler\n─────────────────────\nextends Gwdm2xHandler\n\nafterStore() — STUB\nafterRead() — STUB\n(SQL structured tables — not yet active)"]
+
+        ABSTRACT --> LEG1X
+        ABSTRACT --> BASE2X
+        BASE2X --> CLS20
+        BASE2X --> CLS21
+        BASE2X --> CLS30
+    end
+
+    classDef http     fill:#475da7,stroke:#354681,color:#fff
+    classDef process  fill:#ffffff,stroke:#29235c,color:#29235c
+    classDef decision fill:#475da7,stroke:#354681,color:#fff
+    classDef ok       fill:#3db28c,stroke:#2a8c6e,color:#fff
+    classDef stub     fill:#6c7cc0,stroke:#475da7,color:#fff
+    classDef abstract fill:#ffffff,stroke:#29235c,color:#29235c,stroke-dasharray:6 3
+    classDef base2x   fill:#ffffff,stroke:#29235c,color:#29235c
+    classDef hier20   fill:#ffffff,stroke:#29235c,color:#29235c
+    classDef hier21   fill:#ffffff,stroke:#29235c,color:#29235c
+    classDef hier30   fill:#6c7cc0,stroke:#475da7,color:#fff
+
+    class IN http
+    class RESOLVE,H1X,H20,H21,H2X process
+    class H30 stub
+    class V1,V20,V21,V30 decision
+    class OUT1,OUT2,OUT3,OUT5 ok
+    class OUT4 stub
+    class ABSTRACT abstract
+    class LEG1X,BASE2X,CLS20,CLS21 process
+    class CLS30 stub
