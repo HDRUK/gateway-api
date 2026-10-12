@@ -6,6 +6,8 @@ use Auditor;
 use Config;
 use Exception;
 use App\Models\User;
+use App\Models\Role;
+use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +17,7 @@ use App\Http\Controllers\JwtController;
 use Illuminate\Database\QueryException;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
+use App\Exceptions\SocialLoginConflictException;
 
 class SocialLoginController extends Controller
 {
@@ -232,119 +235,7 @@ class SocialLoginController extends Controller
          */
     public function dtaCallback(Request $request, string $provider): mixed
     {
-        $openAthensRedirectUrl = config('services.openathens.redirect');
-
-        $user = null;
-        try {
-            if (strtolower($provider) === 'linkedin') {
-                $provider = 'linkedin-openid';
-            }
-            if (strtolower($provider) === 'openathens') {
-                $provider = 'open-athens';
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
-                }
-                $input = $request->all();
-                $code = array_key_exists('code', $input) ? $input['code'] : '';
-                $_REQUEST['code'] = $code;
-                $state = $request->input('state');
-                $issuedState = $request->session()->pull('openathens_state');
-                if (!is_string($issuedState) || !is_string($state) || !hash_equals($issuedState, $state)) {
-                    throw new Exception('OpenAthens state does not match the login request');
-                }
-                $_REQUEST['state'] = $state;
-                $_SESSION['openid_connect_state'] = $issuedState;
-
-                $oidc = app(OpenIDConnectClient::class, [
-                    'provider_url' => Config::get('services.openathens.issuer'),
-                    'client_id' => Config::get('services.openathens.client_id'),
-                    'client_secret' => Config::get('services.openathens.client_secret'),
-                ]);
-                $oidc->providerConfigParam([
-                    'authorization_endpoint' => config('services.openathens.issuer') . '/oidc/auth',
-                    'jwks_uri' => config('services.openathens.issuer') . '/oidc/jwks',
-                    'token_endpoint' => config('services.openathens.issuer') . '/oidc/token',
-                    'userinfo_endpoint' => config('services.openathens.issuer') . '/oidc/userinfo',
-                ]);
-
-                $oidc->setRedirectUrl($openAthensRedirectUrl);
-                $oidc->authenticate();
-
-                $response = $oidc->requestUserInfo();
-                $socialUser = json_decode(json_encode($response), true);
-                $socialUserDetails = $this->openathensResponse($socialUser, $provider);
-
-                $user = User::where('provider', 'open-athens')
-                    ->where('providerid', $socialUserDetails['providerid'])
-                    ->first();
-            } else {
-                $providerURL = config("services.$provider.redirect");
-                if (config('app.env') !== 'local') {
-                    $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.api_url').'/api/v1/auth/dta', $providerURL);
-                }                $socialUser = Socialite::driver($provider)
-                ->with(['redirect_uri' => $providerURL])
-                ->stateless()
-                ->user();
-
-                $socialUserDetails = [];
-                switch (strtolower($provider)) {
-                    case 'google':
-                        $socialUserDetails = $this->googleResponse($socialUser, $provider);
-                        break;
-
-                    case 'linkedin-openid':
-                        $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
-                        break;
-                    case 'azure':
-                        $socialUserDetails = $this->azureResponse($socialUser, $provider);
-                        break;
-                }
-
-                if (strtolower($provider) === 'azure') {
-                    $user = User::where('provider', 'azure')
-                        ->where('providerid', $socialUserDetails['providerid'])
-                        ->orderByDesc('updated_at')
-                        ->orderByDesc('id')
-                        ->first();
-                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
-                        return redirect()->away(config('services.dta.url') . '/error/409');
-                    }
-                } else {
-                    $user = User::where('email', $socialUserDetails['email'])->first();
-                }
-            }
-
-            if (!$user) {
-                $user = $this->saveUser($socialUserDetails, $provider);
-            } else {
-                $user = $this->updateUser($user, $socialUserDetails, $provider);
-            }
-
-            $jwt = $this->createJwt($user);
-            Auditor::log([
-                'target_user_id' => $user->id,
-                'action_type' => 'LOGIN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
-            ]);
-
-            $cookies = [Cookie::make('token', $jwt)];
-
-            if ($user['name'] === '' || $user['email'] === '') {
-                return redirect()->away(config('services.dta.url') . '/account/profile')->withCookies($cookies);
-            } else {
-                $redirectUrl = session('redirectUrl');
-                return redirect()->away($redirectUrl ?? config('services.dta.url'))->withCookies($cookies);
-            }
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
+        return $this->resolveSocialLogin($request, $provider, isDta: true);
     }
 
     /**
@@ -384,17 +275,39 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        $baseRedirectUrl = config('gateway.gateway_url');
-        $openAthensRedirectUrl =  config('services.openathens.redirect');
+        return $this->resolveSocialLogin($request, $provider, isDta: false);
+    }
+
+    /**
+     * Shared implementation behind callback() and dtaCallback().
+     *
+     * The two entry points differ only in which front end they redirect
+     * back to, how the Socialite drivers are configured, and that Registry
+     * is a Gateway-only provider - the identity matching, the privileged
+     * account backstop and the error handling are the same for both, and
+     * are kept in one place so a control added to one cannot silently
+     * miss the other.
+     *
+     * @param Request $request
+     * @param string $provider
+     * @param bool $isDta
+     * @return mixed
+     */
+    private function resolveSocialLogin(Request $request, string $provider, bool $isDta): mixed
+    {
+        $baseRedirectUrl = $isDta ? config('services.dta.url') : config('gateway.gateway_url');
+        $openAthensRedirectUrl = config('services.openathens.redirect');
         $user = null;
         try {
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            if (strtolower($provider) === 'registry') {
+            if (!$isDta && strtolower($provider) === 'registry') {
                 $socialUserDetails = $this->redeemRegistryHandoff($request);
 
-                $user = User::where('providerid', $socialUserDetails['providerid'])->first();
+                $user = User::where('provider', 'registry')
+                    ->where('providerid', $socialUserDetails['providerid'])
+                    ->first();
             } elseif (strtolower($provider) === 'openathens') {
                 $provider = 'open-athens';
                 if (session_status() === PHP_SESSION_NONE) {
@@ -433,8 +346,20 @@ class SocialLoginController extends Controller
                 $user = User::where('provider', 'open-athens')
                     ->where('providerid', $socialUserDetails['providerid'])
                     ->first();
+                $this->assertNotPrivilegedOpenAthensLogin($user);
             } else {
-                $socialUser = Socialite::driver($provider)->user();
+                if ($isDta) {
+                    $providerURL = config("services.$provider.redirect");
+                    if (config('app.env') !== 'local') {
+                        $providerURL = str_replace(config('app.url').'/api/v1/auth', config('services.dta.api_url').'/api/v1/auth/dta', $providerURL);
+                    }
+                    $socialUser = Socialite::driver($provider)
+                        ->with(['redirect_uri' => $providerURL])
+                        ->stateless()
+                        ->user();
+                } else {
+                    $socialUser = Socialite::driver($provider)->user();
+                }
 
                 $socialUserDetails = [];
                 switch (strtolower($provider)) {
@@ -450,18 +375,7 @@ class SocialLoginController extends Controller
                         break;
                 }
 
-                if (strtolower($provider) === 'azure') {
-                    $user = User::where('provider', 'azure')
-                        ->where('providerid', $socialUserDetails['providerid'])
-                        ->orderByDesc('updated_at')
-                        ->orderByDesc('id')
-                        ->first();
-                    if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
-                        return redirect()->away($baseRedirectUrl . '/error/409');
-                    }
-                } else {
-                    $user = User::where('email', $socialUserDetails['email'])->first();
-                }
+                $user = $this->findUserByProviderOrConflict($provider, $socialUserDetails, $baseRedirectUrl);
             }
 
             if (!$user) {
@@ -475,7 +389,7 @@ class SocialLoginController extends Controller
             Auditor::log([
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
                 'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
@@ -485,13 +399,21 @@ class SocialLoginController extends Controller
                 return redirect()->away($baseRedirectUrl . '/account/profile')->withCookies($cookies);
             } else {
                 $redirectUrl = session('redirectUrl');
-                return redirect()->away($redirectUrl)->withCookies($cookies);
+                return redirect()->away($redirectUrl ?? $baseRedirectUrl)->withCookies($cookies);
             }
+        } catch (SocialLoginConflictException $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
+                'description' => "[{$provider}] " . $e->getMessage(),
+            ]);
+
+            return redirect()->away($e->getRedirectUrl());
         } catch (QueryException $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
+                'description' => "[{$provider}] " . $e->getMessage(),
             ]);
 
             // registry/open-athens match an existing Gateway user by
@@ -511,8 +433,8 @@ class SocialLoginController extends Controller
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
+                'description' => "[{$provider}] " . $e->getMessage(),
             ]);
 
             return redirect()->away($baseRedirectUrl . '/error/500');
@@ -520,16 +442,49 @@ class SocialLoginController extends Controller
     }
 
     /**
+      * Resolve an existing user for a provider that stores a persistent
+      * providerid, tying the most recently used account if more than one
+      * shares it. If no provider+providerid match exists but the email
+      * already belongs to a different account, refuse to silently convert
+      * that account to this provider.
+      *
+      * @param string $provider
+      * @param array $socialUserDetails
+      * @param string $redirectBaseUrl
+      * @return ?User
+      * @throws SocialLoginConflictException when the email belongs to another account
+      */
+    private function findUserByProviderOrConflict(string $provider, array $socialUserDetails, string $redirectBaseUrl): ?User
+    {
+        $user = User::where('provider', $provider)
+            ->where('providerid', $socialUserDetails['providerid'])
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$user && User::where('email', $socialUserDetails['email'])->exists()) {
+            throw new SocialLoginConflictException($redirectBaseUrl . '/error/409');
+        }
+
+        return $user;
+    }
+
+    /**
      * Uniform response from Google
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: mixed, firstname: mixed, lastname: mixed, email: mixed, provider: string, password: string}
      */
     private function googleResponse(object $data, string $provider): array
     {
+        $providerId = $data->getId();
+        if (!is_string($providerId) || trim($providerId) === '') {
+            throw new Exception('Google response has no usable user id');
+        }
+
         return [
-            'providerid' => $data->getId(),
+            'providerid' => $providerId,
             'name' => $data->getName(),
             'firstname' => $data->user['given_name'] ?? '',
             'lastname' => $data->user['family_name'] ?? '',
@@ -544,12 +499,17 @@ class SocialLoginController extends Controller
      *
      * @param object $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, provider: string, password: string}
      */
     private function linkedinOpenIdResponse(object $data, string $provider): array
     {
+        $providerId = (string) $data->getId();
+        if (trim($providerId) === '') {
+            throw new Exception('LinkedIn response has no usable user id');
+        }
+
         return [
-            'providerid' => (string)$data->getId(),
+            'providerid' => $providerId,
             'name' => (string)$data->getName(),
             'firstname' => (string)$data->user['given_name'],
             'lastname' => (string)$data->user['family_name'],
@@ -693,12 +653,13 @@ class SocialLoginController extends Controller
      *
      * @param array $data
      * @param string $provider
-     * @return array
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email:string, provider: string,
+     *  password: string, registry_digital_identifier: mixed}
      */
     private function registryResponse(array $data, string $provider): array
     {
         return [
-            'providerid' => $data['sub'] ?? '',
+            'providerid' => $this->registryIdentifier($data),
             'name' => trim(($data['given_name'] ?? '') . ' ' . ($data['family_name'] ?? '')),
             'firstname' => $data['given_name'] ?? '',
             'lastname' => $data['family_name'] ?? '',
@@ -707,6 +668,23 @@ class SocialLoginController extends Controller
             'password' => Hash::make(json_encode($data)),
             'registry_digital_identifier' => $data['soursdDigitalIdentifier'] ?? null,
         ];
+    }
+
+    /**
+     * The Safe People Registry persistent identifier: Keycloak `sub` claim.
+     *
+     * @param array $data
+     * @return non-empty-string
+     * @throws Exception when `sub` is missing or not a non-blank string
+     */
+    private function registryIdentifier(array $data): string
+    {
+        $value = $data['sub'] ?? null;
+        if (is_string($value) && trim($value) !== '') {
+            return $value;
+        }
+
+        throw new Exception('Registry response has no usable sub claim');
     }
 
     /**
@@ -775,5 +753,39 @@ class SocialLoginController extends Controller
     private function createJwt(User $user): string
     {
         return $this->jwt->generateToken($user->id);
+    }
+
+    /**
+     * OpenAthens logins come from any institutional IdP in the federation,
+     * not a single tenant Gateway configures and trusts the way it does
+     * Azure AD - refuse to complete a login that resolves to a privileged
+     * account, regardless of whether the identity-matching logic above is
+     * correct, as an independent backstop against this class of account
+     * confusion.
+     *
+     * @param ?User $user
+     * @return void
+     * @throws Exception when the resolved account is privileged
+     */
+    private function assertNotPrivilegedOpenAthensLogin(?User $user): void
+    {
+        if (!$user) {
+            return;
+        }
+
+        if ($user->is_admin || $this->hasPrivilegedRole($user)) {
+            throw new Exception('OpenAthens login is not permitted for privileged accounts');
+        }
+    }
+
+    /**
+     * @param User $user
+     * @return bool
+     */
+    private function hasPrivilegedRole(User $user): bool
+    {
+        $roleIds = Role::where('is_privileged', true)->pluck('id');
+
+        return UserHasRole::where('user_id', $user->id)->whereIn('role_id', $roleIds)->exists();
     }
 }
