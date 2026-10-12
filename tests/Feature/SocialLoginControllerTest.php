@@ -524,4 +524,24 @@ class SocialLoginControllerTest extends TestCase
         $this->assertSame($newUser->id, $this->loggedInUserId($response));
         $this->assertSame([$otherProvider, 'the-sub'], [$otherUser->fresh()->provider, $otherUser->fresh()->providerid]);
     }
+
+    public static function callbackPathsForPrivilegedBlock(): array
+    {
+        return [
+            'gateway' => ['/api/v1/auth/openathens/callback'],
+            'dta' => ['/api/v1/auth/dta/openathens/callback'],
+        ];
+    }
+
+    #[DataProvider('callbackPathsForPrivilegedBlock')]
+    public function test_openathens_callback_refuses_login_for_admin_accounts(string $path): void
+    {
+        $admin = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'admin-id', 'is_admin' => true]);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "admin-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path);
+
+        $this->assertOpenAthensLoginRejected($response, $path);
+        $response->assertCookieMissing('token');
+    }
 }
