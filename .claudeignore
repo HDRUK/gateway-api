@@ -1,0 +1,11 @@
+node_modules/
+vendor/
+dist/
+build/
+.next/
+storage/
+bootstrap/cache/
+public/frankenphp*
+package-lock.json
+composer.lock
+*.log
