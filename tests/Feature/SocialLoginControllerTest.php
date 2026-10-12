@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserHasRole;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Jumbojett\OpenIDConnectClient;
@@ -136,6 +138,46 @@ class SocialLoginControllerTest extends TestCase
         $this->fakeOpenAthensUserInfo($userInfoJson);
 
         $response = $this->openAthensCallback();
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existingUser->id, $this->loggedInUserId($response));
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_rejects_a_login_for_an_is_admin_account(string $path): void
+    {
+        $adminAccount = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'is_admin' => true]);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path);
+
+        $this->assertOpenAthensLoginRejected($response, $path);
+        $this->assertAccountUnchanged($adminAccount);
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_rejects_a_login_for_an_account_holding_a_privileged_role(string $path): void
+    {
+        $roleHolder = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        UserHasRole::create([
+            'user_id' => $roleHolder->id,
+            'role_id' => Role::where('name', 'hdruk.admin')->value('id'),
+        ]);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path);
+
+        $this->assertOpenAthensLoginRejected($response, $path);
+        $this->assertAccountUnchanged($roleHolder);
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_allows_a_login_for_a_non_privileged_account(string $path): void
+    {
+        $existingUser = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path);
 
         $response->assertRedirect('https://gateway.test/search');
         $this->assertSame($existingUser->id, $this->loggedInUserId($response));
