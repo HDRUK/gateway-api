@@ -1,0 +1,64 @@
+flowchart TD
+    ENTRY(["getReconstructedMetadataEnvelope\n(datasetId, targetVersion)"])
+
+    ENTRY --> FETCH["DatasetVersion\n─────\nwhere(dataset_id, version)\n→ first(['metadata','patch','gwdm_version'])"]
+
+    FETCH --> RESOLVE{"gwdm_version\nresolution priority"}
+    RESOLVE -- "1. indexed column\n(row.gwdm_version)" --> HAVE_VER["storedVersion =\nrow.gwdm_version"]
+    RESOLVE -- "2. JSON envelope fallback\n(row.metadata['gwdmVersion'])" --> HAVE_VER
+    RESOLVE -- "3. context default\n(GwdmVersionContext::targetVersion)" --> HAVE_VER
+
+    HAVE_VER --> RECON["DatasetService\n─────\nreconstructGwdmMetadata\n(datasetId, targetVersion)"]
+
+    RECON --> SNAP["DatasetVersion\n─────\nwhere(dataset_id, version ≤ targetVersion)\nwhereNull('patch')\norderBy(version, DESC)\n→ nearest snapshot"]
+
+    SNAP --> SNAP_FOUND{"snapshot\nfound?"}
+    SNAP_FOUND -- "no" --> ERR_SNAP(["RuntimeException\nNo base snapshot found"])
+    SNAP_FOUND -- "yes" --> IS_EXACT{"snapshot.version\n=== targetVersion?"}
+
+    IS_EXACT -- "yes\n(no deltas needed)" --> GWDM_READY["gwdm = snapshot\n.metadata['metadata']"]
+
+    IS_EXACT -- "no\n(deltas required)" --> LOAD_DELTAS["DatasetVersion\n─────\nwhere(dataset_id)\nwhere(version > snapshot.version)\nwhere(version ≤ targetVersion)\nwhereNotNull('patch')\norderBy(version ASC)\n→ delta rows"]
+
+    LOAD_DELTAS --> APPLY["(inline)\n─────\nforeach delta:\nJsonPatch::import(delta.patch)\n.apply(current)\n[swaggest/json-diff]"]
+
+    APPLY --> GWDM_READY
+
+    GWDM_READY --> FACTORY["GwdmHandlerFactory\n─────\nresolve(storedVersion)\n→ GwdmMetadataHandler"]
+
+    FACTORY --> HANDLER_BRANCH{"storedVersion\nbranch"}
+    HANDLER_BRANCH -- "< 1.1" --> H1X["Gwdm1xHandler\n─────\nafterRead(row) → []"]
+    HANDLER_BRANCH -- "2.0" --> H20["Gwdm20Handler\n─────\nafterRead(row) → []"]
+    HANDLER_BRANCH -- "2.1" --> H21["Gwdm21Handler\n─────\nafterRead(row) → []"]
+    HANDLER_BRANCH -- "3.0 (stub)" --> H30["[stub] Gwdm30Handler\n─────\nafterRead(row)\n→ Gwdm30PersistenceService\n(currently returns [])"]
+    HANDLER_BRANCH -- "default (≥1.1)" --> H2X["Gwdm2xHandler\n─────\nafterRead(row) → []"]
+
+    H1X --> SUPP{"supplementary\nnot empty?"}
+    H20 --> SUPP
+    H21 --> SUPP
+    H30 --> SUPP
+    H2X --> SUPP
+
+    SUPP -- "yes\n(GWDM 3.0 future)" --> MERGE["(inline)\n─────\narray_merge(gwdm, supplementary)"]
+    SUPP -- "no (2.x / stub)" --> ENVELOPE
+
+    MERGE --> ENVELOPE["DatasetService\n─────\nreturn [\n  'gwdmVersion'       => storedVersion,\n  'metadata'          => gwdm,\n  'original_metadata' => row.metadata['original_metadata'] ?? []\n]"]
+
+    ENVELOPE --> OK(["array envelope returned\nto caller"])
+
+    classDef http     fill:#475da7,stroke:#354681,color:#fff
+    classDef process  fill:#ffffff,stroke:#29235c,color:#29235c
+    classDef mw       fill:#3db28c,stroke:#2a8c6e,color:#fff
+    classDef decision fill:#475da7,stroke:#354681,color:#fff
+    classDef ok       fill:#3db28c,stroke:#2a8c6e,color:#fff
+    classDef err      fill:#f98e2b,stroke:#c96f1a,color:#111
+    classDef stub     fill:#6c7cc0,stroke:#475da7,color:#fff
+
+    class ENTRY http
+    class FETCH,HAVE_VER,RECON,SNAP,LOAD_DELTAS,APPLY,GWDM_READY,FACTORY,ENVELOPE process
+    class H1X,H20,H21,H2X process
+    class H30 stub
+    class RESOLVE,SNAP_FOUND,IS_EXACT,HANDLER_BRANCH,SUPP decision
+    class OK ok
+    class ERR_SNAP err
+    class MERGE process
