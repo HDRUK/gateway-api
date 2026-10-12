@@ -1888,7 +1888,7 @@ class ToolTest extends TestCase
                 'sector_id' => 1,
                 'organisation' => 'Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'provider' => $provider,
-                'providerid' => '123456',
+                'providerid' => fake()->unique()->numerify('##########'),
                 'bio' => fake()->words(2, true),
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',

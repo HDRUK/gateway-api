@@ -840,7 +840,7 @@ class ProcessFederationJobTest extends TestCase
 
         $this->assertSame(Dataset::STATUS_ACTIVE, $otherTeamDataset->fresh()->status);
     }
-    
+
     private function makeTrait(): object
     {
         return new class () {

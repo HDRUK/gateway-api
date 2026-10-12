@@ -262,6 +262,7 @@ class Tool extends BaseTypesenseModel
             'license'               => $this->getRelationValue('license')->label ?? '',
             'programmingLanguages'  => $this->programmingLanguages->pluck('name')->all(),
             'typeCategory'          => $this->typeCategory->pluck('name')->all(),
+            'status'                => $this->status,
         ];
     }
 
@@ -286,6 +287,7 @@ class Tool extends BaseTypesenseModel
                 [ 'name' => 'license',               'type' => 'string',   'facet' => true, 'optional' => true, ],
                 [ 'name' => 'programmingLanguages',  'type' => 'string[]', 'facet' => true, 'optional' => true, ],
                 [ 'name' => 'typeCategory',          'type' => 'string[]', 'facet' => true, 'optional' => true, ],
+                [ 'name' => 'status',                'type' => 'string', ],
             ],
         ];
     }

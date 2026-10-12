@@ -85,7 +85,7 @@ class UserOrganisationTest extends TestCase
     {
         // authenticate the seeded cohort admin user
         $authData = [
-            'email' => 'hdrcohortadmin@gmail.com',
+            'email' => 'hdrcohortadmin@hdruk.cloud',
             'password' => 'Flood15?Voice',
         ];
         $authResponse = $this->json('POST', '/api/v1/auth', $authData, ['Accept' => 'application/json']);

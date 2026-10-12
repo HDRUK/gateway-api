@@ -13,6 +13,7 @@ return [
     "nightly_dataset_test_concurrency" => env("NIGHTLY_DATASET_TEST_CONCURRENCY", 5),
     "omop_seeding_nchunks" => env("OMOP_SEEDING_NCHUNKS", 500),
     "omop_seeding_use_infile" => env("OMOP_SEEDING_USE_INFILE", true),
+    "privileged_email_domains" => array_filter(array_map('trim', explode(',', env('PRIVILEGED_EMAIL_DOMAINS', 'hdruk.ac.uk,hdruk.cloud')))),
     "rate_limit" => env("RATE_LIMIT", 2000),
     "scanning_filesystem_disk" => env("SCANNING_FILESYSTEM_DISK", "local_scan"),
     "search_deferred_ttl" => (int) env("SEARCH_DEFERRED_TTL", 60),

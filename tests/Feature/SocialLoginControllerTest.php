@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\User;
+use App\Models\UserHasRole;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Jumbojett\OpenIDConnectClient;
@@ -99,7 +101,7 @@ class SocialLoginControllerTest extends TestCase
 
         $response = $this->openAthensCallback('/api/v1/auth/dta/openathens/callback');
 
-        $response->assertStatus(500);
+        $response->assertRedirect('https://dta.test/error/500');
         $response->assertCookieMissing('token');
         $this->assertNotSame('secondary', $serviceAccount->fresh()->preferred_email);
     }
@@ -139,6 +141,19 @@ class SocialLoginControllerTest extends TestCase
 
         $response->assertRedirect('https://gateway.test/search');
         $this->assertSame($existingUser->id, $this->loggedInUserId($response));
+    }
+
+    public function test_dta_callback_redirects_to_conflict_page_on_duplicate_email(): void
+    {
+        $existingUser = User::factory()->create(['email' => 'collision@example.com']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "collision@example.com", "eduPersonScopedAffiliation": ""}');
+
+        $response = $this->openAthensCallback('/api/v1/auth/dta/openathens/callback');
+
+        $response->assertRedirect('https://dta.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertSame(1, User::where('email', 'collision@example.com')->count());
+        $this->assertSame($existingUser->provider, $existingUser->fresh()->provider);
     }
 
     public static function otherProviders(): array
@@ -252,7 +267,7 @@ class SocialLoginControllerTest extends TestCase
     private function assertOpenAthensLoginRejected(TestResponse $response, string $path): void
     {
         if (str_contains($path, '/dta/')) {
-            $response->assertStatus(500);
+            $response->assertRedirect('https://dta.test/error/500');
         } else {
             $response->assertRedirect('https://gateway.test/error/500');
         }
@@ -455,5 +470,216 @@ class SocialLoginControllerTest extends TestCase
         $response = $this->get('/api/v1/auth/registry/callback?code=some-handoff-code');
 
         $response->assertRedirect('https://gateway.test/error/500');
+    }
+
+    public function test_registry_callback_rejects_a_response_without_a_sub_claim(): void
+    {
+        $serviceAccount = User::factory()->create(['provider' => 'service', 'providerid' => null]);
+
+        Http::fake([
+            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([
+                'data' => [
+                    'given_name' => 'No',
+                    'family_name' => 'Sub',
+                    'email' => 'no-sub@example.com',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertNotSame('registry', $serviceAccount->fresh()->provider);
+    }
+
+    public static function otherProvidersForRegistry(): array
+    {
+        return [
+            'google' => ['google'],
+            'open-athens' => ['open-athens'],
+            'service' => ['service'],
+        ];
+    }
+
+    #[DataProvider('otherProvidersForRegistry')]
+    public function test_registry_callback_does_not_log_into_another_providers_account_with_the_same_id(string $otherProvider): void
+    {
+        $otherUser = User::factory()->create(['provider' => $otherProvider, 'providerid' => 'the-sub']);
+
+        Http::fake([
+            'https://api.registry.test/api/v1/auth/gateway_handoff/*/redeem' => Http::response([
+                'data' => [
+                    'sub' => 'the-sub',
+                    'given_name' => 'Registry',
+                    'family_name' => 'User',
+                    'email' => 'registry-user@example.com',
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
+            ->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+
+        $response->assertRedirect('https://gateway.test/search');
+        $newUser = User::where('provider', 'registry')->where('providerid', 'the-sub')->sole();
+        $this->assertSame($newUser->id, $this->loggedInUserId($response));
+        $this->assertSame([$otherProvider, 'the-sub'], [$otherUser->fresh()->provider, $otherUser->fresh()->providerid]);
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_rejects_a_login_for_an_is_admin_account(string $path): void
+    {
+        $adminAccount = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'is_admin' => true]);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path);
+
+        $this->assertOpenAthensLoginRejected($response, $path);
+        $this->assertAccountUnchanged($adminAccount);
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_rejects_a_login_for_an_account_holding_a_privileged_role(string $path): void
+    {
+        $roleHolder = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        UserHasRole::create([
+            'user_id' => $roleHolder->id,
+            'role_id' => Role::where('name', 'hdruk.admin')->value('id'),
+        ]);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path);
+
+        $this->assertOpenAthensLoginRejected($response, $path);
+        $this->assertAccountUnchanged($roleHolder);
+    }
+
+    #[DataProvider('callbackPaths')]
+    public function test_openathens_callback_allows_a_login_for_a_non_privileged_account(string $path): void
+    {
+        $existingUser = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback($path);
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existingUser->id, $this->loggedInUserId($response));
+    }
+
+    public function test_google_callback_rejects_a_response_without_a_usable_user_id(): void
+    {
+        $usersBefore = User::count();
+        Socialite::fake('google', $this->googleUser('', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public function test_linkedin_callback_rejects_a_response_without_a_usable_user_id(): void
+    {
+        $usersBefore = User::count();
+        Socialite::fake('linkedin-openid', $this->linkedinUser('', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/linkedin/callback');
+
+        $response->assertRedirect('https://gateway.test/error/500');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public static function existingNonGoogleProviders(): array
+    {
+        return [
+            'azure' => ['azure'],
+            'open-athens' => ['open-athens'],
+            'service' => ['service'],
+        ];
+    }
+
+    #[DataProvider('existingNonGoogleProviders')]
+    public function test_google_callback_does_not_log_into_an_account_it_only_shares_an_email_with(string $existingProvider): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => $existingProvider, 'providerid' => 'existing-provider-id']);
+        Socialite::fake('google', $this->googleUser('attacker-sub', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_dta_google_callback_does_not_log_into_an_account_it_only_shares_an_email_with(): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => 'azure', 'providerid' => 'existing-provider-id']);
+        Socialite::fake('google', $this->googleUser('attacker-sub', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/dta/google/callback');
+
+        $response->assertRedirect('https://dta.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_linkedin_callback_does_not_log_into_an_account_it_only_shares_an_email_with(): void
+    {
+        $existingUser = User::factory()->create(['email' => 'existing.user@example.com', 'provider' => 'google', 'providerid' => 'existing-provider-id']);
+        Socialite::fake('linkedin-openid', $this->linkedinUser('attacker-sub', 'existing.user@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/linkedin/callback');
+
+        $response->assertRedirect('https://gateway.test/error/409');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existingUser);
+    }
+
+    public function test_google_callback_logs_an_existing_google_user_into_their_own_account_after_their_email_changes(): void
+    {
+        $existing = User::factory()->create(['email' => 'old.address@example.com', 'provider' => 'google', 'providerid' => 'sub-1']);
+        Socialite::fake('google', $this->googleUser('sub-1', 'new.address@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($existing->id, $this->loggedInUserId($response));
+        $this->assertSame('new.address@example.com', $existing->fresh()->email);
+    }
+
+    private function googleUser(string $id, string $email): SocialiteUser
+    {
+        $raw = [
+            'sub' => $id,
+            'given_name' => 'Test',
+            'family_name' => 'User',
+        ];
+
+        return (new SocialiteUser())->setRaw($raw)->map([
+            'id' => $id,
+            'nickname' => null,
+            'name' => 'Test User',
+            'email' => $email,
+            'avatar' => null,
+        ]);
+    }
+
+    private function linkedinUser(string $id, string $email): SocialiteUser
+    {
+        $raw = [
+            'sub' => $id,
+            'given_name' => 'Test',
+            'family_name' => 'User',
+        ];
+
+        return (new SocialiteUser())->setRaw($raw)->map([
+            'id' => $id,
+            'nickname' => null,
+            'name' => 'Test User',
+            'email' => $email,
+            'avatar' => null,
+        ]);
     }
 }
