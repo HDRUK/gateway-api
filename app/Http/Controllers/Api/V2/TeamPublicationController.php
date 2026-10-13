@@ -400,7 +400,7 @@ class TeamPublicationController extends Controller
     public function store(CreatePublicationByTeamId $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         $this->checkAccess($input, $teamId, null, 'team');
 
@@ -558,7 +558,7 @@ class TeamPublicationController extends Controller
     public function update(UpdatePublicationByTeamIdById $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initPublication = Publication::where('id', $id)->first();
         if (!$initPublication) {
             throw new NotFoundException();
@@ -720,7 +720,7 @@ class TeamPublicationController extends Controller
     public function edit(EditPublicationByTeamIdById $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initPublication = Publication::where('id', $id)->first();
         if (!$initPublication) {
             throw new NotFoundException();
@@ -861,7 +861,7 @@ class TeamPublicationController extends Controller
     public function destroy(DeletePublicationByTeamIdById $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $publication = Publication::where('id', $id)->first();
         if (!$publication) {
             throw new NotFoundException();

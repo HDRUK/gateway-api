@@ -41,7 +41,11 @@ trait CheckAccess
             }
         }
 
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        // These trait methods are reached from ~100 call sites that pass
+        // $input rather than the Request, so the resolved identity is read
+        // from the current request via the helper. Octane rebinds the
+        // container's `request` per request, so this is request-scoped.
+        $jwtUser = request()->jwtUser();
         if (!count($jwtUser)) {
             throw new Exception('Insufficient information');
         }
@@ -78,7 +82,11 @@ trait CheckAccess
         array $input = [],
         ?array $dbUserIds = null
     ) {
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        // These trait methods are reached from ~100 call sites that pass
+        // $input rather than the Request, so the resolved identity is read
+        // from the current request via the helper. Octane rebinds the
+        // container's `request` per request, so this is request-scoped.
+        $jwtUser = request()->jwtUser();
         if (!count($jwtUser)) {
             throw new Exception('Insufficient information');
         }

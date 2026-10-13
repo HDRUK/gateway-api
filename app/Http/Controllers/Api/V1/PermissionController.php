@@ -197,7 +197,7 @@ class PermissionController extends Controller
     public function store(CreatePermission $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $permission = Permission::create([
@@ -299,7 +299,7 @@ class PermissionController extends Controller
     public function update(UpdatePermission $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             Permission::where('id', $id)->update([
@@ -401,7 +401,7 @@ class PermissionController extends Controller
     public function edit(EditPermission $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $array = [];
@@ -487,7 +487,7 @@ class PermissionController extends Controller
     public function destroy(DeletePermission $request, string $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             Permission::where('id', $id)->delete();

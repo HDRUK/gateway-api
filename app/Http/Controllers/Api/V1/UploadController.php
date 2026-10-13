@@ -79,7 +79,7 @@ class UploadController extends Controller
         try {
             $input = $request->all();
             $file  = $request->file('file');
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
             $fileSystem = config('gateway.scanning_filesystem_disk', 'local_scan');
             $entityFlag = $request->query('entity_flag', 'none');
             $teamId = $request->query('team_id', null);
@@ -199,7 +199,7 @@ class UploadController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+            $jwtUser = $request->jwtUser() ?: ['id' => null];
 
             $upload = Upload::where("uuid", $uuid)->firstOrFail();
 
@@ -270,7 +270,7 @@ class UploadController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+            $jwtUser = $request->jwtUser() ?: ['id' => null];
 
             $upload = Upload::where("uuid", $uuid)->firstOrFail();
 
@@ -366,7 +366,7 @@ class UploadController extends Controller
 
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
             $file = Upload::where("uuid", $id)->firstOrFail();
 
             // Stuff with an entity id should be deleted via other methods to handle

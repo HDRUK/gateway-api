@@ -475,7 +475,7 @@ class ToolController extends Controller
     {
         list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
 
         if (!is_null($teamId)) {
@@ -656,7 +656,7 @@ class ToolController extends Controller
     {
         list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
         $initTool = Tool::withTrashed()->where('id', $id)->first();
 
@@ -872,7 +872,7 @@ class ToolController extends Controller
     {
         list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
         $toolModel = Tool::withTrashed()->where('id', $id)->first();
 
@@ -1069,7 +1069,7 @@ class ToolController extends Controller
     {
         list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $tool = Tool::where(['id' => $id])->first();
 
         if ($createOrigin === 'API') {

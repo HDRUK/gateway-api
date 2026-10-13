@@ -89,7 +89,7 @@ class LibraryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $perPage = (int) request('per_page', Config::get('constants.per_page'));
@@ -213,7 +213,7 @@ class LibraryController extends Controller
     public function show(GetLibrary $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
@@ -316,7 +316,7 @@ class LibraryController extends Controller
     public function store(CreateLibrary $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $library = Library::updateOrCreate([
@@ -410,7 +410,7 @@ class LibraryController extends Controller
     public function update(UpdateLibrary $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $library = Library::where('id', $id)->first();
@@ -507,7 +507,7 @@ class LibraryController extends Controller
     public function edit(EditLibrary $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -594,7 +594,7 @@ class LibraryController extends Controller
     public function destroy(DeleteLibrary $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $library = Library::findOrFail($id);

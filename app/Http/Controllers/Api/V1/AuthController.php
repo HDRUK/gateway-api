@@ -164,7 +164,7 @@ class AuthController extends Controller
         try {
             $input = $request->all();
 
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
             if (!count($jwtUser)) {
                 throw new UnauthorizedException();
             }

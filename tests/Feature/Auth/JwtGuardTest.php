@@ -158,14 +158,16 @@ class JwtGuardTest extends TestCase
     }
 
     /**
-     * Backwards compatibility is the whole point of this phase: the 74
-     * existing consumers of jwt_user must not notice anything.
+     * Backwards compatibility is the whole point of this phase: the
+     * existing consumers of jwt_user must not notice anything. Phase 2
+     * later moved the payload off the input bag, but its SHAPE - which is
+     * what those consumers depend on - is unchanged.
      */
     public function test_jwt_user_is_still_populated_unchanged(): void
     {
         $request = $this->passThrough($this->bearerRequest($this->tokenFor($this->user)));
 
-        $jwtUser = $request->input('jwt_user');
+        $jwtUser = $request->jwtUser();
 
         $this->assertSame($this->user->id, $jwtUser['id']);
         $this->assertEqualsCanonicalizing(

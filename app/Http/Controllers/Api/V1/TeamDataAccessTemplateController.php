@@ -73,7 +73,7 @@ class TeamDataAccessTemplateController extends Controller
     public function index(GetTeamDataAccessTemplate $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $filterPublished = isset($input['published']) ? $request->boolean('published') : null;
@@ -170,7 +170,7 @@ class TeamDataAccessTemplateController extends Controller
     public function count(GetTeamDataAccessTemplate $request, int $teamId, string $field): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $counts = DataAccessTemplate::where('team_id', '=', $teamId)
@@ -274,7 +274,7 @@ class TeamDataAccessTemplateController extends Controller
     public function destroyFile(DeleteDataAccessTemplateFile $request, int $teamId, int $id, string $fileId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $template = DataAccessTemplate::where('id', $id)->first();

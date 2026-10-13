@@ -55,8 +55,10 @@ class CheckAccessMiddleware
             throw new IntegrationPermissionException('Application permissions do not allow this request');
         }
 
-        $input = $request->all();
-        $jwtUserIsAdminId = $input['jwt_user']['is_admin'];
+        // Read from the attributes bag, not $request->all(). Authorisation
+        // decisions must never be sourced from input the client controls.
+        $jwtUser = $request->jwtUser();
+        $jwtUserIsAdminId = $jwtUser['is_admin'];
         $teamId = $request->route('teamId');
 
         if ($jwtUserIsAdminId) {
@@ -70,16 +72,16 @@ class CheckAccessMiddleware
         $currentUserRoles = [];
         $currentUserPermissions = [];
         if ($teamId) {
-            if (isset($input['jwt_user']['role_perms']['teams'][(string) $teamId])) {
-                $currentUserRoles = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['roles'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['roles']));
-                $currentUserPermissions = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['perms'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['perms']));
+            if (isset($jwtUser['role_perms']['teams'][(string) $teamId])) {
+                $currentUserRoles = array_unique(array_merge($jwtUser['role_perms']['extra']['roles'], $jwtUser['role_perms']['teams'][(string) $teamId]['roles']));
+                $currentUserPermissions = array_unique(array_merge($jwtUser['role_perms']['extra']['perms'], $jwtUser['role_perms']['teams'][(string) $teamId]['perms']));
             } else {
-                $currentUserRoles = array_unique($input['jwt_user']['role_perms']['extra']['roles']);
-                $currentUserPermissions = array_unique($input['jwt_user']['role_perms']['extra']['perms']);
+                $currentUserRoles = array_unique($jwtUser['role_perms']['extra']['roles']);
+                $currentUserPermissions = array_unique($jwtUser['role_perms']['extra']['perms']);
             }
         } else {
-            $currentUserRoles = $input['jwt_user']['role_perms']['summary']['roles'];
-            $currentUserPermissions = $input['jwt_user']['role_perms']['summary']['perms'];
+            $currentUserRoles = $jwtUser['role_perms']['summary']['roles'];
+            $currentUserPermissions = $jwtUser['role_perms']['summary']['perms'];
         }
 
         if ($type === 'roles') {

@@ -45,7 +45,7 @@ class ProgrammingPackageController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $programming_packages = ProgrammingPackage::where('enabled', 1)
@@ -114,7 +114,7 @@ class ProgrammingPackageController extends Controller
     public function show(GetProgrammingPackage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $programming_package = ProgrammingPackage::findOrFail($id);
@@ -186,7 +186,7 @@ class ProgrammingPackageController extends Controller
     public function store(CreateProgrammingPackage $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $programming_package = ProgrammingPackage::create([
@@ -274,7 +274,7 @@ class ProgrammingPackageController extends Controller
     public function update(UpdateProgrammingPackage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             ProgrammingPackage::where('id', $id)->update([
@@ -361,7 +361,7 @@ class ProgrammingPackageController extends Controller
     public function edit(EditProgrammingPackage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -443,7 +443,7 @@ class ProgrammingPackageController extends Controller
     public function destroy(DeleteProgrammingPackage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $programming_package = ProgrammingPackage::findOrFail($id);

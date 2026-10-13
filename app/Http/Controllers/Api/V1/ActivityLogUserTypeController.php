@@ -51,7 +51,7 @@ class ActivityLogUserTypeController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $activityLogUserTypes = ActivityLogUserType::paginate(Config::get('constants.per_page'), ['*'], 'page');
 
@@ -115,7 +115,7 @@ class ActivityLogUserTypeController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $activityLogUserType = ActivityLogUserType::findOrFail($id);
             if ($activityLogUserType) {
@@ -176,7 +176,7 @@ class ActivityLogUserTypeController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $activityLogUserType = ActivityLogUserType::create($request->post());
             if ($activityLogUserType) {
@@ -259,7 +259,7 @@ class ActivityLogUserTypeController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $activityLogUserType = ActivityLogUserType::findOrFail($id);
             $body = $request->post();
@@ -350,7 +350,7 @@ class ActivityLogUserTypeController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $arrayKeys = [
                 'name',
@@ -422,7 +422,7 @@ class ActivityLogUserTypeController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $activityLogUserType = ActivityLogUserType::findOrFail($id);
             if ($activityLogUserType) {

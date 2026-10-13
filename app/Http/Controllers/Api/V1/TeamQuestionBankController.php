@@ -90,7 +90,7 @@ class TeamQuestionBankController extends Controller
     public function indexBySection(GetQuestionBankSection $request, int $teamId, int $sectionId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $isChild = $input['is_child'] ?? null;

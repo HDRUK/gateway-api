@@ -210,7 +210,7 @@ class TagController extends Controller
     public function store(CreateTag $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $tag = Tag::create([
@@ -315,7 +315,7 @@ class TagController extends Controller
     public function update(UpdateTag $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $tag = Tag::where('id', $id)->update([
@@ -420,7 +420,7 @@ class TagController extends Controller
     public function edit(EditTag $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -508,7 +508,7 @@ class TagController extends Controller
     public function destroy(DeleteTag $request, string $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             Tag::where('id', $id)->delete();

@@ -60,10 +60,9 @@ class JwtMiddleware
                 throw new NotFoundException('User not found.');
             }
 
-            $request->merge(
-                [
-                    'jwt_user' => $this->buildJwtUserPayload($request, $user),
-                ],
+            $request->attributes->set(
+                'jwt_user',
+                $this->buildJwtUserPayload($request, $user),
             );
 
             $this->authenticateAs($request, $user);
@@ -133,10 +132,9 @@ class JwtMiddleware
                     throw new NotFoundException('User not found.');
                 }
 
-                $request->merge(
-                    [
-                        'jwt_user' => $this->buildJwtUserPayload($request, $user),
-                    ],
+                $request->attributes->set(
+                    'jwt_user',
+                    $this->buildJwtUserPayload($request, $user),
                 );
 
                 $this->authenticateAs($request, $user);

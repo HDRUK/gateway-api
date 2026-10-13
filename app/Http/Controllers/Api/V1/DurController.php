@@ -439,7 +439,7 @@ class DurController extends Controller
         list($userId, $teamId, $createOrigin, $status, $appId) = $this->getAccessorUserAndTeam($request);
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
         $arrayKeys = [
@@ -684,7 +684,7 @@ class DurController extends Controller
         $input = $request->all();
         list($userId, $teamId, $createOrigin, $status, $appId) = $this->getAccessorUserAndTeam($request);
 
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
@@ -934,7 +934,7 @@ class DurController extends Controller
     {
         list($userId, $teamId, $createOrigin, $status, $appId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? $jwtUser['id'] : $userId;
         $initDur = Dur::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
@@ -1129,7 +1129,7 @@ class DurController extends Controller
     {
         list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initDur->team_id, null, 'team', $request->header());
@@ -1360,7 +1360,7 @@ class DurController extends Controller
     public function upload(UploadDur $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [

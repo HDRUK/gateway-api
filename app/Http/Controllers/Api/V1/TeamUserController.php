@@ -137,7 +137,7 @@ class TeamUserController extends Controller
     public function store(CreateTeamUser $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
@@ -257,7 +257,7 @@ class TeamUserController extends Controller
     public function update(UpdateTeamUser $request, int $teamId, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
@@ -382,7 +382,7 @@ class TeamUserController extends Controller
     public function updateBulk(UpdateBulkTeamUser $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
@@ -489,7 +489,7 @@ class TeamUserController extends Controller
     public function destroy(DeleteTeamUser $request, int $teamId, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];

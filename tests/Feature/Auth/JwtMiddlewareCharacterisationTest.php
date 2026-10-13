@@ -55,7 +55,11 @@ class JwtMiddlewareCharacterisationTest extends TestCase
 
         (new JwtMiddleware())->handle($request, function (Request $passed) use (&$seen) {
             $seen = [
-                'jwt_user' => $passed->input('jwt_user'),
+                // Phase 2 moved this off the input bag onto the attributes
+                // bag; jwtUser() yields [] when absent, normalised to null
+                // here so the "integration requests get no user" assertions
+                // below still read naturally.
+                'jwt_user' => $passed->jwtUser() ?: null,
                 'app' => $passed->input('app'),
                 'jwt' => $passed->input('jwt'),
             ];

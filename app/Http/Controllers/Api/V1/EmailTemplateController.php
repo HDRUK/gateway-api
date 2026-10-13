@@ -56,7 +56,7 @@ class EmailTemplateController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $emailTemplates = EmailTemplate::all()->toArray();
@@ -138,7 +138,7 @@ class EmailTemplateController extends Controller
     public function show(GetEmailTemplate $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $emailTemplate = EmailTemplate::where('id', $id)->first();
@@ -218,7 +218,7 @@ class EmailTemplateController extends Controller
     public function store(CreateEmailTemplate $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $emailTemplate = EmailTemplate::create([
@@ -325,7 +325,7 @@ class EmailTemplateController extends Controller
     public function update(UpdateEmailTemplate $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             EmailTemplate::where('id', $id)->update([
@@ -436,7 +436,7 @@ class EmailTemplateController extends Controller
     public function edit(EditEmailTemplate $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $array = [];
@@ -534,7 +534,7 @@ class EmailTemplateController extends Controller
     public function destroy(DeleteEmailTemplate $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $emailTemplates = EmailTemplate::findOrFail($id);
@@ -614,7 +614,7 @@ class EmailTemplateController extends Controller
     public function preview(RenderEmailTemplatePreview $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $html = (new EmailPreviewRenderer())->renderHtml(html_entity_decode($input['body']));
