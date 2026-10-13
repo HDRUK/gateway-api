@@ -39,6 +39,15 @@ class JwtUserResolver
             return null;
         }
 
+        // Must mirror JwtMiddleware: a revoked token resolves to nobody,
+        // or code migrated to $request->user() would see a user the
+        // middleware has already turned away.
+        $jti = $claims['jti'] ?? null;
+
+        if ($jti !== null && app(TokenDenylist::class)->isRevoked((string) $jti)) {
+            return null;
+        }
+
         $userId = $claims['user']['id'] ?? null;
 
         if ($userId === null) {

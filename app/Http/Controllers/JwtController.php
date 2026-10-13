@@ -72,6 +72,13 @@ class JwtController extends Controller
         return $this->jwt = $value;
     }
 
+    /**
+     * The jti is cryptographically random rather than md5(microtime()).
+     * Revocation is keyed on it, so two tokens sharing a jti would mean
+     * revoking one revokes the other - and microtime() only resolves to
+     * the microsecond, which two Octane workers can share under load.
+     * The 32-character hex shape is unchanged.
+     */
     public function generateToken($userId)
     {
         try {
@@ -99,7 +106,7 @@ class JwtController extends Controller
                 ->issuedBy((string) config('app.url')) // iss claim
                 ->permittedFor((string) config('app.url')) // aud claim
                 ->relatedTo((string) config('app.name')) // aud claim
-                ->identifiedBy(md5(microtime())) // jti claim
+                ->identifiedBy(bin2hex(random_bytes(16))) // jti claim - see below
                 ->issuedAt($currentTime) // iat claim
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim

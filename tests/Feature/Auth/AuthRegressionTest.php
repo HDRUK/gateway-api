@@ -24,7 +24,12 @@ use Tests\Traits\MockExternalApis;
  * CORRECT behaviour now, so a regression fails here rather than silently
  * reappearing in production.
  *
- * @see \Tests\Feature\Auth\AuthKnownDefectsTest for defects still open.
+ * AuthKnownDefectsTest itself is gone: every defect it recorded has been
+ * fixed, and an empty test class is an error rather than a milestone. Its
+ * last entry - logout not invalidating the token - is now inverted in
+ * TokenRevocationTest. Reinstate the file if a new defect needs parking.
+ *
+ * @see \Tests\Feature\Auth\TokenRevocationTest
  */
 class AuthRegressionTest extends TestCase
 {
