@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
+use Tests\Traits\GeneratesPassportKeys;
 use Tests\Traits\MockExternalApis;
 
 /**
@@ -23,6 +24,7 @@ use Tests\Traits\MockExternalApis;
  */
 class OidcSurfaceCharacterisationTest extends TestCase
 {
+    use GeneratesPassportKeys;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -31,12 +33,7 @@ class OidcSurfaceCharacterisationTest extends TestCase
     {
         $this->commonSetUp();
 
-        // Passport keys come from the environment, which the test harness
-        // does not set; the repository keys stand in.
-        config([
-            'passport.public_key' => file_get_contents(storage_path('oauth-public.key')),
-            'passport.private_key' => file_get_contents(storage_path('oauth-private.key')),
-        ]);
+        $this->usePassportKeys();
     }
 
     /**

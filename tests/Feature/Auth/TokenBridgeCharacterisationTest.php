@@ -10,6 +10,7 @@ use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256 as RsaSha256;
 use Tests\TestCase;
+use Tests\Traits\GeneratesPassportKeys;
 use Tests\Traits\MockExternalApis;
 
 /**
@@ -29,6 +30,7 @@ use Tests\Traits\MockExternalApis;
  */
 class TokenBridgeCharacterisationTest extends TestCase
 {
+    use GeneratesPassportKeys;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -39,10 +41,7 @@ class TokenBridgeCharacterisationTest extends TestCase
     {
         $this->commonSetUp();
 
-        config([
-            'passport.public_key' => file_get_contents(storage_path('oauth-public.key')),
-            'passport.private_key' => file_get_contents(storage_path('oauth-private.key')),
-        ]);
+        $this->usePassportKeys();
 
         $this->authorisationUser();
         $this->user = User::where('email', config(self::CFG_TEST_EMAIL))->firstOrFail();

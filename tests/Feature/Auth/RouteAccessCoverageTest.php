@@ -97,7 +97,7 @@ class RouteAccessCoverageTest extends TestCase
     {
         parent::setUp();
 
-        $this->get('/_force_route_loading');
+        $this->app->make(\Illuminate\Contracts\Http\Kernel::class)->bootstrap();
     }
 
     /**
@@ -147,8 +147,10 @@ class RouteAccessCoverageTest extends TestCase
                 continue;
             }
 
+            // See RouteAuthInvariantTest: gatherMiddleware() constructs the
+            // controller, which needs Passport keys for the SSO controllers.
             $hasCheckAccess = false;
-            foreach ($route->gatherMiddleware() as $middleware) {
+            foreach ($route->middleware() as $middleware) {
                 if (!is_string($middleware)) {
                     continue;
                 }

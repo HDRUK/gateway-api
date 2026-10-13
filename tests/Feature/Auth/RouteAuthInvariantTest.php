@@ -42,7 +42,7 @@ class RouteAuthInvariantTest extends TestCase
     {
         parent::setUp();
 
-        $this->get('/_force_route_loading');
+        $this->app->make(\Illuminate\Contracts\Http\Kernel::class)->bootstrap();
     }
 
     /**
@@ -50,7 +50,12 @@ class RouteAuthInvariantTest extends TestCase
      */
     private function hasMiddleware(RoutingRoute $route, array $needles): bool
     {
-        foreach ($route->gatherMiddleware() as $middleware) {
+        // $route->middleware() - NOT gatherMiddleware(), which instantiates
+        // the controller to collect its middleware. Several SSO controllers
+        // take an AuthorizationServer, so that construction needs Passport
+        // keys and blows up anywhere they are absent (CI). Route and group
+        // middleware is all this needs, and it is already on the action.
+        foreach ($route->middleware() as $middleware) {
             if (!is_string($middleware)) {
                 continue;
             }
