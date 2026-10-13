@@ -18,6 +18,8 @@ use Illuminate\Database\QueryException;
 use Laravel\Socialite\Facades\Socialite;
 use Jumbojett\OpenIDConnectClient;
 use App\Exceptions\SocialLoginConflictException;
+use App\Exceptions\SocialLoginDisabledException;
+use Laravel\Pennant\Feature;
 
 class SocialLoginController extends Controller
 {
@@ -36,6 +38,63 @@ class SocialLoginController extends Controller
     public function __construct(JwtController $jwt)
     {
         $this->jwt = $jwt;
+    }
+
+    /**
+     * The feature flag guarding each sign-in provider, so one that is
+     * failing can be switched off without a deploy.
+     *
+     * Keyed by every spelling a provider arrives under: the route
+     * constraint accepts `linkedin` and `openathens`, while the Socialite
+     * driver names and the values stored on `users.provider` are
+     * `linkedin-openid` and `open-athens`, and the two entry points
+     * normalise at different points.
+     *
+     * @var array<string, string>
+     */
+    private const PROVIDER_FEATURE_FLAGS = [
+        'google' => 'LoginGoogleEnabled',
+        'azure' => 'LoginAzureEnabled',
+        'linkedin' => 'LoginLinkedInEnabled',
+        'linkedin-openid' => 'LoginLinkedInEnabled',
+        'openathens' => 'LoginOpenAthensEnabled',
+        'open-athens' => 'LoginOpenAthensEnabled',
+        'registry' => 'LoginRegistryEnabled',
+    ];
+
+    /**
+     * Refuse a sign-in through a provider that is currently switched off.
+     *
+     * Applied to the callbacks as well as the entry points: a provider
+     * turned off part-way through a login would otherwise still complete
+     * for everyone already redirected out to it, and a bookmarked provider
+     * URL walks straight past the web client hiding the button.
+     *
+     * @param string $provider
+     * @param string $redirectBaseUrl
+     * @return void
+     * @throws SocialLoginDisabledException when the provider is unavailable
+     */
+    private function assertProviderEnabled(string $provider, string $redirectBaseUrl): void
+    {
+        $unavailable = fn (string $reason) => new SocialLoginDisabledException(
+            $redirectBaseUrl . '/error/503',
+            $reason
+        );
+
+        if (Feature::active('LoginDisabled')) {
+            throw $unavailable('Sign-in is currently disabled for all providers');
+        }
+
+        $flag = self::PROVIDER_FEATURE_FLAGS[strtolower($provider)] ?? null;
+
+        if ($flag === null) {
+            throw $unavailable("[{$provider}] is not a sign-in provider Gateway supports");
+        }
+
+        if (!Feature::active($flag)) {
+            throw $unavailable("Sign-in through [{$provider}] is currently disabled");
+        }
     }
 
     /**
@@ -142,6 +201,17 @@ class SocialLoginController extends Controller
 
     private function handleLogin(Request $request, string $provider, string $baseRedirectUrl, $openAthensRedirectUrl, $isDTA): mixed
     {
+        try {
+            $this->assertProviderEnabled($provider, $baseRedirectUrl);
+        } catch (SocialLoginDisabledException $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.($isDTA ? 'dtaLogin' : 'login'),
+                'description' => $e->getMessage(),
+            ]);
+
+            return redirect()->away($e->getRedirectUrl());
+        }
 
         $redirectUrl = $baseRedirectUrl;
         if ($request->has("redirect")) {
@@ -299,6 +369,8 @@ class SocialLoginController extends Controller
         $openAthensRedirectUrl = config('services.openathens.redirect');
         $user = null;
         try {
+            $this->assertProviderEnabled($provider, $baseRedirectUrl);
+
             if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
@@ -401,6 +473,14 @@ class SocialLoginController extends Controller
                 $redirectUrl = session('redirectUrl');
                 return redirect()->away($redirectUrl ?? $baseRedirectUrl)->withCookies($cookies);
             }
+        } catch (SocialLoginDisabledException $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.($isDta ? 'dtaCallback' : 'callback'),
+                'description' => $e->getMessage(),
+            ]);
+
+            return redirect()->away($e->getRedirectUrl());
         } catch (SocialLoginConflictException $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
