@@ -8,6 +8,7 @@ use App\Models\UserHasRole;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Jumbojett\OpenIDConnectClient;
+use Laravel\Pennant\Feature;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -681,5 +682,202 @@ class SocialLoginControllerTest extends TestCase
             'email' => $email,
             'avatar' => null,
         ]);
+    }
+
+    public static function socialLoginProviders(): array
+    {
+        return [
+            'google' => ['google', 'LoginGoogleEnabled'],
+            'azure' => ['azure', 'LoginAzureEnabled'],
+            'linkedin' => ['linkedin', 'LoginLinkedInEnabled'],
+            'openathens' => ['openathens', 'LoginOpenAthensEnabled'],
+            'registry' => ['registry', 'LoginRegistryEnabled'],
+        ];
+    }
+
+    /**
+     * Only the providers Gateway redirects to by building a URL itself -
+     * the Socialite-driven ones need live client credentials to even reach
+     * the redirect, which a test environment has no business holding.
+     */
+    public static function selfRedirectingProviders(): array
+    {
+        return [
+            'openathens' => ['openathens', 'LoginOpenAthensEnabled', 'https://openathens.test/oidc/auth'],
+            'registry' => ['registry', 'LoginRegistryEnabled', 'https://registry.test/en/keycloak'],
+        ];
+    }
+
+    #[DataProvider('selfRedirectingProviders')]
+    public function test_login_redirects_to_the_provider_while_its_feature_flag_is_active(string $provider, string $flag, string $expectedUrlPrefix): void
+    {
+        Feature::activate($flag);
+        Feature::flushCache();
+
+        $response = $this->get('/api/v1/auth/' . $provider);
+
+        $response->assertRedirectContains($expectedUrlPrefix);
+    }
+
+    #[DataProvider('socialLoginProviders')]
+    public function test_login_is_refused_while_the_providers_feature_flag_is_inactive(string $provider, string $flag): void
+    {
+        Feature::deactivate($flag);
+        Feature::flushCache();
+
+        $this->get('/api/v1/auth/' . $provider)
+            ->assertRedirect('https://gateway.test/error/503');
+    }
+
+    #[DataProvider('socialLoginProviders')]
+    public function test_dta_login_is_refused_while_the_providers_feature_flag_is_inactive(string $provider, string $flag): void
+    {
+        Feature::deactivate($flag);
+        Feature::flushCache();
+
+        $this->get('/api/v1/auth/dta/' . $provider)
+            ->assertRedirect('https://dta.test/error/503');
+    }
+
+    /**
+     * A provider turned off mid-flight must not complete a login for a user
+     * who was already redirected out to it - hiding the button in the web
+     * client cannot stop that one, only the callback can.
+     */
+    public function test_google_callback_is_refused_while_the_providers_feature_flag_is_inactive(): void
+    {
+        $usersBefore = User::count();
+        Feature::deactivate('LoginGoogleEnabled');
+        Feature::flushCache();
+        Socialite::fake('google', $this->googleUser('new-sub', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/error/503');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public function test_dta_google_callback_is_refused_while_the_providers_feature_flag_is_inactive(): void
+    {
+        $usersBefore = User::count();
+        Feature::deactivate('LoginGoogleEnabled');
+        Feature::flushCache();
+        Socialite::fake('google', $this->googleUser('new-sub', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/dta/google/callback');
+
+        $response->assertRedirect('https://dta.test/error/503');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public function test_azure_callback_is_refused_while_the_providers_feature_flag_is_inactive(): void
+    {
+        $existing = User::factory()->create(['provider' => 'azure', 'providerid' => 'azure-sub']);
+        Feature::deactivate('LoginAzureEnabled');
+        Feature::flushCache();
+        Socialite::fake('azure', $this->microsoftUser('azure-sub', 'person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/azure/callback');
+
+        $response->assertRedirect('https://gateway.test/error/503');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existing);
+    }
+
+    public function test_linkedin_callback_is_refused_while_the_providers_feature_flag_is_inactive(): void
+    {
+        $usersBefore = User::count();
+        Feature::deactivate('LoginLinkedInEnabled');
+        Feature::flushCache();
+        Socialite::fake('linkedin-openid', $this->linkedinUser('linkedin-sub', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/linkedin/callback');
+
+        $response->assertRedirect('https://gateway.test/error/503');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    public function test_openathens_callback_is_refused_while_the_providers_feature_flag_is_inactive(): void
+    {
+        $existing = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id']);
+        Feature::deactivate('LoginOpenAthensEnabled');
+        Feature::flushCache();
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $response = $this->openAthensCallback();
+
+        $response->assertRedirect('https://gateway.test/error/503');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existing);
+    }
+
+    public function test_registry_callback_is_refused_while_the_providers_feature_flag_is_inactive(): void
+    {
+        $existing = User::factory()->create(['provider' => 'registry', 'providerid' => 'registry-sub']);
+        Feature::deactivate('LoginRegistryEnabled');
+        Feature::flushCache();
+        Http::fake(['*' => Http::response(['data' => ['sub' => 'registry-sub', 'email' => 'person@example.com']], 200)]);
+
+        $response = $this->get('/api/v1/auth/registry/callback?code=some-handoff-code');
+
+        $response->assertRedirect('https://gateway.test/error/503');
+        $response->assertCookieMissing('token');
+        $this->assertAccountUnchanged($existing);
+        Http::assertNothingSent();
+    }
+
+    /**
+     * The global kill switch has to hold at the API as well - until now it
+     * only hid the sign-in buttons in the web client, which a bookmarked
+     * provider URL walks straight past.
+     */
+    #[DataProvider('socialLoginProviders')]
+    public function test_login_is_refused_for_every_provider_while_login_is_globally_disabled(string $provider, string $flag): void
+    {
+        Feature::activate($flag);
+        Feature::activate('LoginDisabled');
+        Feature::flushCache();
+
+        $this->get('/api/v1/auth/' . $provider)
+            ->assertRedirect('https://gateway.test/error/503');
+    }
+
+    public function test_callback_is_refused_while_login_is_globally_disabled(): void
+    {
+        $usersBefore = User::count();
+        Feature::activate('LoginDisabled');
+        Feature::flushCache();
+        Socialite::fake('google', $this->googleUser('new-sub', 'new.person@example.com'));
+
+        $response = $this->azureCallback('/api/v1/auth/google/callback');
+
+        $response->assertRedirect('https://gateway.test/error/503');
+        $response->assertCookieMissing('token');
+        $this->assertSame($usersBefore, User::count());
+    }
+
+    /**
+     * Nothing stores these flags in a fresh environment, so an unseeded
+     * Gateway has to keep letting people in rather than locking everyone out
+     * until the deployment step has run.
+     */
+    #[DataProvider('newProviderFeatureFlags')]
+    public function test_a_provider_is_enabled_when_nothing_has_stored_its_flag(string $flag): void
+    {
+        $this->assertTrue(Feature::active($flag));
+    }
+
+    public static function newProviderFeatureFlags(): array
+    {
+        return [
+            'google' => ['LoginGoogleEnabled'],
+            'azure' => ['LoginAzureEnabled'],
+            'linkedin' => ['LoginLinkedInEnabled'],
+            'openathens' => ['LoginOpenAthensEnabled'],
+            'registry' => ['LoginRegistryEnabled'],
+        ];
     }
 }
