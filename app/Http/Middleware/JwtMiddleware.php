@@ -10,6 +10,7 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\JwtController;
 use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -62,6 +63,8 @@ class JwtMiddleware
                     'jwt_user' => $this->buildJwtUserPayload($request, $user),
                 ],
             );
+
+            $this->authenticateAs($request, $user);
 
             return $next($request);
         }
@@ -132,6 +135,9 @@ class JwtMiddleware
                         'jwt_user' => $this->buildJwtUserPayload($request, $user),
                     ],
                 );
+
+                $this->authenticateAs($request, $user);
+
                 return $next($request);
             }
         }
@@ -139,6 +145,24 @@ class JwtMiddleware
         throw new UnauthorizedException();
     }
 
+
+    /**
+     * Publish the authenticated user through Laravel's own plumbing, in
+     * addition to the jwt_user payload above.
+     *
+     * Both of these are request-scoped. We deliberately do NOT call
+     * Auth::shouldUse('jwt'): that writes auth.defaults.guard, which is
+     * process-global, and Octane's FlushAuthenticationState only calls
+     * forgetGuards() - clearing resolved guards but not the default
+     * driver. Flipping it here would leak into every later request on the
+     * worker, including web and Passport routes.
+     */
+    private function authenticateAs(Request $request, User $user): void
+    {
+        $request->setUserResolver(fn () => $user);
+
+        Auth::guard('jwt')->setUser($user);
+    }
 
     private function validateUserId(int $userId)
     {
