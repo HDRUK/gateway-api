@@ -170,7 +170,7 @@ class AuthController extends Controller
             }
 
             $userId = $jwtUser['id'];
-            $user = User::where(['id', $userId])->first();
+            $user = User::where('id', $userId)->first();
             if (is_null($user)) {
                 throw new UnauthorizedException();
             }

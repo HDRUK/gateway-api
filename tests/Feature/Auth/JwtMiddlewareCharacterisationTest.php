@@ -176,7 +176,7 @@ class JwtMiddlewareCharacterisationTest extends TestCase
         $appId = 'app-' . fake()->regexify('[A-Za-z0-9]{20}');
         $clientId = 'client-' . fake()->regexify('[A-Za-z0-9]{20}');
 
-        Application::create([
+        $application = Application::create([
             'name' => 'Characterisation App',
             'app_id' => $appId,
             'client_id' => $clientId,
@@ -196,7 +196,12 @@ class JwtMiddlewareCharacterisationTest extends TestCase
         $seen = $this->capture($request);
 
         $this->assertNull($seen['jwt_user'], 'Integration requests never get a jwt_user.');
-        $this->assertSame(['id' => (int) $appId], $seen['app']);
+
+        // The application's PK, not the public app_id from the
+        // header. This previously merged `(int) $appId`, which collapsed a
+        // 40-character random string to 0 and broke every consumer that
+        // looked the application back up. See AuthRegressionTest.
+        $this->assertSame(['id' => $application->id], $seen['app']);
     }
 
     public function test_unknown_application_id_is_rejected(): void

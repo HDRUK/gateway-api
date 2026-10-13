@@ -85,10 +85,14 @@ class JwtMiddleware
                 throw new UnauthorizedException('The credentials provided are invalid');
             }
 
+            # Pass on the application's PK, not the public app_id.
+            # Every consumer of this looks the application back up by `id`,
+            # and app_id is a 40-character random string. When casting that to
+            # int yielded 0, so the lookup never matched.
             $request->merge(
                 [
                     'app' => [
-                        'id' => (int) $appId,
+                        'id' => $app->id,
                     ]
                 ]
             );
