@@ -160,6 +160,49 @@ class TokenRevocationTest extends TestCase
     }
 
     /**
+     * The social-login flow authenticates by setting a `token` cookie, so
+     * logout has to clear it as well as revoking the token. Otherwise the
+     * browser keeps presenting a withdrawn token and the user sees 401s
+     * instead of a clean signed-out state.
+     *
+     * Cookie::forget() inherits the same path and domain defaults that
+     * Cookie::make() used when the cookie was set, so this matches in
+     * every environment without hardcoding a domain - which matters here,
+     * since web and api sit on sibling subdomains that differ per
+     * environment.
+     *
+     * withCredentials() is required: json() mirrors browser XHR and sends
+     * no cookies without it, so the request would otherwise arrive
+     * unauthenticated.
+     */
+    public function test_logout_clears_the_social_login_cookie(): void
+    {
+        $response = $this->withCredentials()
+            ->withUnencryptedCookie('token', $this->tokenFor($this->user))
+            ->json('POST', '/api/v1/logout', [], ['Accept' => 'application/json']);
+
+        $response->assertStatus(200);
+        $response->assertCookieExpired('token');
+    }
+
+    /**
+     * Logging out through the cookie path must revoke the token too, not
+     * merely drop the cookie - otherwise a copy of the token taken before
+     * logout would still work as a bearer credential.
+     */
+    public function test_logout_via_cookie_revokes_the_token_as_well(): void
+    {
+        $token = $this->tokenFor($this->user);
+
+        $this->withCredentials()
+            ->withUnencryptedCookie('token', $token)
+            ->json('POST', '/api/v1/logout', [], ['Accept' => 'application/json'])
+            ->assertStatus(200);
+
+        $this->json('GET', '/api/v1/users', [], $this->headersFor($token))->assertStatus(401);
+    }
+
+    /**
      * Revocation is only as sound as jti uniqueness: two tokens sharing a
      * jti would mean revoking one revokes the other.
      *

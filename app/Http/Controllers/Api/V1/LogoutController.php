@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use App\Auth\TokenDenylist;
 use App\Http\Controllers\JwtController;
 use App\Http\Controllers\Controller;
@@ -50,9 +51,16 @@ class LogoutController extends Controller
 
         $request->session()->flush();
 
+        // The social-login flow authenticates by setting a `token` cookie,
+        // so clear it as well. Cookie::forget() inherits the same path and
+        // domain defaults Cookie::make() used when setting it, which
+        // matters because web and api sit on sibling subdomains that
+        // differ per environment. Left in place, the browser would keep
+        // presenting a revoked token and the user would see 401s rather
+        // than a clean signed-out state.
         return response()->json([
             'message' => 'OK',
-        ], 200);
+        ], 200)->withCookie(Cookie::forget('token'));
     }
 
     /**
