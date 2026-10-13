@@ -40,14 +40,10 @@ class CheckAccessMiddleware
 
             $checkingPerms = array_diff($access, array_column($application['permissions'], 'name'));
             if (empty($checkingPerms)) {
-                $request->merge(
-                    [
-                        'middleware' => [
-                            'roles' => [],
-                            'perms' => $access,
-                        ],
-                    ],
-                );
+                $request->attributes->set('middleware', [
+                    'roles' => [],
+                    'perms' => $access,
+                ]);
 
                 return $next($request);
             }
@@ -99,14 +95,10 @@ class CheckAccessMiddleware
             }
         }
 
-        $request->merge(
-            [
-                'middleware' => [
-                    'roles' => ($type === 'roles') ? $access : [],
-                    'perms' => ($type === 'permissions') ? $access : [],
-                ],
-            ],
-        );
+        $request->attributes->set('middleware', [
+            'roles' => ($type === 'roles') ? $access : [],
+            'perms' => ($type === 'permissions') ? $access : [],
+        ]);
 
         return $next($request);
     }

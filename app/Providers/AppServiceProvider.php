@@ -89,6 +89,14 @@ class AppServiceProvider extends ServiceProvider
             return $this->attributes->get('jwt_user', []);
         });
 
+        // The roles/permissions the matched route demanded, recorded by
+        // CheckAccessMiddleware for CheckAccess::checkAccess() to re-check
+        // against the owning team. On the attributes bag for the same
+        // reason as jwtUser: the input bag is the client's.
+        Request::macro('accessContext', function () {
+            return $this->attributes->get('middleware', []);
+        });
+
         $this->configureRateLimiting();
     }
 
