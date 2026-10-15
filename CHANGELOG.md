@@ -1,3 +1,25 @@
+## [2.56.0](https://github.com/HDRUK/gateway-api/compare/v2.55.0...v2.56.0) (2026-10-15)
+
+### ✨ Features
+
+* **GAT-7146:** Feature flag to disable login (#1852) ([bcba73b](https://github.com/HDRUK/gateway-api/commit/bcba73b437b51a6e9ce4fa9c4e8f238448ec0563)), closes [GAT-7146](undefinedGAT-7146)
+* **GAT-8885:** Add publication to widgets (#1840) ([91ccc90](https://github.com/HDRUK/gateway-api/commit/91ccc90138711680e51eb77eaff28e2d416d85c6)), closes [GAT-8885](undefinedGAT-8885)
+* **GAT-9689:** Adds ability to toggle individual social providers on… (#1875) ([6a3f433](https://github.com/HDRUK/gateway-api/commit/6a3f4330b31e9d09bf0cd844a772f32d818d09c7)), closes [GAT-9689](undefinedGAT-9689)
+
+### 🐛 Bug Fixes
+
+* **GAT-0000:** allow callers to override TRASER input and output validation on dataset update (#1838) ([b08beb6](https://github.com/HDRUK/gateway-api/commit/b08beb641ae73be93f5f60bc2432cf8581af8a6f)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-000:** allow callers to override TRASER input validation on dataset update (#1836) ([4b67e2b](https://github.com/HDRUK/gateway-api/commit/4b67e2bfd6ee97cca83a17ebc242a3eca30656e8)), closes [GAT-000](undefinedGAT-000)
+* **GAT-9641:** Show datasets in random order on an empty Typesense search ([bc8d92f](https://github.com/HDRUK/gateway-api/commit/bc8d92f8759b965d150b9a00c9eca2c2cd4b562c)), closes [GAT-9641](undefinedGAT-9641)
+* **GAT-9645:** Stop a running federation sync when it is disabled ([8c317cc](https://github.com/HDRUK/gateway-api/commit/8c317cc350e3a99f680deb9b863c6ea2203a26d7)), closes [GAT-9645](undefinedGAT-9645)
+* **GAT-9645:** Stop federation runs showing or staying stuck as running ([9a6b481](https://github.com/HDRUK/gateway-api/commit/9a6b481b2f27525deebf9af40bb0b275284bd260)), closes [GAT-9645](undefinedGAT-9645)
+* **GAT-9647:** Show only the errors that stopped a federated dataset importing ([947c868](https://github.com/HDRUK/gateway-api/commit/947c868f00afe8d84a5a3817be75138084cf6686)), closes [GAT-9647](undefinedGAT-9647)
+* **GAT-9679:** add session state check (#1846) ([38fb502](https://github.com/HDRUK/gateway-api/commit/38fb502d86f8e08b8890b5bc0dfb82deb3a21e49)), closes [GAT-9679](undefinedGAT-9679)
+* **GAT-9679:** Match OpenAthens logins against OpenAthens accounts only (#1844) ([a63bb7b](https://github.com/HDRUK/gateway-api/commit/a63bb7b7515f57b0e8be04484ca26fa97efdd267)), closes [GAT-9679](undefinedGAT-9679)
+* **GAT-9679:** Validate OpenAthens identifier and support pairwiseID (#1843) ([31dfe44](https://github.com/HDRUK/gateway-api/commit/31dfe440b6e1811f08bd8ba8d8348df47065848f)), closes [GAT-9679](undefinedGAT-9679)
+* **GAT-9681:** Match Microsoft logins by account ID ([ac50e4c](https://github.com/HDRUK/gateway-api/commit/ac50e4cf24f1d354d228c7902f12f7b43ffa8f8f)), closes [GAT-9681](undefinedGAT-9681) [Microsoft](undefinedosoft) [Microsoft](undefinedosoft) [Gateway](undefinedGateway) [Microsoft](undefinedosoft) [Microsoft](undefinedosoft) [Gateway](undefinedGateway) [most](undefinedost) [Microsoft](undefinedosoft) [Gateway](undefinedGateway) [Gateway](undefinedGateway)
+* **GAT-9999:** Consolidate auth fixes (#1874) ([cffb3c6](https://github.com/HDRUK/gateway-api/commit/cffb3c645615e0cab8de196930d9660ea0667155))
+
 ## [2.55.0](https://github.com/HDRUK/gateway-api/compare/v2.54.1...v2.55.0) (2026-10-09)
 
 ### ✨ Features
