@@ -252,8 +252,8 @@ class IntegrationToolController extends Controller
             $appId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int)$input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int)$input['jwt_user']['id'];
+            } elseif ($request->jwtUser()) {
+                $userId = (int)$request->jwtUser()['id'];
             } elseif (array_key_exists('app_user', $input)) {
                 $appId = (int)$input['app']['id'];
                 $app = Application::where(['id' => $appId])->first();
@@ -426,8 +426,8 @@ class IntegrationToolController extends Controller
             $appId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int)$input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int)$input['jwt_user']['id'];
+            } elseif ($request->jwtUser()) {
+                $userId = (int)$request->jwtUser()['id'];
             } elseif (array_key_exists('app_user', $input)) {
                 $appId = (int)$input['app']['id'];
                 $app = Application::where(['id' => $appId])->first();
@@ -587,8 +587,8 @@ class IntegrationToolController extends Controller
             $appId = null;
             if ($request->has('userId')) {
                 $userId = (int)$input['userId'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int)$input['jwt_user']['id'];
+            } elseif ($request->jwtUser()) {
+                $userId = (int)$request->jwtUser()['id'];
             } elseif (array_key_exists('app_user', $input)) {
                 $appId = (int)$input['app']['id'];
             }

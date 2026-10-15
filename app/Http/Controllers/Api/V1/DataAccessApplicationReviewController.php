@@ -91,7 +91,7 @@ class DataAccessApplicationReviewController extends Controller
     public function index(GetDataAccessApplicationReview $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view reviews on', (int)$jwtUser['id']);
@@ -185,7 +185,7 @@ class DataAccessApplicationReviewController extends Controller
     public function indexUser(GetUserDataAccessApplicationReview $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $application = DataAccessApplication::findOrFail($id);
@@ -302,7 +302,7 @@ class DataAccessApplicationReviewController extends Controller
     public function downloadFile(GetDataAccessApplicationReviewFile $request, int $teamId, int $id, int $reviewId, string $fileId): StreamedResponse | JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view reviews on', (int)$jwtUser['id']);
@@ -427,7 +427,7 @@ class DataAccessApplicationReviewController extends Controller
     public function downloadUserFile(GetUserDataAccessApplicationReviewFile $request, int $userId, int $id, int $reviewId, string $fileId): StreamedResponse | JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $application = DataAccessApplication::findOrFail($id);
@@ -541,7 +541,7 @@ class DataAccessApplicationReviewController extends Controller
     public function store(CreateDataAccessApplicationReview $request, int $teamId, int $id, int $questionId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
@@ -645,7 +645,7 @@ class DataAccessApplicationReviewController extends Controller
     public function storeGlobal(CreateGlobalDataAccessApplicationReview $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
@@ -777,7 +777,7 @@ class DataAccessApplicationReviewController extends Controller
     public function update(UpdateDataAccessApplicationReview $request, int $teamId, int $id, int $questionId, int $reviewId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
@@ -900,7 +900,7 @@ class DataAccessApplicationReviewController extends Controller
     public function updateGlobal(UpdateGlobalDataAccessApplicationReview $request, int $teamId, int $id, int $reviewId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'add reviews to', (int)$jwtUser['id']);
@@ -1035,7 +1035,7 @@ class DataAccessApplicationReviewController extends Controller
     public function userUpdate(UpdateUserDataAccessApplicationReview $request, int $userId, int $id, int $questionId, int $reviewId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $application = DataAccessApplication::findOrFail($id);
@@ -1158,7 +1158,7 @@ class DataAccessApplicationReviewController extends Controller
     public function userUpdateGlobal(UpdateGlobalUserDataAccessApplicationReview $request, int $userId, int $id, int $reviewId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $application = DataAccessApplication::findOrFail($id);
@@ -1286,7 +1286,7 @@ class DataAccessApplicationReviewController extends Controller
     public function destroy(DeleteDataAccessApplicationReview $request, int $teamId, int $id, int $questionId, int $reviewId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'delete reviews from', (int)$jwtUser['id']);
@@ -1394,7 +1394,7 @@ class DataAccessApplicationReviewController extends Controller
     public function destroyGlobal(DeleteGlobalDataAccessApplicationReview $request, int $teamId, int $id, int $reviewId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, 'delete reviews from', (int)$jwtUser['id']);
@@ -1512,7 +1512,7 @@ class DataAccessApplicationReviewController extends Controller
     public function destroyFile(DeleteDataAccessApplicationReviewFile $request, int $teamId, int $id, int $reviewId, string $fileId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $this->checkTeamAccess($teamId, $id, "delete files", (int)$jwtUser['id']);

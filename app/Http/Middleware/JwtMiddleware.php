@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Auth\TokenDenylist;
 use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\JwtController;
 use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -49,6 +51,7 @@ class JwtMiddleware
             $request->merge(['jwt' => $authorization]);
 
             $payloadJwt = $jwtController->decode();
+            $this->assertNotRevoked($payloadJwt);
             $userJwt = $payloadJwt['user'];
 
             $user = $this->validateUserId((int) $userJwt['id']);
@@ -57,11 +60,12 @@ class JwtMiddleware
                 throw new NotFoundException('User not found.');
             }
 
-            $request->merge(
-                [
-                    'jwt_user' => $this->buildJwtUserPayload($request, $user),
-                ],
+            $request->attributes->set(
+                'jwt_user',
+                $this->buildJwtUserPayload($request, $user),
             );
+
+            $this->authenticateAs($request, $user);
 
             return $next($request);
         }
@@ -85,10 +89,14 @@ class JwtMiddleware
                 throw new UnauthorizedException('The credentials provided are invalid');
             }
 
+            # Pass on the application's PK, not the public app_id.
+            # Every consumer of this looks the application back up by `id`,
+            # and app_id is a 40-character random string. When casting that to
+            # int yielded 0, so the lookup never matched.
             $request->merge(
                 [
                     'app' => [
-                        'id' => (int) $appId,
+                        'id' => $app->id,
                     ]
                 ]
             );
@@ -115,6 +123,7 @@ class JwtMiddleware
                 $request->merge(['jwt' => $jwtBearer]);
 
                 $payloadJwt = $jwtController->decode();
+                $this->assertNotRevoked($payloadJwt);
                 $userJwt = $payloadJwt['user'];
 
                 $user = $this->validateUserId((int) $userJwt['id']);
@@ -123,11 +132,13 @@ class JwtMiddleware
                     throw new NotFoundException('User not found.');
                 }
 
-                $request->merge(
-                    [
-                        'jwt_user' => $this->buildJwtUserPayload($request, $user),
-                    ],
+                $request->attributes->set(
+                    'jwt_user',
+                    $this->buildJwtUserPayload($request, $user),
                 );
+
+                $this->authenticateAs($request, $user);
+
                 return $next($request);
             }
         }
@@ -135,6 +146,37 @@ class JwtMiddleware
         throw new UnauthorizedException();
     }
 
+
+    /**
+     * A signature-valid token is not necessarily a live one: it may have
+     * been withdrawn by logout before reaching its expiry.
+     */
+    private function assertNotRevoked(array $claims): void
+    {
+        $jti = $claims['jti'] ?? null;
+
+        if ($jti !== null && app(TokenDenylist::class)->isRevoked((string) $jti)) {
+            throw new UnauthorizedException('Token has been revoked.');
+        }
+    }
+
+    /**
+     * Publish the authenticated user through Laravel's own plumbing, in
+     * addition to the jwt_user payload above.
+     *
+     * Both of these are request-scoped. We deliberately do NOT call
+     * Auth::shouldUse('jwt'): that writes auth.defaults.guard, which is
+     * process-global, and Octane's FlushAuthenticationState only calls
+     * forgetGuards() - clearing resolved guards but not the default
+     * driver. Flipping it here would leak into every later request on the
+     * worker, including web and Passport routes.
+     */
+    private function authenticateAs(Request $request, User $user): void
+    {
+        $request->setUserResolver(fn () => $user);
+
+        Auth::guard('jwt')->setUser($user);
+    }
 
     private function validateUserId(int $userId)
     {

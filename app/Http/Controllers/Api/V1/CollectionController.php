@@ -477,7 +477,7 @@ class CollectionController extends Controller
     public function store(CreateTeamCollection $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         // The permissions to add a collection to this team are checked in middleware
         $input['team_id'] = $teamId;
@@ -636,7 +636,7 @@ class CollectionController extends Controller
     public function update(UpdateTeamCollection $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         $input['team_id'] = $teamId;
 
@@ -808,7 +808,7 @@ class CollectionController extends Controller
     public function edit(EditTeamCollection $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         $input['team_id'] = $teamId;
 
@@ -1001,7 +1001,7 @@ class CollectionController extends Controller
     public function destroy(DeleteTeamCollection $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $collection = Collection::where(['id' => $id])->first();

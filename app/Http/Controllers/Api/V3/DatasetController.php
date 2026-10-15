@@ -45,7 +45,7 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
         $dataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 

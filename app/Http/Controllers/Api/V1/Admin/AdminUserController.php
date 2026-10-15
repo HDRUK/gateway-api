@@ -56,7 +56,7 @@ class AdminUserController extends Controller
     public function removeFromTeams(RemoveUserFromTeams $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $teamIds = $input['team_ids'] ?? [];
 
         try {
@@ -135,7 +135,7 @@ class AdminUserController extends Controller
     public function transferAndDelete(TransferAndDeleteUser $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $reassignments = $input['reassignments'] ?? [];
 
         try {

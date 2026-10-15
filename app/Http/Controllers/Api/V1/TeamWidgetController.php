@@ -61,7 +61,7 @@ class TeamWidgetController extends Controller
     public function index(Request $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
@@ -156,7 +156,7 @@ class TeamWidgetController extends Controller
     public function retrieve(Request $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
@@ -253,7 +253,7 @@ class TeamWidgetController extends Controller
     public function getWidgetData(Request $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
@@ -731,7 +731,7 @@ class TeamWidgetController extends Controller
     public function store(Request $request, int $teamId)
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
@@ -902,7 +902,7 @@ class TeamWidgetController extends Controller
     public function update(Request $request, int $teamId, int $id)
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
@@ -1012,7 +1012,7 @@ class TeamWidgetController extends Controller
     public function destroy(Request $request, int $teamId, int $id)
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 
@@ -1159,7 +1159,7 @@ class TeamWidgetController extends Controller
     public function analytics(Request $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $loggingContext = $this->getLoggingContext($request);
         $loggingContext['method_name'] = class_basename($this) . '@' . __FUNCTION__;
 

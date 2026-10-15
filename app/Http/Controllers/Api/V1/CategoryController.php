@@ -52,7 +52,7 @@ class CategoryController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $perPage = request('per_page', Config::get('constants.per_page'));
             $categories = Category::where('enabled', 1)->paginate($perPage);
@@ -122,7 +122,7 @@ class CategoryController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $category = Category::where(['id' => $id,])->get();
@@ -189,7 +189,7 @@ class CategoryController extends Controller
     public function store(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $category = Category::create([
@@ -277,7 +277,7 @@ class CategoryController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             Category::where('id', $id)->update([
@@ -364,7 +364,7 @@ class CategoryController extends Controller
     public function edit(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -446,7 +446,7 @@ class CategoryController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $category = Category::findOrFail($id);

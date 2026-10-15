@@ -476,7 +476,7 @@ class TeamDatasetController extends Controller
     {
         $input = $request->all();
         list($userId) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
@@ -610,7 +610,7 @@ class TeamDatasetController extends Controller
     {
         $input = $request->all();
         list($userId, $appTeamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initDataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
@@ -779,7 +779,7 @@ class TeamDatasetController extends Controller
     {
         $input = $request->all();
         list($userId) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initDataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
@@ -885,7 +885,7 @@ class TeamDatasetController extends Controller
     {
         $input = $request->all();
         list($userId) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initDataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 

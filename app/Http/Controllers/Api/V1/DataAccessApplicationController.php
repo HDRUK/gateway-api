@@ -74,7 +74,7 @@ class DataAccessApplicationController extends Controller
     public function store(CreateDataAccessApplication $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::create([
@@ -254,7 +254,7 @@ class DataAccessApplicationController extends Controller
     public function destroy(DeleteDataAccessApplication $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::findOrFail($id);
@@ -341,7 +341,7 @@ class DataAccessApplicationController extends Controller
     public function destroyFile(DeleteDataAccessApplicationFile $request, int $id, string $fileuuid): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $upload = Upload::where('uuid', $fileuuid)->first();

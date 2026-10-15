@@ -90,7 +90,7 @@ class ReviewController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $reviews = Review::with(['tool', 'user'])
@@ -198,7 +198,7 @@ class ReviewController extends Controller
     public function show(GetReview $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $reviews = Review::with(['tool', 'user'])
@@ -287,7 +287,7 @@ class ReviewController extends Controller
     public function store(CreateReview $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $review = Review::create([
@@ -397,7 +397,7 @@ class ReviewController extends Controller
     public function update(UpdateReview $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $review = Review::where('id', $id)->update([
@@ -507,7 +507,7 @@ class ReviewController extends Controller
     public function edit(EditReview $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -594,7 +594,7 @@ class ReviewController extends Controller
     public function destroy(DeleteReview $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $review = Review::findOrFail($id);

@@ -48,7 +48,7 @@ class TypeCategoryController extends Controller
 
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $typeCategories = TypeCategory::where('enabled', 1)
                 ->paginate(function ($total) use ($perPage) {
@@ -121,7 +121,7 @@ class TypeCategoryController extends Controller
     public function show(GetTypeCategory $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $typeCategory = TypeCategory::findOrFail($id);
@@ -189,7 +189,7 @@ class TypeCategoryController extends Controller
     public function store(CreateTypeCategory $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $typeCategory = TypeCategory::create([
@@ -279,7 +279,7 @@ class TypeCategoryController extends Controller
     public function update(UpdateTypeCategory $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             TypeCategory::where('id', $id)->update([
@@ -367,7 +367,7 @@ class TypeCategoryController extends Controller
     public function edit(EditTypeCategory $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -450,7 +450,7 @@ class TypeCategoryController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
 
             $typeCategory = TypeCategory::findOrFail($id);
             $typeCategory->enabled = false;

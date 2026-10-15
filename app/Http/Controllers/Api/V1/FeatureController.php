@@ -586,7 +586,7 @@ class FeatureController extends Controller
     private function jwtUser(Request $request): ?User
     {
         $input = $request->all();
-        $jwtUser = $input['jwt_user'] ?? null;
+        $jwtUser = $request->jwtUser() ?: null;
         $id = is_array($jwtUser) ? ($jwtUser['id'] ?? null) : null;
 
         return $id ? User::find($id) : null;

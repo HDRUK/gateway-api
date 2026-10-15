@@ -33,7 +33,7 @@ class AdminTeamUserController extends Controller
     public function destroy(DeleteTeamUser $request, int $teamId, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $results = $this->adminUserService->removeUserFromTeams($userId, [$teamId]);

@@ -428,7 +428,7 @@ class TeamToolController extends Controller
     {
         list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
@@ -621,7 +621,7 @@ class TeamToolController extends Controller
     {
         list($userId, $appTeamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
 
@@ -840,7 +840,7 @@ class TeamToolController extends Controller
     {
         list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         $currentUser = isset($jwtUser['id']) ? (int)$jwtUser['id'] : $userId;
 
@@ -1020,7 +1020,7 @@ class TeamToolController extends Controller
     {
         list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initTool = Tool::where([
             'id' => $id,
             'team_id' => $teamId,

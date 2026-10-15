@@ -71,7 +71,7 @@ class TeamDataAccessApplicationController extends Controller
     public function index(Request $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $teamApplications = TeamHasDataAccessApplication::where([
@@ -323,7 +323,7 @@ class TeamDataAccessApplicationController extends Controller
     public function show(GetDataAccessApplication $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
@@ -455,7 +455,7 @@ class TeamDataAccessApplicationController extends Controller
     public function showApplicationHeader(Request $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         try {
             $result = $this->getDARHeader($id, $teamId, null, $jwtUser);
 
@@ -533,7 +533,7 @@ class TeamDataAccessApplicationController extends Controller
     public function download(GetDataAccessApplication $request, int $teamId, int $id): BinaryFileResponse | JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
@@ -698,7 +698,7 @@ class TeamDataAccessApplicationController extends Controller
     public function showFiles(GetDataAccessApplication $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
@@ -804,7 +804,7 @@ class TeamDataAccessApplicationController extends Controller
     public function downloadFile(GetDataAccessApplicationFile $request, int $teamId, int $id, string $fileId): StreamedResponse | JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
@@ -906,7 +906,7 @@ class TeamDataAccessApplicationController extends Controller
     public function showAnswers(GetDataAccessApplication $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
@@ -1000,7 +1000,7 @@ class TeamDataAccessApplicationController extends Controller
     public function status(GetDataAccessApplication $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
@@ -1102,7 +1102,7 @@ class TeamDataAccessApplicationController extends Controller
     public function edit(EditDataAccessApplication $request, int $teamId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'edit', (int)$jwtUser['id']);
@@ -1250,7 +1250,7 @@ class TeamDataAccessApplicationController extends Controller
     public function destroyFile(DeleteDataAccessApplicationFile $request, int $teamId, int $id, int $fileId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->checkTeamAccess($teamId, $id, 'delete files from', (int)$jwtUser['id']);

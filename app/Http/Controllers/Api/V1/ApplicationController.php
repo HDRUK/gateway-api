@@ -97,7 +97,7 @@ class ApplicationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $teamId = $request->query('team_id', null);
         if (!is_null($teamId)) {
             $this->checkAccess($input, $teamId, null, 'team');
@@ -212,7 +212,7 @@ class ApplicationController extends Controller
     public function show(GetApplication $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $application = Application::with(['permissions','team','user','notifications.userNotification'])->where('id', $id)->first();
         $this->checkAccess($input, $application->team_id, null, 'team');
 
@@ -303,7 +303,7 @@ class ApplicationController extends Controller
     public function store(CreateApplication $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $this->checkAccess($input, $input['team_id'], null, 'team');
 
         try {
@@ -450,7 +450,7 @@ class ApplicationController extends Controller
     public function update(UpdateApplication $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initApplication = Application::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initApplication->team_id, null, 'team');
 
@@ -585,7 +585,7 @@ class ApplicationController extends Controller
     public function edit(EditApplication $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initApplication = Application::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initApplication->team_id, null, 'team');
 
@@ -679,7 +679,7 @@ class ApplicationController extends Controller
     public function destroy(DeleteApplication $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initApplication = Application::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initApplication->team_id, null, 'team');
 
@@ -780,7 +780,7 @@ class ApplicationController extends Controller
     public function generateClientIdById(GenerateApplication $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initApplication = Application::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, $initApplication->team_id, null, 'team');
 

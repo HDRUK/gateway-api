@@ -85,7 +85,7 @@ class UserRoleController extends Controller
     public function store(CreateUserRole $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $existsUserRole = UserHasRole::where('user_id', $userId)->count();
@@ -186,7 +186,7 @@ class UserRoleController extends Controller
     public function edit(UpdateUserRole $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $this->updateUserRoles($userId, $input['roles']);
@@ -282,7 +282,7 @@ class UserRoleController extends Controller
     public function destroy(DeleteUserRole $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             UserHasRole::where(['user_id' => $userId])->delete();

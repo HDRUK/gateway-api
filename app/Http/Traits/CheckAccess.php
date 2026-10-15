@@ -41,7 +41,11 @@ trait CheckAccess
             }
         }
 
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        // These trait methods are reached from ~100 call sites that pass
+        // $input rather than the Request, so the resolved identity is read
+        // from the current request via the helper. Octane rebinds the
+        // container's `request` per request, so this is request-scoped.
+        $jwtUser = request()->jwtUser();
         if (!count($jwtUser)) {
             throw new Exception('Insufficient information');
         }
@@ -51,7 +55,11 @@ trait CheckAccess
         }
 
         $jwtUserRolePerms = array_key_exists('role_perms', $jwtUser) ? (array_key_exists('teams', $jwtUser['role_perms']) ? $jwtUser['role_perms']['teams'] : []) : [];
-        $jwtMiddleware = array_key_exists('middleware', $input) ? $input['middleware'] : [];
+        // From the attributes bag, not $input - see AccessContextSourceTest.
+        // NOTE: this is empty on routes that carry no check.access
+        // middleware, and checkAccessTeam() then performs no
+        // role/permission check at all. See RouteAccessCoverageTest.
+        $jwtMiddleware = request()->accessContext();
         $jwtUserId = (int)$jwtUser['id'];
         $dbTeamId = (int)$dbTeamId;
         $dbUserId = (int)$dbUserId;
@@ -78,7 +86,11 @@ trait CheckAccess
         array $input = [],
         ?array $dbUserIds = null
     ) {
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        // These trait methods are reached from ~100 call sites that pass
+        // $input rather than the Request, so the resolved identity is read
+        // from the current request via the helper. Octane rebinds the
+        // container's `request` per request, so this is request-scoped.
+        $jwtUser = request()->jwtUser();
         if (!count($jwtUser)) {
             throw new Exception('Insufficient information');
         }

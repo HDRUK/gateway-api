@@ -71,7 +71,7 @@ class UserDataAccessApplicationController extends Controller
     public function index(Request $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             if ($jwtUser['id'] != $userId) {
@@ -172,7 +172,7 @@ class UserDataAccessApplicationController extends Controller
     public function count(Request $request, int $userId, string $field): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             if ($jwtUser['id'] != $userId) {
@@ -244,7 +244,7 @@ class UserDataAccessApplicationController extends Controller
     public function allCounts(Request $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             if ($jwtUser['id'] != $userId) {
@@ -329,7 +329,7 @@ class UserDataAccessApplicationController extends Controller
     public function show(GetUserDataAccessApplication $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::where('id', $id)->with(['questions'])->first();
@@ -430,7 +430,7 @@ class UserDataAccessApplicationController extends Controller
     public function showApplicationHeader(Request $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         try {
             $result = $this->getDARHeader($id, null, $userId, $jwtUser);
 
@@ -512,7 +512,7 @@ class UserDataAccessApplicationController extends Controller
     public function showAnswers(GetUserDataAccessApplication $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::where('id', $id)->first();
@@ -614,7 +614,7 @@ class UserDataAccessApplicationController extends Controller
     public function showFiles(GetUserDataAccessApplication $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::findOrFail($id);
@@ -714,7 +714,7 @@ class UserDataAccessApplicationController extends Controller
     public function downloadFile(GetUserDataAccessApplicationFile $request, int $userId, int $id, string $fileId): StreamedResponse | JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::findOrFail($id);
@@ -827,7 +827,7 @@ class UserDataAccessApplicationController extends Controller
     public function update(UpdateUserDataAccessApplication $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::where('id', $id)->first();
@@ -946,7 +946,7 @@ class UserDataAccessApplicationController extends Controller
     public function storeAnswers(CreateUserDataAccessApplicationAnswer $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::where('id', $id)->first();
@@ -1073,7 +1073,7 @@ class UserDataAccessApplicationController extends Controller
     public function edit(EditUserDataAccessApplication $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::where('id', $id)->first();
@@ -1207,7 +1207,7 @@ class UserDataAccessApplicationController extends Controller
     public function destroyFile(DeleteUserDataAccessApplicationFile $request, int $userId, int $id, string $fileId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::where('id', $id)->first();
@@ -1339,7 +1339,7 @@ class UserDataAccessApplicationController extends Controller
     public function destroy(DeleteUserDataAccessApplication $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $application = DataAccessApplication::findOrFail($id);
