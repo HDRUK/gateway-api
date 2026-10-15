@@ -241,6 +241,7 @@ class Publication extends BaseTypesenseModel
             'publicationType'  => $this->facetPublicationTypes(),
             'datasetTitles'    => $this->facetDatasetTitles(),
             'datasetLinkTypes' => $this->facetDatasetLinkTypes(),
+            'status'           => $this->status,
         ];
     }
 
@@ -267,6 +268,7 @@ class Publication extends BaseTypesenseModel
                 [ 'name' => 'publicationType',  'type' => 'string[]', 'facet' => true, 'optional' => true ],
                 [ 'name' => 'datasetTitles',    'type' => 'string[]', 'facet' => true, 'optional' => true ],
                 [ 'name' => 'datasetLinkTypes', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'status',           'type' => 'string', ],
             ],
         ];
     }

@@ -20,6 +20,11 @@ class FeatureSeeder extends Seeder
         'TypesenseSearch' => false,
         'SafePeopleRegistrySSOEnabled' => false,
         'LoginDisabled' => false,
+        'LoginGoogleEnabled' => true,
+        'LoginAzureEnabled' => true,
+        'LoginLinkedInEnabled' => true,
+        'LoginOpenAthensEnabled' => true,
+        'LoginRegistryEnabled' => true,
     ];
 
     public function run(): void

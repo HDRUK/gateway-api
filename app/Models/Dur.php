@@ -457,6 +457,7 @@ class Dur extends BaseTypesenseModel
             'collectionNames'          => $this->facetCollectionNames(),
             'dataProviderColl'         => $this->facetDataProviderColl(),
             'accessType'               => $this->access_type ?? '',
+            'status'                   => $this->status,
         ];
     }
 
@@ -485,6 +486,7 @@ class Dur extends BaseTypesenseModel
                 [ 'name' => 'collectionNames', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
                 [ 'name' => 'dataProviderColl', 'type' => 'string[]', 'facet' => true, 'optional' => true ],
                 [ 'name' => 'accessType', 'type' => 'string', 'facet' => true, 'optional' => true ],
+                [ 'name' => 'status', 'type' => 'string', ],
                 // latestApprovalDate is a date, not a categorical facet — deferred
                 // as a range filter alongside populationSize/publicationDate (Tier 3, not yet supported by buildFilterClauses()).
             ],

@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Models\UserHasRole;
+use App\Observers\UserHasRoleObserver;
+use App\Observers\UserObserver;
 use App\Http\Controllers\SSO\CustomAccessToken;
 use App\Models\DataAccessApplication;
 use App\Observers\DataAccessApplicationObserver;
@@ -72,6 +76,8 @@ class AppServiceProvider extends ServiceProvider
         Passport::refreshTokensExpireIn(now()->addDays(30));
 
         DataAccessApplication::observe(DataAccessApplicationObserver::class);
+        User::observe(UserObserver::class);
+        UserHasRole::observe(UserHasRoleObserver::class);
 
         Feature::resolveScopeUsing(fn ($driver) => null);
 

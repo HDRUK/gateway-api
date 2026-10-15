@@ -27,7 +27,7 @@ class WidgetAnalyticSeeder extends Seeder
         'clinical-trials.net',
     ];
 
-    private array $entityTypes = ['dataset', 'tool', 'collection', 'dur'];
+    private array $entityTypes = ['dataset', 'tool', 'collection', 'dur', 'publication'];
 
     public function run(): void
     {

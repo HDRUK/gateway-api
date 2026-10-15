@@ -231,7 +231,15 @@ class HDRUK implements SearchProvider
         // unaffected and use the main query's facet_counts as-is.
         $selfFilteredFields = array_values(array_intersect($facetFields, array_keys($clauses)));
 
-        $searches = [array_merge(['collection' => $collection, 'q' => $q], $searchParams)];
+        // Empty query has no relevance to rank on, instruct typesense to return results in random order.
+        [$sortField]   = explode(':', $params['sort'] ?? 'score:desc', 2);
+        $isRandomOrder = $query === '' && $sortField === 'score';
+        $searches      = [array_merge(
+            ['collection' => $collection, 'q' => $q],
+            $searchParams,
+            // Direction is meaningless for random but Typesense's sort_by parser requires one.
+            $isRandomOrder ? ['sort_by' => '_rand():asc'] : []
+        )];
         foreach ($selfFilteredFields as $field) {
             $exclusionFilterBy = implode(' && ', array_diff_key($clauses, [$field => null]));
 

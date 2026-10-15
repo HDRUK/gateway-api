@@ -411,6 +411,8 @@ class DatasetService
         string $createOrigin,
         bool $elasticIndexing,
         Team $team,
+        bool $validateInput = true,
+        bool $validateOutput = true,
     ): int {
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
@@ -433,8 +435,8 @@ class DatasetService
             $targetGwdmVersion,
             $inputSchema,
             $inputVersion,
-            ! $isDraft,
-            ! $isDraft,
+            ! $isDraft && $validateInput,
+            ! $isDraft && $validateOutput,
         );
 
         if (! $traserResponse['wasTranslated']) {
@@ -496,6 +498,8 @@ class DatasetService
         string $createOrigin,
         bool $elasticIndexing,
         Team $team,
+        bool $validateInput = true,
+        bool $validateOutput = true,
     ): int {
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
@@ -518,8 +522,8 @@ class DatasetService
             $targetGwdmVersion,
             $inputSchema,
             $inputVersion,
-            ! $isDraft,
-            ! $isDraft,
+            ! $isDraft && $validateInput,
+            ! $isDraft && $validateOutput,
         );
 
         if (! $traserResponse['wasTranslated']) {

@@ -28,10 +28,12 @@ class Role extends Model
         'name',
         'enabled',
         'full_name',
+        'is_privileged',
     ];
 
     protected $casts = [
         'enabled' => 'boolean',
+        'is_privileged' => 'boolean',
     ];
 
     /**

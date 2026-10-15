@@ -77,6 +77,7 @@ class TeamWidgetTest extends TestCase
                     'included_data_uses',
                     'included_scripts',
                     'included_collections',
+                    'included_publications',
                     'permitted_domains',
                 ],
             ]);

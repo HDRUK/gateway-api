@@ -16,6 +16,8 @@ use Carbon\Carbon;
 use Config;
 use Http;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use MetadataManagementController as MMC;
 
@@ -158,8 +160,13 @@ trait GatewayMetadataIngestionTrait
             );
 
             if (!$traserResponse['wasTranslated']) {
-                $findTraserResponse = MMC::findDataModel(json_encode($response->object()));
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $findTraserResponse, 0, $attempts);
+                $metadataJson = json_encode($response->object());
+                $failure = $this->translationFailureForHistory(
+                    $traserResponse,
+                    $data,
+                    fn (string $schema, string $version) => MMC::validationErrors($metadataJson, $schema, $version)
+                );
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, 0, $attempts);
 
                 $this->log('info', "encountered internal error while CREATING dataset {$pid}: cannot not be translated");
                 return false;
@@ -300,7 +307,13 @@ trait GatewayMetadataIngestionTrait
             } else {
                 $this->log('info', "dataset {$pid} FAILED traser");
 
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $traserResponse, 0, $attempts);
+                $metadataJson = json_encode($response->object());
+                $failure = $this->translationFailureForHistory(
+                    $traserResponse,
+                    $data,
+                    fn (string $schema, string $version) => MMC::validationErrors($metadataJson, $schema, $version)
+                );
+                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, 0, $attempts);
             }
 
             $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
@@ -380,6 +393,41 @@ trait GatewayMetadataIngestionTrait
         Log::{$level}($message);
     }
 
+    /**
+     * What to record when traser can't translate a dataset: only the errors that blocked it.
+     *
+     * @param array{traser_message?: mixed} $traserResponse MMC::translateDataModelType() result
+     * @param array<string, mixed> $catalogueItem the dataset's entry in the remote catalogue
+     * @param \Closure(string, string): array $validateAgainst traser's errors for one schema (name, version); only called when a schema is declared
+     */
+    public function translationFailureForHistory(array $traserResponse, array $catalogueItem, \Closure $validateAgainst): array|string
+    {
+        $traser = $traserResponse['traser_message'] ?? null;
+        $message = is_array($traser) ? ($traser['message'] ?? null) : $traser;
+        $details = is_array($traser) ? ($traser['details'] ?? null) : null;
+
+        // Output validation failed: the GWDM errors are what blocked it.
+        if (is_array($details) && array_is_list($details) && $details !== []) {
+            return [[
+                'name' => Config::get('metadata.GWDM.name'),
+                'version' => Config::get('metadata.GWDM.version'),
+                'errors' => $details,
+            ]];
+        }
+
+        // No input schema matched: report only the schema the provider declared.
+        if (is_array($details) && isset($details['available_schemas'])) {
+            $declared = declaredMetadataSchema($catalogueItem);
+            $errors = $declared ? $validateAgainst($declared['name'], $declared['version']) : [];
+
+            return $errors !== []
+                ? [['name' => $declared['name'], 'version' => $declared['version'], 'errors' => $errors]]
+                : "Doesn't match any supported metadata schema";
+        }
+
+        return is_string($message) && $message !== '' ? $message : 'An error occurred while processing this dataset.';
+    }
+
     public function sendToHistory(int $teamId, int $federationId, string $pid, string $jobUuid, array|string $message, int $status, int $attempts): void
     {
         FederationJobRun::create(
@@ -406,25 +454,92 @@ trait GatewayMetadataIngestionTrait
      * ProcessFederationSuccess can clear the federation's error state,
      * clear is_running, and send the success notification.
      */
-    public function finaliseFederationRun(int $federationId, string $jobUuid, bool $batchHadFailures = false): void
+    public function finaliseFederationRun(int $federationId, string $jobUuid, bool $batchHadFailures = false, bool $batchCancelled = false): void
     {
-        $hadFailures = $batchHadFailures
-            || FederationJobRun::latestPerPidForExecution($federationId, $jobUuid)
-                ->contains(fn ($run) => $run->status === 0);
+        if ($batchCancelled) {
+            $finalised = Federation::where('id', $federationId)
+                ->where('is_running', true)
+                ->update(['is_running' => false]);
 
-        if ($hadFailures) {
-            $this->log('warning', "federation {$federationId} completed with per-item failures - see federation_job_runs for details");
-
-            Federation::where('id', $federationId)->update([
-                'is_running' => false,
-                'error' => true,
-                'error_text' => "Run completed with errors for one or more datasets. Please check the run history for job: {$jobUuid}",
-            ]);
+            $this->log('info', $finalised === 0
+                ? "federation {$federationId} run {$jobUuid} already finalised - skipping"
+                : "federation {$federationId} run {$jobUuid} stopped after its batch was cancelled");
 
             return;
         }
 
+        $hadFailures = $batchHadFailures
+            || FederationJobRun::latestPerPidForExecution($federationId, $jobUuid)
+                ->contains(fn ($run) => $run->status === 0);
+
+        $finalised = Federation::where('id', $federationId)
+            ->where('is_running', true)
+            ->update($hadFailures
+                ? [
+                    'is_running' => false,
+                    'error' => true,
+                    'error_text' => "Run completed with errors for one or more datasets. Please check the run history for job: {$jobUuid}",
+                ]
+                : ['is_running' => false]);
+
+        if ($finalised === 0) {
+            $this->log('info', "federation {$federationId} run {$jobUuid} already finalised - skipping");
+            return;
+        }
+
+        if ($hadFailures) {
+            $this->log('warning', "federation {$federationId} completed with per-item failures - see federation_job_runs for details");
+            return;
+        }
+
         FederationProcessed::dispatch(Federation::find($federationId), $jobUuid);
+    }
+
+    public function reconcileStuckFederationRuns(): int
+    {
+        $reconciled = 0;
+
+        $running = Federation::where('is_running', true)
+            ->whereNotNull('current_batch_id')
+            ->get(['id', 'current_batch_id']);
+
+        foreach ($running as $federation) {
+            $batch = Bus::findBatch($federation->current_batch_id);
+
+            if (is_null($batch) || batchHasJobsLeftToRun($batch)) {
+                continue;
+            }
+
+            $jobUuid = federationJobUuidFromBatchName($federation->id, $batch->name);
+
+            if (is_null($jobUuid)) {
+                $this->log('warning', "federation {$federation->id} batch {$batch->id} has an unexpected name '{$batch->name}' - not reconciling");
+                continue;
+            }
+
+            $wasReconciled = DB::transaction(function () use ($federation, $batch, $jobUuid) {
+                $stillStuck = Federation::where('id', $federation->id)
+                    ->where('is_running', true)
+                    ->where('current_batch_id', $batch->id)
+                    ->lockForUpdate()
+                    ->exists();
+
+                if (!$stillStuck) {
+                    return false;
+                }
+
+                $this->log('warning', "federation {$federation->id} still running with no jobs left in batch {$batch->id} - finalising run {$jobUuid}");
+                $this->finaliseFederationRun($federation->id, $jobUuid, $batch->hasFailures(), $batch->cancelled());
+
+                return true;
+            });
+
+            if ($wasReconciled) {
+                $reconciled++;
+            }
+        }
+
+        return $reconciled;
     }
 
 }
