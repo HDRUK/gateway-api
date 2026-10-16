@@ -34,11 +34,11 @@ done
 # Strip a leading "v" (e.g. a git tag like v1.2.3) — PyPI/NuGet want plain semver.
 PACKAGE_VERSION="${VERSION#v}"
 
-echo "==> Regenerating OpenAPI spec (php artisan l5-swagger:generate)"
-php artisan l5-swagger:generate
+  echo "==> Regenerating OpenAPI spec (php artisan l5-swagger:generate)"
+  php artisan l5-swagger:generate
 
-echo "==> Stripping internal-only endpoints (x-internal) from the spec"
-php artisan app:strip-internal-endpoints
+  echo "==> Stripping internal-only endpoints (x-internal) from the spec"
+  php artisan app:strip-internal-endpoints
 
 SPEC="storage/api-docs/api-docs.json"
 OUT_DIR="sdks"
@@ -105,5 +105,11 @@ npx --yes @openapitools/openapi-generator-cli generate \
   --git-repo-id gateway-api-typescript-sdk \
   --additional-properties=npmName=@hdruk/gateway-api-sdk,npmVersion="$PACKAGE_VERSION" \
   $SKIP_VALIDATE
+
+echo "==> Adding MIT LICENSE to each SDK"
+LICENSE_YEAR="$(date +%Y)"
+for sdk_dir in python csharp java go rust typescript; do
+  sed "s/{{YEAR}}/$LICENSE_YEAR/" scripts/templates/LICENSE.mit > "$OUT_DIR/$sdk_dir/LICENSE"
+done
 
 echo "==> Done. SDKs written to $OUT_DIR/{python,csharp,java,go,rust,typescript}"
