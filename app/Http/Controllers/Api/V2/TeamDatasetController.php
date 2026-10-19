@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use App\Services\Gwdm\SourceSchema;
 use Config;
 use Auditor;
 use Exception;
@@ -674,6 +675,7 @@ class TeamDatasetController extends Controller
                 $currDataset,
                 $gwdmMetadata,
                 $submittedMetadata,
+                SourceSchema::declared($inputSchema, $inputVersion),
             );
 
             if ($request['status'] === Dataset::STATUS_ACTIVE) {

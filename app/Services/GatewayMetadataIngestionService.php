@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Gwdm\SourceSchema;
 use Carbon\Carbon;
 use App\Models\Team;
 use App\Models\Federation;
@@ -43,6 +44,8 @@ class GatewayMetadataIngestionService
             null,
             false,
             $handler,
+            // GMI pull ingestion is HDRUK-only.
+            sourceSchema: SourceSchema::gmi(),
         );
 
         if ($metadataResult['translated']) {

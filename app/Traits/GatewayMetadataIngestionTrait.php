@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Services\Gwdm\SourceSchema;
 use App\Events\FederationProcessed;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Dataset;
@@ -299,6 +300,7 @@ trait GatewayMetadataIngestionTrait
                     $ds,
                     $traserResponse['metadata'],
                     $data,
+                    SourceSchema::gmi(),
                 );
 
                 $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'UPDATED', 1, $attempts);

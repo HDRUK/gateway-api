@@ -12,6 +12,7 @@ use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Models\Team;
 use App\Services\Gwdm\GwdmHandlerFactory;
+use App\Services\Gwdm\SourceSchema;
 use Config;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
@@ -52,10 +53,7 @@ class DatasetService
             // functions, so we load only the filtered version rows and deduplicate.
             $statusSubquery = Dataset::query()
                 ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
-                ->when(
-                    $partnerContext && ($partnerContext !== 'HDRUK' || ! config('partners.allow_cross_context_read', true)),
-                    fn ($q) => $q->where('partner_context', $partnerContext)
-                )
+                ->forPartnerContext($partnerContext)
                 ->select('id');
 
             $matchingIds = DatasetVersion::whereIn('dataset_id', $statusSubquery)
@@ -70,10 +68,7 @@ class DatasetService
         } else {
             $query = Dataset::query()
                 ->when($filterStatus, fn ($q) => $q->where('status', $filterStatus))
-                ->when(
-                    $partnerContext && ($partnerContext !== 'HDRUK' || ! config('partners.allow_cross_context_read', true)),
-                    fn ($q) => $q->where('partner_context', $partnerContext)
-                );
+                ->forPartnerContext($partnerContext);
         }
 
         if ($withMetadata) {
@@ -87,10 +82,7 @@ class DatasetService
     {
         return Dataset::with('team')
             ->where('status', Dataset::STATUS_ACTIVE)
-            ->when(
-                $partnerContext && $partnerContext !== 'HDRUK',
-                fn ($q) => $q->where('partner_context', $partnerContext)
-            )
+            ->forPartnerContext($partnerContext)
             ->find($id);
     }
 
@@ -155,6 +147,15 @@ class DatasetService
         $dataset->named_entities = $dataset->allNamedEntities ?? [];
         $dataset->collections = $activeCollections;
 
+        // GWDM is the storage model, not a translation target: asking for it
+        // explicitly means "return it natively", and needs no version. This is
+        // how a caller opts out of its partner's default output schema.
+        if ($outputSchemaModel !== null
+            && strcasecmp($outputSchemaModel, (string) Config::get('metadata.GWDM.name')) === 0) {
+            $outputSchemaModel = null;
+            $outputSchemaVersion = null;
+        }
+
         if ($outputSchemaModel && ! $outputSchemaVersion) {
             throw new \InvalidArgumentException('schema_model provided without schema_version');
         }
@@ -164,14 +165,11 @@ class DatasetService
 
         $translateRequested = $outputSchemaModel && $outputSchemaVersion;
 
-        // Reduced relation set is sufficient for the TRASER path (metadata is replaced
-        // entirely by the translation result). No-translation path needs the full graph.
-
-        // Loki - For Calum. Tweaked per GAT-9374
-        $loadRelation = $translateRequested ? 'reducedLinkedDatasetVersions' : 'linkedDatasetVersions';
-
+        // Always the reduced relation set (GAT-9374), whether or not TRASER translates,
+        // so the payload shape is identical for native GWDM and every output schema.
+        // Full linkage detail is served separately via $dataset->linkages below.
         $withLinks = DatasetVersion::where('id', $latestVersionId)
-            ->with([$loadRelation])
+            ->with(['reducedLinkedDatasetVersions'])
             ->first();
 
         if ($withLinks) {
@@ -205,12 +203,20 @@ class DatasetService
                 }
 
                 $withLinks->metadata = ['metadata' => $translated['metadata']];
+                $dataset->output_schema_model = $outputSchemaModel;
+                $dataset->output_schema_version = $outputSchemaVersion;
             } else {
                 $withLinks->metadata = $envelope;
+                $dataset->output_schema_model = Config::get('metadata.GWDM.name');
+                $dataset->output_schema_version = $withLinks->gwdm_version;
             }
 
             $dataset->setRelation('versions', collect([$withLinks]));
         }
+
+        $dataset->source_schema = $withLinks
+            ? SourceSchema::fromColumns($withLinks->only(['source_schema_model', 'source_schema_version']))->toArray()
+            : null;
 
         if ($latestVersionId !== null) {
             $latestGwdmVersion = $allVersions->firstWhere('id', $latestVersionId)?->gwdm_version
@@ -325,6 +331,7 @@ class DatasetService
 
         $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
         $input['metadata']['metadata'] = $traserResponse['metadata'];
+        $sourceSchema = SourceSchema::declared($inputSchema, $inputVersion, $input['metadata']);
 
         $pid = $input['pid'] ?? (string) Str::uuid();
         $isCohortDiscovery = $input['is_cohort_discovery'] ?? false;
@@ -364,8 +371,10 @@ class DatasetService
             $targetGwdmVersion,
             $handler,
             $gwdm,
+            $sourceSchema,
         ) {
             $version = MMC::createDatasetVersion([
+                ...$sourceSchema->toColumns(),
                 'dataset_id' => $dataset->id,
                 'metadata' => json_encode($envelope),
                 'version' => 1,
@@ -469,6 +478,7 @@ class DatasetService
             $gwdm,
             $submittedMetadata,
             $versionNumber,
+            SourceSchema::declared($inputSchema, $inputVersion),
         );
 
         // Dispatch LinkageExtraction + TermExtraction. These are complementary to
@@ -555,6 +565,7 @@ class DatasetService
             $gwdm,
             $submittedMetadata,
             $versionNumber,
+            SourceSchema::declared($inputSchema, $inputVersion),
         );
 
         $this->dispatchJobs($dataset, $datasetVersionId, $submittedMetadata, $elasticIndexing, $input['status']);
@@ -605,6 +616,7 @@ class DatasetService
         array $newMetadata,
         array $previousMetadata,
         int $versionNumber,
+        SourceSchema $sourceSchema,
     ): int {
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
         $handler = $this->handlerFactory->resolve($targetGwdmVersion);
@@ -619,11 +631,12 @@ class DatasetService
 
         // Overwrite the version row and rewrite its structured tables atomically
         // (see persistMetadataVersion for the same rationale).
-        DB::transaction(function () use ($dv, $envelope, $title, $shortTitle, $targetGwdmVersion, $handler, $dataset, $newMetadata) {
+        DB::transaction(function () use ($dv, $envelope, $title, $shortTitle, $targetGwdmVersion, $handler, $dataset, $newMetadata, $sourceSchema) {
             $dv->metadata = json_encode($envelope);
             $dv->title = $title;
             $dv->short_title = $shortTitle;
             $dv->gwdm_version = $targetGwdmVersion;
+            $dv->fill($sourceSchema->toColumns());
             $dv->save();
 
             $handler->afterStore($dataset, $dv, $newMetadata);
@@ -804,6 +817,7 @@ class DatasetService
         array $newGwdmMetadata,
         array $previousMetadata,
         int $versionNumber,
+        SourceSchema $sourceSchema,
     ): int {
         $newVersionNumber = $versionNumber + 1;
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
@@ -839,6 +853,7 @@ class DatasetService
             $title,
             $shortTitle,
             $targetGwdmVersion,
+            $sourceSchema,
         ) {
             if ($isSnapshot) {
                 // For every SNAPSHOT_INTERVAL version we write a full snapshot so that
@@ -847,6 +862,7 @@ class DatasetService
                 $envelope = $handler->buildEnvelope($newGwdmMetadata, $previousMetadata);
 
                 $dv = DatasetVersion::create([
+                    ...$sourceSchema->toColumns(),
                     'dataset_id' => $dataset->id,
                     'metadata' => json_encode($envelope),
                     // Snapshot version, thus full rebuild of metadata and no patch.
@@ -863,6 +879,7 @@ class DatasetService
                 $patch = $this->computePatch($currentGwdm, $newGwdmMetadata);
 
                 $dv = DatasetVersion::create([
+                    ...$sourceSchema->toColumns(),
                     'dataset_id' => $dataset->id,
                     // Patch delta, therefore no metadata stored.
                     'metadata' => [],

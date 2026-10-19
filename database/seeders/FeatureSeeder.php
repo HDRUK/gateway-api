@@ -18,6 +18,9 @@ class FeatureSeeder extends Seeder
         'V2_SearchAggregation' => false,
         'V3_CustodianDashboard' => false,
         'TypesenseSearch' => false,
+        // Renders /dataset/{id} from native GWDM (gateway-web). Off = the
+        // existing HDRUK-translated page.
+        'GwdmDatasetPage' => false,
         'SafePeopleRegistrySSOEnabled' => false,
         'LoginDisabled' => false,
         'LoginGoogleEnabled' => true,

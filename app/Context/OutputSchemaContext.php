@@ -14,6 +14,13 @@ namespace App\Context;
  *   3. Partner default from config/partners.php           — derived from PartnerContext
  *   4. null (no translation — return stored GWDM)
  *
+ * Every partner has a default (config/partners.php), so step 3 means reads are
+ * translated unless a caller opts out. A caller asks for the stored GWDM by
+ * requesting the GWDM model explicitly — ?schema_model=GWDM or
+ * x-schema-model: GWDM — which DatasetService@prepareForShow reads as
+ * "no translation". Removing step 3 instead would silently change the payload
+ * for every partner that relies on its default.
+ *
  * Not needed in queued jobs (output translation is a synchronous read concern).
  * No middleware or container binding required — instantiated via auto-resolution.
  */

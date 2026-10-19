@@ -85,6 +85,8 @@ class DatasetVersion extends BaseTypesenseModel
         // 2026_06_17_000001). Replaces reading from metadata->gwdmVersion, which
         // is absent on delta rows and unindexed on all rows.
         'gwdm_version',
+        'source_schema_model',
+        'source_schema_version',
     ];
 
     /**

@@ -801,6 +801,26 @@ class HDRUKTest extends TestCase
         });
     }
 
+    public function test_search_via_typesense_filters_by_listed_partner_contexts(): void
+    {
+        Config::set('partners.allow_cross_context_read', 'HDRUK,CRUK');
+
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'partnerContext:=[`HDRUK`,`CRUK`]');
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+    }
+
+    public function test_search_via_typesense_omits_partner_filter_for_unrestricted_hdruk(): void
+    {
+        Config::set('partners.allow_cross_context_read', true);
+
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+    }
+
     private function getSearchAnalyticsData(LogSearchAnalytics $job): SearchAnalyticsData
     {
         $property = (new \ReflectionClass($job))->getProperty('data');

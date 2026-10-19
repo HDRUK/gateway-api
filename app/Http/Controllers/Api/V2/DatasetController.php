@@ -189,6 +189,9 @@ class DatasetController extends Controller
 
             $dataset = $this->datasetService->prepareForShow(
                 $dataset,
+                // Partner default applies when nothing is requested, so existing
+                // consumers keep the schema they get today. Callers that want the
+                // stored GWDM ask for it: ?schema_model=GWDM.
                 $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
                 $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
             );

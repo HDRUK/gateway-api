@@ -1,7 +1,10 @@
 version: '3.8'
 services:
   typesense:
-    image: typesense/typesense:26.0
+    # Keep in step with the deployed VMs (gateway-infrastructure
+    # */scripts/*_typesense_script.sh). Search relies on _rand() sorting,
+    # which 26.0 does not support.
+    image: typesense/typesense:30.2
     ports:
       - "8108:8108"
     volumes:

@@ -13,6 +13,7 @@ use App\Jobs\LinkageExtraction;
 use Illuminate\Support\Str;
 use MetadataManagementController as MMC;
 use App\Services\Gwdm\GwdmMetadataHandler;
+use App\Services\Gwdm\SourceSchema;
 
 trait MetadataOnboard
 {
@@ -29,7 +30,14 @@ trait MetadataOnboard
         bool $elasticIndexing,
         GwdmMetadataHandler $handler,
         string $partnerContext = 'HDRUK',
+        ?SourceSchema $sourceSchema = null,
     ): array {
+        // The schema the submission is in. Defaults to what was declared - the
+        // input schema arguments, else the schemaModel/schemaVersion the
+        // onboarding form puts in the envelope. TRASER is still given only the
+        // explicit arguments, so its auto-detection is unchanged.
+        $sourceSchema ??= SourceSchema::declared($inputSchema, $inputVersion, $input['metadata']);
+
         $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ?
             $input['is_cohort_discovery'] : false;
 
@@ -138,6 +146,7 @@ trait MetadataOnboard
             [$title, $shortTitle] = $handler->extractTitleFields($input['metadata']['metadata']);
 
             $version = MMC::createDatasetVersion([
+                ...$sourceSchema->toColumns(),
                 'dataset_id' => $dataset->id,
                 'metadata' => json_encode($input['metadata']),
                 'version' => 1,

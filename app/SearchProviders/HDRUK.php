@@ -644,9 +644,9 @@ class HDRUK implements SearchProvider
      * Returns a Typesense filter clause that scopes search results to the active
      * partner, mirroring Dataset::scopeForPartnerContext().
      *
-     * HDRUK with allow_cross_context_read=true sees all partners (no clause).
-     * Any other partner — or HDRUK with cross-context read disabled — is
-     * restricted to its own datasets.
+     * The readable contexts come from PartnerContext::readableContextsFor():
+     * unrestricted HDRUK gets no clause; otherwise results are restricted to
+     * the partner's own context, or to HDRUK's allow-list.
      *
      * Only applies to the 'datasets' type; other entity types don't carry a
      * partner_context column and shouldn't be filtered.
@@ -658,14 +658,17 @@ class HDRUK implements SearchProvider
         }
 
         $partner = app(PartnerContext::class)->getPartner();
+        $readable = $partner ? PartnerContext::readableContextsFor($partner) : null;
 
-        $shouldFilter = $partner && ($partner !== 'HDRUK' || !config('partners.allow_cross_context_read', false));
-
-        if (!$shouldFilter) {
+        if ($readable === null) {
             return null;
         }
 
-        return 'partnerContext:=`' . str_replace('`', '', $partner) . '`';
+        $quoted = array_map(fn ($c) => '`' . str_replace('`', '', $c) . '`', $readable);
+
+        return count($quoted) === 1
+            ? 'partnerContext:=' . $quoted[0]
+            : 'partnerContext:=[' . implode(',', $quoted) . ']';
     }
 
     /**
