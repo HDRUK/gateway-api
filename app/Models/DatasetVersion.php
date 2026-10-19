@@ -296,12 +296,14 @@ class DatasetVersion extends BaseTypesenseModel
 
         // The dataset() relationship already scopes to status=ACTIVE,
         // so null here means the parent is deleted, draft, or archived.
+        // A null team means the owning team is soft-deleted.
         if ($this->relationLoaded('dataset')) {
-            return $this->dataset !== null;
+            return $this->dataset?->team !== null;
         }
 
         return Dataset::where('id', $this->dataset_id)
             ->where('status', 'ACTIVE')
+            ->whereHas('team')
             ->exists();
     }
 
@@ -326,7 +328,7 @@ class DatasetVersion extends BaseTypesenseModel
                 where dv2.dataset_id = dataset_versions.dataset_id
                 and dv2.deleted_at is null
             )')
-            ->whereHas('dataset');
+            ->whereHas('dataset.team');
     }
 
     public function toSearchableArray(): array
