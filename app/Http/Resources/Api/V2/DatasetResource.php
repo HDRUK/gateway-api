@@ -34,6 +34,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property mixed $created
  * @property mixed $updated
  * @property boolean $is_cohort_discovery
+ * @property string $partner_context
+ * @property string|null $output_schema_model
+ * @property string|null $output_schema_version
+ * @property array|null $source_schema
  * @property Team|null $team
  * @property int|null $durs_count
  * @property int|null $publications_count
@@ -59,6 +63,18 @@ class DatasetResource extends JsonResource
             'created'             => $this->created,
             'updated'             => $this->updated,
             'is_cohort_discovery' => $this->is_cohort_discovery,
+            'partner_context'     => $this->partner_context,
+
+            // Format of versions[].metadata — native GWDM unless a translation was
+            // explicitly requested. Pre-computed by DatasetService@prepareForShow.
+            'schema' => [
+                'model'   => $this->output_schema_model,
+                'version' => $this->output_schema_version,
+            ],
+
+            // The schema this version was submitted in (e.g. HDRUK 4.1.0), or
+            // null when it was not recorded. Always present.
+            'source_schema' => $this->source_schema,
 
             'team' => $this->when(
                 isset($this->team),

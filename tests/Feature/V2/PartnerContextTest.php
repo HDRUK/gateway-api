@@ -276,6 +276,183 @@ class PartnerContextTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Cross-context read — comma-delimited allow-list
+    // -------------------------------------------------------------------------
+
+    public function test_hdruk_context_index_returns_only_listed_contexts(): void
+    {
+        config(['partners.allow_cross_context_read' => 'HDRUK,CRUK']);
+
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $hdrukId = $this->createDataset($teamId, $userId, 'HDRUK');
+        $crukId  = $this->createDataset($teamId, $userId, 'CRUK');
+        $prukId  = $this->createDataset($teamId, $userId, 'PRUK');
+
+        $response = $this->json('GET', self::DATASETS_URL . '?per_page=1000', [], $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $ids = array_column($response->json('data'), 'id');
+        $this->assertContains($hdrukId, $ids);
+        $this->assertContains($crukId, $ids);
+        $this->assertNotContains($prukId, $ids);
+
+        config(['partners.allow_cross_context_read' => true]);
+    }
+
+    public function test_hdruk_context_receives_404_for_dataset_outside_listed_contexts(): void
+    {
+        config(['partners.allow_cross_context_read' => 'HDRUK,CRUK']);
+
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $crukId = $this->createDataset($teamId, $userId, 'CRUK');
+        $prukId = $this->createDataset($teamId, $userId, 'PRUK');
+
+        $this->json('GET', self::DATASETS_URL . '/' . $crukId, [], $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->json('GET', self::DATASETS_URL . '/' . $prukId, [], $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+
+        config(['partners.allow_cross_context_read' => true]);
+    }
+
+    public function test_hdruk_context_receives_404_for_other_partner_dataset_when_cross_context_read_disabled(): void
+    {
+        config(['partners.allow_cross_context_read' => false]);
+
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $crukId = $this->createDataset($teamId, $userId, 'CRUK');
+
+        $this->json('GET', self::DATASETS_URL . '/' . $crukId, [], $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+
+        config(['partners.allow_cross_context_read' => true]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Resource — partner_context + schema block
+    // -------------------------------------------------------------------------
+
+    public function test_show_reports_partner_context_and_native_gwdm_schema(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $crukId = $this->createDataset($teamId, $userId, 'CRUK');
+        $storedGwdmVersion = DatasetVersion::where('dataset_id', $crukId)->value('gwdm_version');
+
+        $response = $this->json(
+            'GET',
+            self::DATASETS_URL . '/' . $crukId,
+            [],
+            array_merge($this->header, ['x-partner-context' => 'CRUK']),
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.partner_context', 'CRUK');
+        $response->assertJsonPath('data.schema', [
+            'model'   => Config::get('metadata.GWDM.name'),
+            'version' => $storedGwdmVersion,
+        ]);
+    }
+
+    public function test_show_returns_native_gwdm_without_applying_partner_default_schema(): void
+    {
+        // CRUK has a configured default output schema (CRUK 1.1.0). It must no
+        // longer be applied implicitly — the stored GWDM envelope is returned.
+        config(['partners.schema.CRUK' => ['model' => 'CRUK', 'version' => '1.1.0']]);
+
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $crukId = $this->createDataset($teamId, $userId, 'CRUK');
+
+        $response = $this->json(
+            'GET',
+            self::DATASETS_URL . '/' . $crukId,
+            [],
+            array_merge($this->header, ['x-partner-context' => 'CRUK']),
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.schema.model', Config::get('metadata.GWDM.name'));
+        // The untranslated envelope carries gwdmVersion; a TRASER result does not.
+        $this->assertNotNull($response->json('data.versions.0.metadata.gwdmVersion'));
+    }
+
+    public function test_show_reports_output_schema_when_translation_explicitly_requested(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, 'HDRUK');
+
+        $response = $this->json(
+            'GET',
+            self::DATASETS_URL . '/' . $datasetId . '?schema_model=HDRUK&schema_version=4.0.0',
+            [],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.schema', ['model' => 'HDRUK', 'version' => '4.0.0']);
+    }
+
+    public function test_show_reports_output_schema_when_translation_requested_via_headers(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, 'HDRUK');
+
+        $response = $this->json(
+            'GET',
+            self::DATASETS_URL . '/' . $datasetId,
+            [],
+            array_merge($this->header, ['x-schema-model' => 'HDRUK', 'x-schema-version' => '4.0.0']),
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.schema', ['model' => 'HDRUK', 'version' => '4.0.0']);
+    }
+
+    public function test_show_payload_shape_is_identical_for_native_and_translated_output(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, 'HDRUK');
+        $url = self::DATASETS_URL . '/' . $datasetId;
+
+        $native = $this->json('GET', $url, [], $this->header);
+        $translated = $this->json('GET', $url . '?schema_model=HDRUK&schema_version=4.0.0', [], $this->header);
+
+        $native->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $translated->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertSame(array_keys($native->json('data')), array_keys($translated->json('data')));
+        $this->assertSame(
+            array_keys($native->json('data.versions.0')),
+            array_keys($translated->json('data.versions.0')),
+        );
+        $this->assertArrayHasKey('reduced_linked_dataset_versions', $native->json('data.versions.0'));
+        $this->assertArrayNotHasKey('linked_dataset_versions', $native->json('data.versions.0'));
+    }
+
+    public function test_index_reports_partner_context_and_gwdm_schema(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $crukId = $this->createDataset($teamId, $userId, 'CRUK');
+        $storedGwdmVersion = DatasetVersion::where('dataset_id', $crukId)->value('gwdm_version');
+
+        $response = $this->json(
+            'GET',
+            self::DATASETS_URL . '?per_page=1000',
+            [],
+            array_merge($this->header, ['x-partner-context' => 'CRUK']),
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $row = collect($response->json('data'))->firstWhere('id', $crukId);
+        $this->assertNotNull($row);
+        $this->assertSame('CRUK', $row['partner_context']);
+        $this->assertSame(
+            ['model' => Config::get('metadata.GWDM.name'), 'version' => $storedGwdmVersion],
+            $row['schema'],
+        );
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\Gwdm\SourceSchema;
 use App\Exports\DatasetStructuralMetadataExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dataset\CreateDataset;
@@ -882,6 +883,7 @@ class DatasetController extends Controller
                 $currDataset,
                 $gwdmMetadata,
                 $submittedMetadata,
+                SourceSchema::declared($inputSchema, $inputVersion),
             );
 
             // Dispatch term extraction to a subprocess if the dataset moves from draft to active

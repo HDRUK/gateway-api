@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use DB;
+use App\Context\PartnerContext;
 use App\Models\Traits\EntityCounter;
 use App\Observers\DatasetObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -18,6 +19,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @property array $linkages
+ * @property string|null $output_schema_model    set by DatasetService@prepareForShow
+ * @property string|null $output_schema_version  set by DatasetService@prepareForShow
+ * @property array|null $source_schema           set by DatasetService@prepareForShow
  *
  * @OA\Schema(
  *   schema="Dataset",
@@ -330,13 +334,16 @@ class Dataset extends Model
 
     /**
      * Restrict to datasets visible in the given partner context.
-     * HDRUK with cross-context read enabled sees all partners; other contexts are isolated.
+     * See PartnerContext::readableContextsFor() for the HDRUK allow-list rules;
+     * other contexts are isolated.
      */
     public function scopeForPartnerContext(Builder $query, ?string $partnerContext): Builder
     {
+        $readable = $partnerContext ? PartnerContext::readableContextsFor($partnerContext) : null;
+
         return $query->when(
-            $partnerContext && ($partnerContext !== 'HDRUK' || !config('partners.allow_cross_context_read', true)),
-            fn ($q) => $q->where('partner_context', $partnerContext)
+            $readable !== null,
+            fn ($q) => $q->whereIn('partner_context', $readable)
         );
     }
 

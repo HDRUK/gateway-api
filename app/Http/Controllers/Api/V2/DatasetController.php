@@ -189,8 +189,9 @@ class DatasetController extends Controller
 
             $dataset = $this->datasetService->prepareForShow(
                 $dataset,
-                $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
-                $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
+                // GWDM is returned natively unless a translation is explicitly requested.
+                $request->query('schema_model') ?? $this->outputSchemaContext->requestedSchemaModel(),
+                $request->query('schema_version') ?? $this->outputSchemaContext->requestedSchemaVersion(),
             );
 
             Auditor::log([

@@ -35,6 +35,56 @@ class PartnerContext
     }
 
     /**
+     * The partner contexts the active partner may read and render.
+     *
+     * @return string[]|null  null means unrestricted (no partner_context filter)
+     */
+    public function readableContexts(): ?array
+    {
+        return self::readableContextsFor($this->getPartner());
+    }
+
+    /**
+     * The partner contexts the given partner may read and render.
+     *
+     * Non-HDRUK partners are always isolated to their own context. HDRUK (the
+     * gateway operator) is governed by partners.allow_cross_context_read:
+     *   true  / 'true'    → unrestricted (null)
+     *   false / 'false'   → ['HDRUK']
+     *   'HDRUK,CRUK,...'  → the listed contexts, HDRUK always included
+     *
+     * Static and config-driven so callers holding a mocked PartnerContext
+     * (e.g. search providers) can resolve it from the partner string alone.
+     *
+     * @return string[]|null
+     */
+    public static function readableContextsFor(string $partner): ?array
+    {
+        if ($partner !== 'HDRUK') {
+            return [$partner];
+        }
+
+        $setting = config('partners.allow_cross_context_read', true);
+
+        if (is_string($setting) && in_array(strtolower(trim($setting)), ['true', 'false', ''], true)) {
+            $setting = strtolower(trim($setting)) === 'true';
+        }
+
+        if ($setting === true) {
+            return null;
+        }
+
+        if ($setting === false || $setting === null) {
+            return ['HDRUK'];
+        }
+
+        $listed = is_array($setting) ? $setting : explode(',', (string) $setting);
+        $listed = array_filter(array_map(fn ($c) => trim((string) $c), $listed), fn ($c) => $c !== '');
+
+        return array_values(array_unique(array_merge(['HDRUK'], $listed)));
+    }
+
+    /**
      * Resolve the Resource class to use for a given model class.
      *
      * Falls back to the HDRUK default map if the partner has no specific

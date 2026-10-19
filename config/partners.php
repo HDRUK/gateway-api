@@ -52,9 +52,15 @@ return [
     |--------------------------------------------------------------------------
     | Cross-context read (HDRUK portal safeguard)
     |--------------------------------------------------------------------------
-    | When true (default), the HDRUK operator context sees datasets from ALL
-    | partners. Set to false to restrict HDRUK to its own datasets — useful
-    | while partner schemas are in development and risk breaking the portal.
+    | Controls which partner contexts the HDRUK operator context may read and
+    | render. Other partners are always isolated to their own context.
+    |
+    |   true            — (default) HDRUK sees datasets from ALL partners
+    |   false           — HDRUK sees only its own datasets
+    |   "HDRUK,CRUK"    — HDRUK sees only the listed contexts (HDRUK is
+    |                     always included)
+    |
+    | Resolved by PartnerContext::readableContextsFor().
     */
     'allow_cross_context_read' => env('HDRUK_CROSS_CONTEXT_READ', true),
 
