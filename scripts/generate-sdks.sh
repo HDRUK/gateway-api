@@ -34,11 +34,11 @@ done
 # Strip a leading "v" (e.g. a git tag like v1.2.3) — PyPI/NuGet want plain semver.
 PACKAGE_VERSION="${VERSION#v}"
 
-  echo "==> Regenerating OpenAPI spec (php artisan l5-swagger:generate)"
-  php artisan l5-swagger:generate
+echo "==> Regenerating OpenAPI spec (php artisan l5-swagger:generate)"
+php artisan l5-swagger:generate
 
-  echo "==> Stripping internal-only endpoints (x-internal) from the spec"
-  php artisan app:strip-internal-endpoints
+echo "==> Stripping internal-only endpoints (x-internal) from the spec"
+php artisan app:strip-internal-endpoints
 
 SPEC="storage/api-docs/api-docs.json"
 OUT_DIR="sdks"
