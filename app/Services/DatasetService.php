@@ -147,6 +147,15 @@ class DatasetService
         $dataset->named_entities = $dataset->allNamedEntities ?? [];
         $dataset->collections = $activeCollections;
 
+        // GWDM is the storage model, not a translation target: asking for it
+        // explicitly means "return it natively", and needs no version. This is
+        // how a caller opts out of its partner's default output schema.
+        if ($outputSchemaModel !== null
+            && strcasecmp($outputSchemaModel, (string) Config::get('metadata.GWDM.name')) === 0) {
+            $outputSchemaModel = null;
+            $outputSchemaVersion = null;
+        }
+
         if ($outputSchemaModel && ! $outputSchemaVersion) {
             throw new \InvalidArgumentException('schema_model provided without schema_version');
         }

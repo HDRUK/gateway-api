@@ -189,9 +189,11 @@ class DatasetController extends Controller
 
             $dataset = $this->datasetService->prepareForShow(
                 $dataset,
-                // GWDM is returned natively unless a translation is explicitly requested.
-                $request->query('schema_model') ?? $this->outputSchemaContext->requestedSchemaModel(),
-                $request->query('schema_version') ?? $this->outputSchemaContext->requestedSchemaVersion(),
+                // Partner default applies when nothing is requested, so existing
+                // consumers keep the schema they get today. Callers that want the
+                // stored GWDM ask for it: ?schema_model=GWDM.
+                $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
+                $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
             );
 
             Auditor::log([

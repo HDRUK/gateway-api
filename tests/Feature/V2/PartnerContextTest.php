@@ -333,11 +333,10 @@ class PartnerContextTest extends TestCase
     // Resource — partner_context + schema block
     // -------------------------------------------------------------------------
 
-    public function test_show_reports_partner_context_and_native_gwdm_schema(): void
+    public function test_show_reports_partner_context_alongside_the_output_schema(): void
     {
         [$teamId, $userId] = $this->createTeamAndUser();
         $crukId = $this->createDataset($teamId, $userId, 'CRUK');
-        $storedGwdmVersion = DatasetVersion::where('dataset_id', $crukId)->value('gwdm_version');
 
         $response = $this->json(
             'GET',
@@ -348,16 +347,16 @@ class PartnerContextTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $response->assertJsonPath('data.partner_context', 'CRUK');
-        $response->assertJsonPath('data.schema', [
-            'model'   => Config::get('metadata.GWDM.name'),
-            'version' => $storedGwdmVersion,
-        ]);
     }
 
-    public function test_show_returns_native_gwdm_without_applying_partner_default_schema(): void
+    /**
+     * REGRESSION: external partners (CRUK, PRUK) call these endpoints with no
+     * schema parameters and rely on their configured default being applied. If
+     * the default stops being applied they silently receive GWDM instead of the
+     * schema they parse, and the failure surfaces in their systems, not ours.
+     */
+    public function test_show_applies_the_partner_default_output_schema_when_none_is_requested(): void
     {
-        // CRUK has a configured default output schema (CRUK 1.1.0). It must no
-        // longer be applied implicitly — the stored GWDM envelope is returned.
         config(['partners.schema.CRUK' => ['model' => 'CRUK', 'version' => '1.1.0']]);
 
         [$teamId, $userId] = $this->createTeamAndUser();
@@ -371,8 +370,50 @@ class PartnerContextTest extends TestCase
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.schema', ['model' => 'CRUK', 'version' => '1.1.0']);
+        // A TRASER result carries no gwdmVersion; the stored envelope does.
+        $this->assertNull($response->json('data.versions.0.metadata.gwdmVersion'));
+    }
+
+    public function test_show_returns_native_gwdm_when_the_caller_asks_for_gwdm(): void
+    {
+        config(['partners.schema.CRUK' => ['model' => 'CRUK', 'version' => '1.1.0']]);
+
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $crukId = $this->createDataset($teamId, $userId, 'CRUK');
+        $storedGwdmVersion = DatasetVersion::where('dataset_id', $crukId)->value('gwdm_version');
+
+        // No schema_version: GWDM is the storage model, so the version returned
+        // is whatever the dataset is stored as.
+        $response = $this->json(
+            'GET',
+            self::DATASETS_URL . '/' . $crukId . '?schema_model=' . Config::get('metadata.GWDM.name'),
+            [],
+            array_merge($this->header, ['x-partner-context' => 'CRUK']),
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.schema', [
+            'model'   => Config::get('metadata.GWDM.name'),
+            'version' => $storedGwdmVersion,
+        ]);
+        $this->assertNotNull($response->json('data.versions.0.metadata.gwdmVersion'));
+    }
+
+    public function test_show_returns_native_gwdm_when_gwdm_is_asked_for_via_header(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, 'HDRUK');
+
+        $response = $this->json(
+            'GET',
+            self::DATASETS_URL . '/' . $datasetId,
+            [],
+            array_merge($this->header, ['x-schema-model' => Config::get('metadata.GWDM.name')]),
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         $response->assertJsonPath('data.schema.model', Config::get('metadata.GWDM.name'));
-        // The untranslated envelope carries gwdmVersion; a TRASER result does not.
         $this->assertNotNull($response->json('data.versions.0.metadata.gwdmVersion'));
     }
 
@@ -414,7 +455,12 @@ class PartnerContextTest extends TestCase
         $datasetId = $this->createDataset($teamId, $userId, 'HDRUK');
         $url = self::DATASETS_URL . '/' . $datasetId;
 
-        $native = $this->json('GET', $url, [], $this->header);
+        $native = $this->json(
+            'GET',
+            $url . '?schema_model=' . Config::get('metadata.GWDM.name'),
+            [],
+            $this->header,
+        );
         $translated = $this->json('GET', $url . '?schema_model=HDRUK&schema_version=4.0.0', [], $this->header);
 
         $native->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
