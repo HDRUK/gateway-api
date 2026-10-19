@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Models\Collection;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\Dur;
 use App\Models\EnquiryThread;
 use App\Models\Publication;
@@ -707,6 +708,27 @@ class TeamDashboardServiceTest extends TestCase
 
         $this->assertCount(0, $result);
     }
+    
+    public function test_get_dataset_views_bottom_returns_titled_datasets_in_bigquery_rank_order(): void
+    {
+        $leastViewed = $this->createDatasetWithShortTitle('Least viewed');
+        $nextLeastViewed = $this->createDatasetWithShortTitle('Next least viewed');
+
+        $this->bigQueryMock
+            ->shouldReceive('query')
+            ->andReturn([
+                ['entity_id' => $leastViewed->id, 'counter' => 1],
+                ['entity_id' => 999999, 'counter' => 2],
+                ['entity_id' => $nextLeastViewed->id, 'counter' => 3],
+            ]);
+
+        $result = $this->service->getDatasetViewsBottom($this->teamId, '2024-01-01', '2024-12-31');
+
+        $this->assertSame([
+            ['id' => $leastViewed->id, 'title' => 'Least viewed', 'counter' => 1],
+            ['id' => $nextLeastViewed->id, 'title' => 'Next least viewed', 'counter' => 3],
+        ], $result);
+    }
 
     // -------------------------------------------------------------------------
     // getEntityViews – delegates to BigQueryService
@@ -807,5 +829,22 @@ class TeamDashboardServiceTest extends TestCase
         $result = $this->service->getEntityViews('collection', $this->teamId, '2024-01-01', '2024-12-31');
 
         $this->assertEquals(0, $result[0]['counter']);
+    }
+
+    private function createDatasetWithShortTitle(string $shortTitle): Dataset
+    {
+        $dataset = Dataset::withoutEvents(fn () => Dataset::factory()
+            ->for(Team::findOrFail($this->teamId))
+            ->create(['status' => Dataset::STATUS_ACTIVE]));
+
+        DatasetVersion::withoutEvents(fn () => DatasetVersion::create([
+            'dataset_id' => $dataset->id,
+            'version' => 1,
+            'metadata' => [],
+            'title' => $shortTitle,
+            'short_title' => $shortTitle,
+        ]));
+
+        return $dataset;
     }
 }
