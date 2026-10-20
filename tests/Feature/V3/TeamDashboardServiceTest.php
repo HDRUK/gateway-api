@@ -708,7 +708,7 @@ class TeamDashboardServiceTest extends TestCase
 
         $this->assertCount(0, $result);
     }
-    
+
     public function test_get_dataset_views_bottom_returns_titled_datasets_in_bigquery_rank_order(): void
     {
         $leastViewed = $this->createDatasetWithShortTitle('Least viewed');

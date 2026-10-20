@@ -200,6 +200,25 @@ abstract class GwdmMetadataHandler
     }
 
     /**
+     * Whether records on this GWDM version carry required.recordType. Lets
+     * callers skip reconstructing an envelope just to call isDatasetRecord().
+     */
+    public function hasRecordTypes(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Whether a reconstructed envelope describes a dataset, as opposed to
+     * another record type stored as GWDM (e.g. a case study). Every record is a
+     * dataset before GWDM 2.3.
+     */
+    public function isDatasetRecord(array $envelope): bool
+    {
+        return true;
+    }
+
+    /**
      * Distinct biological material types for a GWDM metadata block (the inner
      * `metadata` object). Version-specific: the base has no material-type
      * concept and returns null; 2.x+ reads `tissuesSampleCollection`.

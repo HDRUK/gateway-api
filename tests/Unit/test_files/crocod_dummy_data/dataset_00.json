@@ -1,0 +1,206 @@
+{
+    "identifier": "3f1c9a2e-7b4d-4e8a-9c21-5d6e7f8a9b0c",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "3f1c9a2e-7b4d-4e8a-9c21-5d6e7f8a9b0c",
+            "gatewayPid": "3f1c9a2e-7b4d-4e8a-9c21-5d6e7f8a9b0c",
+            "issued": "2026-10-20T00:00:00.000Z",
+            "modified": "2026-10-20T00:00:00.000Z",
+            "version": "1.0.0",
+            "revisions": [],
+            "recordType": "caseStudy"
+        },
+        "summary": {
+            "title": "Lowering events in non-proliferative retinopathy in Scotland",
+            "shortTitle": "LENS",
+            "abstract": "Lowering events in non-proliferative retinopathy in Scotland",
+            "description": "<p>Diabetic retinopathy is a common complication of diabetes mellitus which can result in loss of vision. For this reason, individuals with diabetes are routinely invited for retinal screening. In Scotland, this screening is carried out by the national Diabetic Eye Screening (DES) programme. The programme takes images of the eyes which are then assessed according to the DES programme grading scheme. In the event of diabetes-related changes to the eyes, the individual may be invited to begin treatment.</p>",
+            "populationSize": 1151,
+            "contactPoint": "trial.contact@example.com",
+            "funders": "NIHR – Health Technology Assessment",
+            "publisher": {
+                "name": "Example Team",
+                "gatewayId": "example-team-pid"
+            },
+            "inPipeline": "Not available"
+        },
+        "coverage": {
+            "spatial": "Scotland"
+        },
+        "provenance": {
+            "temporal": {
+                "accrualPeriodicity": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "2016-01-01"
+            }
+        },
+        "accessibility": {
+            "access": {}
+        },
+        "linkage": {
+            "datasetLinkage": {
+                "linkedDatasets": [
+                    {
+                        "title": "SMR00 outpatient attendance"
+                    },
+                    {
+                        "title": "SMR01 general acute inpatient and day case"
+                    },
+                    {
+                        "title": "NRS deaths data"
+                    },
+                    {
+                        "title": "Prescribing information system"
+                    },
+                    {
+                        "title": "SCI-Diabetes"
+                    },
+                    {
+                        "title": "NHS Scotland Diabetic Eye Screening Programme"
+                    }
+                ]
+            }
+        },
+        "crocod": {
+            "trialStatus": "Completed",
+            "therapeuticArea": "Diabetic retinopathy",
+            "background": "<p>Diabetic retinopathy is a common complication of diabetes mellitus which can result in loss of vision. For this reason, individuals with diabetes are routinely invited for retinal screening. In Scotland, this screening is carried out by the national Diabetic Eye Screening (DES) programme. The programme takes images of the eyes which are then assessed according to the DES programme grading scheme. In the event of diabetes-related changes to the eyes, the individual may be invited to begin treatment.</p>",
+            "trialDesign": {
+                "categories": "Double-masked, placebo-controlled RCT, phase IV",
+                "registration": "NCT03439345, ISRCTN15073006"
+            },
+            "governance": {
+                "sponsor": "University of Oxford",
+                "funder": "NIHR – Health Technology Assessment",
+                "approvingBody": "Application approved by: Public Benefit and Privacy Panel for Health and Social Care (PBPP)",
+                "principalInvestigator": "Professor Jane Doe",
+                "contactPoints": [
+                    "trial.contact@example.com"
+                ]
+            },
+            "healthSystemsData": {
+                "usedFor": [
+                    "Recruitment",
+                    "Outcome ascertainment",
+                    "Pharmacovigilance"
+                ],
+                "dataProvidersAppliedTo": [
+                    {
+                        "title": "Public Health Scotland"
+                    }
+                ],
+                "datasetsAccessed": [
+                    {
+                        "title": "SMR00 outpatient attendance"
+                    },
+                    {
+                        "title": "SMR01 general acute inpatient and day case"
+                    },
+                    {
+                        "title": "NRS deaths data"
+                    },
+                    {
+                        "title": "Prescribing information system"
+                    },
+                    {
+                        "title": "SCI-Diabetes"
+                    },
+                    {
+                        "title": "NHS Scotland Diabetic Eye Screening Programme"
+                    }
+                ],
+                "yearFirstAppliedFor": 2016
+            },
+            "publications": [
+                {
+                    "title": "Effect of Fenofibrate on Progression of Diabetic Retinopathy"
+                },
+                {
+                    "title": "Design, recruitment, and baseline characteristics of the LENS trial"
+                }
+            ],
+            "readMore": [
+                "LENS protocol",
+                "LENS statistical analysis plan"
+            ]
+        }
+    },
+    "original_metadata": {
+        "id": 1,
+        "pid": "3f1c9a2e-7b4d-4e8a-9c21-5d6e7f8a9b0c",
+        "version": "1.0.0",
+        "issued": "2026-10-20T00:00:00.000Z",
+        "modified": "2026-10-20T00:00:00.000Z",
+        "trialSummary": {
+            "acronym": "LENS",
+            "fullTitle": "Lowering events in non-proliferative retinopathy in Scotland",
+            "status": "Completed",
+            "therapeuticArea": "Diabetic retinopathy",
+            "background": "<p>Diabetic retinopathy is a common complication of diabetes mellitus which can result in loss of vision. For this reason, individuals with diabetes are routinely invited for retinal screening. In Scotland, this screening is carried out by the national Diabetic Eye Screening (DES) programme. The programme takes images of the eyes which are then assessed according to the DES programme grading scheme. In the event of diabetes-related changes to the eyes, the individual may be invited to begin treatment.</p>"
+        },
+        "trialDesign": {
+            "categories": "Double-masked, placebo-controlled RCT, phase IV",
+            "registration": "NCT03439345, ISRCTN15073006",
+            "startYear": 2016,
+            "numberOfParticipants": 1151
+        },
+        "governance": {
+            "sponsor": "University of Oxford",
+            "funder": "NIHR – Health Technology Assessment",
+            "approvingBody": "Application approved by: Public Benefit and Privacy Panel for Health and Social Care (PBPP)",
+            "principalInvestigator": "Professor Jane Doe",
+            "contactPoints": [
+                "trial.contact@example.com"
+            ]
+        },
+        "healthSystemsData": {
+            "usedFor": [
+                "Recruitment",
+                "Outcome ascertainment",
+                "Pharmacovigilance"
+            ],
+            "participantLocations": [
+                "Scotland"
+            ],
+            "dataProvidersAppliedTo": [
+                {
+                    "title": "Public Health Scotland"
+                }
+            ],
+            "datasetsAccessed": [
+                {
+                    "title": "SMR00 outpatient attendance"
+                },
+                {
+                    "title": "SMR01 general acute inpatient and day case"
+                },
+                {
+                    "title": "NRS deaths data"
+                },
+                {
+                    "title": "Prescribing information system"
+                },
+                {
+                    "title": "SCI-Diabetes"
+                },
+                {
+                    "title": "NHS Scotland Diabetic Eye Screening Programme"
+                }
+            ],
+            "yearFirstAppliedFor": 2016
+        },
+        "publications": [
+            {
+                "title": "Effect of Fenofibrate on Progression of Diabetic Retinopathy"
+            },
+            {
+                "title": "Design, recruitment, and baseline characteristics of the LENS trial"
+            }
+        ],
+        "readMore": [
+            "LENS protocol",
+            "LENS statistical analysis plan"
+        ]
+    }
+}
