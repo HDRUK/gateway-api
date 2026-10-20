@@ -4,6 +4,7 @@ namespace App\Context;
 
 use App\Http\Resources\DatasetResource;
 use App\Models\Dataset;
+use Laravel\Pennant\Feature;
 
 /**
  * Resolves the active partner and maps entity types to their Resource classes.
@@ -26,6 +27,17 @@ use App\Models\Dataset;
  */
 class PartnerContext
 {
+    /**
+     * Partner contexts HDRUK may read and render, each behind its own flag.
+     * Seeded off; an unseeded flag also resolves false in Pennant, so a
+     * missing flag hides that partner's datasets rather than exposing them.
+     */
+    public const CROSS_CONTEXT_FLAGS = [
+        'CRUK' => 'RenderSchemaCRUK',
+        'PRUK' => 'RenderSchemaPRUK',
+        'CROCOD' => 'RenderSchemaCROCOD',
+    ];
+
     public function getPartner(): string
     {
         return request()->header(
@@ -37,9 +49,9 @@ class PartnerContext
     /**
      * The partner contexts the active partner may read and render.
      *
-     * @return string[]|null  null means unrestricted (no partner_context filter)
+     * @return string[]
      */
-    public function readableContexts(): ?array
+    public function readableContexts(): array
     {
         return self::readableContextsFor($this->getPartner());
     }
@@ -48,40 +60,26 @@ class PartnerContext
      * The partner contexts the given partner may read and render.
      *
      * Non-HDRUK partners are always isolated to their own context. HDRUK (the
-     * gateway operator) is governed by partners.allow_cross_context_read:
-     *   true  / 'true'    → unrestricted (null)
-     *   false / 'false'   → ['HDRUK']
-     *   'HDRUK,CRUK,...'  → the listed contexts, HDRUK always included
+     * gateway operator) always reads its own context, plus each context in
+     * CROSS_CONTEXT_FLAGS whose flag is active.
      *
-     * Static and config-driven so callers holding a mocked PartnerContext
-     * (e.g. search providers) can resolve it from the partner string alone.
+     * Static so callers holding a mocked PartnerContext (e.g. search
+     * providers) can resolve it from the partner string alone.
      *
-     * @return string[]|null
+     * @return string[]
      */
-    public static function readableContextsFor(string $partner): ?array
+    public static function readableContextsFor(string $partner): array
     {
         if ($partner !== 'HDRUK') {
             return [$partner];
         }
 
-        $setting = config('partners.allow_cross_context_read', true);
+        $enabled = array_keys(array_filter(
+            self::CROSS_CONTEXT_FLAGS,
+            fn (string $flag) => Feature::active($flag),
+        ));
 
-        if (is_string($setting) && in_array(strtolower(trim($setting)), ['true', 'false', ''], true)) {
-            $setting = strtolower(trim($setting)) === 'true';
-        }
-
-        if ($setting === true) {
-            return null;
-        }
-
-        if ($setting === false || $setting === null) {
-            return ['HDRUK'];
-        }
-
-        $listed = is_array($setting) ? $setting : explode(',', (string) $setting);
-        $listed = array_filter(array_map(fn ($c) => trim((string) $c), $listed), fn ($c) => $c !== '');
-
-        return array_values(array_unique(array_merge(['HDRUK'], $listed)));
+        return ['HDRUK', ...$enabled];
     }
 
     /**

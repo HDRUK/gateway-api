@@ -334,8 +334,8 @@ class Dataset extends Model
 
     /**
      * Restrict to datasets visible in the given partner context.
-     * See PartnerContext::readableContextsFor() for the HDRUK allow-list rules;
-     * other contexts are isolated.
+     * See PartnerContext::readableContextsFor() for the HDRUK flag rules;
+     * other contexts are isolated. A null context applies no restriction.
      */
     public function scopeForPartnerContext(Builder $query, ?string $partnerContext): Builder
     {
