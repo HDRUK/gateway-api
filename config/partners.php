@@ -124,8 +124,9 @@ return [
 
         'HDRUK' => ['model' => 'HDRUK', 'version' => env('HDRUK_CURRENT_VERSION', '4.0.0')],
         'CRUK'  => ['model' => 'CRUK',  'version' => '1.1.0'],
-        // PRUK schema version is not yet finalised — placeholder until confirmed.
-        'PRUK'  => ['model' => 'PRUK',  'version' => '0.0.0'],
+        'PRUK'  => ['model' => 'PRUK',  'version' => '1.0.0'],
+        // Trial case studies, stored as GWDM 2.3 records with recordType caseStudy.
+        'CROCOD' => ['model' => 'CROCOD', 'version' => '1.0.0'],
 
     ],
 

@@ -296,6 +296,23 @@ class DatasetVersion extends BaseTypesenseModel
             return false;
         }
 
+        // GWDM 2.3+ records can be case studies rather than datasets; those
+        // stay out of the dataset index. Earlier versions have no record type,
+        // so their envelope isn't reconstructed just to check it.
+        $handler = app(GwdmHandlerFactory::class)->resolve($this->gwdm_version ?? '2.0');
+        if ($handler->hasRecordTypes()) {
+            $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+                $this->dataset_id,
+                $this->version,
+                false,
+                $this,
+            );
+
+            if (! $handler->isDatasetRecord($envelope)) {
+                return false;
+            }
+        }
+
         // The dataset() relationship already scopes to status=ACTIVE,
         // so null here means the parent is deleted, draft, or archived.
         // A null team means the owning team is soft-deleted.
