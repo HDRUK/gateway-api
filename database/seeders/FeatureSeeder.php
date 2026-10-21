@@ -21,6 +21,11 @@ class FeatureSeeder extends Seeder
         // Renders /dataset/{id} from native GWDM (gateway-web). Off = the
         // existing HDRUK-translated page.
         'GwdmDatasetPage' => false,
+        // Let the HDRUK context read and render each partner's datasets
+        // (PartnerContext::CROSS_CONTEXT_FLAGS). Off = HDRUK datasets only.
+        'RenderSchemaCRUK' => false,
+        'RenderSchemaPRUK' => false,
+        'RenderSchemaCROCOD' => false,
         'SafePeopleRegistrySSOEnabled' => false,
         'LoginDisabled' => false,
         'LoginGoogleEnabled' => true,

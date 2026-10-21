@@ -163,12 +163,24 @@ class HDRUKTest extends TestCase
      * were sent, so callers only asserting on request shape don't need to
      * hand-craft a matching response.
      */
-    private function mockTypesenseServiceExpectingSearches(callable $searchesMatcher): void
-    {
+    /**
+     * HDRUK dataset searches always carry a trailing partnerContext clause.
+     * It is stripped before $searchesMatcher sees the searches, so filter-
+     * building tests assert only their own clauses; the partner-scoping tests
+     * pass $stripPartnerClause = false to assert it directly.
+     */
+    private function mockTypesenseServiceExpectingSearches(
+        callable $searchesMatcher,
+        bool $stripPartnerClause = true,
+    ): void {
+        $matcher = $stripPartnerClause
+            ? fn ($searches) => $searchesMatcher(array_map([$this, 'withoutPartnerClause'], $searches))
+            : $searchesMatcher;
+
         $mockService = Mockery::mock(TypesenseService::class);
         $mockService->shouldReceive('multiSearch')
             ->once()
-            ->with(Mockery::on($searchesMatcher))
+            ->with(Mockery::on($matcher))
             ->andReturnUsing(fn ($searches) => [
                 'results' => array_fill(0, count($searches), ['found' => 0, 'hits' => [], 'facet_counts' => []]),
             ]);
@@ -177,6 +189,26 @@ class HDRUKTest extends TestCase
 
         Feature::flushCache();
         Feature::activate('TypesenseSearch');
+    }
+
+    private function withoutPartnerClause(array $search): array
+    {
+        if (!isset($search['filter_by'])) {
+            return $search;
+        }
+
+        $clauses = array_filter(
+            explode(' && ', $search['filter_by']),
+            fn ($clause) => !str_starts_with($clause, 'partnerContext:='),
+        );
+
+        if ($clauses === []) {
+            unset($search['filter_by']);
+        } else {
+            $search['filter_by'] = implode(' && ', $clauses);
+        }
+
+        return $search;
     }
 
     public function test_search_builds_filter_by_from_nested_filters_shape(): void
@@ -801,22 +833,23 @@ class HDRUKTest extends TestCase
         });
     }
 
-    public function test_search_via_typesense_filters_by_listed_partner_contexts(): void
+    public function test_search_via_typesense_filters_by_flagged_partner_contexts(): void
     {
-        Config::set('partners.allow_cross_context_read', 'HDRUK,CRUK');
+        Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
+        Feature::activate('RenderSchemaCRUK');
 
         $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
-            ($searches[0]['filter_by'] ?? null) === 'partnerContext:=[`HDRUK`,`CRUK`]');
+            ($searches[0]['filter_by'] ?? null) === 'partnerContext:=[`HDRUK`,`CRUK`]', false);
 
         (new HDRUK())->search('asthma', 'datasets', []);
     }
 
-    public function test_search_via_typesense_omits_partner_filter_for_unrestricted_hdruk(): void
+    public function test_search_via_typesense_filters_hdruk_to_itself_when_no_flags_are_active(): void
     {
-        Config::set('partners.allow_cross_context_read', true);
+        Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
 
         $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
-            !array_key_exists('filter_by', $searches[0]));
+            ($searches[0]['filter_by'] ?? null) === 'partnerContext:=`HDRUK`', false);
 
         (new HDRUK())->search('asthma', 'datasets', []);
     }

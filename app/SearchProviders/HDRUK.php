@@ -645,8 +645,7 @@ class HDRUK implements SearchProvider
      * partner, mirroring Dataset::scopeForPartnerContext().
      *
      * The readable contexts come from PartnerContext::readableContextsFor():
-     * unrestricted HDRUK gets no clause; otherwise results are restricted to
-     * the partner's own context, or to HDRUK's allow-list.
+     * the partner's own context, or for HDRUK its own plus each flagged one.
      *
      * Only applies to the 'datasets' type; other entity types don't carry a
      * partner_context column and shouldn't be filtered.
