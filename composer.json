@@ -18,7 +18,7 @@
         }
     ],
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "darkaonline/l5-swagger": "^8.4",
         "hdruk/laravel-error-handler": "dev-main",
         "elasticsearch/elasticsearch": "^8.10",
@@ -139,7 +139,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.3.33"
+            "php": "8.4.27"
         },
         "allow-plugins": {
             "pestphp/pest-plugin": true,

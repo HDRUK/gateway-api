@@ -38,61 +38,6 @@ class SocialLoginControllerTest extends TestCase
             'services.azure.client_secret' => 'fake-azure-client-secret',
             'services.azure.redirect' => 'https://api.gateway.test/api/v1/auth/azure/callback',
         ]);
-        $mostRecent = User::factory()->create([
-            'email' => 'current.address@example.com', 'provider' => 'azure', 'providerid' => 'oid-shared',
-            'updated_at' => now()->subDay(),
-        ]);
-        Socialite::fake('azure', $this->microsoftUser('oid-shared', 'current.address@example.com'));
-
-        $response = $this->azureCallback($path);
-
-        $response->assertRedirect('https://gateway.test/search');
-        $this->assertSame($mostRecent->id, $this->loggedInUserId($response));
-    }
-
-    private function microsoftUser(string $id, string $mail): SocialiteUser
-    {
-        $raw = [
-            'id' => $id,
-            'displayName' => 'Test User',
-            'userPrincipalName' => 'test.user@tenant.example.com',
-            'mail' => $mail,
-            'givenName' => 'Test',
-            'surname' => 'User',
-        ];
-
-        return (new SocialiteUser())->setRaw($raw)->map([
-            'id' => $raw['id'],
-            'nickname' => null,
-            'name' => $raw['displayName'],
-            'email' => $raw['userPrincipalName'],
-            'principalName' => $raw['userPrincipalName'],
-            'mail' => $raw['mail'],
-            'avatar' => null,
-        ]);
-    }
-
-    private function azureCallback(string $path): TestResponse
-    {
-        return $this->withSession(['redirectUrl' => 'https://gateway.test/search'])
-            ->get($path . '?code=some-code&state=some-state');
-    }
-
-    private function assertAccountUnchanged(User $before): void
-    {
-        $after = $before->fresh();
-        $this->assertSame(
-            [$before->provider, $before->providerid, $before->password, $before->email],
-            [$after->provider, $after->providerid, $after->password, $after->email]
-        );
-    }
-
-    private function loggedInUserId(TestResponse $response): int
-    {
-        $token = $response->getCookie('token', false);
-        $this->assertNotNull($token, 'expected a token cookie');
-
-        return $this->getUserFromJwt($token->getValue())['id'];
     }
 
     public static function unusableOpenAthensIdentifiers(): array

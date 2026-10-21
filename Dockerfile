@@ -1,5 +1,9 @@
 FROM dunglas/frankenphp:php8.4-trixie
 
+ARG PHP_MIN_VERSION=8.4.27
+RUN php -r 'exit(version_compare(PHP_VERSION, getenv("PHP_MIN_VERSION"), ">=") ? 0 : 1);' \
+    || (echo "PHP $(php -r 'echo PHP_VERSION;') is below the required minimum ${PHP_MIN_VERSION}" >&2 && exit 1)
+
 ENV COMPOSER_PROCESS_TIMEOUT=600
 
 WORKDIR /var/www
