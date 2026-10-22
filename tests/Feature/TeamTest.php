@@ -6,6 +6,7 @@ use Config;
 use Tests\TestCase;
 use App\Jobs\AuditLogJob;
 use Illuminate\Support\Facades\Bus;
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\Team;
 use App\Models\Alias;
 use App\Models\Dataset;
@@ -793,5 +794,47 @@ class TeamTest extends TestCase
             return $data['action_type'] === 'DELETE'
                 && $data['description'] === 'Team ' . $team->id . ' deleted';
         });
+    }
+
+    public function test_a_team_with_only_archived_datasets_can_be_deleted()
+    {
+        $team = Team::factory()->create();
+        Dataset::factory()->create([
+            'team_id' => $team->id,
+            'status' => Dataset::STATUS_ARCHIVED,
+        ]);
+
+        $response = $this->json('DELETE', 'api/v1/teams/' . $team->id, [], $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSoftDeleted($team);
+    }
+
+    #[DataProvider('blockingDatasetStatuses')]
+    public function test_a_team_with_a_non_archived_dataset_cannot_be_deleted(string $status)
+    {
+        $team = Team::factory()->create();
+        Dataset::factory()->create([
+            'team_id' => $team->id,
+            'status' => Dataset::STATUS_ARCHIVED,
+        ]);
+        Dataset::factory()->create([
+            'team_id' => $team->id,
+            'create_origin' => Dataset::ORIGIN_MANUAL,
+            'status' => $status,
+        ]);
+
+        $response = $this->json('DELETE', 'api/v1/teams/' . $team->id, [], $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        $this->assertNotSoftDeleted($team);
+    }
+
+    public static function blockingDatasetStatuses(): array
+    {
+        return [
+            'active' => [Dataset::STATUS_ACTIVE],
+            'draft' => [Dataset::STATUS_DRAFT],
+        ];
     }
 }
