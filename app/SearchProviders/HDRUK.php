@@ -334,7 +334,10 @@ class HDRUK implements SearchProvider
         $hydrated    = $this->hydrate($elasticHits, $type, $params['view_type'] ?? 'full');
         $sorted      = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
         $entityIds   = array_column($elasticHits, '_id');
-        $total       = $result['found'] ?? 0;
+        // Hydrators drop hits with no usable DB record (missing row, metadata,
+        // team). Discount this page's drops so the total matches what can be
+        // rendered; drops on other pages aren't visible without hydrating them.
+        $total       = max(0, ($result['found'] ?? 0) - (count($elasticHits) - count($hydrated)));
 
         LogSearchAnalytics::dispatch(new SearchAnalyticsData(
             uuid: (string) Str::uuid(),
