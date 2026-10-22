@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Jobs\AuditLogJob;
+use Illuminate\Support\Facades\Bus;
 use App\Models\Team;
 use App\Models\Alias;
 use App\Models\Dataset;
@@ -774,5 +776,22 @@ class TeamTest extends TestCase
             ->assertJsonStructure([
                 'message',
             ]);
+    }
+
+    public function test_deleting_a_team_is_audited()
+    {
+        Config::set('services.googlepubsub.enabled', true);
+        Bus::fake([AuditLogJob::class]);
+        $team = Team::factory()->create();
+
+        $response = $this->json('DELETE', 'api/v1/teams/' . $team->id, [], $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        Bus::assertDispatched(AuditLogJob::class, function (AuditLogJob $job) use ($team) {
+            $data = (fn () => $this->data)->call($job);
+
+            return $data['action_type'] === 'DELETE'
+                && $data['description'] === 'Team ' . $team->id . ' deleted';
+        });
     }
 }

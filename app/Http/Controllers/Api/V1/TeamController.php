@@ -1730,10 +1730,6 @@ class TeamController extends Controller
 
             $team->delete();
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
@@ -1741,7 +1737,9 @@ class TeamController extends Controller
                 'description' => 'Team ' . $teamId . ' deleted',
             ]);
 
-            throw new NotFoundException();
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
