@@ -900,4 +900,35 @@ class HDRUKTest extends TestCase
             return $this->getSearchAnalyticsData($job)->dataSource === 'HDRUK';
         });
     }
+
+    public function test_search_via_typesense_total_discounts_hits_dropped_by_hydration(): void
+    {
+        // Two hits on this page point at datasets with no DB record, so the
+        // hydrator drops them; the total must not keep counting them.
+        $mockService = Mockery::mock(TypesenseService::class);
+        $mockService->shouldReceive('multiSearch')
+            ->once()
+            ->andReturnUsing(fn ($searches) => [
+                'results' => array_merge(
+                    [[
+                        'found' => 5,
+                        'hits' => [
+                            ['document' => ['id' => 'a', 'dataset_id' => 999998]],
+                            ['document' => ['id' => 'b', 'dataset_id' => 999999]],
+                        ],
+                        'facet_counts' => [],
+                    ]],
+                    array_fill(0, count($searches) - 1, ['found' => 0, 'hits' => [], 'facet_counts' => []]),
+                ),
+            ]);
+        $this->app->instance(TypesenseService::class, $mockService);
+
+        Feature::flushCache();
+        Feature::activate('TypesenseSearch');
+
+        $result = (new HDRUK())->search('', 'datasets', ['page' => 1, 'per_page' => 25]);
+
+        $this->assertSame([], $result['hits']);
+        $this->assertSame(3, $result['total']);
+    }
 }

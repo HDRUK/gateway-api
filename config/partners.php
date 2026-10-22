@@ -123,4 +123,26 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Partner display names
+    |--------------------------------------------------------------------------
+    | The organisation behind each partner context, for display to users - the
+    | "via Cancer Research UK" provenance line on a search result.
+    |
+    | Deliberately separate from 'schema' above: that is the translation target
+    | for a caller, a property of the request, while this names the context that
+    | owns a record. The two diverge - CROCOD datasets use the CROCOD schema but
+    | come from the University of Dundee - and a context needs a name whether or
+    | not it has a translation target.
+    */
+    'names' => [
+
+        'HDRUK' => 'Health Data Research UK',
+        'CRUK' => 'Cancer Research UK',
+        'PRUK' => 'Population Research UK',
+        'CROCOD' => 'University of Dundee',
+
+    ],
+
 ];

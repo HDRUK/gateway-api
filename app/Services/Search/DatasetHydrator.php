@@ -118,6 +118,14 @@ class DatasetHydrator
 
             $hits[$i]['isCohortDiscovery'] = $model->is_cohort_discovery;
             $hits[$i]['dataProviderColl'] = $dataProviderCollsByTeam->get($model->team_id, []);
+            // Partner provenance for the result row. partner_context matches the
+            // dataset endpoint's field; partner_name is the organisation to show
+            // in the "via ..." line, and is present only when the owning context
+            // is not this deployment's own - a record from our own context needs
+            // no provenance line.
+            $hits[$i]['partner_context'] = $model->partner_context;
+            $hits[$i]['partner_name'] = $this->foreignPartnerName($model->partner_context);
+
             $hits[$i]['team'] = [
                 'id'                        => $model->team->id,
                 'is_question_bank'          => $model->team->is_question_bank,
@@ -132,6 +140,21 @@ class DatasetHydrator
         }
 
         return array_values($hits);
+    }
+
+    /**
+     * The display name of a partner context, or null when it is this
+     * deployment's own context (or has no configured name).
+     */
+    private function foreignPartnerName(?string $partnerContext): ?string
+    {
+        $default = Config::get('partners.default', 'HDRUK');
+
+        if ($partnerContext === null || $partnerContext === $default) {
+            return null;
+        }
+
+        return Config::get('partners.names.' . $partnerContext);
     }
 
     private function trimPayload(array $metadata, ?string $gwdmVersion = null): array
