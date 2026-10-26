@@ -1239,6 +1239,20 @@ return [
         'constraint' => [],
     ],
 
+    // revoke every issued token (admin kill-switch)
+    [
+        'name' => 'admin.tokens.revoke_all',
+        'method' => 'post',
+        'path' => '/admin/tokens/revoke_all',
+        'methodController' => 'TokenRevocationController@revokeAll',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+
     // SearchAggregator
     [
         'name' => 'search_agg.post',
