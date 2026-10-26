@@ -149,13 +149,12 @@ class JwtMiddleware
 
     /**
      * A signature-valid token is not necessarily a live one: it may have
-     * been withdrawn by logout before reaching its expiry.
+     * been withdrawn by logout, or by an admin revoking all tokens, before
+     * reaching its expiry.
      */
     private function assertNotRevoked(array $claims): void
     {
-        $jti = $claims['jti'] ?? null;
-
-        if ($jti !== null && app(TokenDenylist::class)->isRevoked((string) $jti)) {
+        if (app(TokenDenylist::class)->rejects($claims)) {
             throw new UnauthorizedException('Token has been revoked.');
         }
     }
