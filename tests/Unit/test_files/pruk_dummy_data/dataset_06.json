@@ -1,0 +1,589 @@
+{
+    "identifier": "a4cc06da-c07a-5e80-8a6c-a13f52edb9d8",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "a4cc06da-c07a-5e80-8a6c-a13f52edb9d8",
+            "gatewayPid": "a4cc06da-c07a-5e80-8a6c-a13f52edb9d8",
+            "issued": "2019-11-01T00:00:00.000Z",
+            "modified": "2026-09-30T10:00:00.000Z",
+            "version": "2.0.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "A prospective cohort of 6,820 pregnant women recruited at their antenatal booking appointment in Kingsmere between 2015 and 2018 and followed to one year after the birth, to study the causes of complications in pregnancy and their effect on mother and baby.",
+            "contactPoint": "kmc-data@kingsmere.example.org",
+            "keywords": "pregnancy;,;maternity;,;antenatal care;,;birth outcomes;,;gestational diabetes",
+            "datasetType": "Health and disease",
+            "datasetSubType": "Maternity and neonatology;,;Reproductive;,;Metabolic and endocrine",
+            "populationSize": 6820,
+            "description": "Midwife-collected booking data, research questionnaires and the hospital maternity record are combined for each pregnancy. Outcomes for the baby are taken from the delivery and neonatal unit records.",
+            "shortTitle": "Kingsmere Maternity Cohort (KMC)",
+            "title": "Kingsmere Maternity Cohort (KMC)",
+            "datasetAliases": [
+                "KMC"
+            ],
+            "publisher": {
+                "name": "Kingsmere Women's Health Research Group",
+                "gatewayId": "uk.kingsmere.example"
+            },
+            "inPipeline": null
+        },
+        "coverage": {
+            "pathway": "Booking appointment, routine antenatal care, delivery suite and postnatal community midwifery.",
+            "spatial": "England",
+            "followUp": "1 - 10 Years",
+            "typicalAgeRange": "16-47"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Research cohort",
+                "source": "EPR;,;Electronic survey",
+                "collectionSituation": "Cohort, study, trial;,;Secondary care - In-patients;,;Secondary care - Outpatients"
+            },
+            "temporal": {
+                "endDate": "2019-06-30",
+                "startDate": "2015-04-01",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Static"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "2-6 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Kingsmere NHS Foundation Trust",
+                "accessRights": "https://kingsmere.example.org/maternity/kmc/access",
+                "accessService": "Pseudonymised data are analysed in the Kingsmere secure data environment after approval by the cohort's data access committee.",
+                "accessRequestCost": "Medium cost: a project fee covers data preparation and secure environment access.",
+                "accessServiceCategory": "TRE/SDE"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Ethics approval required;,;Disclosure control",
+                "resourceCreator": {
+                    "name": null
+                },
+                "duoCodes": null,
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "LOCAL;,;SNOMED CT;,;ICD10",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": "CSV;,;Stata"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "associatedMedia": "https://kingsmere.example.org/maternity/kmc/data-dictionary.pdf",
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "waveOf": null
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "Antenatal booking",
+                "description": "Recorded by the community midwife at the booking appointment.",
+                "columns": [
+                    {
+                        "name": "booking_gestation_weeks",
+                        "dataType": "integer",
+                        "description": "Weeks of gestation at the booking appointment.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "maternal_age",
+                        "dataType": "integer",
+                        "description": "Mother's age in years at booking.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "parity",
+                        "dataType": "integer",
+                        "description": "Number of previous births at 24 weeks or more.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "booking_bmi",
+                        "dataType": "number",
+                        "description": "Body mass index at booking, from measured height and weight.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "smoking_at_booking",
+                        "dataType": "string",
+                        "description": "Smoking status at booking, confirmed by carbon monoxide test.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "whooley_depression_screen",
+                        "dataType": "string",
+                        "description": "Whooley two-question screen for low mood and loss of interest, asked at booking.",
+                        "sensitive": true,
+                        "values": [
+                            {
+                                "name": "0",
+                                "description": "Negative",
+                                "frequency": 5930
+                            },
+                            {
+                                "name": "1",
+                                "description": "Positive",
+                                "frequency": 890
+                            }
+                        ]
+                    },
+                    {
+                        "name": "midwife_booking_notes",
+                        "dataType": "string",
+                        "description": "Free-text notes added by the midwife at the booking appointment.",
+                        "sensitive": true
+                    }
+                ]
+            },
+            {
+                "name": "Pregnancy complications and birth",
+                "description": "Taken from the hospital maternity and neonatal records.",
+                "columns": [
+                    {
+                        "name": "gestational_diabetes",
+                        "dataType": "string",
+                        "description": "Gestational diabetes diagnosed by oral glucose tolerance test.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "pre_eclampsia",
+                        "dataType": "string",
+                        "description": "Pre-eclampsia diagnosed during the pregnancy.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "gestational_age_at_birth",
+                        "dataType": "integer",
+                        "description": "Completed weeks of gestation at birth.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "birthweight_g",
+                        "dataType": "integer",
+                        "description": "Birthweight of the baby in grams.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "mode_of_delivery",
+                        "dataType": "string",
+                        "description": "Spontaneous vaginal, instrumental, planned or emergency caesarean birth.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "stillbirth",
+                        "dataType": "string",
+                        "description": "Baby born with no signs of life at 24 weeks or more.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "neonatal_unit_admission",
+                        "dataType": "string",
+                        "description": "Baby admitted to the neonatal unit within 28 days of birth.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Postnatal follow-up",
+                "columns": [
+                    {
+                        "name": "epds_6_weeks",
+                        "dataType": "integer",
+                        "description": "Edinburgh Postnatal Depression Scale (EPDS) score six weeks after the birth.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "infant_feeding_6_weeks",
+                        "dataType": "string",
+                        "description": "Breast, formula or mixed feeding at six weeks.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "return_to_work_months",
+                        "dataType": "integer",
+                        "description": "Months after the birth when the mother returned to paid work.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [
+            {
+                "materialType": "Serum"
+            },
+            {
+                "materialType": "Urine"
+            }
+        ],
+        "demographicFrequency": {
+            "age": [
+                {
+                    "bin": "15-19 years",
+                    "count": 310
+                },
+                {
+                    "bin": "20-24 years",
+                    "count": 1050
+                },
+                {
+                    "bin": "25-29 years",
+                    "count": 1890
+                },
+                {
+                    "bin": "30-34 years",
+                    "count": 2140
+                },
+                {
+                    "bin": "35-39 years",
+                    "count": 1180
+                },
+                {
+                    "bin": "40-44 years",
+                    "count": 230
+                },
+                {
+                    "bin": "45-49 years",
+                    "count": 20
+                }
+            ]
+        },
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": true
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2015-04-01",
+                "endDate": "2018-03-31",
+                "samplingMethod": "All women booking for antenatal care at Kingsmere General Hospital were invited by their community midwife; 71% agreed to take part."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Contacts at booking, 28 weeks, delivery, six weeks and one year after the birth."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant women aged 16 or over booking before 20 weeks of gestation and planning to give birth locally.",
+                "exclusionCriteria": "Women unable to give informed consent, or whose pregnancy ended before the 20-week scan."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "a4cc06da-c07a-5e80-8a6c-a13f52edb9d8",
+        "version": "2.0.0",
+        "issued": "2019-11-01T00:00:00.000Z",
+        "modified": "2026-09-30T10:00:00.000Z",
+        "summary": {
+            "title": "Kingsmere Maternity Cohort (KMC)",
+            "abstract": "A prospective cohort of 6,820 pregnant women recruited at their antenatal booking appointment in Kingsmere between 2015 and 2018 and followed to one year after the birth, to study the causes of complications in pregnancy and their effect on mother and baby.",
+            "dataCustodian": {
+                "identifier": "uk.kingsmere.example",
+                "name": "Kingsmere Women's Health Research Group",
+                "description": "https://kingsmere.example.org/maternity",
+                "contactPoint": "kmc-data@kingsmere.example.org"
+            },
+            "populationSize": 6820,
+            "keywords": [
+                "pregnancy",
+                "maternity",
+                "antenatal care",
+                "birth outcomes",
+                "gestational diabetes"
+            ],
+            "contactPoint": "kmc-data@kingsmere.example.org",
+            "datasetAliases": [
+                "KMC"
+            ]
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": true
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2015-04-01",
+                "endDate": "2018-03-31",
+                "samplingMethod": "All women booking for antenatal care at Kingsmere General Hospital were invited by their community midwife; 71% agreed to take part."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Contacts at booking, 28 weeks, delivery, six weeks and one year after the birth."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant women aged 16 or over booking before 20 weeks of gestation and planning to give birth locally.",
+                "exclusionCriteria": "Women unable to give informed consent, or whose pregnancy ended before the 20-week scan."
+            }
+        },
+        "documentation": {
+            "description": "Midwife-collected booking data, research questionnaires and the hospital maternity record are combined for each pregnancy. Outcomes for the baby are taken from the delivery and neonatal unit records.",
+            "associatedMedia": [
+                "https://kingsmere.example.org/maternity/kmc/data-dictionary.pdf"
+            ]
+        },
+        "coverage": {
+            "spatial": "England",
+            "typicalAgeRangeMin": 16,
+            "typicalAgeRangeMax": 47,
+            "followUp": "1 - 10 Years",
+            "pathway": "Booking appointment, routine antenatal care, delivery suite and postnatal community midwifery.",
+            "materialType": [
+                "Serum",
+                "Urine"
+            ]
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Research cohort"
+                ],
+                "source": [
+                    "EPR",
+                    "Electronic survey"
+                ],
+                "collectionSource": [
+                    "Cohort, study, trial",
+                    "Secondary care - In-patients",
+                    "Secondary care - Outpatients"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Maternity and neonatology",
+                            "Reproductive",
+                            "Metabolic and endocrine"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "2015-04-01",
+                "endDate": "2019-06-30"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://kingsmere.example.org/maternity/kmc/access",
+                "accessService": "Pseudonymised data are analysed in the Kingsmere secure data environment after approval by the cohort's data access committee.",
+                "accessRequestCost": "Medium cost: a project fee covers data preparation and secure environment access.",
+                "deliveryLeadTime": "2-6 months",
+                "accessServiceCategory": "TRE/SDE",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Kingsmere NHS Foundation Trust"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Disclosure control"
+                ],
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "LOCAL",
+                    "SNOMED CT",
+                    "ICD10"
+                ],
+                "conformsTo": [
+                    "LOCAL"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "CSV",
+                    "Stata"
+                ]
+            }
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Antenatal booking",
+                    "description": "Recorded by the community midwife at the booking appointment.",
+                    "columns": [
+                        {
+                            "name": "booking_gestation_weeks",
+                            "dataType": "integer",
+                            "description": "Weeks of gestation at the booking appointment.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "maternal_age",
+                            "dataType": "integer",
+                            "description": "Mother's age in years at booking.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "parity",
+                            "dataType": "integer",
+                            "description": "Number of previous births at 24 weeks or more.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "booking_bmi",
+                            "dataType": "number",
+                            "description": "Body mass index at booking, from measured height and weight.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "smoking_at_booking",
+                            "dataType": "string",
+                            "description": "Smoking status at booking, confirmed by carbon monoxide test.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "whooley_depression_screen",
+                            "dataType": "string",
+                            "description": "Whooley two-question screen for low mood and loss of interest, asked at booking.",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "0",
+                                    "description": "Negative",
+                                    "frequency": 5930
+                                },
+                                {
+                                    "name": "1",
+                                    "description": "Positive",
+                                    "frequency": 890
+                                }
+                            ]
+                        },
+                        {
+                            "name": "midwife_booking_notes",
+                            "dataType": "string",
+                            "description": "Free-text notes added by the midwife at the booking appointment.",
+                            "sensitive": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Pregnancy complications and birth",
+                    "description": "Taken from the hospital maternity and neonatal records.",
+                    "columns": [
+                        {
+                            "name": "gestational_diabetes",
+                            "dataType": "string",
+                            "description": "Gestational diabetes diagnosed by oral glucose tolerance test.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "pre_eclampsia",
+                            "dataType": "string",
+                            "description": "Pre-eclampsia diagnosed during the pregnancy.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "gestational_age_at_birth",
+                            "dataType": "integer",
+                            "description": "Completed weeks of gestation at birth.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "birthweight_g",
+                            "dataType": "integer",
+                            "description": "Birthweight of the baby in grams.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "mode_of_delivery",
+                            "dataType": "string",
+                            "description": "Spontaneous vaginal, instrumental, planned or emergency caesarean birth.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "stillbirth",
+                            "dataType": "string",
+                            "description": "Baby born with no signs of life at 24 weeks or more.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "neonatal_unit_admission",
+                            "dataType": "string",
+                            "description": "Baby admitted to the neonatal unit within 28 days of birth.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Postnatal follow-up",
+                    "columns": [
+                        {
+                            "name": "epds_6_weeks",
+                            "dataType": "integer",
+                            "description": "Edinburgh Postnatal Depression Scale (EPDS) score six weeks after the birth.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "infant_feeding_6_weeks",
+                            "dataType": "string",
+                            "description": "Breast, formula or mixed feeding at six weeks.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "return_to_work_months",
+                            "dataType": "integer",
+                            "description": "Months after the birth when the mother returned to paid work.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        },
+        "demographicFrequency": {
+            "age": [
+                {
+                    "bin": "15-19 years",
+                    "count": 310
+                },
+                {
+                    "bin": "20-24 years",
+                    "count": 1050
+                },
+                {
+                    "bin": "25-29 years",
+                    "count": 1890
+                },
+                {
+                    "bin": "30-34 years",
+                    "count": 2140
+                },
+                {
+                    "bin": "35-39 years",
+                    "count": 1180
+                },
+                {
+                    "bin": "40-44 years",
+                    "count": 230
+                },
+                {
+                    "bin": "45-49 years",
+                    "count": 20
+                }
+            ]
+        }
+    }
+}

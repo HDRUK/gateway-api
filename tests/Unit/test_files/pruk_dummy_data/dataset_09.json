@@ -1,0 +1,464 @@
+{
+    "identifier": "da3ce4f6-80b9-5fbe-a785-11f8b34712d7",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "da3ce4f6-80b9-5fbe-a785-11f8b34712d7",
+            "gatewayPid": "da3ce4f6-80b9-5fbe-a785-11f8b34712d7",
+            "issued": "2021-01-15T00:00:00.000Z",
+            "modified": "2026-10-24T07:30:00.000Z",
+            "version": "3.2.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "Pseudonymised GP records for 412,000 adults registered with practices in Westmoor, covering diagnoses, symptom scores and prescriptions for common mental health conditions, linked to community pharmacy dispensing and maternity services records.",
+            "contactPoint": "pcmh-requests@westmoor.example.org",
+            "keywords": "primary care;,;depression;,;anxiety;,;prescribing;,;record linkage;,;perinatal",
+            "datasetType": "Health and disease",
+            "datasetSubType": "Mental health;,;Maternity and neonatology",
+            "populationSize": 412000,
+            "description": "Coded entries from the GP record are extracted monthly. Depression and anxiety are identified from SNOMED CT code lists maintained by the partnership. Maternity services records are linked for women with a recorded pregnancy.",
+            "shortTitle": "Westmoor Primary Care Mental Health Linked Dataset",
+            "title": "Westmoor Primary Care Mental Health Linked Dataset",
+            "publisher": {
+                "name": "Westmoor Health Data Partnership",
+                "gatewayId": "uk.westmoor.example"
+            },
+            "inPipeline": null
+        },
+        "coverage": {
+            "spatial": "England",
+            "followUp": "Continuous",
+            "typicalAgeRange": "18-100"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Care",
+                "source": "EPR",
+                "collectionSituation": "Primary care - Clinic;,;Prescribing - Community pharmacy;,;Secondary care - In-patients"
+            },
+            "temporal": {
+                "startDate": "2010-01-01",
+                "timeLag": "1-2 months",
+                "accrualPeriodicity": "Monthly"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "More than 6 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Westmoor Integrated Care Board",
+                "dataProcessor": "Westmoor Health Data Partnership",
+                "accessRights": "https://westmoor.example.org/data/pcmh/access",
+                "accessService": "Data are only available in the Westmoor secure data environment, after approval by the partnership's independent data access panel.",
+                "accessRequestCost": "High cost: charges cover data extraction, linkage and secure environment hosting.",
+                "accessServiceCategory": "TRE/SDE"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use;,;No linkage",
+                "dataUseRequirement": "Ethics approval required;,;Disclosure control;,;Publication required",
+                "resourceCreator": {
+                    "name": null
+                },
+                "duoCodes": null,
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "LOCAL;,;SNOMED CT;,;ICD10",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": "CSV;,;Stata"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "waveOf": null
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "Mental health diagnoses",
+                "columns": [
+                    {
+                        "name": "depression_diagnosis_code",
+                        "dataType": "string",
+                        "description": "SNOMED CT code for a recorded diagnosis of depression in primary care.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "anxiety_diagnosis_code",
+                        "dataType": "string",
+                        "description": "SNOMED CT code for a recorded anxiety disorder.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "diagnosis_date",
+                        "dataType": "date",
+                        "description": "Date the diagnosis was recorded.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "referral_to_talking_therapies",
+                        "dataType": "string",
+                        "description": "Referral to NHS Talking Therapies recorded.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Symptom scores",
+                "columns": [
+                    {
+                        "name": "phq9_score",
+                        "dataType": "integer",
+                        "description": "PHQ-9 depression score recorded at a GP review.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "gad7_score",
+                        "dataType": "integer",
+                        "description": "GAD-7 anxiety score recorded at a GP review.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "review_date",
+                        "dataType": "date",
+                        "description": "Date of the review.",
+                        "sensitive": true
+                    }
+                ]
+            },
+            {
+                "name": "Prescriptions",
+                "columns": [
+                    {
+                        "name": "antidepressant_bnf_code",
+                        "dataType": "string",
+                        "description": "BNF code of an antidepressant prescription issued by the practice.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "issue_date",
+                        "dataType": "date",
+                        "description": "Date the prescription was issued.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "quantity",
+                        "dataType": "integer",
+                        "description": "Number of tablets or capsules issued.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "dispensed",
+                        "dataType": "string",
+                        "description": "Whether a community pharmacy dispensed the prescription.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Linked maternity records",
+                "description": "Maternity services records linked for women with a recorded pregnancy.",
+                "columns": [
+                    {
+                        "name": "pregnancy_start_date",
+                        "dataType": "date",
+                        "description": "Estimated start date of the pregnancy.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "pregnancy_outcome",
+                        "dataType": "string",
+                        "description": "Live birth, stillbirth, miscarriage or termination, from the maternity services record.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "gestation_at_delivery_weeks",
+                        "dataType": "integer",
+                        "description": "Completed weeks of gestation at delivery.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "birthweight_g",
+                        "dataType": "integer",
+                        "description": "Birthweight of the baby in grams.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "perinatal_mental_health_referral",
+                        "dataType": "string",
+                        "description": "Referral to the specialist perinatal mental health team during pregnancy or within a year of birth.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": true
+            },
+            "followUpSchedule": {
+                "frequency": "Continuous",
+                "note": "Records are refreshed monthly from participating practices."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Adults aged 18 or over registered with a participating Westmoor general practice at any time since 2010.",
+                "exclusionCriteria": "Patients who have registered a national data opt-out."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "da3ce4f6-80b9-5fbe-a785-11f8b34712d7",
+        "version": "3.2.0",
+        "issued": "2021-01-15T00:00:00.000Z",
+        "modified": "2026-10-24T07:30:00.000Z",
+        "summary": {
+            "title": "Westmoor Primary Care Mental Health Linked Dataset",
+            "abstract": "Pseudonymised GP records for 412,000 adults registered with practices in Westmoor, covering diagnoses, symptom scores and prescriptions for common mental health conditions, linked to community pharmacy dispensing and maternity services records.",
+            "dataCustodian": {
+                "identifier": "uk.westmoor.example",
+                "name": "Westmoor Health Data Partnership",
+                "description": "https://westmoor.example.org/data",
+                "contactPoint": "pcmh-requests@westmoor.example.org"
+            },
+            "populationSize": 412000,
+            "keywords": [
+                "primary care",
+                "depression",
+                "anxiety",
+                "prescribing",
+                "record linkage",
+                "perinatal"
+            ],
+            "contactPoint": "pcmh-requests@westmoor.example.org"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": true
+            },
+            "followUpSchedule": {
+                "frequency": "Continuous",
+                "note": "Records are refreshed monthly from participating practices."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Adults aged 18 or over registered with a participating Westmoor general practice at any time since 2010.",
+                "exclusionCriteria": "Patients who have registered a national data opt-out."
+            }
+        },
+        "documentation": {
+            "description": "Coded entries from the GP record are extracted monthly. Depression and anxiety are identified from SNOMED CT code lists maintained by the partnership. Maternity services records are linked for women with a recorded pregnancy."
+        },
+        "coverage": {
+            "spatial": "England",
+            "typicalAgeRangeMin": 18,
+            "typicalAgeRangeMax": 100,
+            "followUp": "Continuous"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Care"
+                ],
+                "source": [
+                    "EPR"
+                ],
+                "collectionSource": [
+                    "Primary care - Clinic",
+                    "Prescribing - Community pharmacy",
+                    "Secondary care - In-patients"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Mental health",
+                            "Maternity and neonatology"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Monthly",
+                "timeLag": "1-2 months",
+                "startDate": "2010-01-01"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://westmoor.example.org/data/pcmh/access",
+                "accessService": "Data are only available in the Westmoor secure data environment, after approval by the partnership's independent data access panel.",
+                "accessRequestCost": "High cost: charges cover data extraction, linkage and secure environment hosting.",
+                "deliveryLeadTime": "More than 6 months",
+                "accessServiceCategory": "TRE/SDE",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Westmoor Integrated Care Board",
+                "dataProcessor": "Westmoor Health Data Partnership"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use",
+                    "No linkage"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Disclosure control",
+                    "Publication required"
+                ],
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "LOCAL",
+                    "SNOMED CT",
+                    "ICD10"
+                ],
+                "conformsTo": [
+                    "LOCAL"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "CSV",
+                    "Stata"
+                ]
+            }
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Mental health diagnoses",
+                    "columns": [
+                        {
+                            "name": "depression_diagnosis_code",
+                            "dataType": "string",
+                            "description": "SNOMED CT code for a recorded diagnosis of depression in primary care.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "anxiety_diagnosis_code",
+                            "dataType": "string",
+                            "description": "SNOMED CT code for a recorded anxiety disorder.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "diagnosis_date",
+                            "dataType": "date",
+                            "description": "Date the diagnosis was recorded.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "referral_to_talking_therapies",
+                            "dataType": "string",
+                            "description": "Referral to NHS Talking Therapies recorded.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Symptom scores",
+                    "columns": [
+                        {
+                            "name": "phq9_score",
+                            "dataType": "integer",
+                            "description": "PHQ-9 depression score recorded at a GP review.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "gad7_score",
+                            "dataType": "integer",
+                            "description": "GAD-7 anxiety score recorded at a GP review.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "review_date",
+                            "dataType": "date",
+                            "description": "Date of the review.",
+                            "sensitive": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Prescriptions",
+                    "columns": [
+                        {
+                            "name": "antidepressant_bnf_code",
+                            "dataType": "string",
+                            "description": "BNF code of an antidepressant prescription issued by the practice.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "issue_date",
+                            "dataType": "date",
+                            "description": "Date the prescription was issued.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "quantity",
+                            "dataType": "integer",
+                            "description": "Number of tablets or capsules issued.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "dispensed",
+                            "dataType": "string",
+                            "description": "Whether a community pharmacy dispensed the prescription.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Linked maternity records",
+                    "description": "Maternity services records linked for women with a recorded pregnancy.",
+                    "columns": [
+                        {
+                            "name": "pregnancy_start_date",
+                            "dataType": "date",
+                            "description": "Estimated start date of the pregnancy.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "pregnancy_outcome",
+                            "dataType": "string",
+                            "description": "Live birth, stillbirth, miscarriage or termination, from the maternity services record.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "gestation_at_delivery_weeks",
+                            "dataType": "integer",
+                            "description": "Completed weeks of gestation at delivery.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "birthweight_g",
+                            "dataType": "integer",
+                            "description": "Birthweight of the baby in grams.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "perinatal_mental_health_referral",
+                            "dataType": "string",
+                            "description": "Referral to the specialist perinatal mental health team during pregnancy or within a year of birth.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

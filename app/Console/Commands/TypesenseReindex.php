@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\SearchProviders\HDRUK;
+use App\Services\Search\VariableIndex;
 use App\Services\TypesenseService;
 use Illuminate\Console\Command;
 
@@ -14,7 +15,7 @@ class TypesenseReindex extends Command
      * @var string
      */
     protected $signature = 'typesense:reindex
-        {entity? : One of: datasets, tools, collections, dur, publications, data_custodian_networks, data_custodians}
+        {entity? : One of: datasets, tools, collections, dur, publications, data_custodian_networks, data_custodians, variables}
         {--memory=1024M : memory_limit to apply for this command (bumped before the heavy import work runs)}
         {--list : List available entity types and exit}';
 
@@ -25,7 +26,7 @@ class TypesenseReindex extends Command
      */
     protected $description = 'Drop, recreate, and re-import a search entity\'s Typesense collection';
 
-    public function handle(TypesenseService $typesense): int
+    public function handle(TypesenseService $typesense, VariableIndex $variables): int
     {
         $modelMap = HDRUK::typesenseModelMap();
 
@@ -34,6 +35,7 @@ class TypesenseReindex extends Command
             foreach ($modelMap as $entityKey => $modelClass) {
                 $this->line("  {$entityKey} ({$modelClass})");
             }
+            $this->line('  variables (' . VariableIndex::class . ')');
             return self::SUCCESS;
         }
 
@@ -42,6 +44,18 @@ class TypesenseReindex extends Command
         if ($entity === null) {
             $this->error('Missing required argument: entity. Run with --list to see available options.');
             return self::FAILURE;
+        }
+
+        // Variables aren't a Scout model: one document per structural
+        // metadata column, built by VariableIndex.
+        if ($entity === 'variables') {
+            ini_set('memory_limit', $this->option('memory'));
+            $this->info("Rebuilding '" . VariableIndex::collectionName() . "' (the first build downloads the embedding model)...");
+            $total = $variables->rebuild(
+                fn (int $datasetId, int $count) => $this->line("  dataset {$datasetId}: {$count} variables")
+            );
+            $this->info("Done. {$total} variables indexed.");
+            return self::SUCCESS;
         }
 
         if (!array_key_exists($entity, $modelMap)) {

@@ -1272,5 +1272,14 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search_variables.post',
+        'method' => 'post',
+        'path' => '/search/variables',
+        'methodController' => 'VariableSearchController@search',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
 ];
