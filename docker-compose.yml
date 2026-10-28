@@ -1,10 +1,78 @@
-version: '3.8'
 services:
   typesense:
     # Keep in step with the deployed VMs (gateway-infrastructure
     # */scripts/*_typesense_script.sh). Search relies on _rand() sorting,
     # which 26.0 does not support.
     image: typesense/typesense:30.2
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - .:/var/www
+  #     - vendor_data:/var/www/vendor
+  #   ports:
+  #     - "8000:8000"
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     REDIS_HOST: redis
+  #     # REDIS_PASSWORD: "null"
+  #     DB_HOST: mysql
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - gateway
+
+  # mysql:
+  #   image: mysql:8.0
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+  #     MYSQL_DATABASE: ${DB_DATABASE:-laravel}
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - gateway
+
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #   networks:
+  #     - gateway
+
+  # clamav:
+  #   image: benzino77/clamav-rest-api:latest
+  #   environment:
+  #     - APP_PORT=3001
+  #   ports:
+  #     - "3001:3001"
+  #   networks:
+  #     - gateway
+
+  typesense:
+    image: typesense/typesense:27.1
+    environment:
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-mhRUuBFVa80ekInFVyEeg3ObdOTpwgbhf6NdFLcQziM23ceK}
+      TYPESENSE_DATA_DIR: /data
+    command: --data-dir /data --api-key=${TYPESENSE_API_KEY:-mhRUuBFVa80ekInFVyEeg3ObdOTpwgbhf6NdFLcQziM23ceK} --enable-cors
     ports:
       - "8108:8108"
     volumes:
@@ -30,3 +98,23 @@ volumes:
   #     context: .
   #     dockerfile: Dockerfile
   #   command: 'php artisan queue:work --queue=federation,default'
+    networks:
+      - gateway
+
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   ports:
+  #     - "1025:1025"
+  #     - "8025:8025"
+  #   networks:
+  #     - gateway
+
+volumes:
+  # mysql_data:
+  typesense_data:
+  # redis_data:
+  # vendor_data:
+
+networks:
+  gateway:
+    driver: bridge

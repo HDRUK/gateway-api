@@ -8,6 +8,7 @@ use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
 use App\Jobs\LogSearchAnalytics;
 use App\Jobs\SearchAnalyticsData;
+use App\Services\Search\AdvancedQueryCompiler;
 use App\Services\Search\FilterCache;
 use App\Services\Search\CollectionHydrator;
 use App\Services\Search\DataCustodianHydrator;
@@ -208,6 +209,16 @@ class HDRUK implements SearchProvider
         }
 
         $clauses = $this->buildFilterClauses($type, $params);
+
+        // The advanced rule tree compiles to one bracketed clause. Keyed apart
+        // from any facet field, it is never dropped by the multi-select
+        // exclusion queries below, so facet counts, date spans and population
+        // buckets all describe the advanced result set. Its and/or logic stays
+        // inside its brackets, so it can't widen the partner scope added next.
+        $advancedFilter = app(AdvancedQueryCompiler::class)->compile($type, $params['advanced'] ?? null);
+        if ($advancedFilter !== null) {
+            $clauses['advanced'] = $advancedFilter;
+        }
 
         // Inject the partner context scope. Using $clauses ensures the filter
         // is automatically AND-ed into every downstream query (exclusion,

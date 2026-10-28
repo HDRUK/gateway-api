@@ -1,0 +1,411 @@
+{
+    "identifier": "478a9f33-ec06-5761-9577-f7156a79a2ca",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "478a9f33-ec06-5761-9577-f7156a79a2ca",
+            "gatewayPid": "478a9f33-ec06-5761-9577-f7156a79a2ca",
+            "issued": "2017-03-15T00:00:00.000Z",
+            "modified": "2026-06-21T11:00:00.000Z",
+            "version": "1.0.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "Targeted NMR metabolomics of stored baseline plasma for 4,980 NLCS participants, quantifying around 250 lipid and metabolite measures for research on cardiometabolic risk across the life course.",
+            "contactPoint": "dataaccess@npri.example.org",
+            "keywords": "metabolomics;,;lipids;,;cardiometabolic;,;NMR;,;biomarkers",
+            "datasetType": "Omics",
+            "datasetSubType": "Metabolomics",
+            "populationSize": 4980,
+            "description": "Baseline plasma samples stored at -80°C were assayed in 2016 on a high-throughput NMR platform. Measures passing quality control are provided with the platform's own flags.",
+            "shortTitle": "Northshore Life Course Study (NLCS) — 2016 plasma metabolomics",
+            "title": "Northshore Life Course Study (NLCS) — 2016 plasma metabolomics",
+            "publisher": {
+                "name": "Northshore Population Research Institute (NPRI)",
+                "gatewayId": "uk.npri.example"
+            },
+            "inPipeline": null
+        },
+        "coverage": {
+            "spatial": "United Kingdom",
+            "typicalAgeRange": "20-55"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Study",
+                "source": "LIMS;,;Machine generated",
+                "collectionSituation": "Cohort, study, trial"
+            },
+            "temporal": {
+                "endDate": "2016-09-30",
+                "startDate": "2016-02-01",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Static"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "2-6 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Northshore Population Research Institute",
+                "dataProcessor": "Northshore Secure Data Services",
+                "accessRights": "https://npri.example.org/studies/nlcs/access",
+                "accessService": "Data are analysed in the NPRI Trusted Research Environment following an approved Data Access Request. Outputs are checked for disclosure risk before release.",
+                "accessRequestCost": "Medium cost: a fixed project fee covers data preparation and two years of TRE access. See https://npri.example.org/costs",
+                "accessServiceCategory": "TRE/SDE"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use;,;Not for profit use",
+                "dataUseRequirement": "Ethics approval required;,;Publication required;,;Disclosure control",
+                "resourceCreator": {
+                    "name": "Northshore Life Course Study team"
+                },
+                "duoCodes": "DUO:0000042;,;DUO:0000018;,;DUO:0000019",
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OPCS4;,;READ;,;SNOMED CT;,;ICD10;,;DM+D;,;NHS NATIONAL CODES;,;LOCAL",
+                "conformsTo": "LOCAL;,;NHS DATA DICTIONARY",
+                "languages": "en",
+                "formats": "SQL database table;,;CSV"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "waveOf": [
+                    {
+                        "pid": "15d9061c-f0c3-5475-8e94-4cd8c8404db6",
+                        "title": "Northshore Life Course Study (NLCS)",
+                        "url": "https://npri.example.org/studies/nlcs"
+                    }
+                ]
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "NMR metabolite measures",
+                "description": "One row per participant; concentrations as reported by the platform.",
+                "columns": [
+                    {
+                        "name": "total_cholesterol_mmol",
+                        "dataType": "number",
+                        "description": "Total plasma cholesterol, mmol/L.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "hdl_cholesterol_mmol",
+                        "dataType": "number",
+                        "description": "HDL cholesterol, mmol/L.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "triglycerides_mmol",
+                        "dataType": "number",
+                        "description": "Total triglycerides, mmol/L.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "glucose_mmol",
+                        "dataType": "number",
+                        "description": "Plasma glucose, mmol/L.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "glyca_mmol",
+                        "dataType": "number",
+                        "description": "Glycoprotein acetyls (GlycA), a marker of chronic inflammation, mmol/L.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "omega3_pct",
+                        "dataType": "number",
+                        "description": "Omega-3 fatty acids as a percentage of total fatty acids.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Sample quality control",
+                "columns": [
+                    {
+                        "name": "fasting_hours",
+                        "dataType": "number",
+                        "description": "Hours since the participant last ate when the blood sample was taken.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "storage_years",
+                        "dataType": "number",
+                        "description": "Years the plasma sample was stored at -80C before assay.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "pregnant_at_sampling",
+                        "dataType": "string",
+                        "description": "Participant reported being pregnant when the blood sample was taken; these samples are flagged in reference ranges.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "qc_flag",
+                        "dataType": "string",
+                        "description": "Platform quality-control flag for the sample.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [
+            {
+                "materialType": "Plasma"
+            }
+        ],
+        "demographicFrequency": null,
+        "omics": {
+            "assay": "NMR spectroscopy",
+            "platform": "NMR Nightingale"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "nlcs-metabolomics-2016",
+                "waveType": "Sub-study",
+                "label": "2016 plasma metabolomics"
+            },
+            "followUpSchedule": {
+                "frequency": "No scheduled follow-up",
+                "note": "Assays were run once on samples collected at baseline."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "478a9f33-ec06-5761-9577-f7156a79a2ca",
+        "version": "1.0.0",
+        "issued": "2017-03-15T00:00:00.000Z",
+        "modified": "2026-06-21T11:00:00.000Z",
+        "summary": {
+            "title": "Northshore Life Course Study (NLCS) — 2016 plasma metabolomics",
+            "abstract": "Targeted NMR metabolomics of stored baseline plasma for 4,980 NLCS participants, quantifying around 250 lipid and metabolite measures for research on cardiometabolic risk across the life course.",
+            "dataCustodian": {
+                "identifier": "uk.npri.example",
+                "name": "Northshore Population Research Institute (NPRI)",
+                "description": "https://npri.example.org/about",
+                "contactPoint": "dataaccess@npri.example.org"
+            },
+            "populationSize": 4980,
+            "keywords": [
+                "metabolomics",
+                "lipids",
+                "cardiometabolic",
+                "NMR",
+                "biomarkers"
+            ],
+            "contactPoint": "dataaccess@npri.example.org"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "nlcs-metabolomics-2016",
+                "waveType": "Sub-study",
+                "label": "2016 plasma metabolomics"
+            },
+            "followUpSchedule": {
+                "frequency": "No scheduled follow-up",
+                "note": "Assays were run once on samples collected at baseline."
+            }
+        },
+        "documentation": {
+            "description": "Baseline plasma samples stored at -80°C were assayed in 2016 on a high-throughput NMR platform. Measures passing quality control are provided with the platform's own flags."
+        },
+        "coverage": {
+            "spatial": "United Kingdom",
+            "typicalAgeRangeMin": 20,
+            "typicalAgeRangeMax": 55,
+            "materialType": [
+                "Plasma"
+            ]
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Study"
+                ],
+                "source": [
+                    "LIMS",
+                    "Machine generated"
+                ],
+                "collectionSource": [
+                    "Cohort, study, trial"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Omics",
+                        "subTypes": [
+                            "Metabolomics"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "2016-02-01",
+                "endDate": "2016-09-30"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://npri.example.org/studies/nlcs/access",
+                "accessService": "Data are analysed in the NPRI Trusted Research Environment following an approved Data Access Request. Outputs are checked for disclosure risk before release.",
+                "accessRequestCost": "Medium cost: a fixed project fee covers data preparation and two years of TRE access. See https://npri.example.org/costs",
+                "deliveryLeadTime": "2-6 months",
+                "accessServiceCategory": "TRE/SDE",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Northshore Population Research Institute",
+                "dataProcessor": "Northshore Secure Data Services"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use",
+                    "Not for profit use"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Publication required",
+                    "Disclosure control"
+                ],
+                "resourceCreator": [
+                    "Northshore Life Course Study team"
+                ],
+                "duoCodes": [
+                    "DUO:0000042",
+                    "DUO:0000018",
+                    "DUO:0000019"
+                ],
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "OPCS4",
+                    "READ",
+                    "SNOMED CT",
+                    "ICD10",
+                    "DM+D",
+                    "NHS NATIONAL CODES",
+                    "LOCAL"
+                ],
+                "conformsTo": [
+                    "LOCAL",
+                    "NHS DATA DICTIONARY"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "SQL database table",
+                    "CSV"
+                ]
+            }
+        },
+        "linkage": {
+            "waveOf": {
+                "pid": "15d9061c-f0c3-5475-8e94-4cd8c8404db6",
+                "title": "Northshore Life Course Study (NLCS)",
+                "url": "https://npri.example.org/studies/nlcs"
+            }
+        },
+        "omics": {
+            "assay": "NMR spectroscopy",
+            "platform": "NMR Nightingale"
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "NMR metabolite measures",
+                    "description": "One row per participant; concentrations as reported by the platform.",
+                    "columns": [
+                        {
+                            "name": "total_cholesterol_mmol",
+                            "dataType": "number",
+                            "description": "Total plasma cholesterol, mmol/L.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "hdl_cholesterol_mmol",
+                            "dataType": "number",
+                            "description": "HDL cholesterol, mmol/L.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "triglycerides_mmol",
+                            "dataType": "number",
+                            "description": "Total triglycerides, mmol/L.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "glucose_mmol",
+                            "dataType": "number",
+                            "description": "Plasma glucose, mmol/L.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "glyca_mmol",
+                            "dataType": "number",
+                            "description": "Glycoprotein acetyls (GlycA), a marker of chronic inflammation, mmol/L.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "omega3_pct",
+                            "dataType": "number",
+                            "description": "Omega-3 fatty acids as a percentage of total fatty acids.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Sample quality control",
+                    "columns": [
+                        {
+                            "name": "fasting_hours",
+                            "dataType": "number",
+                            "description": "Hours since the participant last ate when the blood sample was taken.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "storage_years",
+                            "dataType": "number",
+                            "description": "Years the plasma sample was stored at -80C before assay.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "pregnant_at_sampling",
+                            "dataType": "string",
+                            "description": "Participant reported being pregnant when the blood sample was taken; these samples are flagged in reference ranges.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "qc_flag",
+                            "dataType": "string",
+                            "description": "Platform quality-control flag for the sample.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

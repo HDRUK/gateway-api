@@ -854,6 +854,57 @@ class HDRUKTest extends TestCase
         (new HDRUK())->search('asthma', 'datasets', []);
     }
 
+    public function test_search_via_typesense_ands_the_advanced_clause_with_facet_filters(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null)
+                === 'publisherName:=[`SAIL`] && ((waveType:=[`Sub-study`]) || (isLongitudinal:=true))');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+            'advanced' => [
+                'match' => 'any',
+                'rules' => [
+                    ['field' => 'waveType', 'op' => 'any', 'values' => ['Sub-study']],
+                    ['field' => 'isLongitudinal', 'op' => 'is', 'value' => true],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_search_via_typesense_keeps_the_advanced_clause_in_facet_exclusion_queries(): void
+    {
+        // The publisherName facet's own exclusion query drops its clause but
+        // must still be scoped to the advanced result set.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[1]['filter_by'] ?? null) === '((isLongitudinal:=true))'
+                && ($searches[1]['facet_by'] ?? null) === 'publisherName');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+            'advanced' => ['rules' => [['field' => 'isLongitudinal', 'op' => 'is', 'value' => true]]],
+        ]);
+    }
+
+    public function test_search_via_typesense_keeps_advanced_or_inside_the_partner_scope(): void
+    {
+        Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
+
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null)
+                === '((isLongitudinal:=true) || (isFamilyBased:=true)) && partnerContext:=`HDRUK`', false);
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'advanced' => [
+                'match' => 'any',
+                'rules' => [
+                    ['field' => 'isLongitudinal', 'op' => 'is', 'value' => true],
+                    ['field' => 'isFamilyBased', 'op' => 'is', 'value' => true],
+                ],
+            ],
+        ]);
+    }
+
     private function getSearchAnalyticsData(LogSearchAnalytics $job): SearchAnalyticsData
     {
         $property = (new \ReflectionClass($job))->getProperty('data');

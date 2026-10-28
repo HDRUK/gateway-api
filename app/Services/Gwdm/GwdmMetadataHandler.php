@@ -288,7 +288,33 @@ abstract class GwdmMetadataHandler
                 ->flatMap(fn ($t) => collect($t['columns'] ?? [])->pluck('description'))
                 ->filter(fn ($v) => is_string($v) && $v !== '')
                 ->values()->all(),
+            ...$this->ageRangeBounds(data_get($envelope, 'metadata.coverage.typicalAgeRange')),
+            'deliveryLeadTime' => $this->nonEmptyString(data_get($envelope, 'metadata.accessibility.access.deliveryLeadTime')),
         ];
+    }
+
+    /**
+     * Splits GWDM's "min-max" typical age range into two indexed bounds, so an
+     * advanced search can ask for records whose range overlaps a given one.
+     * Either bound is null when the range is missing or not in that form.
+     *
+     * @return array{ageRangeMin: ?int, ageRangeMax: ?int}
+     */
+    protected function ageRangeBounds(mixed $range): array
+    {
+        $bounds = ['ageRangeMin' => null, 'ageRangeMax' => null];
+
+        if (is_string($range) && preg_match('/^\s*(\d+)\s*-\s*(\d+)\s*$/', $range, $matches)) {
+            $bounds['ageRangeMin'] = (int) $matches[1];
+            $bounds['ageRangeMax'] = (int) $matches[2];
+        }
+
+        return $bounds;
+    }
+
+    protected function nonEmptyString(mixed $value): ?string
+    {
+        return is_string($value) && trim($value) !== '' ? trim($value) : null;
     }
 
     /**

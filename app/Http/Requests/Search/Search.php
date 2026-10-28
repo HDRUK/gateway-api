@@ -3,6 +3,9 @@
 namespace App\Http\Requests\Search;
 
 use App\Http\Requests\BaseFormRequest;
+use App\Services\Search\AdvancedQueryCompiler;
+use Closure;
+use InvalidArgumentException;
 
 class Search extends BaseFormRequest
 {
@@ -40,6 +43,19 @@ class Search extends BaseFormRequest
             'providers' => ['nullable', 'array'],
             'providers.*' => ['string'],
             'dataSource' => ['nullable', 'string', 'max:50'],
+            // An and/or rule tree; see AdvancedQueryCompiler for its shape.
+            // Compiled here so a malformed tree is a 422, not empty results.
+            'advanced' => [
+                'nullable',
+                'array',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    try {
+                        app(AdvancedQueryCompiler::class)->compile((string) $this->input('type'), $value);
+                    } catch (InvalidArgumentException $e) {
+                        $fail($e->getMessage());
+                    }
+                },
+            ],
         ];
     }
 }
