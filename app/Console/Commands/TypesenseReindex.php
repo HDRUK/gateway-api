@@ -109,7 +109,9 @@ class TypesenseReindex extends Command
             $bar?->display();
         };
 
+        $partners = VariableIndex::partners();
         $this->info(($resume ? 'Resuming' : 'Rebuilding') . " '{$collection}'.");
+        $this->line('  Partners: ' . ($partners === [] ? 'all' : implode(', ', $partners)) . ' (typesense.variables.partners).');
         $this->line(sprintf(
             '  %d variables per request, %ds timeout per request.',
             config('typesense.variables.import_batch_size'),
@@ -123,6 +125,9 @@ class TypesenseReindex extends Command
                     break;
                 case 'creating':
                     $this->line('  Creating the collection (the first build downloads the embedding model)...');
+                    break;
+                case 'pruned':
+                    $this->line('  Removed ' . number_format($context['variables']) . ' variables of partners no longer indexed.');
                     break;
                 case 'resuming':
                     $this->line("  Keeping the collection: {$context['indexed']} datasets already have variables indexed.");
