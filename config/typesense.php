@@ -62,6 +62,11 @@ return [
     'variables' => [
         'enabled'            => env('TYPESENSE_VARIABLES_ENABLED', true),
         'collection'         => 'dataset_variables',
+        // Partners whose datasets have their variables indexed, comma-separated;
+        // empty indexes every partner. Variable search only returns the
+        // caller's own partner's variables, so only partners using it need
+        // them - embedding is slow, and HDRUK alone is days of it.
+        'partners'           => 'PRUK',
         'model'              => env('TYPESENSE_VARIABLES_MODEL', 'ts/all-MiniLM-L12-v2'),
         // Cosine distance; lower is closer. 0.70 keeps "GHQ-12 total score"
         // for "mental health" but drops "employment status".

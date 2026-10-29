@@ -2,6 +2,7 @@
 
 namespace App\Services\Search;
 
+use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Services\DatasetService;
 use App\Services\TypesenseService;
@@ -38,6 +39,27 @@ class VariableIndex
         return config('scout.prefix', '').config('typesense.variables.collection', 'dataset_variables');
     }
 
+    /**
+     * The partners whose variables are indexed (typesense.variables.partners);
+     * empty means every partner.
+     *
+     * @return string[]
+     */
+    public static function partners(): array
+    {
+        return array_values(array_filter(array_map(
+            fn (string $partner) => strtoupper(trim($partner)),
+            explode(',', (string) config('typesense.variables.partners', ''))
+        )));
+    }
+
+    public static function indexesPartner(string $partner): bool
+    {
+        $partners = self::partners();
+
+        return $partners === [] || in_array(strtoupper($partner), $partners, true);
+    }
+
     public function schema(): array
     {
         return [
@@ -71,17 +93,19 @@ class VariableIndex
 
     /**
      * Drops and recreates the collection, then indexes every eligible
-     * dataset. The first create downloads the embedding model, which can
-     * take a minute or two.
+     * dataset of the indexed partners (partners()). The first create
+     * downloads the embedding model, which can take a minute or two.
      *
      * With $resume the collection is kept and datasets whose variables are
      * all indexed already are skipped, so an interrupted rebuild carries on
-     * rather than embedding everything again. A dataset that fails is
-     * reported and the rebuild moves on; resuming retries it.
+     * rather than embedding everything again. Variables of partners no
+     * longer indexed are removed. A dataset that fails is reported and the
+     * rebuild moves on; resuming retries it.
      *
      * $progress receives an event name and its context:
      *   dropping, creating                            the collection
      *   resuming   [indexed]                          datasets already complete
+     *   pruned     [variables]                        removed, partner not indexed
      *   started    [datasets]                         eligible dataset versions
      *   dataset    [dataset_id, title, variables]     about to import
      *   batch      [dataset_id, done, variables]      after each import request
@@ -95,9 +119,14 @@ class VariableIndex
     {
         $progress ??= fn () => null;
         $name = self::collectionName();
+        $partners = self::partners();
 
         $alreadyIndexed = [];
         if ($resume && $this->typesense->collectionExists($name)) {
+            if ($partners !== []) {
+                $pruned = $this->writer()->deleteDocumentsWhere($name, 'partnerContext:!='.self::filterList($partners));
+                $progress('pruned', ['variables' => (int) ($pruned['num_deleted'] ?? 0)]);
+            }
             $alreadyIndexed = $this->indexedCounts();
             $progress('resuming', ['indexed' => count($alreadyIndexed)]);
         } else {
@@ -110,11 +139,14 @@ class VariableIndex
         }
 
         $eligible = DatasetVersion::query()->indexEligible();
+        if ($partners !== []) {
+            $eligible->whereHas('dataset', fn ($q) => $q->whereIn('partner_context', $partners));
+        }
         $progress('started', ['datasets' => (clone $eligible)->count()]);
 
         $total = 0;
         $eligible
-            ->with(['dataset' => fn ($q) => $q->select(['id', 'status', 'team_id', 'partner_context'])->with('team:id,name')])
+            ->with(self::documentRelations())
             ->chunkById(100, function ($versions) use (&$total, $progress, $alreadyIndexed) {
                 foreach ($versions as $version) {
                     $total += $this->rebuildDataset($version, $progress, $alreadyIndexed);
@@ -210,17 +242,30 @@ class VariableIndex
         return $counts;
     }
 
+    /** A Typesense filter_by value list: [`PRUK`,`CRUK`]. */
+    private static function filterList(array $values): string
+    {
+        return '['.implode(',', array_map(fn (string $v) => '`'.str_replace('`', '', $v).'`', $values)).']';
+    }
+
     /**
      * Replaces one dataset's variables with those of its indexed version,
-     * or removes them when no version is indexed.
+     * or removes them when no version is indexed or its partner isn't.
      */
     public function syncDataset(int $datasetId): int
     {
         $this->ensureCollection();
         $this->removeDataset($datasetId);
 
+        // Read directly: the dataset() relation doesn't select partner_context.
+        $partner = Dataset::where('id', $datasetId)->value('partner_context');
+        if ($partner === null || ! self::indexesPartner($partner)) {
+            return 0;
+        }
+
         $version = DatasetVersion::query()
             ->where('dataset_id', $datasetId)
+            ->with(self::documentRelations())
             ->orderByDesc('version')
             ->first();
 
@@ -229,6 +274,16 @@ class VariableIndex
         }
 
         return $this->import($this->documentsFor($version));
+    }
+
+    /**
+     * What documentsFor() reads from a version's dataset. Eager-loaded
+     * because the dataset() relation alone doesn't select partner_context,
+     * and every variable would be filed under HDRUK.
+     */
+    private static function documentRelations(): array
+    {
+        return ['dataset' => fn ($q) => $q->select(['id', 'status', 'team_id', 'partner_context'])->with('team:id,name')];
     }
 
     public function removeDataset(int $datasetId): void
