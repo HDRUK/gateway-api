@@ -7,13 +7,13 @@ use Auditor;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\ProjectGrant;
-use App\Models\ProjectGrantVersion;
-use App\Models\ProjectGrantVersionHasDataset;
 use Illuminate\Http\JsonResponse;
 use App\Context\PartnerContext;
 use App\Services\ProjectGrantService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectGrant\CreateProjectGrant;
+use App\Http\Requests\ProjectGrant\EditProjectGrant;
+use App\Http\Requests\ProjectGrant\UpdateProjectGrant;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\Responses;
@@ -226,43 +226,11 @@ class ProjectGrantController extends Controller
         }
 
         try {
-            $input = $request->validated();
-
-            $grant = ProjectGrant::create([
-                'pid' => $input['pid'],
-                'user_id' => $currentUser,
-                'team_id' => (int) $teamId,
-            ]);
-
-            $versionNumber = array_key_exists('version', $input) ? (int) $input['version'] : 1;
-            $version = ProjectGrantVersion::create([
-                'project_grant_id' => $grant->id,
-                'version' => $versionNumber,
-                'project_grant_name' => $input['projectGrantName'],
-                'lead_researcher' => $input['leadResearcher'] ?? null,
-                'lead_research_institute' => $input['leadResearchInstitute'] ?? null,
-                'grant_numbers' => $input['grantNumbers'] ?? null,
-                'project_grant_start_date' => $input['projectGrantStartDate'] ?? null,
-                'project_grant_end_date' => $input['projectGrantEndDate'] ?? null,
-                'project_grant_scope' => $input['projectGrantScope'] ?? null,
-            ]);
-
-            if (!empty($input['datasets'])) {
-                foreach ($input['datasets'] as $datasetId) {
-                    ProjectGrantVersionHasDataset::firstOrCreate([
-                        'project_grant_id' => $grant->id,
-                        'dataset_id' => (int) $datasetId,
-                    ]);
-                }
-            }
-
-            if (!empty($input['publications'])) {
-                $version->publications()->sync($input['publications']);
-            }
-
-            if (!empty($input['tools'])) {
-                $version->tools()->sync($input['tools']);
-            }
+            $grant = $this->projectGrantService->create(
+                $request->validated(),
+                $currentUser,
+                (int) $teamId
+            );
 
             Auditor::log([
                 'user_id' => $currentUser,
@@ -284,6 +252,210 @@ class ProjectGrantController extends Controller
             Auditor::log([
                 'user_id' => $currentUser,
                 'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *    path="/api/v1/project_grants/{id}",
+     *    operationId="update_project_grant",
+     *    tags={"Project Grant"},
+     *    summary="ProjectGrantController@update",
+     *    description="Replace project grant fields and create a new version",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       required=true,
+     *       @OA\Schema(type="integer")
+     *    ),
+     *    @OA\Response(
+     *        response="200",
+     *        description="Success",
+     *        @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(property="data", type="object")
+     *        )
+     *    )
+     * )
+     */
+    public function update(UpdateProjectGrant $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = $request->input('jwt_user', []);
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : 0;
+
+        try {
+            $grant = ProjectGrant::where('id', $id)->first();
+            if (!$grant) {
+                throw new NotFoundException();
+            }
+
+            $this->checkAccess($input, $grant->team_id, null, 'team', $request->header());
+
+            $this->projectGrantService->update($grant, $request->validated());
+
+            Auditor::log([
+                'user_id' => $currentUser,
+                'team_id' => $grant->team_id,
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProjectGrant ' . $id . ' updated',
+            ]);
+
+            $withRelated = $request->boolean('with_related', true);
+            $updated = $this->getProjectGrantById($id, $withRelated);
+            $resourceClass = $this->partnerContext->resourceFor(ProjectGrant::class);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $resourceClass::make($updated)->resolve($request),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return $this->notFoundResponse($e->getMessage());
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUser,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/project_grants/{id}",
+     *    operationId="edit_project_grant",
+     *    tags={"Project Grant"},
+     *    summary="ProjectGrantController@edit",
+     *    description="Partially update a project grant and/or its latest version",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       required=true,
+     *       @OA\Schema(type="integer")
+     *    ),
+     *    @OA\Response(
+     *        response="200",
+     *        description="Success",
+     *        @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(property="data", type="object")
+     *        )
+     *    )
+     * )
+     */
+    public function edit(EditProjectGrant $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = $request->input('jwt_user', []);
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : 0;
+
+        try {
+            $grant = ProjectGrant::where('id', $id)->first();
+            if (!$grant) {
+                throw new NotFoundException();
+            }
+
+            $this->checkAccess($input, $grant->team_id, null, 'team', $request->header());
+
+            $this->projectGrantService->edit($grant, $request->validated());
+
+            Auditor::log([
+                'user_id' => $currentUser,
+                'team_id' => $grant->team_id,
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProjectGrant ' . $id . ' edited',
+            ]);
+
+            $withRelated = $request->boolean('with_related', true);
+            $updated = $this->getProjectGrantById($id, $withRelated);
+            $resourceClass = $this->partnerContext->resourceFor(ProjectGrant::class);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $resourceClass::make($updated)->resolve($request),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return $this->notFoundResponse($e->getMessage());
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUser,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *    path="/api/v1/project_grants/{id}",
+     *    operationId="delete_project_grant",
+     *    tags={"Project Grant"},
+     *    summary="ProjectGrantController@destroy",
+     *    description="Soft delete a project grant and its versions",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       required=true,
+     *       @OA\Schema(type="integer")
+     *    ),
+     *    @OA\Response(
+     *        response="200",
+     *        description="Success",
+     *        @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success")
+     *        )
+     *    )
+     * )
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $input = $request->all();
+        $jwtUser = $request->input('jwt_user', []);
+        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : 0;
+
+        try {
+            $grant = ProjectGrant::where('id', $id)->first();
+            if (!$grant) {
+                throw new NotFoundException();
+            }
+
+            $this->checkAccess($input, $grant->team_id, null, 'team', $request->header());
+
+            $this->projectGrantService->delete($grant);
+
+            Auditor::log([
+                'user_id' => $currentUser,
+                'team_id' => $grant->team_id,
+                'action_type' => 'DELETE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProjectGrant ' . $id . ' deleted',
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (NotFoundException $e) {
+            return $this->notFoundResponse($e->getMessage());
+        } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => $currentUser,
                 'action_type' => 'EXCEPTION',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
