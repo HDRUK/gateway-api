@@ -69,6 +69,11 @@ return [
         'max_terms'          => 6,
         'max_datasets'       => 50,
         'per_dataset'        => 25,
+        // Typesense embeds as it imports, so a large dataset in one request
+        // can outlast a proxy's timeout. Variables go in batches instead,
+        // each allowed this many seconds.
+        'import_batch_size'  => (int) env('TYPESENSE_VARIABLES_IMPORT_BATCH_SIZE', 100),
+        'import_timeout'     => (int) env('TYPESENSE_VARIABLES_IMPORT_TIMEOUT', 120),
     ],
 
 ];

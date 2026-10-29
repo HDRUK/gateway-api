@@ -18,7 +18,9 @@ class SyncDatasetVariables implements ShouldQueue
 
     public $timeout = 120;
 
-    public function __construct(private readonly int $datasetId) {}
+    public function __construct(private readonly int $datasetId)
+    {
+    }
 
     public function handle(VariableIndex $index): void
     {

@@ -10,7 +10,7 @@ class AdvancedQueryCompilerTest extends TestCase
 {
     private function compile(?array $tree, string $type = 'datasets'): ?string
     {
-        return (new AdvancedQueryCompiler)->compile($type, $tree);
+        return (new AdvancedQueryCompiler())->compile($type, $tree);
     }
 
     public function test_returns_null_for_no_tree_or_no_rules(): void

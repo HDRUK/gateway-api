@@ -24,7 +24,8 @@ class VariableSearch
     public function __construct(
         private readonly TypesenseService $typesense,
         private readonly PartnerContext $partnerContext,
-    ) {}
+    ) {
+    }
 
     /**
      * @param  string[]  $terms
@@ -198,7 +199,7 @@ class VariableSearch
             return [];
         }
 
-        $result = $this->typesense->rawSearch((new DatasetVersion)->searchableAs(), '*', [
+        $result = $this->typesense->rawSearch((new DatasetVersion())->searchableAs(), '*', [
             'filter_by' => $this->baseFilter($ids),
             'include_fields' => 'dataset_id,title,publisherName',
             'per_page' => count($ids),
