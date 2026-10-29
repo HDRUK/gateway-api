@@ -17,7 +17,11 @@ use Illuminate\Support\Facades\Log;
  */
 class VariableIndex
 {
-    public function __construct(private readonly TypesenseService $typesense) {}
+    private ?TypesenseService $writer = null;
+
+    public function __construct(private readonly TypesenseService $typesense)
+    {
+    }
 
     /**
      * Variable indexing follows Scout's driver, so tests and environments
@@ -70,34 +74,140 @@ class VariableIndex
      * dataset. The first create downloads the embedding model, which can
      * take a minute or two.
      *
-     * @param  callable(int $datasetId, int $count): void|null  $progress
+     * With $resume the collection is kept and datasets whose variables are
+     * all indexed already are skipped, so an interrupted rebuild carries on
+     * rather than embedding everything again. A dataset that fails is
+     * reported and the rebuild moves on; resuming retries it.
+     *
+     * $progress receives an event name and its context:
+     *   dropping, creating                            the collection
+     *   resuming   [indexed]                          datasets already complete
+     *   started    [datasets]                         eligible dataset versions
+     *   dataset    [dataset_id, title, variables]     about to import
+     *   batch      [dataset_id, done, variables]      after each import request
+     *   indexed    [dataset_id, variables, failed]    dataset finished
+     *   skipped    [dataset_id, reason]               not searchable, no variables, already indexed
+     *   failed     [dataset_id, error]                dataset abandoned
+     *
+     * @param  callable(string $event, array $context): void|null  $progress
      */
-    public function rebuild(?callable $progress = null): int
+    public function rebuild(?callable $progress = null, bool $resume = false): int
     {
+        $progress ??= fn () => null;
         $name = self::collectionName();
-        if ($this->typesense->collectionExists($name)) {
-            $this->typesense->dropCollection($name);
+
+        $alreadyIndexed = [];
+        if ($resume && $this->typesense->collectionExists($name)) {
+            $alreadyIndexed = $this->indexedCounts();
+            $progress('resuming', ['indexed' => count($alreadyIndexed)]);
+        } else {
+            if ($this->typesense->collectionExists($name)) {
+                $progress('dropping', []);
+                $this->typesense->dropCollection($name);
+            }
+            $progress('creating', []);
+            $this->typesense->createCollection($this->schema());
         }
-        $this->typesense->createCollection($this->schema());
+
+        $eligible = DatasetVersion::query()->indexEligible();
+        $progress('started', ['datasets' => (clone $eligible)->count()]);
 
         $total = 0;
-        DatasetVersion::query()
-            ->indexEligible()
+        $eligible
             ->with(['dataset' => fn ($q) => $q->select(['id', 'status', 'team_id', 'partner_context'])->with('team:id,name')])
-            ->chunkById(100, function ($versions) use (&$total, $progress) {
+            ->chunkById(100, function ($versions) use (&$total, $progress, $alreadyIndexed) {
                 foreach ($versions as $version) {
-                    if (! $version->shouldBeSearchable()) {
-                        continue;
-                    }
-                    $count = $this->import($this->documentsFor($version));
-                    $total += $count;
-                    if ($progress) {
-                        $progress((int) $version->dataset_id, $count);
-                    }
+                    $total += $this->rebuildDataset($version, $progress, $alreadyIndexed);
                 }
             });
 
         return $total;
+    }
+
+    /**
+     * One dataset's part of rebuild(); returns the variables it indexed.
+     *
+     * @param  array<int, int>  $alreadyIndexed  variables indexed, by dataset id
+     */
+    private function rebuildDataset(DatasetVersion $version, callable $progress, array $alreadyIndexed): int
+    {
+        $datasetId = (int) $version->dataset_id;
+
+        try {
+            if (! $version->shouldBeSearchable()) {
+                $progress('skipped', ['dataset_id' => $datasetId, 'reason' => 'not searchable']);
+
+                return 0;
+            }
+
+            $documents = $this->documentsFor($version);
+            if ($documents === []) {
+                $progress('skipped', ['dataset_id' => $datasetId, 'reason' => 'no variables']);
+
+                return 0;
+            }
+
+            $indexed = $alreadyIndexed[$datasetId] ?? 0;
+            if ($indexed === count($documents)) {
+                $progress('skipped', ['dataset_id' => $datasetId, 'reason' => 'already indexed']);
+
+                return 0;
+            }
+            // Partly indexed by an interrupted run: start that dataset afresh.
+            if ($indexed > 0) {
+                $this->removeDataset($datasetId);
+            }
+
+            $progress('dataset', [
+                'dataset_id' => $datasetId,
+                'title' => $documents[0]['datasetTitle'],
+                'variables' => count($documents),
+            ]);
+
+            $count = $this->import($documents, fn (int $done) => $progress('batch', [
+                'dataset_id' => $datasetId,
+                'done' => $done,
+                'variables' => count($documents),
+            ]));
+
+            $progress('indexed', [
+                'dataset_id' => $datasetId,
+                'variables' => $count,
+                'failed' => count($documents) - $count,
+            ]);
+
+            return $count;
+        } catch (\Throwable $e) {
+            Log::warning('VariableIndex: dataset failed to index', [
+                'dataset_id' => $datasetId,
+                'error' => $e->getMessage(),
+            ]);
+            $progress('failed', ['dataset_id' => $datasetId, 'error' => $e->getMessage()]);
+
+            return 0;
+        }
+    }
+
+    /**
+     * Variables already in the collection, by dataset id.
+     *
+     * @return array<int, int>
+     */
+    private function indexedCounts(): array
+    {
+        $result = $this->writer()->rawSearch(self::collectionName(), '*', [
+            'facet_by' => 'dataset_id',
+            // Every dataset, not Typesense's default of the top 10.
+            'max_facet_values' => 1000000,
+            'per_page' => 0,
+        ]);
+
+        $counts = [];
+        foreach ($result['facet_counts'][0]['counts'] ?? [] as $facet) {
+            $counts[(int) $facet['value']] = (int) $facet['count'];
+        }
+
+        return $counts;
     }
 
     /**
@@ -123,10 +233,7 @@ class VariableIndex
 
     public function removeDataset(int $datasetId): void
     {
-        $this->typesense->client()
-            ->collections[self::collectionName()]
-            ->documents
-            ->delete(['filter_by' => 'dataset_id:='.$datasetId]);
+        $this->writer()->deleteDocumentsWhere(self::collectionName(), 'dataset_id:='.$datasetId);
     }
 
     /**
@@ -186,27 +293,55 @@ class VariableIndex
         return trim(preg_replace('/[\s_.\-]+/', ' ', $name));
     }
 
-    private function import(array $documents): int
+    /**
+     * Upserts in batches of typesense.variables.import_batch_size, so no one
+     * request runs long while Typesense embeds it.
+     *
+     * @param  callable(int $done): void|null  $onBatch  variables sent so far
+     */
+    private function import(array $documents, ?callable $onBatch = null): int
     {
-        if ($documents === []) {
-            return 0;
+        $batchSize = max(1, (int) config('typesense.variables.import_batch_size', 100));
+        $done = 0;
+        $failed = 0;
+        $firstError = null;
+
+        foreach (array_chunk($documents, $batchSize) as $batch) {
+            $results = $this->writer()->importDocuments(self::collectionName(), $batch, ['action' => 'upsert']);
+
+            foreach ($results as $result) {
+                if (! ($result['success'] ?? false)) {
+                    $failed++;
+                    $firstError ??= $result['error'] ?? null;
+                }
+            }
+
+            $done += count($batch);
+            if ($onBatch) {
+                $onBatch($done);
+            }
         }
 
-        $results = $this->typesense->client()
-            ->collections[self::collectionName()]
-            ->documents
-            ->import($documents, ['action' => 'upsert']);
-
-        $failed = array_filter($results, fn ($r) => ! ($r['success'] ?? false));
-        if ($failed !== []) {
+        if ($failed > 0) {
             Log::warning('VariableIndex: some variables failed to index', [
                 'dataset_id' => $documents[0]['dataset_id'],
-                'failed' => count($failed),
-                'first_error' => reset($failed)['error'] ?? null,
+                'failed' => $failed,
+                'first_error' => $firstError,
             ]);
         }
 
-        return count($documents) - count($failed);
+        return count($documents) - $failed;
+    }
+
+    /**
+     * Writes give up after typesense.variables.import_timeout rather than
+     * wait forever on a dropped connection (see TypesenseService::withTimeout).
+     */
+    private function writer(): TypesenseService
+    {
+        return $this->writer ??= $this->typesense->withTimeout(
+            max(1, (int) config('typesense.variables.import_timeout', 120))
+        );
     }
 
     private function ensureCollection(): void

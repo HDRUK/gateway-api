@@ -13,7 +13,9 @@ class VariableSearchController extends Controller
 {
     private const FEATURE_FLAG = 'V2_SearchAggregation';
 
-    public function __construct(protected VariableSearch $variables) {}
+    public function __construct(protected VariableSearch $variables)
+    {
+    }
 
     /**
      * Datasets whose structural metadata holds variables matching the terms.
