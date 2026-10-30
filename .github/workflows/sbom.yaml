@@ -1,0 +1,106 @@
+name: Generate SBOM
+run-name: ${{ github.actor }} triggered SBOM generation
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Includes dev dependencies whatever the Dockerfile installs. Syft only reads
+  # production packages from composer.lock, so composer install runs first and
+  # Syft picks up everything (dev included) from vendor/composer/installed.json.
+  sbom-source:
+    name: SBOM (source dependencies)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: |-
+      ${{
+         github.ref_name == 'dev' && 'dev'
+      ||                             'release'
+      }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Configure Composer GitHub auth
+        run: composer config --global github-oauth.github.com "${{ secrets.COMPOSER_GITHUB_TOKEN }}"
+
+      - name: Composer install
+        run: composer install --no-scripts --no-progress
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Generate SBOMs
+        env:
+          BASENAME: sbom/gateway-api-source-${{ github.ref_name }}-${{ github.sha }}
+        run: |
+          mkdir -p sbom
+          syft dir:. \
+            --exclude './node_modules' \
+            --source-name gateway-api \
+            --source-version "${GITHUB_SHA}" \
+            -o "cyclonedx-json=${BASENAME}.cdx.json" \
+            -o "spdx-json=${BASENAME}.spdx.json"
+          ls -l sbom
+
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-api-sbom-source-${{ github.ref_name }}-${{ github.sha }}
+          path: sbom/
+          if-no-files-found: error
+          retention-days: 90
+
+  sbom-image:
+    name: SBOM (container image)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Built locally and never pushed: this only exists to be scanned. It uses
+      # the same Dockerfile as the deployed image.
+      # One we prove this works syft scanning moves into the shared docker build
+      - name: Build image
+        run: docker build -t gateway-api-sbom:${{ github.sha }} .
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      # File entries are excluded: they add ~38k components and are no use for
+      # CVE matching, which only needs packages.
+      - name: Generate SBOMs
+        env:
+          SYFT_FILE_METADATA_SELECTION: none
+          BASENAME: sbom/gateway-api-${{ github.ref_name }}-${{ github.sha }}
+        run: |
+          mkdir -p sbom
+          syft "docker:gateway-api-sbom:${GITHUB_SHA}" \
+            --source-name gateway-api \
+            --source-version "${GITHUB_SHA}" \
+            -o "cyclonedx-json=${BASENAME}.cdx.json" \
+            -o "spdx-json=${BASENAME}.spdx.json"
+          ls -l sbom
+
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gateway-api-sbom-${{ github.ref_name }}-${{ github.sha }}
+          path: sbom/
+          if-no-files-found: error
+          retention-days: 90
