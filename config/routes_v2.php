@@ -524,6 +524,20 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'form_hydration',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/form_hydration',
+        'methodController' => 'FormHydrationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
 
     // v2 data uses
     [
