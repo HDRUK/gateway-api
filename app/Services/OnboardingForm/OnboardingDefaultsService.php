@@ -52,8 +52,10 @@ class OnboardingDefaultsService
             ],
         ];
 
-        $datasets = Dataset::where('team_id', $team->id)->get()
-            ->map(fn (Dataset $dataset) => ['metadata' => $dataset->latestVersion()->metadata])
+        $datasets = Dataset::where('team_id', $team->id)->with('latestMetadata')->get()
+            ->filter(fn (Dataset $dataset) => $dataset->latestMetadata !== null)
+            ->map(fn (Dataset $dataset) => ['metadata' => $dataset->latestMetadata->metadata])
+            ->values()
             ->all();
 
         if (count($datasets)) {

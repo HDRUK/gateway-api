@@ -3,6 +3,7 @@
 namespace App\Services\OnboardingForm;
 
 use App\Exceptions\MMCException;
+use App\Exceptions\UnprocessableException;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
@@ -10,7 +11,6 @@ use App\Services\DatasetService;
 use App\Services\Gwdm\SourceSchema;
 use Config;
 use Illuminate\Support\Facades\Cache;
-use InvalidArgumentException;
 use MetadataManagementController as MMC;
 
 class OnboardingFormService
@@ -31,7 +31,7 @@ class OnboardingFormService
      * any other schema opens a form holding just the summary, rather than a
      * translation.
      *
-     * @throws InvalidArgumentException when the requested schema is not offered
+     * @throws UnprocessableException when the requested schema is not offered
      */
     public function hydrate(Team $team, ?Dataset $dataset, ?string $model, ?string $version): array
     {
@@ -39,7 +39,7 @@ class OnboardingFormService
         $default = $this->catalogue->defaultFor($latest ? $this->sourceSchema($latest) : null);
 
         if ($model !== null && !$this->catalogue->offers($model, $version)) {
-            throw new InvalidArgumentException('Schema ' . $model . ' ' . $version . ' is not offered for onboarding');
+            throw new UnprocessableException('Schema ' . $model . ' ' . $version . ' is not offered for onboarding');
         }
 
         $model ??= $default['model'];

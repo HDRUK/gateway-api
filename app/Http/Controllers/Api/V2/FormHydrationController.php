@@ -7,11 +7,11 @@ use Auditor;
 use Exception;
 use App\Models\Team;
 use App\Models\Dataset;
-use InvalidArgumentException;
 use Laravel\Pennant\Feature;
 use App\Http\Traits\CheckAccess;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Exceptions\UnprocessableException;
 use App\Services\OnboardingForm\OnboardingFormService;
 use App\Http\Requests\V2\FormHydration\GetFormHydration;
 
@@ -146,7 +146,7 @@ class FormHydrationController extends Controller
                 'message' => 'success',
                 'data' => $data,
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (InvalidArgumentException $e) {
+        } catch (UnprocessableException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         } catch (Exception $e) {
             Auditor::log([
