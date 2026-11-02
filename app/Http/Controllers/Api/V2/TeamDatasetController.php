@@ -779,10 +779,9 @@ class TeamDatasetController extends Controller
      *    ),
      *    @OA\Response(
      *       response=422,
-     *       description="Activating a draft refused because its stored GWDM fails validation (SchemaOnboardingForm flag only)",
+     *       description="Activating a draft refused because its metadata fails source-schema or GWDM validation (SchemaOnboardingForm flag only)",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Dataset metadata is not valid for activation"),
-     *          @OA\Property(property="errors", type="array", @OA\Items(type="object")),
      *       )
      *    ),
      *    @OA\Response(
@@ -811,11 +810,9 @@ class TeamDatasetController extends Controller
                 && $datasetModel->status === Dataset::STATUS_DRAFT
                 && Feature::active('SchemaOnboardingForm')
             ) {
-                $errors = $this->datasetActivationService->errors($datasetModel);
-                if (count($errors)) {
+                if (!$this->datasetActivationService->isValid($datasetModel)) {
                     return response()->json([
                         'message' => 'Dataset metadata is not valid for activation',
-                        'errors' => $errors,
                     ], 422);
                 }
             }

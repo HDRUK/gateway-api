@@ -1158,8 +1158,7 @@ class DatasetTest extends TestCase
             ],
             $this->header
         );
-        $response->assertStatus(422)
-            ->assertJsonPath('errors', $this->traserValidationErrors);
+        $response->assertStatus(422);
         Queue::assertNotPushed(LinkageExtraction::class);
         $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
     }

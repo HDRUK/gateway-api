@@ -1170,8 +1170,6 @@ trait MockExternalApis
            });
         MMC::shouldReceive("validateDataModelType")
             ->andReturnUsing(fn () => !count($this->traserValidationErrors));
-        MMC::shouldReceive("validationErrors")
-            ->andReturnUsing(fn () => $this->traserValidationErrors);
         MMC::shouldReceive("listSchemas")->andReturn([
             'HDRUK' => ['2.1.2', '4.0.0', '4.1.0'],
             'PRUK' => ['1.0.0'],

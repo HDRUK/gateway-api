@@ -8,13 +8,13 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Services\DatasetService;
-use App\Services\Gwdm\SourceSchema;
 use Config;
 use Illuminate\Support\Facades\Cache;
 use MetadataManagementController as MMC;
 
 class OnboardingFormService
 {
+    use ReadsSubmittedMetadata;
     use ResolvesSchemaNodes;
 
     private const SCHEMA_TTL = 300;
@@ -108,10 +108,7 @@ class OnboardingFormService
             prefetched: $latest,
         );
 
-        $original = $envelope['original_metadata'];
-        if (isset($original['schemaModel'], $original['metadata'])) {
-            $original = $original['metadata'];
-        }
+        $original = $this->submittedMetadata($envelope);
 
         if ($source->model === $model && $source->version === $version && !empty($original)) {
             return [
@@ -136,13 +133,6 @@ class OnboardingFormService
         return [
             'metadata' => $translated['wasTranslated'] ? $translated['metadata'] : null,
         ];
-    }
-
-    private function sourceSchema(DatasetVersion $version): SourceSchema
-    {
-        $source = SourceSchema::fromColumns($version->only(['source_schema_model', 'source_schema_version']));
-
-        return $source->model !== null ? $source : SourceSchema::declared(null, null, (array) $version->metadata);
     }
 
     /**
