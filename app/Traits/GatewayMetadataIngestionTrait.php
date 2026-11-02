@@ -194,7 +194,7 @@ trait GatewayMetadataIngestionTrait
             return true;
         } catch (\Throwable $e) {
             $this->log('error', "encountered internal error while CREATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-            $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while creating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
+            $this->recordUnexpectedFailure($gmi->getTeam(), $federation->id, $pid, $jobUuid, $attempts, 'creating');
 
             return false;
         }
@@ -324,7 +324,7 @@ trait GatewayMetadataIngestionTrait
         } catch (\Throwable $e) {
             $this->log('error', "encountered internal error while UPDATING dataset {$pid} from remote source: " . $e->getMessage() . "\n" . $e->getTraceAsString());
 
-            $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "An unexpected error occurred while updating dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
+            $this->recordUnexpectedFailure($gmi->getTeam(), $federation->id, $pid, $jobUuid, $attempts, 'updating');
 
             return false;
         }
@@ -445,6 +445,11 @@ trait GatewayMetadataIngestionTrait
                 'job_attempts' => $attempts,
             ]
         );
+    }
+
+    public function recordUnexpectedFailure(int $teamId, int $federationId, string $pid, string $jobUuid, int $attempts, string $action): void
+    {
+        $this->sendToHistory($teamId, $federationId, $pid, $jobUuid, "An unexpected error occurred while {$action} dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
     }
 
     /**
