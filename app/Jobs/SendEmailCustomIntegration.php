@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\FederationJobRunStatus;
 use App\Models\Dataset;
 use App\Models\Federation;
 use App\Models\FederationJobRun;
@@ -107,14 +108,14 @@ class SendEmailCustomIntegration implements ShouldQueue
         foreach ($latestAttempts as $latestAttempt) {
             $title = $titlesByPid[$latestAttempt->pid];
 
-            if ($latestAttempt->status === 1) {
+            if ($latestAttempt->status === FederationJobRunStatus::SUCCEEDED) {
                 $details    = data_get($latestAttempt, 'details.message', '');
                 $identifier = $title ? "{$title} (PID: {$latestAttempt->pid})" : "PID: {$latestAttempt->pid}";
                 $integrationSuccess .= "<li>{$identifier} - {$details}</li>";
                 $successCount++;
             }
 
-            if ($latestAttempt->status === 0) {
+            if ($latestAttempt->status === FederationJobRunStatus::FAILED) {
                 $error = collect($latestAttempt->errorMessages())
                     ->map(fn ($entry) => $entry['schema'] ? "{$entry['schema']}  - {$entry['message']}<br>" : $entry['message'])
                     ->implode('');
