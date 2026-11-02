@@ -2,21 +2,28 @@
 
 namespace Tests\Feature;
 
+use App\Enums\FederationJobRunStatus;
 use App\Events\FederationProcessed;
+use App\Events\FederationProcessingFailed;
 use App\Jobs\ArchiveFederatedDatasetsChunk;
 use App\Jobs\CreateFederatedDatasetJob;
 use App\Jobs\ProcessFederation;
+use App\Jobs\SendEmailCustomIntegration;
 use App\Jobs\UpdateFederatedDatasetJob;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Federation;
+use App\Models\FederationJobRun;
 use App\Models\Team;
 use App\Models\TeamHasFederation;
+use App\Services\FederationService;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 use App\Services\Gwdm\GwdmMetadataHandler;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -223,7 +230,7 @@ class ProcessFederationJobTest extends TestCase
         Event::fake([FederationProcessed::class]);
 
         $job = new ProcessFederation($federation);
-        $job->sendToHistory($team->id, $federation->id, 'bad-pid', $job->jobUuid, 'some translation error', 0, 1);
+        FederationJobRun::recordDatasetOutcome($team->id, $federation->id, 'bad-pid', $job->jobUuid, 'some translation error', FederationJobRunStatus::FAILED, 1);
 
         $job->handle();
 
@@ -576,7 +583,7 @@ class ProcessFederationJobTest extends TestCase
 
         $record = \App\Models\FederationJobRun::where('pid', 'new-pid')->first();
         $this->assertNotNull($record);
-        $this->assertSame(0, $record->status);
+        $this->assertSame(FederationJobRunStatus::FAILED, $record->status);
         $this->assertStringNotContainsString($sensitiveMessage, $record->details['message']);
         $this->assertStringContainsString('unexpected error', $record->details['message']);
         $this->assertStringContainsString('test-job-uuid', $record->details['message']);
@@ -626,7 +633,7 @@ class ProcessFederationJobTest extends TestCase
 
         $record = \App\Models\FederationJobRun::where('pid', 'existing-pid')->first();
         $this->assertNotNull($record);
-        $this->assertSame(0, $record->status);
+        $this->assertSame(FederationJobRunStatus::FAILED, $record->status);
         $this->assertStringNotContainsString($sensitiveMessage, $record->details['message']);
         $this->assertStringContainsString('unexpected error', $record->details['message']);
         $this->assertStringContainsString('test-job-uuid', $record->details['message']);
@@ -1167,6 +1174,208 @@ class ProcessFederationJobTest extends TestCase
             'pid' => 'missing-pid',
             'status' => 0,
         ]);
+    }
+
+    public function test_run_with_no_dataset_changes_is_listed_as_successful_in_run_history(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        $dataset = $this->makeGmiDataset($team->id, 'unchanged-pid');
+        DatasetVersion::create([
+            'dataset_id' => $dataset->id,
+            'metadata' => ['metadata' => ['required' => ['version' => '1.0']]],
+            'version' => 1,
+            'provider_team_id' => $team->id,
+            'application_type' => 'dataset',
+        ]);
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'unchanged-pid', 'version' => '1.0']],
+            ], 200),
+            $this->datasetUrlPattern('unchanged-pid') => Http::response($this->getMetadata(), 200),
+        ]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        $run = collect(app(FederationService::class)->history($federation->id, 10)->items())
+            ->firstWhere('job_uuid', $job->jobUuid);
+
+        $this->assertNotNull($run);
+        $this->assertSame('success', $run['status']);
+        $this->assertNotNull($run['started_at']);
+        $this->assertNotNull($run['finished_at']);
+        $this->assertSame([], $run['failed_datasets']);
+    }
+
+    public function test_failed_run_lists_only_its_failed_datasets_in_run_history(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        $dataset = $this->makeGmiDataset($team->id, 'missing-pid');
+        $this->makeVersion($dataset, $team->id, '1.0');
+
+        Http::fake([
+            $this->datasetUrlPattern('missing-pid') => Http::response('404 - not found', 404),
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'missing-pid', 'version' => '2.0']],
+            ], 200),
+        ]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        $run = collect(app(FederationService::class)->history($federation->id, 10)->items())
+            ->firstWhere('job_uuid', $job->jobUuid);
+
+        $this->assertSame('failed', $run['status']);
+        $this->assertSame(['missing-pid'], array_column($run['failed_datasets'], 'pid'));
+        $this->assertStringContainsString('Remote dataset endpoint returned status 404', $run['message']);
+    }
+
+    public function test_run_with_no_dataset_changes_reports_no_successes_to_the_notification_email(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $this->mockGsms();
+
+        $dataset = $this->makeGmiDataset($team->id, 'unchanged-pid');
+        $this->makeVersion($dataset, $team->id, '1.0');
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'unchanged-pid', 'version' => '1.0']],
+            ], 200),
+            $this->datasetUrlPattern('unchanged-pid') => Http::response($this->getMetadata(), 200),
+        ]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        $emailHistory = (new SendEmailCustomIntegration($federation->id, $job->jobUuid, 'success'))->getFederationHistory();
+
+        $this->assertSame(0, $emailHistory['success_count']);
+    }
+
+    public function test_run_is_listed_as_in_progress_until_it_is_finalised(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+        Bus::fake();
+
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'pending-pid', 'version' => '1.0']],
+            ], 200),
+        ]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        $runStatus = fn () => collect(app(FederationService::class)->history($federation->id, 10)->items())
+            ->firstWhere('job_uuid', $job->jobUuid)['status'] ?? null;
+
+        $this->assertSame('in_progress', $runStatus());
+
+        $this->makeTrait()->finaliseFederationRun($federation->id, $job->jobUuid);
+
+        $this->assertSame('success', $runStatus());
+    }
+
+    public function test_run_against_an_empty_catalogue_is_listed_as_successful_in_run_history(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+        $this->fakeRemoteCatalogue([]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        $this->assertSame('success', $this->runInHistory($federation, $job->jobUuid)['status']);
+    }
+
+    public function test_run_cancelled_by_disabling_the_integration_is_listed_as_failed_in_run_history(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+        Bus::fake();
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'pending-pid', 'version' => '1.0']],
+            ], 200),
+        ]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+        $this->makeTrait()->finaliseFederationRun($federation->id, $job->jobUuid, batchCancelled: true);
+
+        $run = $this->runInHistory($federation, $job->jobUuid);
+        $this->assertSame('failed', $run['status']);
+        $this->assertSame('Stopped because the integration was disabled', $run['message']);
+    }
+
+    public function test_run_that_fails_as_a_whole_is_listed_as_failed_in_run_history(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response('upstream unavailable', 503),
+        ]);
+
+        $job = new ProcessFederation($federation);
+
+        try {
+            $job->handle();
+            $this->fail('Expected the catalogue fetch to throw');
+        } catch (\RuntimeException $e) {
+            FederationProcessingFailed::dispatch($federation, $e, $job->jobUuid);
+        }
+
+        $run = $this->runInHistory($federation, $job->jobUuid);
+        $this->assertSame('failed', $run['status']);
+        $this->assertStringContainsString('non-200 status 503', $run['message']);
+    }
+
+    public function test_stuck_run_closed_by_reconciliation_is_listed_as_failed_in_run_history(): void
+    {
+        [, $federation] = $this->makeFederation();
+        $this->mockGsms();
+        Queue::fake();
+        Http::fake([
+            $this->catalogueUrlPattern() => Http::response([
+                'items' => [['persistentId' => 'stuck-pid', 'version' => '1.0']],
+            ], 200),
+        ]);
+
+        $job = new ProcessFederation($federation);
+        $job->handle();
+
+        DB::table('job_batches')
+            ->where('id', $federation->fresh()->current_batch_id)
+            ->update(['pending_jobs' => 1, 'failed_jobs' => 1]);
+
+        $this->makeTrait()->reconcileStuckFederationRuns();
+
+        $this->assertSame('failed', $this->runInHistory($federation, $job->jobUuid)['status']);
+    }
+
+    public function test_a_run_cannot_be_recorded_as_started_twice(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        FederationJobRun::startRun($team->id, $federation->id, 'job-uuid-started-once');
+
+        $this->expectException(QueryException::class);
+
+        FederationJobRun::startRun($team->id, $federation->id, 'job-uuid-started-once');
+    }
+
+    private function runInHistory(Federation $federation, string $jobUuid): ?array
+    {
+        return collect(app(FederationService::class)->history($federation->id, 10)->items())
+            ->firstWhere('job_uuid', $jobUuid);
     }
 
     public function test_finalising_a_successful_run_twice_sends_one_success_notification(): void

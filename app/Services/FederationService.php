@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\FederationJobRunStatus;
 use App\Exceptions\FederationAlreadyRunningException;
 use App\Exceptions\FederationSecretException;
 use App\Exceptions\NotFoundException;
@@ -261,7 +262,7 @@ class FederationService
         $executions->getCollection()->transform(function (FederationJobRun $execution) use ($federationId) {
             $rows = FederationJobRun::latestPerPidForExecution($federationId, $execution->job_uuid);
 
-            $failed = $rows->filter(fn ($row) => $row->status === 0);
+            $failed = $rows->filter(fn ($row) => $row->status === FederationJobRunStatus::FAILED);
 
             $failedDatasets = $failed->map(fn ($row) => [
                 'pid' => $row->pid,
@@ -275,10 +276,15 @@ class FederationService
             $startedAt = $execution->started_at;
             $finishedAt = $execution->finished_at;
             $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
+            $runRow = FederationJobRun::runRowForExecution($federationId, $execution->job_uuid);
 
             if ($batch?->cancelled()) {
                 $status = 'failed';
                 $message = 'Stopped because the integration was disabled';
+            } elseif ($runRow && $runRow->status === null) {
+                $status = 'in_progress';
+                $message = null;
+                $finishedAt = null;
             } elseif ($onlyFailure) {
                 $status = 'failed';
                 $message = $onlyFailure['message'];
@@ -294,6 +300,9 @@ class FederationService
                 } elseif ($batch?->hasFailures()) {
                     $status = 'failed';
                     $message = "{$batch->failedJobs} of {$batch->totalJobs} jobs failed unexpectedly. Please contact support and reference job: {$execution->job_uuid}";
+                } elseif ($runRow?->status === FederationJobRunStatus::FAILED) {
+                    $status = 'failed';
+                    $message = data_get($runRow->details, 'message');
                 } else {
                     $status = 'success';
                     $message = null;

@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Services\Gwdm\SourceSchema;
+use App\Enums\FederationJobRunStatus;
 use App\Events\FederationProcessed;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Dataset;
@@ -167,7 +168,7 @@ trait GatewayMetadataIngestionTrait
                     $data,
                     fn (string $schema, string $version) => MMC::validationErrors($metadataJson, $schema, $version)
                 );
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, 0, $attempts);
+                FederationJobRun::recordDatasetOutcome($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, FederationJobRunStatus::FAILED, $attempts);
 
                 $this->log('info', "encountered internal error while CREATING dataset {$pid}: cannot not be translated");
                 return false;
@@ -187,7 +188,7 @@ trait GatewayMetadataIngestionTrait
 
             $result = $gmi->storeMetadata($input, $handler);
 
-            $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'CREATED', 1, $attempts);
+            FederationJobRun::recordDatasetOutcome($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'CREATED', FederationJobRunStatus::SUCCEEDED, $attempts);
 
             $this->log('info', "dataset {$pid} detected in REMOTE collection, but NOT LOCALLY - CREATED");
 
@@ -303,7 +304,7 @@ trait GatewayMetadataIngestionTrait
                     SourceSchema::gmi(),
                 );
 
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'UPDATED', 1, $attempts);
+                FederationJobRun::recordDatasetOutcome($gmi->getTeam(), $federation->id, $pid, $jobUuid, 'UPDATED', FederationJobRunStatus::SUCCEEDED, $attempts);
 
                 $wasUpdated = true;
             } else {
@@ -315,7 +316,7 @@ trait GatewayMetadataIngestionTrait
                     $data,
                     fn (string $schema, string $version) => MMC::validationErrors($metadataJson, $schema, $version)
                 );
-                $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, 0, $attempts);
+                FederationJobRun::recordDatasetOutcome($gmi->getTeam(), $federation->id, $pid, $jobUuid, $failure, FederationJobRunStatus::FAILED, $attempts);
             }
 
             $this->log('info', "dataset {$pid} detected as CHANGED in REMOTE collection - UPDATED");
@@ -381,7 +382,7 @@ trait GatewayMetadataIngestionTrait
     ): void {
         $url = $this->makeDatasetUrl($federation, $data);
         $this->log('warning', "dataset {$pid} fetch from REMOTE returned status={$status}, url={$url}");
-        $this->sendToHistory($gmi->getTeam(), $federation->id, $pid, $jobUuid, "Remote dataset endpoint returned status {$status} for {$url}", 0, $attempts);
+        FederationJobRun::recordDatasetOutcome($gmi->getTeam(), $federation->id, $pid, $jobUuid, "Remote dataset endpoint returned status {$status} for {$url}", FederationJobRunStatus::FAILED, $attempts);
     }
 
     public function makeDatasetUrl(Federation $federation, array $data): string
@@ -430,32 +431,15 @@ trait GatewayMetadataIngestionTrait
         return is_string($message) && $message !== '' ? $message : 'An error occurred while processing this dataset.';
     }
 
-    public function sendToHistory(int $teamId, int $federationId, string $pid, string $jobUuid, array|string $message, int $status, int $attempts): void
-    {
-        FederationJobRun::create(
-            [
-                'team_id' => $teamId,
-                'federation_id' => $federationId,
-                'pid' => $pid,
-                'job_uuid' => $jobUuid,
-                'status' => $status,
-                'details' => [
-                    'message' => $message,
-                ],
-                'job_attempts' => $attempts,
-            ]
-        );
-    }
-
     public function recordUnexpectedFailure(int $teamId, int $federationId, string $pid, string $jobUuid, int $attempts, string $action): void
     {
-        $this->sendToHistory($teamId, $federationId, $pid, $jobUuid, "An unexpected error occurred while {$action} dataset {$pid}. Please contact support and reference job: {$jobUuid}", 0, $attempts);
+        FederationJobRun::recordDatasetOutcome($teamId, $federationId, $pid, $jobUuid, "An unexpected error occurred while {$action} dataset {$pid}. Please contact support and reference job: {$jobUuid}", FederationJobRunStatus::FAILED, $attempts);
     }
 
     /**
      * Concludes one federation execution: checks the per-dataset history
      * recorded under $jobUuid (plus $batchHadFailures, for a failure that
-     * never reached sendToHistory at all — e.g. a chunk job hard-failing
+     * never reached recordDatasetOutcome at all — e.g. a chunk job hard-failing
      * before its first item) and either records a soft failure on the
      * federation directly, or dispatches FederationProcessed so
      * ProcessFederationSuccess can clear the federation's error state,
@@ -472,12 +456,16 @@ trait GatewayMetadataIngestionTrait
                 ? "federation {$federationId} run {$jobUuid} already finalised - skipping"
                 : "federation {$federationId} run {$jobUuid} stopped after its batch was cancelled");
 
+            if ($finalised !== 0) {
+                FederationJobRun::closeRun($federationId, $jobUuid, FederationJobRunStatus::FAILED, 'Stopped because the integration was disabled');
+            }
+
             return;
         }
 
         $hadFailures = $batchHadFailures
             || FederationJobRun::latestPerPidForExecution($federationId, $jobUuid)
-                ->contains(fn ($run) => $run->status === 0);
+                ->contains(fn ($run) => $run->status === FederationJobRunStatus::FAILED);
 
         $finalised = Federation::where('id', $federationId)
             ->where('is_running', true)
@@ -493,6 +481,12 @@ trait GatewayMetadataIngestionTrait
             $this->log('info', "federation {$federationId} run {$jobUuid} already finalised - skipping");
             return;
         }
+
+        FederationJobRun::closeRun(
+            $federationId,
+            $jobUuid,
+            $hadFailures ? FederationJobRunStatus::FAILED : FederationJobRunStatus::SUCCEEDED,
+        );
 
         if ($hadFailures) {
             $this->log('warning', "federation {$federationId} completed with per-item failures - see federation_job_runs for details");
