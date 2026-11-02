@@ -21,6 +21,10 @@ class FeatureSeeder extends Seeder
         // Renders /dataset/{id} from native GWDM (gateway-web). Off = the
         // existing HDRUK-translated page.
         'GwdmDatasetPage' => false,
+        // Generates the metadata onboarding form from the selected input
+        // schema (gateway-web) and validates GWDM on activation. Off = the
+        // existing form hydration flow.
+        'SchemaOnboardingForm' => false,
         // Let the HDRUK context read and render each partner's datasets
         // (PartnerContext::CROSS_CONTEXT_FLAGS). Off = HDRUK datasets only.
         'RenderSchemaCRUK' => false,
