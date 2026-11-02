@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Federation;
 use App\Models\Team;
 use App\Models\TeamHasFederation;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
@@ -36,7 +37,7 @@ class FederationRunProgressTest extends TestCase
         return $federation;
     }
 
-    private function seedBatch(string $id, int $total, int $pending, int $failed, ?int $finishedAt, ?int $cancelledAt = null): void
+    private function seedBatch(string $id, int $total, int $pending, int $failed, ?int $finishedAt, ?int $cancelledAt = null, ?int $createdAt = null): void
     {
         DB::table('job_batches')->insert([
             'id' => $id,
@@ -47,7 +48,7 @@ class FederationRunProgressTest extends TestCase
             'failed_job_ids' => '[]',
             'options' => serialize([]),
             'cancelled_at' => $cancelledAt,
-            'created_at' => now()->subMinutes(5)->timestamp,
+            'created_at' => $createdAt ?? now()->subMinutes(5)->timestamp,
             'finished_at' => $finishedAt,
         ]);
     }
@@ -167,6 +168,26 @@ class FederationRunProgressTest extends TestCase
             $this->assertSame(2, $item['progress']['failed']);
             $this->assertSame(65, $item['progress']['pending']);
             $this->assertNotNull($item['progress']['started_at']);
+        }
+    }
+
+    public function test_progress_start_time_is_reported_as_utc(): void
+    {
+        $team = Team::factory()->create();
+        $federation = $this->makeFederation($team, [
+            'is_running' => true,
+            'current_batch_id' => 'live-batch',
+        ]);
+        $this->seedBatch('live-batch', total: 10, pending: 8, failed: 0, finishedAt: null, createdAt: Carbon::parse('2026-07-25 09:12:04', 'UTC')->timestamp);
+
+        $indexItem = $this->findFederationInIndex(
+            $this->get($this->indexUrl($team->id), $this->header)->decodeResponseJson(),
+            $federation->id
+        );
+        $showItem = $this->get($this->showUrl($team->id, $federation->id), $this->header)->decodeResponseJson()['data'];
+
+        foreach ([$indexItem, $showItem] as $item) {
+            $this->assertSame('2026-07-25T09:12:04.000000Z', $item['progress']['started_at']);
         }
     }
 

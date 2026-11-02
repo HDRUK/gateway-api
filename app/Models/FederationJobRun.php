@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FederationJobRunStatus;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,8 +13,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
- * @property-read string|null $started_at only populated on rows returned by executionsForFederation()
- * @property-read string|null $finished_at only populated on rows returned by executionsForFederation()
+ * @property-read CarbonImmutable|null $started_at only populated on rows returned by executionsForFederation()
+ * @property-read CarbonImmutable|null $finished_at only populated on rows returned by executionsForFederation()
  */
 class FederationJobRun extends Model
 {
@@ -152,6 +153,7 @@ class FederationJobRun extends Model
             ->select('job_uuid')
             ->selectRaw('MIN(created_at) as started_at')
             ->selectRaw('MAX(updated_at) as finished_at')
+            ->withCasts(['started_at' => 'immutable_datetime', 'finished_at' => 'immutable_datetime'])
             ->groupBy('job_uuid')
             ->orderByDesc('started_at')
             ->paginate($perPage, ['*'], 'page');
@@ -159,7 +161,7 @@ class FederationJobRun extends Model
 
     /**
      * @param non-empty-array<int, int> $federationIds
-     * @return Collection<int, string> federation_id => last_run_at
+     * @return Collection<int, CarbonImmutable> federation_id => last_run_at
      */
     public static function latestRunTimesForFederationIds(array $federationIds): Collection
     {
@@ -167,6 +169,7 @@ class FederationJobRun extends Model
             ->selectRaw('MAX(created_at) as last_run_at')
             ->whereIn('federation_id', $federationIds)
             ->groupBy('federation_id')
+            ->withCasts(['last_run_at' => 'immutable_datetime'])
             ->get()
             ->pluck('last_run_at', 'federation_id');
     }
