@@ -6,6 +6,7 @@ use App\Models\Federation;
 use App\Models\FederationJobRun;
 use App\Models\Team;
 use App\Models\TeamHasFederation;
+use Carbon\Carbon;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
@@ -92,7 +93,21 @@ class FederationIndexLastRunTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $item = $this->findFederationInResponse($content, $federation->id);
-        $this->assertSame($createdAt, $item['last_run_at']);
+        $this->assertSame(Carbon::parse($createdAt)->toJSON(), $item['last_run_at']);
+    }
+
+    public function test_last_run_at_is_reported_as_utc(): void
+    {
+        $team = Team::factory()->create();
+        $federation = $this->makeFederation($team);
+
+        $this->makeRun($team, $federation, 'uuid-1', 'pid-1', 1, '2026-07-25 09:12:04');
+
+        $response = $this->get($this->indexUrl($team->id), $this->header);
+        $content = $response->decodeResponseJson();
+
+        $item = $this->findFederationInResponse($content, $federation->id);
+        $this->assertSame('2026-07-25T09:12:04.000000Z', $item['last_run_at']);
     }
 
     public function test_last_run_at_reflects_the_most_recent_execution_only(): void
@@ -110,7 +125,7 @@ class FederationIndexLastRunTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $item = $this->findFederationInResponse($content, $federation->id);
-        $this->assertSame($newer, $item['last_run_at']);
+        $this->assertSame(Carbon::parse($newer)->toJSON(), $item['last_run_at']);
     }
 
     public function test_last_run_at_is_correctly_attributed_per_federation(): void
@@ -131,8 +146,8 @@ class FederationIndexLastRunTest extends TestCase
         $itemA = $this->findFederationInResponse($content, $federationA->id);
         $itemB = $this->findFederationInResponse($content, $federationB->id);
 
-        $this->assertSame($aRunAt, $itemA['last_run_at']);
-        $this->assertSame($bRunAt, $itemB['last_run_at']);
+        $this->assertSame(Carbon::parse($aRunAt)->toJSON(), $itemA['last_run_at']);
+        $this->assertSame(Carbon::parse($bRunAt)->toJSON(), $itemB['last_run_at']);
     }
 
     public function test_a_team_with_no_federations_returns_an_empty_list(): void

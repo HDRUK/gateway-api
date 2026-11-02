@@ -41,7 +41,7 @@ class FederationService
                 $federation->auth_secret_key_location,
                 $federation->auth_type
             ));
-            $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id));
+            $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id)?->toJSON());
             $federation->setAttribute('progress', $this->currentProgress($federation));
             return $federation;
         });
@@ -273,8 +273,8 @@ class FederationService
 
             $onlyFailure = count($failedDatasets) === 1 ? $failedDatasets[0] : null;
 
-            $startedAt = $execution->started_at;
-            $finishedAt = $execution->finished_at;
+            $startedAt = $execution->started_at?->toJSON();
+            $finishedAt = $execution->finished_at?->toJSON();
             $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
             $runRow = FederationJobRun::runRowForExecution($federationId, $execution->job_uuid);
 
@@ -295,7 +295,7 @@ class FederationService
                 if ($batch && batchHasJobsLeftToRun($batch)) {
                     $status = 'in_progress';
                     $message = null;
-                    $startedAt = $batch->createdAt->toDateTimeString();
+                    $startedAt = $batch->createdAt->toJSON();
                     $finishedAt = null;
                 } elseif ($batch?->hasFailures()) {
                     $status = 'failed';

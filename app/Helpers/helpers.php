@@ -246,7 +246,7 @@ if (!function_exists('batchProgress')) {
             'processed' => $batch->processedJobs(),
             'failed' => $batch->failedJobs,
             'pending' => $batch->pendingJobs,
-            'started_at' => $batch->createdAt->toDateTimeString(),
+            'started_at' => $batch->createdAt->toJSON(),
         ];
     }
 }
