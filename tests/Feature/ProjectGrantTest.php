@@ -302,4 +302,134 @@ class ProjectGrantTest extends TestCase
             'pid' => $payload['pid'],
         ]);
     }
+
+    public function test_update_creates_new_version(): void
+    {
+        $grant = $this->createProjectGrantWithVersion();
+        $dataset = Dataset::where('status', Dataset::STATUS_ACTIVE)->first();
+
+        $payload = [
+            'projectGrantName' => 'Updated Programme Name',
+            'leadResearcher' => 'Dr Updated',
+            'leadResearchInstitute' => 'Updated Institute',
+            'grantNumbers' => ['GRANT-002'],
+            'projectGrantScope' => 'Updated scope',
+            'datasets' => [$dataset->id],
+        ];
+
+        $response = $this->json('PUT', self::TEST_URL_INDEX . '/' . $grant->id, $payload, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.versions.0.projectGrantName', 'Updated Programme Name');
+        $response->assertJsonPath('data.versions.0.version', 2);
+
+        $this->assertDatabaseHas('project_grant_versions', [
+            'project_grant_id' => $grant->id,
+            'version' => 1,
+            'project_grant_name' => 'CRUK Research Programme',
+        ]);
+        $this->assertDatabaseHas('project_grant_versions', [
+            'project_grant_id' => $grant->id,
+            'version' => 2,
+            'project_grant_name' => 'Updated Programme Name',
+        ]);
+    }
+
+    public function test_edit_partially_updates_latest_version(): void
+    {
+        $grant = $this->createProjectGrantWithVersion();
+
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL_INDEX . '/' . $grant->id,
+            ['projectGrantName' => 'Patched Name Only'],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.versions.0.projectGrantName', 'Patched Name Only');
+        $response->assertJsonPath('data.versions.0.leadResearcher', 'Dr Test');
+        $response->assertJsonPath('data.versions.0.version', 1);
+
+        $this->assertDatabaseHas('project_grant_versions', [
+            'project_grant_id' => $grant->id,
+            'version' => 1,
+            'project_grant_name' => 'Patched Name Only',
+            'lead_researcher' => 'Dr Test',
+        ]);
+        $this->assertSame(1, ProjectGrantVersion::where('project_grant_id', $grant->id)->count());
+    }
+
+    public function test_edit_returns_400_for_unknown_id(): void
+    {
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL_INDEX . '/999999999',
+            ['projectGrantName' => 'Nope'],
+            $this->header
+        );
+
+        $response->assertStatus(400);
+    }
+
+    public function test_destroy_soft_deletes_grant_and_versions(): void
+    {
+        $grant = $this->createProjectGrantWithVersion();
+        $versionId = $grant->latestVersion->id;
+
+        $response = $this->json('DELETE', self::TEST_URL_INDEX . '/' . $grant->id, [], $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSoftDeleted('project_grants', ['id' => $grant->id]);
+        $this->assertSoftDeleted('project_grant_versions', ['id' => $versionId]);
+    }
+
+    public function test_destroy_returns_404_for_unknown_id(): void
+    {
+        $response = $this->json('DELETE', self::TEST_URL_INDEX . '/999999999', [], $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    }
+
+    public function test_update_forbidden_without_project_grant_permission(): void
+    {
+        $grant = $this->createProjectGrantWithVersion();
+
+        $this->authorisationUser(false);
+        $nonAdminJwt = $this->getAuthorisationJwt(false);
+        $headerNonAdmin = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdminJwt,
+        ];
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_INDEX . '/' . $grant->id,
+            ['projectGrantName' => 'Forbidden Update'],
+            $headerNonAdmin
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        $this->assertDatabaseMissing('project_grant_versions', [
+            'project_grant_name' => 'Forbidden Update',
+        ]);
+    }
+
+    public function test_destroy_requires_authentication(): void
+    {
+        $grant = $this->createProjectGrantWithVersion();
+
+        $response = $this->json(
+            'DELETE',
+            self::TEST_URL_INDEX . '/' . $grant->id,
+            [],
+            ['Accept' => 'application/json']
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        $this->assertDatabaseHas('project_grants', [
+            'id' => $grant->id,
+            'deleted_at' => null,
+        ]);
+    }
 }
