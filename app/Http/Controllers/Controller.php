@@ -8,7 +8,11 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 
 /**
- * @OA\Info(title="HDRUK Gateway API", version="2.0.0")
+ * @OA\Info(
+ *     title="HDRUK Gateway API",
+ *     version="2.0.0",
+ *     @OA\License(name="MIT", url="https://opensource.org/licenses/MIT")
+ * )
  */
 class Controller extends BaseController
 {
