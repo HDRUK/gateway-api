@@ -1187,6 +1187,33 @@ class DatasetTest extends TestCase
         $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
     }
 
+    public function test_activate_team_dataset_is_refused_when_a_required_list_of_values_is_empty(): void
+    {
+        Feature::activate('SchemaOnboardingForm');
+        $this->traserSchemaProperties = ['language' => ['type' => 'array', 'items' => ['type' => 'string']]];
+        $this->traserSchemaRequired = ['language'];
+
+        $teamId = $this->createTeam([], [$this->createNotification()]);
+        $metadata = $this->metadata;
+        $metadata['metadata']['language'] = [];
+        $datasetId = $this->createTeamDraft($teamId, $this->createUser(), array_merge($metadata, [
+            'schemaModel' => 'HDRUK',
+            'schemaVersion' => '4.1.0',
+        ]));
+
+        $response = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $response->assertStatus(422);
+        Queue::assertNotPushed(LinkageExtraction::class);
+        $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
+    }
+
     public function test_activate_team_dataset_with_valid_gwdm_with_success(): void
     {
         Feature::activate('SchemaOnboardingForm');

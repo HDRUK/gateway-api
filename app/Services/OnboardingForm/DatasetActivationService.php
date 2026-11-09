@@ -7,12 +7,14 @@ use App\Models\DatasetVersion;
 use App\Services\DatasetService;
 use App\Services\Gwdm\SourceSchema;
 use Config;
+use Exception;
 use MetadataManagementController as MMC;
 
 class DatasetActivationService
 {
     public function __construct(
         private readonly DatasetService $datasetService,
+        private readonly OnboardingFormService $onboardingFormService,
     ) {
     }
 
@@ -23,6 +25,8 @@ class DatasetActivationService
      * GWDM alone misses source errors the translation fills with placeholders.
      * The source check is skipped when the version stores no original (as
      * delta rows do) or its source schema is GWDM or not fully known.
+     * A required list of values left empty in the schema the metadata was
+     * submitted in fails too, as the onboarding form refuses it.
      */
     public function isValid(Dataset $dataset): bool
     {
@@ -40,13 +44,16 @@ class DatasetActivationService
 
         $source = SourceSchema::fromVersion($latest);
         $original = DatasetVersion::submittedMetadata($envelope);
-        if (
-            $source->model !== null
+        $checksSource = $source->model !== null
             && $source->version !== null
             && $source->model !== Config::get('metadata.GWDM.name')
-            && !empty($original)
-            && !$this->validates($original, $source->model, $source->version)
-        ) {
+            && !empty($original);
+
+        if ($checksSource && !$this->validates($original, $source->model, $source->version)) {
+            return false;
+        }
+
+        if ($checksSource && $this->hasEmptyValueList($original, $source->model, $source->version)) {
             return false;
         }
 
@@ -55,6 +62,23 @@ class DatasetActivationService
             Config::get('metadata.GWDM.name'),
             $envelope['gwdmVersion'],
         );
+    }
+
+    private function hasEmptyValueList(array $metadata, string $schema, string $version): bool
+    {
+        try {
+            $jsonSchema = $this->onboardingFormService->schemaFor($schema, $version);
+        } catch (Exception $e) {
+            \Log::warning('Onboarding activation schema fetch failed', [
+                'model' => $schema,
+                'version' => $version,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return JsonSchema::hasEmptyRequiredValueList($jsonSchema, $jsonSchema, $metadata);
     }
 
     private function validates(array $metadata, string $schema, string $version): bool

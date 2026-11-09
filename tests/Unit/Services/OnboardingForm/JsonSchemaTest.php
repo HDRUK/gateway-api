@@ -33,4 +33,55 @@ class JsonSchemaTest extends TestCase
 
         $this->assertSame($node, JsonSchema::resolveNode([], $node));
     }
+
+    public function test_finds_an_empty_required_list_of_values(): void
+    {
+        $schema = [
+            'properties' => ['standards' => ['$ref' => '#/$defs/Standards']],
+            '$defs' => [
+                'Standards' => [
+                    'type' => 'object',
+                    'required' => ['language'],
+                    'properties' => [
+                        'language' => [
+                            'anyOf' => [['type' => 'array', 'items' => ['enum' => ['en']]], ['type' => 'null']],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertTrue(
+            JsonSchema::hasEmptyRequiredValueList($schema, $schema, ['standards' => ['language' => []]])
+        );
+    }
+
+    public function test_finds_an_empty_required_list_of_values_among_several_options(): void
+    {
+        $schema = [
+            'required' => ['spatial'],
+            'properties' => [
+                'spatial' => [
+                    'anyOf' => [['type' => 'string'], ['type' => 'array', 'items' => ['type' => 'string']]],
+                ],
+            ],
+        ];
+
+        $this->assertTrue(JsonSchema::hasEmptyRequiredValueList($schema, $schema, ['spatial' => []]));
+    }
+
+    public function test_allows_an_empty_required_list_of_records(): void
+    {
+        $schema = [
+            'required' => ['observations'],
+            'properties' => [
+                'observations' => [
+                    'type' => 'array',
+                    'items' => ['type' => 'object', 'properties' => ['name' => ['type' => 'string']]],
+                ],
+            ],
+        ];
+
+        $this->assertFalse(JsonSchema::hasEmptyRequiredValueList($schema, $schema, ['observations' => []]));
+    }
 }

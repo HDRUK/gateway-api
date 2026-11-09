@@ -22,6 +22,8 @@ trait MockExternalApis
     protected array $traserUntranslatable = [];
     protected array $traserValidationErrors = [];
     protected array $traserInvalidSchemas = [];
+    protected array $traserSchemaProperties = [];
+    protected array $traserSchemaRequired = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
     public function getMetadataV1p0()
@@ -1187,9 +1189,10 @@ trait MockExternalApis
                 'schema' => [
                     'title' => $name . ' ' . $version,
                     'type' => 'object',
-                    'properties' => [
+                    'required' => $this->traserSchemaRequired,
+                    'properties' => array_merge([
                         'summary' => ['$ref' => '#/$defs/Summary'],
-                    ],
+                    ], $this->traserSchemaProperties),
                     '$defs' => [
                         'Summary' => [
                             'type' => 'object',

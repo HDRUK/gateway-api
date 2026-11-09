@@ -779,7 +779,7 @@ class TeamDatasetController extends Controller
      *    ),
      *    @OA\Response(
      *       response=422,
-     *       description="Activating a draft refused because its metadata fails source-schema or GWDM validation (SchemaOnboardingForm flag only)",
+     *       description="Activating a draft refused because its metadata fails source-schema or GWDM validation, or leaves a required list of values empty (SchemaOnboardingForm flag only)",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Dataset metadata is not valid for activation"),
      *       )
