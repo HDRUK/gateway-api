@@ -57,10 +57,11 @@ return [
     ],
 
     // typesense:reindex / ReindexTypesenseEntity (App\Services\Search\CollectionReindexer).
-    // The lock stops two reindexes of one entity overlapping; it expires after
-    // lock_seconds if a run dies without releasing it.
+    // The lock stops two reindexes of one entity overlapping. It's renewed
+    // after every chunk, so it only has to outlast one chunk (scout.chunk.searchable
+    // records); a run that dies frees it within lock_seconds.
     'reindex' => [
-        'lock_seconds' => (int) env('TYPESENSE_REINDEX_LOCK_SECONDS', 3600),
+        'lock_seconds' => (int) env('TYPESENSE_REINDEX_LOCK_SECONDS', 300),
     ],
 
     // Variable search: one document per structural metadata column, matched

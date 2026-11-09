@@ -6,6 +6,7 @@ use App\Exceptions\TypesenseReindexException;
 use App\Jobs\ReindexTypesenseEntity;
 use App\Models\Tool;
 use App\Services\Search\CollectionReindexer;
+use Auditor;
 use Mockery;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -69,5 +70,28 @@ class TypesenseReindexTest extends TestCase
 
         $this->reindexer->shouldReceive('refresh')->once()->with(Tool::class)->andReturn([]);
         (new ReindexTypesenseEntity('tools', upsert: true))->handle($this->reindexer);
+    }
+
+    public function test_the_job_fails_without_retrying_when_the_reindex_is_refused(): void
+    {
+        // Rejected documents or 'already running': a retry can't succeed.
+        Auditor::shouldReceive('log')->once();
+        $refused = new TypesenseReindexException("A reindex of 'tools' is already running.");
+        $this->reindexer->shouldReceive('rebuild')->andThrow($refused);
+
+        $job = (new ReindexTypesenseEntity('tools'))->withFakeQueueInteractions();
+        $job->handle($this->reindexer);
+
+        $job->assertFailedWith($refused);
+    }
+
+    public function test_the_job_still_retries_unexpected_errors(): void
+    {
+        Auditor::shouldReceive('log')->once();
+        $this->reindexer->shouldReceive('rebuild')->andThrow(new \RuntimeException('Typesense unreachable'));
+
+        $this->expectException(\RuntimeException::class);
+
+        (new ReindexTypesenseEntity('tools'))->withFakeQueueInteractions()->handle($this->reindexer);
     }
 }

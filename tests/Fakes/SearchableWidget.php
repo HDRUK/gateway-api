@@ -3,6 +3,7 @@
 namespace Tests\Fakes;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\Searchable;
@@ -14,6 +15,7 @@ use Laravel\Scout\Searchable;
 class SearchableWidget extends Model
 {
     use Searchable;
+    use SoftDeletes;
 
     protected $table = 'search_widgets';
 
@@ -28,6 +30,7 @@ class SearchableWidget extends Model
             $table->string('name');
             $table->boolean('is_hidden')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

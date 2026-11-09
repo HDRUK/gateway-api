@@ -6,6 +6,7 @@ use App\Exceptions\TypesenseReindexException;
 use App\Services\Search\CollectionReindexer;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Tests\Fakes\FakeTypesenseService;
 use Tests\Fakes\SearchableWidget;
 use Tests\TestCase;
@@ -200,6 +201,116 @@ class CollectionReindexerTest extends TestCase
         }
 
         $this->assertTrue(Cache::lock('typesense-reindex:widgets', 1)->get());
+    }
+
+    /**
+     * Runs a second rebuild over an existing alias, calling $duringBuild once
+     * the main import has finished, while the old collection is still live.
+     */
+    private function rebuildWith(callable $duringBuild): void
+    {
+        $this->reindexer->rebuild(SearchableWidget::class);
+        Carbon::setTestNow('2026-11-09 11:00:00');
+
+        $this->reindexer->rebuild(SearchableWidget::class, function (string $event) use ($duringBuild) {
+            if ($event === 'imported') {
+                Carbon::setTestNow('2026-11-09 11:00:05');
+                $duringBuild();
+            }
+        });
+    }
+
+    /** What Scout's observer does when a record stops being searchable: delete it via the alias. */
+    private function scoutRemoves(SearchableWidget $widget): void
+    {
+        $this->typesense->deleteDocumentsByIds('widgets', [(string) $widget->id]);
+    }
+
+    public function test_rebuild_drops_records_soft_deleted_during_the_build(): void
+    {
+        $a = $this->widget('Alpha');
+        $b = $this->widget('Beta');
+
+        $this->rebuildWith(function () use ($b) {
+            SearchableWidget::withoutSyncingToSearch(fn () => $b->delete());
+            $this->scoutRemoves($b);
+        });
+
+        $this->assertSame([(string) $a->id => 'Alpha'], $this->indexed());
+    }
+
+    public function test_rebuild_drops_records_that_left_the_index_without_their_own_row_changing(): void
+    {
+        // e.g. a DatasetVersion superseded by a newer version: its eligibility
+        // changes but its updated_at doesn't.
+        $a = $this->widget('Alpha');
+        $b = $this->widget('Beta');
+
+        $this->rebuildWith(function () use ($b) {
+            DB::table('search_widgets')->where('id', $b->id)->update(['is_hidden' => true]);
+            $this->scoutRemoves($b);
+        });
+
+        $this->assertSame([(string) $a->id => 'Alpha'], $this->indexed());
+    }
+
+    public function test_rebuild_keeps_records_scout_removed_that_are_eligible_again(): void
+    {
+        $a = $this->widget('Alpha');
+
+        // Removed live then restored by a write that didn't reach Typesense:
+        // the database, not the live index, decides.
+        $this->rebuildWith(fn () => $this->scoutRemoves($a));
+
+        $this->assertSame([(string) $a->id => 'Alpha'], $this->indexed());
+    }
+
+    public function test_the_lock_is_kept_alive_while_a_long_rebuild_runs(): void
+    {
+        config(['typesense.reindex.lock_seconds' => 10, 'scout.chunk.searchable' => 1]);
+        $this->widget('Alpha');
+        $this->widget('Beta');
+        $this->widget('Gamma');
+
+        $heldAtEnd = null;
+        $this->reindexer->rebuild(SearchableWidget::class, function (string $event) use (&$heldAtEnd) {
+            if ($event === 'chunk') {
+                // 3 chunks x 8s = 24s, well past the 10s lock.
+                Carbon::setTestNow(Carbon::now()->addSeconds(8));
+            }
+            if ($event === 'imported') {
+                $heldAtEnd = ! Cache::lock('typesense-reindex:widgets', 1)->get();
+            }
+        });
+
+        $this->assertTrue($heldAtEnd, 'another run could take the lock mid-build');
+    }
+
+    public function test_a_rebuild_that_loses_its_lock_stops_without_swapping(): void
+    {
+        config(['typesense.reindex.lock_seconds' => 10, 'scout.chunk.searchable' => 1]);
+        $this->widget('Alpha');
+        $this->widget('Beta');
+        $this->reindexer->rebuild(SearchableWidget::class);
+        $live = $this->typesense->aliasTarget('widgets');
+
+        Carbon::setTestNow('2026-11-09 11:00:00');
+
+        try {
+            $this->reindexer->rebuild(SearchableWidget::class, function (string $event) {
+                if ($event === 'chunk') {
+                    // Stalled past the lock's lifetime; another run took over.
+                    Carbon::setTestNow(Carbon::now()->addSeconds(11));
+                    Cache::lock('typesense-reindex:widgets', 10)->get();
+                }
+            });
+            $this->fail('Expected the rebuild to stop');
+        } catch (TypesenseReindexException $e) {
+            $this->assertStringContainsString('lost its lock', $e->getMessage());
+        }
+
+        $this->assertSame($live, $this->typesense->aliasTarget('widgets'));
+        $this->assertSame([$live], $this->typesense->collectionNames(), 'half-built collection dropped');
     }
 
     // -------------------------------------------------------------------------

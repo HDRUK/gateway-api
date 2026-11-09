@@ -114,6 +114,7 @@ class TypesenseReindex extends Command
             'chunk'            => $this->output->isVerbose() ? $this->line('  ' . number_format($context['documents']) . ' documents sent.') : null,
             'imported'         => $this->line('  Imported ' . number_format($context['documents']) . " documents into '{$context['collection']}'."),
             'caught_up'        => $context['documents'] > 0 ? $this->line("  Re-synced {$context['documents']} records edited during the build.") : null,
+            'reconciled'       => $context['documents'] > 0 ? $this->line("  Dropped {$context['documents']} records removed from search during the build.") : null,
             'dropping_legacy'  => $this->warn("  Replacing the pre-alias collection '{$context['collection']}' with an alias (one-off; search is briefly empty)."),
             'swapped'          => $this->line("  Alias '{$context['alias']}' now points at '{$context['collection']}'."),
             'dropped_previous' => $this->line("  Dropped the previous collection '{$context['collection']}'."),

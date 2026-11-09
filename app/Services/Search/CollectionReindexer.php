@@ -5,8 +5,10 @@ namespace App\Services\Search;
 use App\Exceptions\TypesenseReindexException;
 use App\Services\TypesenseService;
 use Closure;
+use Illuminate\Cache\Lock;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -21,19 +23,33 @@ use Throwable;
  * collection and document call.
  *
  *  - rebuild(): builds a new versioned collection from the model's current
- *    schema, catches up on rows edited during the build, swaps the alias,
+ *    schema, catches up on what changed during the build, swaps the alias,
  *    then drops the old collection. Needed when the schema changes.
+ *
+ *    While it builds, Scout's live writes go to the old collection. Rows
+ *    whose own updated_at moved are re-imported, and documents Scout removed
+ *    are dropped from the new collection if the database agrees. Edits that
+ *    reach a document only through a related model (a renamed collection
+ *    changing a dataset's collectionNames, say) are not replayed; the next
+ *    refresh() or a save of the record picks them up.
+ *
+ *    One run per entity at a time: a cache lock, renewed after every chunk,
+ *    so a killed worker frees it within lock_seconds while a long run keeps
+ *    it. A run that loses its lock stops before swapping.
  *  - refresh(): upserts every eligible record into the live collection and
  *    deletes documents for records that are gone or no longer searchable.
  *    For routine resyncs when the schema hasn't changed.
  *
  * Both report progress through an optional callback, fn (string $event,
  * array $context), with these events: creating, chunk, imported,
- * caught_up, dropping_legacy, swapped, dropped_previous, swept, pruned,
- * falling_back.
+ * caught_up, reconciled, dropping_legacy, swapped, dropped_previous, swept,
+ * pruned, falling_back.
  */
 class CollectionReindexer
 {
+    /** Held for the duration of a rebuild() or refresh(). */
+    private ?Lock $lock = null;
+
     public function __construct(private readonly TypesenseService $typesense)
     {
     }
@@ -104,6 +120,12 @@ class CollectionReindexer
 
             $caughtUp = $this->catchUp($modelClass, $target, $started);
             $progress('caught_up', ['documents' => $caughtUp]);
+
+            $removed = $this->dropWhatScoutRemoved($modelClass, $target, $alias);
+            $progress('reconciled', ['documents' => $removed]);
+
+            // Never swap on behalf of a run that no longer owns the entity.
+            $this->keepLockAlive();
         } catch (Throwable $e) {
             $this->dropQuietly($target);
             throw $e;
@@ -169,6 +191,7 @@ class CollectionReindexer
             }
 
             array_push($ids, ...array_column($documents, 'id'));
+            $this->keepLockAlive();
             $progress('chunk', ['collection' => $collection, 'documents' => count($ids)]);
         }, $query->qualifyColumn($key), $key);
 
@@ -214,8 +237,8 @@ class CollectionReindexer
     /**
      * Scout's live writes during a rebuild land in the old collection via the
      * alias, so re-import rows edited since the build started and remove any
-     * that stopped being searchable. Rows hard-deleted mid-build aren't seen
-     * here; the next refresh() prunes them.
+     * that stopped being searchable, soft-deleted ones included (soft delete
+     * moves updated_at). dropWhatScoutRemoved() covers the rest.
      */
     private function catchUp(string $modelClass, string $target, Carbon $started): int
     {
@@ -229,10 +252,58 @@ class CollectionReindexer
 
         $upserted = $this->import($modelClass, $target, $this->progress(null), $changed);
 
-        $touched = $changed($modelClass::query())->pluck($model->getScoutKeyName())->map(fn ($id) => (string) $id)->all();
+        // Soft-deleted rows count as touched (what withTrashed() does).
+        $touchedQuery = $changed($modelClass::query()->withoutGlobalScope(SoftDeletingScope::class));
+
+        $touched = $touchedQuery->pluck($model->getScoutKeyName())->map(fn ($id) => (string) $id)->all();
         $this->typesense->deleteDocumentsByIds($target, array_values(array_diff($touched, $upserted)));
 
         return count($touched);
+    }
+
+    /**
+     * Documents in the new collection but missing from the live one are
+     * mostly ones Scout removed during the build: a record superseded, archived
+     * or deleted, often without its own updated_at changing. Each is checked
+     * against the database, so a live collection that was simply incomplete
+     * doesn't cost the new one any eligible records.
+     */
+    private function dropWhatScoutRemoved(string $modelClass, string $target, string $alias): int
+    {
+        if (! $this->typesense->collectionExists($alias)) {
+            return 0;
+        }
+
+        $missingFromLive = array_values(array_diff(
+            $this->typesense->exportDocumentIds($target),
+            $this->typesense->exportDocumentIds($alias),
+        ));
+
+        $dropped = 0;
+        foreach (array_chunk($missingFromLive, 1000) as $batch) {
+            $ineligible = array_values(array_diff($batch, $this->eligibleIds($modelClass, $batch)));
+            $dropped += $this->typesense->deleteDocumentsByIds($target, $ineligible);
+            $this->keepLockAlive();
+        }
+
+        return $dropped;
+    }
+
+    /**
+     * Which of these ids are searchable right now, by the same rules as the import.
+     *
+     * @param  string[]  $ids
+     * @return string[]
+     */
+    private function eligibleIds(string $modelClass, array $ids): array
+    {
+        return $modelClass::makeAllSearchableQuery()
+            ->whereKey($ids)
+            ->get()
+            ->filter->shouldBeSearchable()
+            ->map(fn ($model) => (string) $model->getScoutKey())
+            ->values()
+            ->all();
     }
 
     /**
@@ -355,16 +426,34 @@ class CollectionReindexer
 
     private function locked(string $alias, Closure $callback): array
     {
-        $lock = Cache::lock("typesense-reindex:{$alias}", (int) config('typesense.reindex.lock_seconds', 3600));
+        $lock = Cache::lock("typesense-reindex:{$alias}", (int) config('typesense.reindex.lock_seconds', 300));
 
         if (! $lock->get()) {
             throw new TypesenseReindexException("A reindex of '{$alias}' is already running.");
         }
 
+        // Every cache driver this app can use (file, database, redis, array)
+        // supports refresh(); the contract just doesn't declare it.
+        $this->lock = $lock instanceof Lock ? $lock : null;
+
         try {
             return $callback();
         } finally {
+            $this->lock = null;
             $lock->release();
+        }
+    }
+
+    /**
+     * Extends the lock by another lock_seconds. Fails if it already expired
+     * and another run may have taken over, rather than racing that run.
+     */
+    private function keepLockAlive(): void
+    {
+        if ($this->lock !== null && ! $this->lock->refresh()) {
+            throw new TypesenseReindexException(
+                'The reindex lost its lock (a step took longer than typesense.reindex.lock_seconds) and stopped without changing what search serves.'
+            );
         }
     }
 

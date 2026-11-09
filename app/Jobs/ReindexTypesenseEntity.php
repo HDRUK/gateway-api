@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use Auditor;
 use Exception;
+use App\Exceptions\TypesenseReindexException;
 use App\SearchProviders\HDRUK;
 use App\Services\Search\CollectionReindexer;
 use Illuminate\Bus\Queueable;
@@ -63,6 +64,13 @@ class ReindexTypesenseEntity implements ShouldQueue
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
+            // Rejected documents, schema drift or another run holding the
+            // lock: retrying gives the same result, so fail outright.
+            if ($e instanceof TypesenseReindexException) {
+                $this->fail($e);
+                return;
+            }
 
             throw $e;
         }
