@@ -2,6 +2,8 @@
 
 namespace App\Services\Gwdm;
 
+use App\Models\DatasetVersion;
+
 /**
  * The schema a dataset version was submitted in - its ingestion format, such
  * as HDRUK 4.1.0 or CRUK 1.0.0 - as distinct from the GWDM version it is
@@ -52,6 +54,13 @@ final readonly class SourceSchema
             $row['source_schema_model'] ?? null,
             $row['source_schema_version'] ?? null,
         );
+    }
+
+    public static function fromVersion(DatasetVersion $version): self
+    {
+        $source = self::fromColumns($version->only(['source_schema_model', 'source_schema_version']));
+
+        return $source->model !== null ? $source : self::declared(null, null, (array) $version->metadata);
     }
 
     /** @return array{source_schema_model: ?string, source_schema_version: ?string} */

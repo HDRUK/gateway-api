@@ -14,8 +14,6 @@ use MetadataManagementController as MMC;
 
 class OnboardingDefaultsService
 {
-    use ResolvesSchemaNodes;
-
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $gwdmHandlerFactory,
@@ -106,7 +104,7 @@ class OnboardingDefaultsService
             if (!isset($node['properties'][$key])) {
                 return false;
             }
-            $node = $this->resolveNode($schema, $node['properties'][$key]);
+            $node = JsonSchema::resolveNode($schema, $node['properties'][$key]);
         }
 
         return true;
@@ -143,7 +141,7 @@ class OnboardingDefaultsService
         $kept = [];
         foreach ($values as $key => $value) {
             $placeholder = $placeholders[$key] ?? null;
-            $node = $this->resolveNode($schema, $properties[$key] ?? []);
+            $node = JsonSchema::resolveNode($schema, $properties[$key] ?? []);
             if (is_array($value) && !array_is_list($value)) {
                 $nested = $this->withoutPlaceholders(
                     $value,

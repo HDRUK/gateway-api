@@ -3,14 +3,14 @@
 namespace App\Services\OnboardingForm;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Services\DatasetService;
+use App\Services\Gwdm\SourceSchema;
 use Config;
 use MetadataManagementController as MMC;
 
 class DatasetActivationService
 {
-    use ReadsSubmittedMetadata;
-
     public function __construct(
         private readonly DatasetService $datasetService,
     ) {
@@ -38,8 +38,8 @@ class DatasetActivationService
             prefetched: $latest,
         );
 
-        $source = $this->sourceSchema($latest);
-        $original = $this->submittedMetadata($envelope);
+        $source = SourceSchema::fromVersion($latest);
+        $original = DatasetVersion::submittedMetadata($envelope);
         if (
             $source->model !== null
             && $source->version !== null

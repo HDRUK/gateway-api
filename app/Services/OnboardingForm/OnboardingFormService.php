@@ -8,6 +8,7 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Services\DatasetService;
+use App\Services\Gwdm\SourceSchema;
 use Config;
 use Illuminate\Support\Facades\Cache;
 use MetadataManagementController as MMC;
@@ -29,9 +30,6 @@ use MetadataManagementController as MMC;
  */
 class OnboardingFormService
 {
-    use ReadsSubmittedMetadata;
-    use ResolvesSchemaNodes;
-
     private const SCHEMA_TTL = 300;
 
     public function __construct(
@@ -51,7 +49,7 @@ class OnboardingFormService
     public function hydrate(Team $team, ?Dataset $dataset, ?string $model, ?string $version): array
     {
         $latest = $dataset ? $dataset->latestVersion() : null;
-        $default = $this->catalogue->defaultFor($latest ? $this->sourceSchema($latest) : null);
+        $default = $this->catalogue->defaultFor($latest ? SourceSchema::fromVersion($latest) : null);
 
         if ($model !== null && !$this->catalogue->offers($model, $version)) {
             throw new UnprocessableException('Schema ' . $model . ' ' . $version . ' is not offered for onboarding');
@@ -114,7 +112,7 @@ class OnboardingFormService
             ];
         }
 
-        $source = $this->sourceSchema($latest);
+        $source = SourceSchema::fromVersion($latest);
 
         $envelope = $this->datasetService->getReconstructedMetadataEnvelope(
             $dataset->id,
@@ -123,7 +121,7 @@ class OnboardingFormService
             prefetched: $latest,
         );
 
-        $original = $this->submittedMetadata($envelope);
+        $original = DatasetVersion::submittedMetadata($envelope);
 
         if ($source->model === $model && $source->version === $version && !empty($original)) {
             return [
@@ -161,7 +159,7 @@ class OnboardingFormService
     {
         $loaded = $this->editableMetadata($dataset, $latest, $default['model'], $default['version']);
         $summary = $loaded['metadata']['summary'] ?? null;
-        $fields = $this->resolveNode($schema, $schema['properties']['summary'] ?? [])['properties'] ?? [];
+        $fields = JsonSchema::resolveNode($schema, $schema['properties']['summary'] ?? [])['properties'] ?? [];
 
         return [
             'metadata' => is_array($summary) && count($fields)
