@@ -6,6 +6,7 @@ use App\Context\GwdmVersionContext;
 use App\Exceptions\MMCException;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Services\DatasetService;
 use App\Services\Gwdm\GwdmHandlerFactory;
 use Config;
 use Illuminate\Support\Str;
@@ -18,6 +19,7 @@ class OnboardingDefaultsService
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $gwdmHandlerFactory,
+        private readonly DatasetService $datasetService,
     ) {
     }
 
@@ -41,13 +43,18 @@ class OnboardingDefaultsService
 
         $datasets = Dataset::where('team_id', $team->id)->with('latestMetadata')->get()
             ->filter(fn (Dataset $dataset) => $dataset->latestMetadata !== null)
-            ->map(fn (Dataset $dataset) => ['metadata' => $dataset->latestMetadata->metadata])
+            ->map(fn (Dataset $dataset) => $this->datasetService->getReconstructedMetadataEnvelope(
+                $dataset->id,
+                $dataset->latestMetadata->version,
+                validate: false,
+                prefetched: $dataset->latestMetadata,
+            ))
             ->values()
             ->all();
 
         if (count($datasets)) {
-            foreach ($handler->defaultValuePaths() as $path) {
-                $value = $this->mostCommonValue($path, $datasets);
+            foreach ($handler->defaultValuePaths() as $key => $path) {
+                $value = $this->mostCommonValue($key, $datasets);
                 if ($value !== null) {
                     data_set($gwdm, Str::after($path, 'metadata.'), $value);
                 }
@@ -155,13 +162,14 @@ class OnboardingDefaultsService
         return $kept;
     }
 
-    private function mostCommonValue(string $path, array $datasets): mixed
+    private function mostCommonValue(string $key, array $datasets): mixed
     {
         $values = array();
-        foreach ($datasets as $dataset) {
-            // $dataset['metadata'] holds the raw dataset_versions.metadata envelope;
-            // handler-owned paths are relative to that envelope (see defaultValuePaths()).
-            $v = data_get($dataset, 'metadata.' . $path);
+        foreach ($datasets as $envelope) {
+            // Each envelope may be stored in a different GWDM version, so its
+            // paths come from the handler for that version (see defaultValuePaths()).
+            $path = $this->gwdmHandlerFactory->resolve($envelope['gwdmVersion'])->defaultValuePaths()[$key] ?? null;
+            $v = $path === null ? null : data_get($envelope, $path);
             $values[] = is_scalar($v) ? (string)$v : '';
         }
 
