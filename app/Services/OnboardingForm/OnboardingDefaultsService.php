@@ -35,26 +35,9 @@ class OnboardingDefaultsService
     public function forTeam(Team $team, string $model, string $version, array $schema): array
     {
         $gwdmVersion = $this->gwdmVersionContext->targetVersion();
+        $handler = $this->gwdmHandlerFactory->resolve($gwdmVersion);
 
-        $gwdm = [
-            'summary' => [
-                'contactPoint' => $team->contact_point,
-                'publisher' => [
-                    'name' => $team->name,
-                    'gatewayId' => (string) $team->id,
-                ],
-            ],
-            'accessibility' => [
-                'access' => [
-                    'dataController' => $team->name,
-                    'dataProcessor' => $team->name,
-                    'jurisdiction' => 'UK',
-                ],
-                'formatAndStandards' => [
-                    'languages' => 'en',
-                ],
-            ],
-        ];
+        $gwdm = $handler->teamDefaults($team);
 
         $datasets = Dataset::where('team_id', $team->id)->with('latestMetadata')->get()
             ->filter(fn (Dataset $dataset) => $dataset->latestMetadata !== null)
@@ -63,7 +46,7 @@ class OnboardingDefaultsService
             ->all();
 
         if (count($datasets)) {
-            foreach ($this->gwdmHandlerFactory->resolve($gwdmVersion)->defaultValuePaths() as $path) {
+            foreach ($handler->defaultValuePaths() as $path) {
                 $value = $this->mostCommonValue($path, $datasets);
                 if ($value !== null) {
                     data_set($gwdm, Str::after($path, 'metadata.'), $value);
@@ -73,7 +56,7 @@ class OnboardingDefaultsService
 
         $translated = $this->translate($gwdm, $model, $version, $gwdmVersion);
         $placeholders = $this->translate(
-            ['summary' => new \stdClass()],
+            new \stdClass(),
             $model,
             $version,
             $gwdmVersion,
@@ -122,7 +105,7 @@ class OnboardingDefaultsService
         return true;
     }
 
-    private function translate(array $gwdm, string $model, string $version, string $gwdmVersion): array
+    private function translate(array|\stdClass $gwdm, string $model, string $version, string $gwdmVersion): array
     {
         try {
             $translated = MMC::translateDataModelType(
