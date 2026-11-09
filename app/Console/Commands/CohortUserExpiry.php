@@ -84,7 +84,6 @@ class CohortUserExpiry extends Command
                 if ($trueExpiryDate <= $now) {
                     if ($r->nhse_sde_request_status === CohortRequest::REQUEST_APPROVED) {
                         $this->expireRequest($r, $expiryField);
-                        $this->removePermissions($r);
                         $this->createLog($r, $u);
                         $this->sendEmail($r->id, CohortRequest::REQUEST_EXPIRED, $trueExpiryDate);
                     }
@@ -105,7 +104,7 @@ class CohortUserExpiry extends Command
         $log = CohortRequestLog::create([
             'user_id' => $user->id,
             'details' => 'Access expired',
-            'request_status' => CohortRequest::REQUEST_EXPIRED,
+            'request_status' => $r->request_status,
             'nhse_sde_request_status' => $r->nhse_sde_request_status,
         ]);
 

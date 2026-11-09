@@ -537,6 +537,42 @@ class CohortRequestTest extends TestCase
         );
     }
 
+    public function test_nhse_sde_expiry_keeps_cohort_discovery_access(): void
+    {
+        Mail::fake();
+
+        Config::set('cohort.cohort_access_expiry_time_in_days', 180);
+        Config::set('cohort.cohort_nhse_sde_access_expiry_time_in_days', 30);
+
+        $userId = User::factory()->create()->id;
+        $cohortRequest = CohortRequest::create([
+            'user_id' => $userId,
+            'request_status' => CohortRequestStatus::PENDING,
+            'nhse_sde_request_status' => 'APPROVAL REQUESTED',
+        ]);
+
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL.'/'.$cohortRequest->id,
+            [
+                'request_status' => 'APPROVED',
+                'nhse_sde_request_status' => 'APPROVED',
+                'details' => 'Cohort Discovery and NHS SDE approved.',
+            ],
+            $this->header,
+        );
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->travel(31)->days();
+        $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
+
+        $cohortRequest = CohortRequest::find($cohortRequest->id);
+
+        $this->assertSame('EXPIRED', $cohortRequest->nhse_sde_request_status);
+        $this->assertSame(CohortRequestStatus::APPROVED, $cohortRequest->request_status);
+        $this->assertContains('GENERAL_ACCESS', CohortRequest::rolesForUser($userId));
+    }
+
     public function test_update_cohort_request_with_cds_enabled_success(): void
     {
         Mail::fake();
