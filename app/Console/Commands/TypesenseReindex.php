@@ -2,9 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Exceptions\TypesenseReindexException;
 use App\SearchProviders\HDRUK;
+use App\Services\Search\CollectionReindexer;
 use App\Services\Search\VariableIndex;
-use App\Services\TypesenseService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -20,16 +21,17 @@ class TypesenseReindex extends Command
         {entity? : One of: datasets, tools, collections, dur, publications, data_custodian_networks, data_custodians, variables}
         {--memory=1024M : memory_limit to apply for this command (bumped before the heavy import work runs)}
         {--list : List available entity types and exit}
-        {--resume : variables only: keep the collection and skip datasets already fully indexed}';
+        {--resume : variables only: keep the collection and skip datasets already fully indexed}
+        {--upsert : Upsert into the live collection and prune stale documents, instead of rebuilding a new one behind the alias}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Drop, recreate, and re-import a search entity\'s Typesense collection';
+    protected $description = 'Rebuild a search entity\'s Typesense collection behind its alias (search stays up), or --upsert in place';
 
-    public function handle(TypesenseService $typesense, VariableIndex $variables): int
+    public function handle(CollectionReindexer $reindexer, VariableIndex $variables): int
     {
         $modelMap = HDRUK::typesenseModelMap();
 
@@ -52,6 +54,11 @@ class TypesenseReindex extends Command
         // Variables aren't a Scout model: one document per structural
         // metadata column, built by VariableIndex.
         if ($entity === 'variables') {
+            if ($this->option('upsert')) {
+                $this->error('--upsert does not apply to variables; use --resume to keep the collection.');
+                return self::FAILURE;
+            }
+
             ini_set('memory_limit', $this->option('memory'));
             return $this->rebuildVariables($variables);
         }
@@ -69,22 +76,52 @@ class TypesenseReindex extends Command
         ini_set('memory_limit', $this->option('memory'));
 
         $modelClass = $modelMap[$entity];
-        $collectionName = (new $modelClass())->searchableAs();
+        $alias = (new $modelClass())->searchableAs();
+        $progress = fn (string $event, array $context) => $this->reportProgress($event, $context);
 
-        if ($typesense->collectionExists($collectionName)) {
-            $this->info("Dropping existing collection '{$collectionName}'...");
-            $typesense->dropCollection($collectionName);
+        try {
+            if ($this->option('upsert')) {
+                $this->info("Upserting {$modelClass} into the live '{$alias}' collection...");
+                $result = $reindexer->refresh($modelClass, $progress);
+                $this->info(sprintf(
+                    "Done. '%s': %s documents upserted, %s stale removed.",
+                    $alias,
+                    number_format($result['documents']),
+                    number_format($result['pruned']),
+                ));
+            } else {
+                $this->info("Rebuilding '{$alias}' from {$modelClass}; search keeps serving the current collection until the swap.");
+                $result = $reindexer->rebuild($modelClass, $progress);
+                $this->info(sprintf(
+                    "Done. '%s' now serves '%s' (%s documents).",
+                    $alias,
+                    $result['collection'],
+                    number_format($result['documents']),
+                ));
+            }
+        } catch (TypesenseReindexException $e) {
+            $this->error($e->getMessage());
+            return self::FAILURE;
         }
 
-        $this->info("Creating collection '{$collectionName}' from {$modelClass}::typesenseCollectionSchema()...");
-        $typesense->createCollectionFromModel($modelClass);
-
-        $this->info("Importing {$modelClass} records...");
-        $this->call('scout:import', ['model' => $modelClass]);
-
-        $this->info("Done. '{$entity}' reindexed into '{$collectionName}'.");
-
         return self::SUCCESS;
+    }
+
+    private function reportProgress(string $event, array $context): void
+    {
+        match ($event) {
+            'creating'         => $this->line("  Creating '{$context['collection']}'."),
+            'chunk'            => $this->output->isVerbose() ? $this->line('  ' . number_format($context['documents']) . ' documents sent.') : null,
+            'imported'         => $this->line('  Imported ' . number_format($context['documents']) . " documents into '{$context['collection']}'."),
+            'caught_up'        => $context['documents'] > 0 ? $this->line("  Re-synced {$context['documents']} records edited during the build.") : null,
+            'dropping_legacy'  => $this->warn("  Replacing the pre-alias collection '{$context['collection']}' with an alias (one-off; search is briefly empty)."),
+            'swapped'          => $this->line("  Alias '{$context['alias']}' now points at '{$context['collection']}'."),
+            'dropped_previous' => $this->line("  Dropped the previous collection '{$context['collection']}'."),
+            'swept'            => $this->line('  Removed orphaned collections: ' . implode(', ', $context['collections']) . '.'),
+            'pruned'           => $this->line('  Removed ' . number_format($context['documents']) . ' stale documents.'),
+            'falling_back'     => $this->line("  {$context['reason']}; rebuilding instead."),
+            default            => null,
+        };
     }
 
     /**

@@ -5,13 +5,12 @@ namespace App\Jobs;
 use Auditor;
 use Exception;
 use App\SearchProviders\HDRUK;
-use App\Services\TypesenseService;
+use App\Services\Search\CollectionReindexer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Artisan;
 
 class ReindexTypesenseEntity implements ShouldQueue
 {
@@ -27,8 +26,9 @@ class ReindexTypesenseEntity implements ShouldQueue
 
     /**
      * @param string $entity  A key of HDRUK::typesenseModelMap(), e.g. 'datasets', 'dur'.
+     * @param bool   $upsert  Upsert into the live collection instead of rebuilding behind the alias.
      */
-    public function __construct(string $entity)
+    public function __construct(string $entity, public readonly bool $upsert = false)
     {
         $this->onQueue('indexing');
         $this->timeout = config('jobs.default_timeout', 600);
@@ -36,10 +36,10 @@ class ReindexTypesenseEntity implements ShouldQueue
         $this->entity = $entity;
     }
 
-    public function handle(TypesenseService $typesense): void
+    public function handle(CollectionReindexer $reindexer): void
     {
         try {
-            // A full drop+reimport pulls every eligible row (plus its eager-loaded
+            // A full reimport pulls every eligible row (plus its eager-loaded
             // relations) through toSearchableArray() in chunks, which for
             // heavier entities (e.g. DatasetVersion's JSON metadata blobs) can
             // exceed a default CLI memory_limit long before hitting any table
@@ -52,15 +52,11 @@ class ReindexTypesenseEntity implements ShouldQueue
                 throw new Exception("Unknown Typesense entity '{$this->entity}'");
             }
 
-            $collectionName = (new $modelClass())->searchableAs();
-
-            if ($typesense->collectionExists($collectionName)) {
-                $typesense->dropCollection($collectionName);
-            }
-
-            $typesense->createCollectionFromModel($modelClass);
-
-            Artisan::call('scout:import', ['model' => $modelClass]);
+            // Search keeps serving the live collection throughout; a failure
+            // leaves it as it was.
+            $this->upsert
+                ? $reindexer->refresh($modelClass)
+                : $reindexer->rebuild($modelClass);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

@@ -73,7 +73,19 @@ class AdminSearchControllerTest extends TestCase
         $response->assertStatus(202)
             ->assertJson(['message' => 'queued', 'entity' => 'datasets']);
 
-        Queue::assertPushed(ReindexTypesenseEntity::class);
+        Queue::assertPushed(ReindexTypesenseEntity::class, fn (ReindexTypesenseEntity $job) => $job->upsert === false);
+    }
+
+    public function test_reindex_can_queue_an_in_place_upsert(): void
+    {
+        Queue::fake();
+
+        $response = $this->json('POST', self::TEST_URL . '/reindex', ['entity' => 'datasets', 'upsert' => true], $this->header);
+
+        $response->assertStatus(202)
+            ->assertJson(['message' => 'queued', 'entity' => 'datasets', 'mode' => 'upsert']);
+
+        Queue::assertPushed(ReindexTypesenseEntity::class, fn (ReindexTypesenseEntity $job) => $job->upsert === true);
     }
 
     public function test_reindex_rejects_unknown_entity(): void

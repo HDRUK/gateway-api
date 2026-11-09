@@ -56,6 +56,13 @@ return [
         ],
     ],
 
+    // typesense:reindex / ReindexTypesenseEntity (App\Services\Search\CollectionReindexer).
+    // The lock stops two reindexes of one entity overlapping; it expires after
+    // lock_seconds if a run dies without releasing it.
+    'reindex' => [
+        'lock_seconds' => (int) env('TYPESENSE_REINDEX_LOCK_SECONDS', 3600),
+    ],
+
     // Variable search: one document per structural metadata column, matched
     // by meaning through Typesense's built-in embedding model (downloaded by
     // Typesense itself on first collection create - no external API).
