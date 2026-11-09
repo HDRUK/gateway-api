@@ -97,6 +97,7 @@ class AdminSearchController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'entity' => ['required', 'string', 'in:' . implode(',', array_keys(HDRUK::typesenseModelMap()))],
+                'upsert' => ['sometimes', 'boolean'],
             ]);
 
             if ($validator->fails()) {
@@ -107,18 +108,21 @@ class AdminSearchController extends Controller
             }
 
             $entity = $request->input('entity');
+            $upsert = $request->boolean('upsert');
+            $mode = $upsert ? 'upsert' : 'rebuild';
 
-            ReindexTypesenseEntity::dispatch($entity);
+            ReindexTypesenseEntity::dispatch($entity, $upsert);
 
             Auditor::log([
                 'action_type' => 'POST',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Queued Typesense reindex for entity '{$entity}'",
+                'description' => "Queued Typesense {$mode} for entity '{$entity}'",
             ]);
 
             return response()->json([
                 'message' => 'queued',
                 'entity'  => $entity,
+                'mode'    => $mode,
             ], 202);
         } catch (Exception $e) {
             Auditor::log([
