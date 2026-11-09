@@ -31,6 +31,7 @@ class CollectionReindexerTest extends TestCase
     public function tearDown(): void
     {
         Carbon::setTestNow();
+        SearchableWidget::$onEligibilityCheck = null;
 
         parent::tearDown();
     }
@@ -263,6 +264,89 @@ class CollectionReindexerTest extends TestCase
         $this->rebuildWith(fn () => $this->scoutRemoves($a));
 
         $this->assertSame([(string) $a->id => 'Alpha'], $this->indexed());
+    }
+
+    /**
+     * Runs $hook on every eligibility check made after the catch-up, i.e.
+     * by the reconcile step only.
+     */
+    private function rebuildObservingReconcile(callable $duringBuild, callable $hook): void
+    {
+        Carbon::setTestNow('2026-11-09 11:00:00');
+
+        $this->reindexer->rebuild(SearchableWidget::class, function (string $event) use ($duringBuild, $hook) {
+            if ($event === 'imported') {
+                Carbon::setTestNow('2026-11-09 11:00:05');
+                $duringBuild();
+            }
+            if ($event === 'caught_up') {
+                SearchableWidget::$onEligibilityCheck = $hook;
+            }
+            if ($event === 'reconciled') {
+                SearchableWidget::$onEligibilityCheck = null;
+            }
+        });
+    }
+
+    public function test_reconcile_only_rechecks_records_removed_from_live_during_the_build(): void
+    {
+        // Live is missing most records (wiped, or never fully indexed): those
+        // weren't removed during the build, so they cost no re-check.
+        $a = $this->widget('Alpha');
+        $b = $this->widget('Beta');
+        $c = $this->widget('Gamma');
+        $d = $this->widget('Delta');
+        $this->reindexer->rebuild(SearchableWidget::class);
+        $this->typesense->deleteDocumentsByIds('widgets', [(string) $c->id, (string) $d->id]);
+
+        $checked = [];
+        $this->rebuildObservingReconcile(
+            function () use ($b) {
+                DB::table('search_widgets')->where('id', $b->id)->update(['is_hidden' => true]);
+                $this->scoutRemoves($b);
+            },
+            function (SearchableWidget $widget) use (&$checked) {
+                $checked[] = $widget->name;
+            },
+        );
+
+        $this->assertSame(['Beta'], $checked);
+        $this->assertEqualsCanonicalizing(['Alpha', 'Gamma', 'Delta'], array_values($this->indexed()));
+    }
+
+    public function test_reconcile_against_an_empty_live_collection_rechecks_nothing(): void
+    {
+        $this->widget('Alpha');
+        $this->widget('Beta');
+        $this->reindexer->rebuild(SearchableWidget::class);
+        $this->typesense->deleteDocumentsByIds('widgets', array_keys($this->indexed()));
+
+        $checks = 0;
+        $this->rebuildObservingReconcile(fn () => null, function () use (&$checks) {
+            $checks++;
+        });
+
+        $this->assertSame(0, $checks);
+        $this->assertCount(2, $this->indexed());
+    }
+
+    public function test_the_lock_is_kept_alive_through_a_long_reconcile(): void
+    {
+        $widgets = [$this->widget('Alpha'), $this->widget('Beta'), $this->widget('Gamma')];
+        $this->reindexer->rebuild(SearchableWidget::class);
+        config(['typesense.reindex.lock_seconds' => 10, 'scout.chunk.searchable' => 1]);
+
+        $this->rebuildObservingReconcile(
+            function () use ($widgets) {
+                foreach ($widgets as $widget) {
+                    $this->scoutRemoves($widget);
+                }
+            },
+            // 3 checks x 8s = 24s, well past the 10s lock.
+            fn () => Carbon::setTestNow(Carbon::now()->addSeconds(8)),
+        );
+
+        $this->assertCount(3, $this->indexed(), 'all three are still eligible');
     }
 
     public function test_the_lock_is_kept_alive_while_a_long_rebuild_runs(): void

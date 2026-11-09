@@ -23,6 +23,9 @@ class SearchableWidget extends Model
 
     protected $casts = ['is_hidden' => 'boolean'];
 
+    /** Called on every shouldBeSearchable(), so tests can count or slow the checks. */
+    public static ?\Closure $onEligibilityCheck = null;
+
     public static function createTable(): void
     {
         Schema::create('search_widgets', function (Blueprint $table) {
@@ -41,6 +44,10 @@ class SearchableWidget extends Model
 
     public function shouldBeSearchable(): bool
     {
+        if (static::$onEligibilityCheck !== null) {
+            (static::$onEligibilityCheck)($this);
+        }
+
         return ! $this->is_hidden;
     }
 

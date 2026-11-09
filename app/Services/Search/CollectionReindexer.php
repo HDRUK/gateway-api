@@ -28,7 +28,8 @@ use Throwable;
  *
  *    While it builds, Scout's live writes go to the old collection. Rows
  *    whose own updated_at moved are re-imported, and documents Scout removed
- *    are dropped from the new collection if the database agrees. Edits that
+ *    from the live collection during the build are dropped from the new one
+ *    if the database agrees. Edits that
  *    reach a document only through a related model (a renamed collection
  *    changing a dataset's collectionNames, say) are not replayed; the next
  *    refresh() or a save of the record picks them up.
@@ -111,6 +112,12 @@ class CollectionReindexer
         $schema = $model->typesenseCollectionSchema();
         $schema['name'] = $target;
 
+        // What live serves before the build: the reconcile step only looks at
+        // documents that leave it during the build, not ones it never had.
+        $liveAtStart = $this->typesense->collectionExists($alias)
+            ? $this->typesense->exportDocumentIds($alias)
+            : [];
+
         $progress('creating', ['collection' => $target]);
         $this->typesense->createCollection($schema);
 
@@ -121,7 +128,7 @@ class CollectionReindexer
             $caughtUp = $this->catchUp($modelClass, $target, $started);
             $progress('caught_up', ['documents' => $caughtUp]);
 
-            $removed = $this->dropWhatScoutRemoved($modelClass, $target, $alias);
+            $removed = $this->dropWhatScoutRemoved($modelClass, $target, $alias, $liveAtStart);
             $progress('reconciled', ['documents' => $removed]);
 
             // Never swap on behalf of a run that no longer owns the entity.
@@ -262,28 +269,36 @@ class CollectionReindexer
     }
 
     /**
-     * Documents in the new collection but missing from the live one are
-     * mostly ones Scout removed during the build: a record superseded, archived
-     * or deleted, often without its own updated_at changing. Each is checked
-     * against the database, so a live collection that was simply incomplete
-     * doesn't cost the new one any eligible records.
+     * Documents that left the live collection during the build are ones Scout
+     * removed: a record superseded, archived or deleted, often without its own
+     * updated_at changing. Each is checked against the database and dropped
+     * from the new collection unless it's eligible again.
+     *
+     * Only documents live had when the build started count, so an empty or
+     * incomplete live collection costs no re-checks. A record live never had
+     * that also became ineligible mid-build survives the swap; the next
+     * refresh() or a save of the record removes it.
+     *
+     * @param  string[]  $liveAtStart
      */
-    private function dropWhatScoutRemoved(string $modelClass, string $target, string $alias): int
+    private function dropWhatScoutRemoved(string $modelClass, string $target, string $alias, array $liveAtStart): int
     {
-        if (! $this->typesense->collectionExists($alias)) {
+        if ($liveAtStart === [] || ! $this->typesense->collectionExists($alias)) {
             return 0;
         }
 
-        $missingFromLive = array_values(array_diff(
+        $removedFromLive = array_values(array_intersect(
+            array_diff($liveAtStart, $this->typesense->exportDocumentIds($alias)),
             $this->typesense->exportDocumentIds($target),
-            $this->typesense->exportDocumentIds($alias),
         ));
 
         $dropped = 0;
-        foreach (array_chunk($missingFromLive, 1000) as $batch) {
+        foreach (array_chunk($removedFromLive, max(1, (int) config('scout.chunk.searchable', 500))) as $batch) {
+            // Before each batch, so it gets a full lock_seconds after the
+            // exports above; rebuild() renews once more before swapping.
+            $this->keepLockAlive();
             $ineligible = array_values(array_diff($batch, $this->eligibleIds($modelClass, $batch)));
             $dropped += $this->typesense->deleteDocumentsByIds($target, $ineligible);
-            $this->keepLockAlive();
         }
 
         return $dropped;
