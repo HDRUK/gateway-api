@@ -125,6 +125,13 @@ class OnboardingDefaultsService
                 false,
             );
         } catch (MMCException $e) {
+            \Log::warning('Onboarding defaults translation failed', [
+                'model' => $model,
+                'version' => $version,
+                'gwdm_version' => $gwdmVersion,
+                'error' => $e->getMessage(),
+            ]);
+
             return [];
         }
 
