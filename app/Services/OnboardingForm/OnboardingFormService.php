@@ -12,6 +12,21 @@ use Config;
 use Illuminate\Support\Facades\Cache;
 use MetadataManagementController as MMC;
 
+/**
+ * @OA\Schema(
+ *   schema="OnboardingForm",
+ *   description="The data the metadata onboarding form is generated from",
+ *   @OA\Property(property="schemas", type="array", @OA\Items(type="object",
+ *     @OA\Property(property="model", type="string", example="HDRUK"),
+ *     @OA\Property(property="version", type="string", example="4.1.0"),
+ *   )),
+ *   @OA\Property(property="model", type="string", example="HDRUK"),
+ *   @OA\Property(property="version", type="string", example="4.1.0"),
+ *   @OA\Property(property="schema", type="object", description="JSON Schema of the selected input schema"),
+ *   @OA\Property(property="defaultValues", type="object", description="Team defaults in the selected schema"),
+ *   @OA\Property(property="metadata", type="object", nullable=true, description="Only with dataset_id"),
+ * )
+ */
 class OnboardingFormService
 {
     use ReadsSubmittedMetadata;

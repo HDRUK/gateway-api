@@ -48,6 +48,10 @@ class OnboardingDefaultsService
                 'access' => [
                     'dataController' => $team->name,
                     'dataProcessor' => $team->name,
+                    'jurisdiction' => 'UK',
+                ],
+                'formatAndStandards' => [
+                    'languages' => 'en',
                 ],
             ],
         ];
@@ -101,8 +105,6 @@ class OnboardingDefaultsService
             'summary.dataCustodian.logo' => $logo !== null && strlen(trim($logo)) ? $logo : null,
             'summary.dataCustodian.description' => $team->name,
             'summary.dataCustodian.memberOf' => $team->member_of,
-            'accessibility.access.jurisdiction' => ['UK'],
-            'accessibility.formatAndStandards.language' => ['en'],
             'coverage.materialType' => ['None/not available'],
         ];
     }
