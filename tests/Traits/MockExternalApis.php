@@ -21,6 +21,7 @@ trait MockExternalApis
     protected $header = [];
     protected array $traserUntranslatable = [];
     protected array $traserValidationErrors = [];
+    protected array $traserInvalidSchemas = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
     public function getMetadataV1p0()
@@ -1169,7 +1170,8 @@ trait MockExternalApis
                ];
            });
         MMC::shouldReceive("validateDataModelType")
-            ->andReturnUsing(fn () => !count($this->traserValidationErrors));
+            ->andReturnUsing(fn (string $json, string $schema) => !count($this->traserValidationErrors)
+                && !in_array($schema, $this->traserInvalidSchemas));
         MMC::shouldReceive("listSchemas")->andReturn([
             'HDRUK' => ['2.1.2', '4.0.0', '4.1.0'],
             'PRUK' => ['1.0.0'],

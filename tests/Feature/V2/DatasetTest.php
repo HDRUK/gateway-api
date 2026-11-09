@@ -1163,6 +1163,30 @@ class DatasetTest extends TestCase
         $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
     }
 
+    public function test_activate_team_dataset_is_refused_when_its_source_metadata_is_invalid(): void
+    {
+        Feature::activate('SchemaOnboardingForm');
+
+        $teamId = $this->createTeam([], [$this->createNotification()]);
+        $datasetId = $this->createTeamDraft($teamId, $this->createUser(), array_merge($this->metadata, [
+            'schemaModel' => 'HDRUK',
+            'schemaVersion' => '4.1.0',
+        ]));
+        $this->traserInvalidSchemas = ['HDRUK'];
+
+        $response = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $response->assertStatus(422);
+        Queue::assertNotPushed(LinkageExtraction::class);
+        $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
+    }
+
     public function test_activate_team_dataset_with_valid_gwdm_with_success(): void
     {
         Feature::activate('SchemaOnboardingForm');
@@ -1688,7 +1712,7 @@ class DatasetTest extends TestCase
         }
     }
 
-    private function createTeamDraft(int $teamId, int $userId): int
+    private function createTeamDraft(int $teamId, int $userId, ?array $metadata = null): int
     {
         $response = $this->json(
             'POST',
@@ -1696,7 +1720,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'metadata' => $this->metadata,
+                'metadata' => $metadata ?? $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
