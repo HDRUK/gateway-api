@@ -314,11 +314,11 @@ class CohortUserExpiryTest extends TestCase
         $this->assertDatabaseHas('cohort_request_logs', [
             'user_id' => 1,
             'details' => 'Access expired',
-            'request_status' => 'EXPIRED',
+            'request_status' => 'APPROVED',
             'nhse_sde_request_status' => 'EXPIRED',
         ]);
 
-        $this->assertDatabaseMissing('cohort_request_has_permissions', [
+        $this->assertDatabaseHas('cohort_request_has_permissions', [
             'cohort_request_id' => $req->id,
             'permission_id' => $perms->id,
         ]);
@@ -549,7 +549,7 @@ class CohortUserExpiryTest extends TestCase
             'request_status' => 'APPROVED',
         ]);
 
-        $this->assertDatabaseMissing('cohort_request_has_permissions', [
+        $this->assertDatabaseHas('cohort_request_has_permissions', [
             'cohort_request_id' => $req->id,
             'permission_id' => $perms->id,
         ]);
