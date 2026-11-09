@@ -46,6 +46,7 @@ class OnboardingDefaultsService
                 $dataset->latestMetadata->version,
                 validate: false,
                 prefetched: $dataset->latestMetadata,
+                applySupplementary: false,
             ))
             ->values()
             ->all();
