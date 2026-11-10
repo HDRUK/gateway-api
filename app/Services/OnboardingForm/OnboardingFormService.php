@@ -30,7 +30,7 @@ use MetadataManagementController as MMC;
  */
 class OnboardingFormService
 {
-    private const SCHEMA_TTL = 300;
+    private const SCHEMA_TTL = 3600;
 
     public function __construct(
         private readonly OnboardingSchemaCatalogueService $catalogue,

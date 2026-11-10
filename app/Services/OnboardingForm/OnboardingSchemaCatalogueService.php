@@ -15,7 +15,7 @@ use RuntimeException;
  */
 class OnboardingSchemaCatalogueService
 {
-    private const TTL = 300;
+    private const TTL = 3600;
 
     public function __construct(
         private readonly OutputSchemaContext $outputSchemaContext,
