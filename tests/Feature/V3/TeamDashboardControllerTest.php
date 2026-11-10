@@ -2,10 +2,15 @@
 
 namespace Tests\Unit\Controllers;
 
+use App\Models\Role;
 use App\Models\Team;
+use App\Models\TeamHasUser;
+use App\Models\TeamUserHasRole;
+use App\Models\UserHasRole;
 use App\Services\V3\TeamDashboardService;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -19,6 +24,8 @@ class TeamDashboardControllerTest extends TestCase
 
     protected $headerNonAdmin;
 
+    protected $headerAdmin;
+
     /** @var MockInterface&TeamDashboardService */
     private MockInterface $serviceMock;
 
@@ -31,6 +38,13 @@ class TeamDashboardControllerTest extends TestCase
         $this->headerNonAdmin = [
             'Accept'        => 'application/json',
             'Authorization' => 'Bearer ' . $nonAdminJwt,
+        ];
+        $this->assignTeamRole($this->getUserFromJwt($nonAdminJwt)['id'], $this->getValidTeamId(), 'custodian.team.admin');
+
+        $this->authorisationUser(true);
+        $this->headerAdmin = [
+            'Accept'        => 'application/json',
+            'Authorization' => 'Bearer ' . $this->getAuthorisationJwt(true),
         ];
 
         $this->serviceMock = Mockery::mock(TeamDashboardService::class);
@@ -50,6 +64,11 @@ class TeamDashboardControllerTest extends TestCase
         $this->serviceMock
             ->shouldReceive('getEntityViews')
             ->andReturn([['counter' => 0]]);
+
+        $this->serviceMock
+            ->shouldReceive('getDatasetViewsBottom')
+            ->andReturn([])
+            ->byDefault();
 
         $this->app->instance(TeamDashboardService::class, $this->serviceMock);
     }
@@ -173,7 +192,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_dataset_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -181,7 +200,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_datause_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datauses/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datauses/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -189,7 +208,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_tool_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/tools/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/tools/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -197,7 +216,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_collection_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/collections/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/collections/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -205,7 +224,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_publication_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/publications/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/publications/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -213,7 +232,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_general_enquiry_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/general-enquires/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/general-enquires/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -221,7 +240,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_feasibility_enquiry_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/fesability-enquires/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/fesability-enquires/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -229,7 +248,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_data_access_request_count_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/data-access-requests/count', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/data-access-requests/count', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -237,7 +256,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_dataset_views_top_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/views/top', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/views/top', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -245,7 +264,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_dataset_views_bottom_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/views/bottom', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/views/bottom', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -253,7 +272,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_collection_views_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/collections/views', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/collections/views', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -261,7 +280,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_get_datacustodian_views_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datacustodians/views', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datacustodians/views', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -269,7 +288,7 @@ class TeamDashboardControllerTest extends TestCase
 
     public function test_download_csv_with_invalid_team_id_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/download/csv', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/download/csv', [], $this->headerAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -829,5 +848,183 @@ class TeamDashboardControllerTest extends TestCase
 
         $response->assertOk();
         $this->assertStringContainsString('dashboard.csv', $response->headers->get('Content-Disposition'));
+    }
+
+    // -------------------------------------------------------------------------
+    // Team-scoped access: dashboard.read
+    // -------------------------------------------------------------------------
+
+    public static function dashboardRoutes(): array
+    {
+        return [
+            'entity count'           => ['datasets/count'],
+            'dataset views timeline' => ['datasets/views/timeline'],
+            'most viewed datasets'   => ['datasets/views/top'],
+            'least viewed datasets'  => ['datasets/views/bottom'],
+            'collection views'       => ['collections/views'],
+            'data custodian views'   => ['datacustodians/views'],
+            'csv download'           => ['download/csv'],
+        ];
+    }
+
+    public static function rolesWithDashboardAccess(): array
+    {
+        return [
+            'team admin'                 => ['custodian.team.admin'],
+            'metadata manager'           => ['custodian.metadata.manager'],
+            'dar manager'                => ['custodian.dar.manager'],
+            'team cohort discovery admin' => ['custodian.team.cohortAdmin'],
+        ];
+    }
+
+    public static function rolesWithoutDashboardAccess(): array
+    {
+        return [
+            'metadata editor' => ['metadata.editor'],
+            'dar reviewer'    => ['dar.reviewer'],
+            'developer'       => ['developer'],
+        ];
+    }
+
+    public static function rolesWithoutDashboardAccessOnEachRoute(): array
+    {
+        $cases = [];
+
+        foreach (self::rolesWithoutDashboardAccess() as $roleLabel => [$role]) {
+            foreach (self::dashboardRoutes() as $routeLabel => [$route]) {
+                $cases["{$roleLabel} on {$routeLabel}"] = [$role, $route];
+            }
+        }
+
+        return $cases;
+    }
+
+    #[DataProvider('dashboardRoutes')]
+    public function test_user_outside_the_team_cannot_read_its_dashboard(string $route): void
+    {
+        $header = $this->headerForUserWithoutRoles();
+
+        $response = $this->json('GET', $this->dashboardUrl($this->getValidTeamId(), $route), [], $header);
+
+        $response->assertStatus(401);
+    }
+
+    #[DataProvider('dashboardRoutes')]
+    public function test_dashboard_reader_in_another_team_cannot_read_this_teams_dashboard(string $route): void
+    {
+        [$userId, $header] = $this->secondNonAdminUserWithoutRoles();
+        $this->assignTeamRole($userId, $this->getOtherTeamId(), 'custodian.team.admin');
+
+        $response = $this->json('GET', $this->dashboardUrl($this->getValidTeamId(), $route), [], $header);
+
+        $response->assertStatus(401);
+    }
+
+    #[DataProvider('dashboardRoutes')]
+    public function test_team_admin_can_read_their_teams_dashboard(string $route): void
+    {
+        [$userId, $header] = $this->secondNonAdminUserWithoutRoles();
+        $this->assignTeamRole($userId, $this->getValidTeamId(), 'custodian.team.admin');
+
+        $response = $this->json('GET', $this->dashboardUrl($this->getValidTeamId(), $route), [], $header);
+
+        $response->assertOk();
+    }
+
+    #[DataProvider('dashboardRoutes')]
+    public function test_hdruk_admin_can_read_any_teams_dashboard(string $route): void
+    {
+        [$userId, $header] = $this->secondNonAdminUserWithoutRoles();
+        UserHasRole::create([
+            'user_id' => $userId,
+            'role_id' => Role::where('name', 'hdruk.admin')->firstOrFail()->id,
+        ]);
+
+        $response = $this->json('GET', $this->dashboardUrl($this->getValidTeamId(), $route), [], $header);
+
+        $response->assertOk();
+    }
+
+    #[DataProvider('dashboardRoutes')]
+    public function test_gateway_admin_can_read_any_teams_dashboard(string $route): void
+    {
+        $response = $this->json('GET', $this->dashboardUrl($this->getValidTeamId(), $route), [], $this->headerAdmin);
+
+        $response->assertOk();
+    }
+
+    #[DataProvider('rolesWithDashboardAccess')]
+    public function test_team_roles_with_dashboard_access_can_read_their_teams_dashboard(string $role): void
+    {
+        [$userId, $header] = $this->secondNonAdminUserWithoutRoles();
+        $this->assignTeamRole($userId, $this->getValidTeamId(), $role);
+
+        $response = $this->json('GET', $this->dashboardUrl($this->getValidTeamId(), 'datasets/count'), [], $header);
+
+        $response->assertOk();
+    }
+
+    #[DataProvider('rolesWithoutDashboardAccessOnEachRoute')]
+    public function test_team_roles_without_dashboard_access_cannot_read_their_teams_dashboard(
+        string $role,
+        string $route,
+    ): void {
+        [$userId, $header] = $this->secondNonAdminUserWithoutRoles();
+        $this->assignTeamRole($userId, $this->getValidTeamId(), $role);
+
+        $response = $this->json('GET', $this->dashboardUrl($this->getValidTeamId(), $route), [], $header);
+
+        $response->assertStatus(401);
+    }
+
+    private function dashboardUrl(int $teamId, string $route): string
+    {
+        return '/api/v3/teams/' . $teamId . '/dashboard/' . $route;
+    }
+
+    private function getOtherTeamId(): int
+    {
+        return Team::query()->where('id', '!=', $this->getValidTeamId())->firstOrFail()->id;
+    }
+
+    private function headerForUserWithoutRoles(): array
+    {
+        return $this->secondNonAdminUserWithoutRoles()[1];
+    }
+
+    /**
+     * The seeded test users are given random team roles, so every role this
+     * user holds is removed before a scenario assigns the one it needs.
+     *
+     * @return array{0: int, 1: array<string, string>}
+     */
+    private function secondNonAdminUserWithoutRoles(): array
+    {
+        $this->authorisationUser(false, 2);
+        $jwt = $this->getAuthorisationJwt(false, 2);
+        $userId = $this->getUserFromJwt($jwt)['id'];
+
+        $teamHasUserIds = TeamHasUser::where('user_id', $userId)->pluck('id');
+        TeamUserHasRole::whereIn('team_has_user_id', $teamHasUserIds)->delete();
+        TeamHasUser::whereIn('id', $teamHasUserIds)->delete();
+        UserHasRole::where('user_id', $userId)->delete();
+
+        return [$userId, [
+            'Accept'        => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ]];
+    }
+
+    private function assignTeamRole(int $userId, int $teamId, string $roleName): void
+    {
+        $teamHasUser = TeamHasUser::firstOrCreate([
+            'user_id' => $userId,
+            'team_id' => $teamId,
+        ]);
+
+        TeamUserHasRole::firstOrCreate([
+            'team_has_user_id' => $teamHasUser->id,
+            'role_id'          => Role::where('name', $roleName)->firstOrFail()->id,
+        ]);
     }
 }
