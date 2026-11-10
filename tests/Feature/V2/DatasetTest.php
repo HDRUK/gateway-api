@@ -18,6 +18,7 @@ use Config;
 use Hash;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -1141,6 +1142,117 @@ class DatasetTest extends TestCase
         $this->deleteUser($userId);
     }
 
+    public function test_activate_team_dataset_is_refused_when_its_gwdm_is_invalid(): void
+    {
+        Feature::activate('SchemaOnboardingForm');
+        $this->traserValidationErrors = [['instancePath' => '/summary/title', 'message' => 'must be string']];
+
+        $teamId = $this->createTeam([], [$this->createNotification()]);
+        $datasetId = $this->createTeamDraft($teamId, $this->createUser());
+
+        $response = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $response->assertStatus(422);
+        Queue::assertNotPushed(LinkageExtraction::class);
+        $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
+    }
+
+    public function test_activate_team_dataset_is_refused_when_its_source_metadata_is_invalid(): void
+    {
+        Feature::activate('SchemaOnboardingForm');
+
+        $teamId = $this->createTeam([], [$this->createNotification()]);
+        $datasetId = $this->createTeamDraft($teamId, $this->createUser(), array_merge($this->metadata, [
+            'schemaModel' => 'HDRUK',
+            'schemaVersion' => '4.1.0',
+        ]));
+        $this->traserInvalidSchemas = ['HDRUK'];
+
+        $response = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $response->assertStatus(422);
+        Queue::assertNotPushed(LinkageExtraction::class);
+        $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
+    }
+
+    public function test_activate_team_dataset_is_refused_when_a_required_list_of_values_is_empty(): void
+    {
+        Feature::activate('SchemaOnboardingForm');
+        $this->traserSchemaProperties = ['language' => ['type' => 'array', 'items' => ['type' => 'string']]];
+        $this->traserSchemaRequired = ['language'];
+
+        $teamId = $this->createTeam([], [$this->createNotification()]);
+        $metadata = $this->metadata;
+        $metadata['metadata']['language'] = [];
+        $datasetId = $this->createTeamDraft($teamId, $this->createUser(), array_merge($metadata, [
+            'schemaModel' => 'HDRUK',
+            'schemaVersion' => '4.1.0',
+        ]));
+
+        $response = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $response->assertStatus(422);
+        Queue::assertNotPushed(LinkageExtraction::class);
+        $this->assertEquals(Dataset::STATUS_DRAFT, Dataset::find($datasetId)->status);
+    }
+
+    public function test_activate_team_dataset_with_valid_gwdm_with_success(): void
+    {
+        Feature::activate('SchemaOnboardingForm');
+
+        $teamId = $this->createTeam([], [$this->createNotification()]);
+        $datasetId = $this->createTeamDraft($teamId, $this->createUser());
+
+        $response = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        Queue::assertPushed(LinkageExtraction::class);
+        $this->assertEquals(Dataset::STATUS_ACTIVE, Dataset::find($datasetId)->status);
+    }
+
+    public function test_activate_team_dataset_is_not_validated_when_the_flag_is_off(): void
+    {
+        $this->traserValidationErrors = [['instancePath' => '/summary/title', 'message' => 'must be string']];
+
+        $teamId = $this->createTeam([], [$this->createNotification()]);
+        $datasetId = $this->createTeamDraft($teamId, $this->createUser());
+
+        $response = $this->json(
+            'PATCH',
+            $this->team_datasets_url($teamId).'/'.$datasetId,
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertEquals(Dataset::STATUS_ACTIVE, Dataset::find($datasetId)->status);
+    }
+
     /**
      * App create/archive/unarchive Team Dataset with success
      */
@@ -1625,6 +1737,25 @@ class DatasetTest extends TestCase
             $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
             $this->assertEquals($abstract, $getAbstract());
         }
+    }
+
+    private function createTeamDraft(int $teamId, int $userId, ?array $metadata = null): int
+    {
+        $response = $this->json(
+            'POST',
+            $this->team_datasets_url($teamId),
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $metadata ?? $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return $response->decodeResponseJson()['data'];
     }
 
     private function team_datasets_url(int $teamId)

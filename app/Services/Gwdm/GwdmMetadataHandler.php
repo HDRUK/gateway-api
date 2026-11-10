@@ -414,6 +414,33 @@ abstract class GwdmMetadataHandler
         ];
     }
 
+    /**
+     * Partial GWDM document of the team's own values, translated by
+     * OnboardingDefaultsService to pre-populate a new dataset's onboarding form.
+     *
+     * The publisher shape comes from buildPublisher(). Override this when a
+     * version restructures these fields.
+     */
+    public function teamDefaults(Team $team): array
+    {
+        return [
+            'summary' => [
+                'contactPoint' => $team->contact_point,
+                'publisher' => $this->buildPublisher($team),
+            ],
+            'accessibility' => [
+                'access' => [
+                    'dataController' => $team->name,
+                    'dataProcessor' => $team->name,
+                    'jurisdiction' => 'UK',
+                ],
+                'formatAndStandards' => [
+                    'languages' => 'en',
+                ],
+            ],
+        ];
+    }
+
     // ── Shared helpers ────────────────────────────────────────────────────────
 
     /**

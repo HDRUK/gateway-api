@@ -6,4 +6,5 @@ return [
         'model' => env('FORM_HYDRATION_SCHEMA_MODEL', 'HDRUK'),
         'latest_version' => env('FORM_HYDRATION_SCHEMA_LATEST_VERSION', '3.0.0')
     ],
+    'onboarding_schemas' => ['HDRUK', 'PRUK', 'CRUK'],
 ];

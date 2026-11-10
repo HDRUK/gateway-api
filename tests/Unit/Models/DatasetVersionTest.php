@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Services\Gwdm\SourceSchema;
 
 class DatasetVersionTest extends TestCase
 {
@@ -85,5 +86,43 @@ class DatasetVersionTest extends TestCase
         $this->assertFalse($v1->fresh()->shouldBeSearchable());
         $this->assertFalse($v1->fresh()->load('dataset.team')->shouldBeSearchable());
         $this->assertFalse(DatasetVersion::indexEligible()->pluck('id')->contains($v1->id));
+    }
+
+    public function test_submittedMetadata_unwraps_a_stored_form_envelope(): void
+    {
+        $envelope = ['original_metadata' => [
+            'schemaModel' => 'HDRUK',
+            'schemaVersion' => '4.1.0',
+            'metadata' => ['summary' => ['title' => 'Example']],
+        ]];
+
+        $this->assertSame(['summary' => ['title' => 'Example']], DatasetVersion::submittedMetadata($envelope));
+    }
+
+    public function test_submittedMetadata_returns_a_plain_original_as_is(): void
+    {
+        $envelope = ['original_metadata' => ['summary' => ['title' => 'Example']]];
+
+        $this->assertSame(['summary' => ['title' => 'Example']], DatasetVersion::submittedMetadata($envelope));
+    }
+
+    public function test_sourceSchema_prefers_its_columns(): void
+    {
+        $version = new DatasetVersion([
+            'source_schema_model' => 'CRUK',
+            'source_schema_version' => '1.0.0',
+            'metadata' => ['schemaModel' => 'HDRUK', 'schemaVersion' => '4.1.0'],
+        ]);
+
+        $this->assertSame(['model' => 'CRUK', 'version' => '1.0.0'], SourceSchema::fromVersion($version)->toArray());
+    }
+
+    public function test_sourceSchema_falls_back_to_its_envelope(): void
+    {
+        $version = new DatasetVersion([
+            'metadata' => ['schemaModel' => 'HDRUK', 'schemaVersion' => '4.1.0'],
+        ]);
+
+        $this->assertSame(['model' => 'HDRUK', 'version' => '4.1.0'], SourceSchema::fromVersion($version)->toArray());
     }
 }

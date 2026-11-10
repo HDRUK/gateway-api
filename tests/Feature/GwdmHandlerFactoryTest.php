@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Team;
 use App\Services\Gwdm\Gwdm1xHandler;
 use App\Services\Gwdm\Gwdm20Handler;
 use App\Services\Gwdm\Gwdm21Handler;
@@ -67,5 +68,33 @@ class GwdmHandlerFactoryTest extends TestCase
         $this->assertTrue($handler->isDatasetRecord(['metadata' => ['required' => ['recordType' => 'dataset']]]));
         // recordType defaults to dataset when absent.
         $this->assertTrue($handler->isDatasetRecord(['metadata' => ['required' => []]]));
+    }
+
+    public function test_a_new_dataset_is_attributed_to_the_team(): void
+    {
+        $team = Team::factory()->create([
+            'name' => 'Example Team',
+            'contact_point' => 'team@example.com',
+        ]);
+
+        $this->assertSame([
+            'summary' => [
+                'contactPoint' => 'team@example.com',
+                'publisher' => [
+                    'gatewayId' => (string) $team->id,
+                    'name' => 'Example Team',
+                ],
+            ],
+            'accessibility' => [
+                'access' => [
+                    'dataController' => 'Example Team',
+                    'dataProcessor' => 'Example Team',
+                    'jurisdiction' => 'UK',
+                ],
+                'formatAndStandards' => [
+                    'languages' => 'en',
+                ],
+            ],
+        ], $this->factory()->resolve('2.2')->teamDefaults($team));
     }
 }
