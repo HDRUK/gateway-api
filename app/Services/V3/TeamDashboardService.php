@@ -2,15 +2,21 @@
 
 namespace App\Services\V3;
 
+use App\Enums\SortDirection;
 use App\Models\Dataset;
 use App\Services\BigQueryService;
-use Carbon\Carbon;
+use App\Services\V3\Dashboard\BigQueryQuery;
+use App\Services\V3\Dashboard\DashboardQueries;
+use Carbon\CarbonImmutable;
 
 class TeamDashboardService
 {
+    private readonly string $viewsTable;
+
     public function __construct(
         private readonly BigQueryService $bigQueryService,
     ) {
+        $this->viewsTable = config('services.googlebigquery.project_id') . '.' . config('services.googlebigquery.dashboard_dataset') . '.' . config('services.googlebigquery.dashboard_table');
     }
 
     public function getCount(string $model, string $dateColumn, int $teamId, $startDate, $endDate, array $extraColumn)
@@ -37,78 +43,35 @@ class TeamDashboardService
         ];
     }
 
-    public function getDatasetViews(int $teamId, $startDate, $endDate)
+    public function getDatasetViews(int $teamId, string $startDate, string $endDate): array
     {
-        $from = config('services.googlebigquery.project_id') . '.' . config('services.googlebigquery.dashboard_dataset') . '.' . config('services.googlebigquery.dashboard_table');
-
-        $start = Carbon::parse($startDate);
-        $end   = Carbon::parse($endDate);
-        $diffInDays = $start->diffInDays($end);
-
-        if ($diffInDays >= 180) {
-            // Monthly
-            $dateTrunc  = "FORMAT_DATE('%Y-%m', DATE_TRUNC(date, MONTH))";
-        } elseif ($diffInDays >= 30) {
-            // Weekly
-            $dateTrunc  = "FORMAT_DATE('%Y-%W', DATE_TRUNC(date, WEEK))";
-        } else {
-            // Daily
-            $dateTrunc  = "FORMAT_DATE('%Y-%m-%d', date)";
-        }
-
-        $sql = "
-            SELECT {$dateTrunc} AS date, count(*) AS counter
-            FROM {$from}
-            WHERE entity_type = 'dataset'
-               AND team_id = @teamId
-               AND date BETWEEN @startDate AND @endDate
-            GROUP BY 1
-            ORDER BY 1 ASC
-        ";
-
-        $params = [
-            'teamId'    => $teamId,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
-        ];
-
-        return $this->bigQueryService->query($sql, $params);
+        return $this->run(DashboardQueries::datasetViewsTimeline(
+            $this->viewsTable,
+            $teamId,
+            CarbonImmutable::parse($startDate),
+            CarbonImmutable::parse($endDate),
+        ));
     }
 
-    public function getDatatasetViewsTop(int $teamId, $startDate, $endDate)
+    public function getDatatasetViewsTop(int $teamId, string $startDate, string $endDate): array
     {
-        return $this->getDatasetViewsRanked($teamId, $startDate, $endDate, 'DESC');
+        return $this->getDatasetViewsRanked($teamId, $startDate, $endDate, SortDirection::DESC);
     }
 
-    public function getDatasetViewsBottom(int $teamId, $startDate, $endDate)
+    public function getDatasetViewsBottom(int $teamId, string $startDate, string $endDate): array
     {
-        return $this->getDatasetViewsRanked($teamId, $startDate, $endDate, 'ASC');
+        return $this->getDatasetViewsRanked($teamId, $startDate, $endDate, SortDirection::ASC);
     }
 
-    /**
-     * @param 'ASC'|'DESC' $direction
-     */
-    private function getDatasetViewsRanked(int $teamId, $startDate, $endDate, string $direction)
+    private function getDatasetViewsRanked(int $teamId, string $startDate, string $endDate, SortDirection $direction): array
     {
-        $from = config('services.googlebigquery.project_id') . '.' . config('services.googlebigquery.dashboard_dataset') . '.' . config('services.googlebigquery.dashboard_table');
-
-        $sql = "
-            SELECT entity_id, count(*) AS counter
-            FROM {$from}
-            WHERE entity_type = 'dataset'
-               AND team_id = @teamId
-               AND date BETWEEN @startDate AND @endDate
-            GROUP BY entity_id
-            ORDER BY counter {$direction}
-        ";
-
-        $params = [
-            'teamId' => $teamId,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
-        ];
-
-        $responseBq = $this->bigQueryService->query($sql, $params);
+        $responseBq = $this->run(DashboardQueries::datasetViewsRanked(
+            $this->viewsTable,
+            $teamId,
+            CarbonImmutable::parse($startDate),
+            CarbonImmutable::parse($endDate),
+            $direction,
+        ));
 
         $response = [];
 
@@ -133,24 +96,19 @@ class TeamDashboardService
         return $response;
     }
 
-    public function getEntityViews(string $entity, int $teamId, $startDate, $endDate)
+    public function getEntityViews(string $entity, int $teamId, string $startDate, string $endDate): array
     {
-        $from = config('services.googlebigquery.project_id') . '.' . config('services.googlebigquery.dashboard_dataset') . '.' . config('services.googlebigquery.dashboard_table');
+        return $this->run(DashboardQueries::entityViews(
+            $this->viewsTable,
+            $entity,
+            $teamId,
+            CarbonImmutable::parse($startDate),
+            CarbonImmutable::parse($endDate),
+        ));
+    }
 
-        $sql = "
-            SELECT count(*) AS counter
-            FROM {$from}
-            WHERE entity_type = '{$entity}'
-               AND team_id = @teamId
-               AND date BETWEEN @startDate AND @endDate
-        ";
-
-        $params = [
-            'teamId' => $teamId,
-            'startDate' => $startDate,
-            'endDate'   => $endDate,
-        ];
-
-        return $this->bigQueryService->query($sql, $params);
+    private function run(BigQueryQuery $query): array
+    {
+        return $this->bigQueryService->query($query->sql, $query->params);
     }
 }
