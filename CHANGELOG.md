@@ -1,3 +1,29 @@
+## [2.57.0](https://github.com/HDRUK/gateway-api/compare/v2.56.0...v2.57.0) (2026-11-10)
+
+### ✨ Features
+
+* **GAT-9080:** Test that a data use returns its linked active publications ([cb280e3](https://github.com/HDRUK/gateway-api/commit/cb280e38e13c85696d1e51dd8b2b7e974ec2e1c1)), closes [GAT-9080](undefinedGAT-9080) [those](undefinedose) [investigating](undefinedgating)
+* **GAT-9678:** Implement mechanism for revoking all active jwt tokens (#1891) ([a557dcd](https://github.com/HDRUK/gateway-api/commit/a557dcd0faf46bcdf471efc0d5f040f9aaa1b26a)), closes [GAT-9678](undefinedGAT-9678)
+* **GAT-9690:** Refactor (#1876) ([a49fe8b](https://github.com/HDRUK/gateway-api/commit/a49fe8bfaf18e51321bb3715b890b2bb7161d643)), closes [GAT-9690](undefinedGAT-9690)
+* **GAT-9713:** #4 Moves cross context read to feature flags instead … (#1885) ([622fd8e](https://github.com/HDRUK/gateway-api/commit/622fd8e651ac6b1381c400765ee5042b5af82993)), closes [GAT-9713](undefinedGAT-9713) [cross](undefinedoss)
+* **GAT-9713:** API changes for native rendering of GWDM. (#1881) ([2fd5d78](https://github.com/HDRUK/gateway-api/commit/2fd5d785688d729be33c8471dfc1a2e213169a4c)), closes [GAT-9713](undefinedGAT-9713)
+* **GAT-9713:** Introduces gwdm 2.3 and new schemas. (#1884) ([c989f89](https://github.com/HDRUK/gateway-api/commit/c989f89dd98c9d2323b20359cc7ee01f3dace186)), closes [GAT-9713](undefinedGAT-9713)
+* **GAT-9713:** Introduces partner context long name into search results (#1887) ([dabae43](https://github.com/HDRUK/gateway-api/commit/dabae43fef7b2b8f117bf2e508d856c23da655a9)), closes [GAT-9713](undefinedGAT-9713)
+* **GAT-9999:** Changes for PRUK alpha demonstration (#1893) ([de137e6](https://github.com/HDRUK/gateway-api/commit/de137e6d692862279f14bf5d7e0fb2fd7c02ccf0)), closes [GAT-9999](undefinedGAT-9999)
+
+### 🐛 Bug Fixes
+
+* **GAT-9362:** Add least-viewed datasets endpoint for custodian dashboard ([605eee5](https://github.com/HDRUK/gateway-api/commit/605eee50bfa6a403e842a0efff25548bcb7b4ef5)), closes [GAT-9362](undefinedGAT-9362)
+* **GAT-9606:** Exclude datasets of soft-deleted teams from the search index ([e609536](https://github.com/HDRUK/gateway-api/commit/e6095368a5a1058c71bc70b1b44d8ae40436f528)), closes [GAT-9606](undefinedGAT-9606)
+* **GAT-9715:** Allow deleting a team whose only datasets are archived ([2b0fa1d](https://github.com/HDRUK/gateway-api/commit/2b0fa1de30f58a60579d5370008aa35582675b77)), closes [GAT-9715](undefinedGAT-9715) [whose](undefinedose)
+* **GAT-9715:** Audit successful team deletions ([148defd](https://github.com/HDRUK/gateway-api/commit/148defdad82a85e136cc342a0f3607b38a107d13)), closes [GAT-9715](undefinedGAT-9715)
+* **GAT-9733:** Record every federation run in run history ([1b766d8](https://github.com/HDRUK/gateway-api/commit/1b766d8b582ab5ea31dcabe180440ec31a2606a6)), closes [GAT-9733](undefinedGAT-9733)
+* **GAT-9733:** Record unexpected dataset failures in federation run history ([a5a4cb7](https://github.com/HDRUK/gateway-api/commit/a5a4cb778c1d253d14ef2a8f1a6ef4716fec1fc0)), closes [GAT-9733](undefinedGAT-9733) [GatewayMetadataIngestionTrait](undefinedGatewayMetadataIngestionTrait)
+* **GAT-9734:** Send federation run times in UTC ([dd76fcd](https://github.com/HDRUK/gateway-api/commit/dd76fcd1fa549a93876a5e22afe51d2f9b46b436)), closes [GAT-9734](undefinedGAT-9734)
+* **GAT-9999:** Guard variable indexing to pruk only to avoid days wor… (#1895) ([66c1cce](https://github.com/HDRUK/gateway-api/commit/66c1cce56dbea61f3e932a630e4b8bdfc693757a)), closes [GAT-9999](undefinedGAT-9999)
+* **GAT-9999:** Indexing dataset variables was slow and eventually hun… (#1894) ([a647139](https://github.com/HDRUK/gateway-api/commit/a647139fad3c356d650c1dba797608e1007a06b6)), closes [GAT-9999](undefinedGAT-9999)
+* Remove duplicated helpers and stray setUp code from SocialLoginControllerTest ([a7b38c0](https://github.com/HDRUK/gateway-api/commit/a7b38c09e59ba11b7e07858bc45e1f444f57a260))
+
 ## [2.56.0](https://github.com/HDRUK/gateway-api/compare/v2.55.0...v2.56.0) (2026-10-15)
 
 ### ✨ Features
