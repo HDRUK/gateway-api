@@ -65,93 +65,100 @@ return [
     [
         'name'                => 'dashboard.count',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/{entity}/count',
+        'path'                => '/teams/{teamId}/dashboard/{entity}/count',
         'methodController'    => 'TeamDashboardController@entityCount',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
+            'check.access:permissions,dashboard.read',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
             'entity' => 'datasets|datauses|tools|collections|publications|general-enquires|fesability-enquires|data-access-requests',
         ],
     ],
     [
         'name'                => 'dashboard.datasets.views.timeline',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/datasets/views/timeline',
+        'path'                => '/teams/{teamId}/dashboard/datasets/views/timeline',
         'methodController'    => 'TeamDashboardController@datasetViewsTimeline',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
+            'check.access:permissions,dashboard.read',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name'                => 'dashboard.datasets.views.top',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/datasets/views/top',
+        'path'                => '/teams/{teamId}/dashboard/datasets/views/top',
         'methodController'    => 'TeamDashboardController@datasetViewsTop',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
+            'check.access:permissions,dashboard.read',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name'                => 'dashboard.datasets.views.bottom',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/datasets/views/bottom',
+        'path'                => '/teams/{teamId}/dashboard/datasets/views/bottom',
         'methodController'    => 'TeamDashboardController@datasetViewsBottom',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
+            'check.access:permissions,dashboard.read',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name'                => 'dashboard.collections.views',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/collections/views',
+        'path'                => '/teams/{teamId}/dashboard/collections/views',
         'methodController'    => 'TeamDashboardController@collectionViews',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
+            'check.access:permissions,dashboard.read',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name'                => 'dashboard.datacustodians.views',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/datacustodians/views',
+        'path'                => '/teams/{teamId}/dashboard/datacustodians/views',
         'methodController'    => 'TeamDashboardController@datacustodianViews',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
+            'check.access:permissions,dashboard.read',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name'                => 'dashboard.download.csv',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/download/csv',
+        'path'                => '/teams/{teamId}/dashboard/download/csv',
         'methodController'    => 'TeamDashboardController@downloadCsv',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
+            'check.access:permissions,dashboard.read',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
 

@@ -139,6 +139,8 @@ class PermissionSeeder extends Seeder
                 'widgets.read',
                 'widgets.update',
                 'widgets.delete',
+
+                'dashboard.read',
             ],
             'cohort' => [
                 'GENERAL_ACCESS',
