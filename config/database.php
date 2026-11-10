@@ -58,6 +58,10 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Session time_zone. Set to +00:00 where the server runs in local
+            // time (e.g. a dev Mac) so it matches app.timezone (UTC); unset
+            // leaves the server default untouched.
+            'timezone' => env('DB_TIMEZONE'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],

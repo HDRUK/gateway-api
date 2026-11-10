@@ -49,7 +49,7 @@ class SectorController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sectors = Sector::where('enabled', 1)
@@ -122,7 +122,7 @@ class SectorController extends Controller
     public function show(GetSector $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sector = Sector::findOrFail($id);
@@ -192,7 +192,7 @@ class SectorController extends Controller
     public function store(CreateSector $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sector = Sector::create([
@@ -284,7 +284,7 @@ class SectorController extends Controller
     public function update(UpdateSector $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             Sector::where('id', $id)->update([
@@ -375,7 +375,7 @@ class SectorController extends Controller
     public function edit(EditSector $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -455,7 +455,7 @@ class SectorController extends Controller
     public function destroy(DeleteSector $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sector = Sector::findOrFail($id);

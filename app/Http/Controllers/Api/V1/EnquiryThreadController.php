@@ -72,7 +72,7 @@ class EnquiryThreadController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -152,7 +152,7 @@ class EnquiryThreadController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $enquiryThread = EnquiryThread::where('id', $id)->get();
@@ -247,7 +247,7 @@ class EnquiryThreadController extends Controller
             throw new Exception(implode(', ', $e->validator->errors()->all()));
         }
 
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
         $user = User::where('id', $jwtUser['id'])->first();
 
         if (is_null($user)) {

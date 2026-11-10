@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Services\Gwdm\SourceSchema;
 use Config;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -116,8 +117,12 @@ trait MetadataVersioning
     public function updateMetadataVersion(
         Dataset $currDataset,
         array $newMetadata,
-        array $previousMetadata
+        array $previousMetadata,
+        ?SourceSchema $sourceSchema = null,
     ): int {
+        // This row is overwritten with a new submission, so record that
+        // submission's schema - unknown unless the caller says otherwise.
+        $sourceSchema ??= SourceSchema::unknown();
 
         $gwdmVersion = Config::get('metadata.GWDM.version');
 
@@ -137,6 +142,7 @@ trait MetadataVersioning
         // them in sync with the metadata payload on every v2 overwrite.
         $dv->metadata     = json_encode($metadataSaveObject);
         $dv->gwdm_version = $gwdmVersion;
+        $dv->fill($sourceSchema->toColumns());
         $dv->title        = $newMetadata['summary']['title'] ?? null;
         $dv->short_title  = $newMetadata['summary']['shortTitle'] ?? ($newMetadata['summary']['title'] ?? null);
         $dv->save();

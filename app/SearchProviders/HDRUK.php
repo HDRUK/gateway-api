@@ -8,6 +8,7 @@ use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
 use App\Jobs\LogSearchAnalytics;
 use App\Jobs\SearchAnalyticsData;
+use App\Services\Search\AdvancedQueryCompiler;
 use App\Services\Search\FilterCache;
 use App\Services\Search\CollectionHydrator;
 use App\Services\Search\DataCustodianHydrator;
@@ -209,6 +210,16 @@ class HDRUK implements SearchProvider
 
         $clauses = $this->buildFilterClauses($type, $params);
 
+        // The advanced rule tree compiles to one bracketed clause. Keyed apart
+        // from any facet field, it is never dropped by the multi-select
+        // exclusion queries below, so facet counts, date spans and population
+        // buckets all describe the advanced result set. Its and/or logic stays
+        // inside its brackets, so it can't widen the partner scope added next.
+        $advancedFilter = app(AdvancedQueryCompiler::class)->compile($type, $params['advanced'] ?? null);
+        if ($advancedFilter !== null) {
+            $clauses['advanced'] = $advancedFilter;
+        }
+
         // Inject the partner context scope. Using $clauses ensures the filter
         // is automatically AND-ed into every downstream query (exclusion,
         // date-range min/max, population buckets) without touching any of that
@@ -334,7 +345,10 @@ class HDRUK implements SearchProvider
         $hydrated    = $this->hydrate($elasticHits, $type, $params['view_type'] ?? 'full');
         $sorted      = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
         $entityIds   = array_column($elasticHits, '_id');
-        $total       = $result['found'] ?? 0;
+        // Hydrators drop hits with no usable DB record (missing row, metadata,
+        // team). Discount this page's drops so the total matches what can be
+        // rendered; drops on other pages aren't visible without hydrating them.
+        $total       = max(0, ($result['found'] ?? 0) - (count($elasticHits) - count($hydrated)));
 
         LogSearchAnalytics::dispatch(new SearchAnalyticsData(
             uuid: (string) Str::uuid(),
@@ -644,9 +658,8 @@ class HDRUK implements SearchProvider
      * Returns a Typesense filter clause that scopes search results to the active
      * partner, mirroring Dataset::scopeForPartnerContext().
      *
-     * HDRUK with allow_cross_context_read=true sees all partners (no clause).
-     * Any other partner — or HDRUK with cross-context read disabled — is
-     * restricted to its own datasets.
+     * The readable contexts come from PartnerContext::readableContextsFor():
+     * the partner's own context, or for HDRUK its own plus each flagged one.
      *
      * Only applies to the 'datasets' type; other entity types don't carry a
      * partner_context column and shouldn't be filtered.
@@ -658,14 +671,17 @@ class HDRUK implements SearchProvider
         }
 
         $partner = app(PartnerContext::class)->getPartner();
+        $readable = $partner ? PartnerContext::readableContextsFor($partner) : null;
 
-        $shouldFilter = $partner && ($partner !== 'HDRUK' || !config('partners.allow_cross_context_read', false));
-
-        if (!$shouldFilter) {
+        if ($readable === null) {
             return null;
         }
 
-        return 'partnerContext:=`' . str_replace('`', '', $partner) . '`';
+        $quoted = array_map(fn ($c) => '`' . str_replace('`', '', $c) . '`', $readable);
+
+        return count($quoted) === 1
+            ? 'partnerContext:=' . $quoted[0]
+            : 'partnerContext:=[' . implode(',', $quoted) . ']';
     }
 
     /**

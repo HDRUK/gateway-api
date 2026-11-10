@@ -458,8 +458,8 @@ class IntegrationDurController extends Controller
             $teamId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
+            } elseif ($request->jwtUser()) {
+                $userId = (int) $request->jwtUser()['id'];
             } else {
                 $appId = (int) $input['app']['id'];
                 $app = Application::where(['id' => $appId])->first();
@@ -735,8 +735,8 @@ class IntegrationDurController extends Controller
             $appId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
+            } elseif ($request->jwtUser()) {
+                $userId = (int) $request->jwtUser()['id'];
             } else {
                 $appId = (int) $input['app']['id'];
             }
@@ -1024,8 +1024,8 @@ class IntegrationDurController extends Controller
             $appId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
+            } elseif ($request->jwtUser()) {
+                $userId = (int) $request->jwtUser()['id'];
             } else {
                 $appId = (int) $input['app']['id'];
             }

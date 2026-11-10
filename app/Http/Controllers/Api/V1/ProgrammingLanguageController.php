@@ -45,7 +45,7 @@ class ProgrammingLanguageController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         $perPage = (int) request('per_page', Config::get('constants.per_page'));
         try {
@@ -120,7 +120,7 @@ class ProgrammingLanguageController extends Controller
     public function show(GetProgrammingLanguage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $programming_language = ProgrammingLanguage::findOrFail($id);
@@ -192,7 +192,7 @@ class ProgrammingLanguageController extends Controller
     public function store(CreateProgrammingLanguage $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $programming_language = ProgrammingLanguage::create([
@@ -280,7 +280,7 @@ class ProgrammingLanguageController extends Controller
     public function update(UpdateProgrammingLanguage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             ProgrammingLanguage::where('id', $id)->update([
@@ -367,7 +367,7 @@ class ProgrammingLanguageController extends Controller
     public function edit(EditProgrammingLanguage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -449,7 +449,7 @@ class ProgrammingLanguageController extends Controller
     public function destroy(DeleteProgrammingLanguage $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $programming_language = ProgrammingLanguage::findOrFail($id);

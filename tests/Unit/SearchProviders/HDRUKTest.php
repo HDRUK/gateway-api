@@ -163,12 +163,24 @@ class HDRUKTest extends TestCase
      * were sent, so callers only asserting on request shape don't need to
      * hand-craft a matching response.
      */
-    private function mockTypesenseServiceExpectingSearches(callable $searchesMatcher): void
-    {
+    /**
+     * HDRUK dataset searches always carry a trailing partnerContext clause.
+     * It is stripped before $searchesMatcher sees the searches, so filter-
+     * building tests assert only their own clauses; the partner-scoping tests
+     * pass $stripPartnerClause = false to assert it directly.
+     */
+    private function mockTypesenseServiceExpectingSearches(
+        callable $searchesMatcher,
+        bool $stripPartnerClause = true,
+    ): void {
+        $matcher = $stripPartnerClause
+            ? fn ($searches) => $searchesMatcher(array_map([$this, 'withoutPartnerClause'], $searches))
+            : $searchesMatcher;
+
         $mockService = Mockery::mock(TypesenseService::class);
         $mockService->shouldReceive('multiSearch')
             ->once()
-            ->with(Mockery::on($searchesMatcher))
+            ->with(Mockery::on($matcher))
             ->andReturnUsing(fn ($searches) => [
                 'results' => array_fill(0, count($searches), ['found' => 0, 'hits' => [], 'facet_counts' => []]),
             ]);
@@ -177,6 +189,26 @@ class HDRUKTest extends TestCase
 
         Feature::flushCache();
         Feature::activate('TypesenseSearch');
+    }
+
+    private function withoutPartnerClause(array $search): array
+    {
+        if (!isset($search['filter_by'])) {
+            return $search;
+        }
+
+        $clauses = array_filter(
+            explode(' && ', $search['filter_by']),
+            fn ($clause) => !str_starts_with($clause, 'partnerContext:='),
+        );
+
+        if ($clauses === []) {
+            unset($search['filter_by']);
+        } else {
+            $search['filter_by'] = implode(' && ', $clauses);
+        }
+
+        return $search;
     }
 
     public function test_search_builds_filter_by_from_nested_filters_shape(): void
@@ -801,6 +833,78 @@ class HDRUKTest extends TestCase
         });
     }
 
+    public function test_search_via_typesense_filters_by_flagged_partner_contexts(): void
+    {
+        Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
+        Feature::activate('RenderSchemaCRUK');
+
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'partnerContext:=[`HDRUK`,`CRUK`]', false);
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+    }
+
+    public function test_search_via_typesense_filters_hdruk_to_itself_when_no_flags_are_active(): void
+    {
+        Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
+
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'partnerContext:=`HDRUK`', false);
+
+        (new HDRUK())->search('asthma', 'datasets', []);
+    }
+
+    public function test_search_via_typesense_ands_the_advanced_clause_with_facet_filters(): void
+    {
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null)
+                === 'publisherName:=[`SAIL`] && ((waveType:=[`Sub-study`]) || (isLongitudinal:=true))');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+            'advanced' => [
+                'match' => 'any',
+                'rules' => [
+                    ['field' => 'waveType', 'op' => 'any', 'values' => ['Sub-study']],
+                    ['field' => 'isLongitudinal', 'op' => 'is', 'value' => true],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_search_via_typesense_keeps_the_advanced_clause_in_facet_exclusion_queries(): void
+    {
+        // The publisherName facet's own exclusion query drops its clause but
+        // must still be scoped to the advanced result set.
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[1]['filter_by'] ?? null) === '((isLongitudinal:=true))'
+                && ($searches[1]['facet_by'] ?? null) === 'publisherName');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+            'advanced' => ['rules' => [['field' => 'isLongitudinal', 'op' => 'is', 'value' => true]]],
+        ]);
+    }
+
+    public function test_search_via_typesense_keeps_advanced_or_inside_the_partner_scope(): void
+    {
+        Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
+
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null)
+                === '((isLongitudinal:=true) || (isFamilyBased:=true)) && partnerContext:=`HDRUK`', false);
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'advanced' => [
+                'match' => 'any',
+                'rules' => [
+                    ['field' => 'isLongitudinal', 'op' => 'is', 'value' => true],
+                    ['field' => 'isFamilyBased', 'op' => 'is', 'value' => true],
+                ],
+            ],
+        ]);
+    }
+
     private function getSearchAnalyticsData(LogSearchAnalytics $job): SearchAnalyticsData
     {
         $property = (new \ReflectionClass($job))->getProperty('data');
@@ -846,5 +950,36 @@ class HDRUKTest extends TestCase
         Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
             return $this->getSearchAnalyticsData($job)->dataSource === 'HDRUK';
         });
+    }
+
+    public function test_search_via_typesense_total_discounts_hits_dropped_by_hydration(): void
+    {
+        // Two hits on this page point at datasets with no DB record, so the
+        // hydrator drops them; the total must not keep counting them.
+        $mockService = Mockery::mock(TypesenseService::class);
+        $mockService->shouldReceive('multiSearch')
+            ->once()
+            ->andReturnUsing(fn ($searches) => [
+                'results' => array_merge(
+                    [[
+                        'found' => 5,
+                        'hits' => [
+                            ['document' => ['id' => 'a', 'dataset_id' => 999998]],
+                            ['document' => ['id' => 'b', 'dataset_id' => 999999]],
+                        ],
+                        'facet_counts' => [],
+                    ]],
+                    array_fill(0, count($searches) - 1, ['found' => 0, 'hits' => [], 'facet_counts' => []]),
+                ),
+            ]);
+        $this->app->instance(TypesenseService::class, $mockService);
+
+        Feature::flushCache();
+        Feature::activate('TypesenseSearch');
+
+        $result = (new HDRUK())->search('', 'datasets', ['page' => 1, 'per_page' => 25]);
+
+        $this->assertSame([], $result['hits']);
+        $this->assertSame(3, $result['total']);
     }
 }

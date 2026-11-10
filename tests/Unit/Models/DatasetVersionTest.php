@@ -74,4 +74,16 @@ class DatasetVersionTest extends TestCase
         $this->assertTrue($eligibleIds->contains($v1->id));
         $this->assertFalse($eligibleIds->contains($v2->id));
     }
+
+    public function test_scopeIndexEligible_excludes_versions_whose_owning_team_is_soft_deleted(): void
+    {
+        $deletedTeam = Team::factory()->create();
+        $dataset = Dataset::factory()->for($deletedTeam)->create(['status' => Dataset::STATUS_ACTIVE]);
+        $v1 = $this->makeVersion($dataset, 1, 'v1');
+        $deletedTeam->delete();
+
+        $this->assertFalse($v1->fresh()->shouldBeSearchable());
+        $this->assertFalse($v1->fresh()->load('dataset.team')->shouldBeSearchable());
+        $this->assertFalse(DatasetVersion::indexEligible()->pluck('id')->contains($v1->id));
+    }
 }

@@ -66,7 +66,7 @@ class RoleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $roles = Role::with(['permissions'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
@@ -156,7 +156,7 @@ class RoleController extends Controller
     public function show(GetRole $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $roles = Role::with(['permissions'])->where(['id' => $id])->get();
@@ -248,7 +248,7 @@ class RoleController extends Controller
     public function store(CreateRole $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $role = Role::create([
@@ -373,7 +373,7 @@ class RoleController extends Controller
     public function update(UpdateRole $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $role = Role::where('id', $id)->update([
@@ -498,7 +498,7 @@ class RoleController extends Controller
     public function edit(EditRole $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -593,7 +593,7 @@ class RoleController extends Controller
     public function destroy(DeleteRole $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             RoleHasPermission::where('role_id', $id)->delete();

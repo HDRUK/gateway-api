@@ -4,6 +4,7 @@ namespace App\Context;
 
 use App\Http\Resources\DatasetResource;
 use App\Models\Dataset;
+use Laravel\Pennant\Feature;
 
 /**
  * Resolves the active partner and maps entity types to their Resource classes.
@@ -26,12 +27,59 @@ use App\Models\Dataset;
  */
 class PartnerContext
 {
+    /**
+     * Partner contexts HDRUK may read and render, each behind its own flag.
+     * Seeded off; an unseeded flag also resolves false in Pennant, so a
+     * missing flag hides that partner's datasets rather than exposing them.
+     */
+    public const CROSS_CONTEXT_FLAGS = [
+        'CRUK' => 'RenderSchemaCRUK',
+        'PRUK' => 'RenderSchemaPRUK',
+        'CROCOD' => 'RenderSchemaCROCOD',
+    ];
+
     public function getPartner(): string
     {
         return request()->header(
             'x-partner-context',
             config('partners.default', 'HDRUK')
         );
+    }
+
+    /**
+     * The partner contexts the active partner may read and render.
+     *
+     * @return string[]
+     */
+    public function readableContexts(): array
+    {
+        return self::readableContextsFor($this->getPartner());
+    }
+
+    /**
+     * The partner contexts the given partner may read and render.
+     *
+     * Non-HDRUK partners are always isolated to their own context. HDRUK (the
+     * gateway operator) always reads its own context, plus each context in
+     * CROSS_CONTEXT_FLAGS whose flag is active.
+     *
+     * Static so callers holding a mocked PartnerContext (e.g. search
+     * providers) can resolve it from the partner string alone.
+     *
+     * @return string[]
+     */
+    public static function readableContextsFor(string $partner): array
+    {
+        if ($partner !== 'HDRUK') {
+            return [$partner];
+        }
+
+        $enabled = array_keys(array_filter(
+            self::CROSS_CONTEXT_FLAGS,
+            fn (string $flag) => Feature::active($flag),
+        ));
+
+        return ['HDRUK', ...$enabled];
     }
 
     /**

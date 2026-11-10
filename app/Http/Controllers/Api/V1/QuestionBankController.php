@@ -129,7 +129,7 @@ class QuestionBankController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sectionId = $input['section_id'] ?? null;
@@ -288,7 +288,7 @@ class QuestionBankController extends Controller
     public function indexStandard(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sectionId = $input['section_id'] ?? null;
@@ -448,7 +448,7 @@ class QuestionBankController extends Controller
     public function indexCustom(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sectionId = $input['section_id'] ?? null;
@@ -608,7 +608,7 @@ class QuestionBankController extends Controller
     public function indexArchived(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $sectionId = $input['section_id'] ?? null;
@@ -731,7 +731,7 @@ class QuestionBankController extends Controller
     public function show(GetQuestionBankVersion $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $question = QuestionBank::with([
@@ -820,7 +820,7 @@ class QuestionBankController extends Controller
     public function showVersion(GetQuestionBankVersion $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $questionVersion = QuestionBankVersion::findOrFail($id);
@@ -930,7 +930,7 @@ class QuestionBankController extends Controller
     public function store(CreateQuestionBank $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             if ($input['is_child'] ?? false) {
@@ -1053,7 +1053,7 @@ class QuestionBankController extends Controller
     public function update(UpdateQuestionBank $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $question = QuestionBank::findOrFail($id);
@@ -1177,7 +1177,7 @@ class QuestionBankController extends Controller
     public function edit(EditQuestionBank $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $question = QuestionBank::findOrFail($id);
@@ -1339,7 +1339,7 @@ class QuestionBankController extends Controller
     public function updateStatus(UpdateStatusQuestionBank $request, int $id, string $status): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $question = QuestionBank::where('id', $id)->with('latestVersion.childVersions')->first();
@@ -1440,7 +1440,7 @@ class QuestionBankController extends Controller
     public function destroy(DeleteQuestionBank $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $question = QuestionBank::findOrFail($id);
@@ -1571,7 +1571,7 @@ class QuestionBankController extends Controller
         $fileSystem = config('gateway.scanning_filesystem_disk', 'local_scan');
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUser = $request->jwtUser();
             $file = Upload::where("uuid", $fileId)->firstOrFail();
 
             // Verify the file belongs to the question
@@ -1825,8 +1825,10 @@ class QuestionBankController extends Controller
         // so we update it to belong to the question
         $file = Upload::where('uuid', $fileId)->firstOrFail();
 
-        // Stop the user updating any random file
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        // Stop the user updating any random file. This is a private
+        // helper that receives $input rather than the Request, hence the
+        // helper; Octane rebinds the container's request per request.
+        $jwtUser = request()->jwtUser();
 
         if ($file->user_id === $jwtUser['id']) {
             $file->update([

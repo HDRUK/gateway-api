@@ -15,6 +15,7 @@ use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint;
+use RuntimeException;
 
 class JwtController extends Controller
 {
@@ -40,6 +41,16 @@ class JwtController extends Controller
         $this->jwt = '';
         $this->secretKey = (string) config('jwt.secret');
 
+        // Fail clearly rather than signing with a weak or empty key. Without
+        // this the only symptom of a missing JWT_SECRET is lcobucci's
+        // "Key cannot be empty", which reads like a library fault.
+        if ($this->secretKey === '') {
+            throw new RuntimeException(
+                'JWT_SECRET is not set. Tokens cannot be signed without it - '
+                .'set it in the environment before starting the application.'
+            );
+        }
+
         $this->config = Configuration::forSymmetricSigner(
             new Sha256(),
             InMemory::plainText($this->secretKey)
@@ -61,6 +72,13 @@ class JwtController extends Controller
         return $this->jwt = $value;
     }
 
+    /**
+     * The jti is cryptographically random rather than md5(microtime()).
+     * Revocation is keyed on it, so two tokens sharing a jti would mean
+     * revoking one revokes the other - and microtime() only resolves to
+     * the microsecond, which two Octane workers can share under load.
+     * The 32-character hex shape is unchanged.
+     */
     public function generateToken($userId)
     {
         try {
@@ -88,7 +106,7 @@ class JwtController extends Controller
                 ->issuedBy((string) config('app.url')) // iss claim
                 ->permittedFor((string) config('app.url')) // aud claim
                 ->relatedTo((string) config('app.name')) // aud claim
-                ->identifiedBy(md5(microtime())) // jti claim
+                ->identifiedBy(bin2hex(random_bytes(16))) // jti claim - see below
                 ->issuedAt($currentTime) // iat claim
                 ->canOnlyBeUsedAfter($currentTime) // nbf claim
                 ->expiresAt($expireTime) // exp claim

@@ -77,6 +77,19 @@ class TeamDashboardService
 
     public function getDatatasetViewsTop(int $teamId, $startDate, $endDate)
     {
+        return $this->getDatasetViewsRanked($teamId, $startDate, $endDate, 'DESC');
+    }
+
+    public function getDatasetViewsBottom(int $teamId, $startDate, $endDate)
+    {
+        return $this->getDatasetViewsRanked($teamId, $startDate, $endDate, 'ASC');
+    }
+
+    /**
+     * @param 'ASC'|'DESC' $direction
+     */
+    private function getDatasetViewsRanked(int $teamId, $startDate, $endDate, string $direction)
+    {
         $from = config('services.googlebigquery.project_id') . '.' . config('services.googlebigquery.dashboard_dataset') . '.' . config('services.googlebigquery.dashboard_table');
 
         $sql = "
@@ -86,7 +99,7 @@ class TeamDashboardService
                AND team_id = @teamId
                AND date BETWEEN @startDate AND @endDate
             GROUP BY entity_id
-            ORDER BY counter DESC
+            ORDER BY counter {$direction}
         ";
 
         $params = [

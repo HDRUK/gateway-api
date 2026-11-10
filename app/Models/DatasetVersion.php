@@ -85,6 +85,8 @@ class DatasetVersion extends BaseTypesenseModel
         // 2026_06_17_000001). Replaces reading from metadata->gwdmVersion, which
         // is absent on delta rows and unindexed on all rows.
         'gwdm_version',
+        'source_schema_model',
+        'source_schema_version',
     ];
 
     /**
@@ -294,14 +296,33 @@ class DatasetVersion extends BaseTypesenseModel
             return false;
         }
 
+        // GWDM 2.3+ records can be case studies rather than datasets; those
+        // stay out of the dataset index. Earlier versions have no record type,
+        // so their envelope isn't reconstructed just to check it.
+        $handler = app(GwdmHandlerFactory::class)->resolve($this->gwdm_version ?? '2.0');
+        if ($handler->hasRecordTypes()) {
+            $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope(
+                $this->dataset_id,
+                $this->version,
+                false,
+                $this,
+            );
+
+            if (! $handler->isDatasetRecord($envelope)) {
+                return false;
+            }
+        }
+
         // The dataset() relationship already scopes to status=ACTIVE,
         // so null here means the parent is deleted, draft, or archived.
+        // A null team means the owning team is soft-deleted.
         if ($this->relationLoaded('dataset')) {
-            return $this->dataset !== null;
+            return $this->dataset?->team !== null;
         }
 
         return Dataset::where('id', $this->dataset_id)
             ->where('status', 'ACTIVE')
+            ->whereHas('team')
             ->exists();
     }
 
@@ -326,7 +347,7 @@ class DatasetVersion extends BaseTypesenseModel
                 where dv2.dataset_id = dataset_versions.dataset_id
                 and dv2.deleted_at is null
             )')
-            ->whereHas('dataset');
+            ->whereHas('dataset.team');
     }
 
     public function toSearchableArray(): array
@@ -445,6 +466,17 @@ class DatasetVersion extends BaseTypesenseModel
                 ['name' => 'structuralTableNames',         'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnNames',        'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnDescriptions', 'type' => 'string[]', 'optional' => true],
+                // Advanced search fields. The typical age range is split into
+                // bounds so a search can ask for ranges that overlap its own.
+                ['name' => 'ageRangeMin',                  'type' => 'int32',    'optional' => true],
+                ['name' => 'ageRangeMax',                  'type' => 'int32',    'optional' => true],
+                ['name' => 'deliveryLeadTime',             'type' => 'string',   'facet' => true, 'optional' => true],
+                // GWDM 2.3 population section; empty for earlier versions.
+                ['name' => 'waveType',                     'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'recruitmentStatus',            'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'followUpFrequency',            'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'isLongitudinal',               'type' => 'bool',     'facet' => true, 'optional' => true],
+                ['name' => 'isFamilyBased',                'type' => 'bool',     'facet' => true, 'optional' => true],
             ],
         ];
     }

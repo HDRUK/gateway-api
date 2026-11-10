@@ -35,6 +35,12 @@ class FakeTypesenseService extends TypesenseService
         return $clone;
     }
 
+    // The real one builds a new client; the fake has nothing to time out.
+    public function withTimeout(int $seconds): TypesenseService
+    {
+        return $this;
+    }
+
     public function rawSearch(string $collection, string $query, array $params = []): array
     {
         return $this->searchCollection($collection, $params);

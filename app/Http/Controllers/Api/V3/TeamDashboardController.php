@@ -243,6 +243,66 @@ class TeamDashboardController extends Controller
     /**
      * @OA\Get(
      *      x={"internal"="true"},
+     *     path="/api/v3/teams/{id}/dashboard/datasets/views/bottom",
+     *     operationId="fetch_dataset_views_bottom_v3",
+     *     tags={"TeamDashboard"},
+     *     summary="TeamDashboardController@datasetViewsBottom",
+     *     description="Get count of a datasets views bottom for a team",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Team ID",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="startDate",
+     *         in="query",
+     *         required=false,
+     *         description="Start date for the reporting interval (Y-m-d). Defaults to one year ago.",
+     *         @OA\Schema(type="string", format="date", example="2024-01-01")
+     *     ),
+     *     @OA\Parameter(
+     *         name="endDate",
+     *         in="query",
+     *         required=false,
+     *         description="End date for the reporting interval (Y-m-d). Defaults to today.",
+     *         @OA\Schema(type="string", format="date", example="2024-12-31")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="title", type="string", example="dataset title"),
+     *                 @OA\Property(property="counter", type="integer", example=0)
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function datasetViewsBottom(GetTeamDashboard $request, $id)
+    {
+        $dateRange = $this->resolveDateRange($request);
+
+        if ($dateRange instanceof JsonResponse) {
+            return $dateRange;
+        }
+
+        [$startDate, $endDate] = $dateRange;
+
+        $response = $this->teamDashboardService->getDatasetViewsBottom($id, $startDate, $endDate);
+
+        return $this->okResponse($response);
+    }
+
+    /**
+     * @OA\Get(
+     *      x={"internal"="true"},
      *     path="/api/v3/teams/{id}/dashboard/collections/views",
      *     operationId="fetch_collections_views_v3",
      *     tags={"TeamDashboard"},

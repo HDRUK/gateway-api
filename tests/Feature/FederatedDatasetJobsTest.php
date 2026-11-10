@@ -11,7 +11,9 @@ use App\Models\Federation;
 use App\Models\Team;
 use App\Models\TeamHasFederation;
 use App\Services\GatewayMetadataIngestionService;
+use App\Services\FederationService;
 use App\Services\Gwdm\GwdmMetadataHandler;
+use Illuminate\Queue\MaxAttemptsExceededException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
@@ -119,6 +121,30 @@ class FederatedDatasetJobsTest extends TestCase
         $this->assertDatabaseMissing('federation_job_runs', ['pid' => 'already-there']);
     }
 
+    public function test_create_job_that_fails_unexpectedly_is_listed_as_failed_in_run_history(): void
+    {
+        [, $federation] = $this->makeFederation();
+
+        $job = new CreateFederatedDatasetJob(
+            $federation,
+            'interrupted-new-pid',
+            ['persistentId' => 'interrupted-new-pid', 'version' => '1.0'],
+            'job-uuid-chunk-create-interrupted',
+            1,
+        );
+
+        $job->failed(new MaxAttemptsExceededException('App\Jobs\CreateFederatedDatasetJob has been attempted too many times.'));
+
+        $run = collect(app(FederationService::class)->history($federation->id, 10)->items())
+            ->firstWhere('job_uuid', 'job-uuid-chunk-create-interrupted');
+
+        $this->assertNotNull($run);
+        $this->assertSame('failed', $run['status']);
+        $this->assertSame(['interrupted-new-pid'], array_column($run['failed_datasets'], 'pid'));
+        $this->assertStringContainsString('contact support', $run['failed_datasets'][0]['message']);
+        $this->assertStringContainsString('job-uuid-chunk-create-interrupted', $run['failed_datasets'][0]['message']);
+    }
+
     public function test_update_job_updates_dataset_and_records_success_history(): void
     {
         [$team, $federation] = $this->makeFederation();
@@ -151,6 +177,32 @@ class FederatedDatasetJobsTest extends TestCase
             'job_uuid' => 'job-uuid-chunk-update',
             'status' => 1,
         ]);
+    }
+
+    public function test_update_job_that_fails_unexpectedly_is_listed_as_failed_in_run_history(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+        $dataset = $this->makeGmiDataset($team->id, 'interrupted-pid');
+
+        $job = new UpdateFederatedDatasetJob(
+            $federation,
+            'interrupted-pid',
+            ['persistentId' => 'interrupted-pid', 'version' => '2.0'],
+            $dataset,
+            'job-uuid-chunk-update-interrupted',
+            1,
+        );
+
+        $job->failed(new MaxAttemptsExceededException('App\Jobs\UpdateFederatedDatasetJob has been attempted too many times.'));
+
+        $run = collect(app(FederationService::class)->history($federation->id, 10)->items())
+            ->firstWhere('job_uuid', 'job-uuid-chunk-update-interrupted');
+
+        $this->assertNotNull($run);
+        $this->assertSame('failed', $run['status']);
+        $this->assertSame(['interrupted-pid'], array_column($run['failed_datasets'], 'pid'));
+        $this->assertStringContainsString('contact support', $run['failed_datasets'][0]['message']);
+        $this->assertStringContainsString('job-uuid-chunk-update-interrupted', $run['failed_datasets'][0]['message']);
     }
 
     public function test_archive_chunk_archives_every_pid_in_its_chunk(): void

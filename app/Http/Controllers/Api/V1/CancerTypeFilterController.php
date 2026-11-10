@@ -72,7 +72,7 @@ class CancerTypeFilterController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $parentId = $request->has('parent_id') ? (int) $request->parent_id : null;
@@ -155,7 +155,7 @@ class CancerTypeFilterController extends Controller
     public function show(Request $request, string $filter_id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $filter = $this->cancerTypeFilterService->findByFilterId($filter_id);

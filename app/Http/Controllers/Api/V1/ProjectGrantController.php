@@ -218,7 +218,7 @@ class ProjectGrantController extends Controller
     public function store(CreateProjectGrant $request): JsonResponse
     {
         list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = $request->input('jwt_user', []);
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
         if (!is_null($teamId)) {

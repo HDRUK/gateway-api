@@ -381,7 +381,7 @@ class UserCollectionController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = $input['jwt_user'] ?? [];
+            $jwtUser = $request->jwtUser();
 
             if ($jwtUser['id'] != $userId) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to view this collection.');
@@ -474,7 +474,7 @@ class UserCollectionController extends Controller
         // no checks on permissions are required, so long as you're logged in, and that will be checked by jwt middleware.
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -626,7 +626,7 @@ class UserCollectionController extends Controller
     public function update(UpdateCollection $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
 
         if ($jwtUser['id'] != $userId) {
             throw new UnauthorizedException('User does not have permission to use this endpoint to update this collection.');
@@ -803,7 +803,7 @@ class UserCollectionController extends Controller
     public function edit(EditCollection $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
 
         if ($jwtUser['id'] != $userId) {
             throw new UnauthorizedException('User does not have permission to use this endpoint to update this collection.');
@@ -970,7 +970,7 @@ class UserCollectionController extends Controller
     public function destroy(DeleteCollection $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
 
         if ($jwtUser['id'] != $userId) {
             throw new UnauthorizedException('User does not have permission to use this endpoint to update this collection.');

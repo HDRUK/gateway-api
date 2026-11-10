@@ -71,6 +71,11 @@ trait MockExternalApis
 
             case version_compare($version, "2.1", "<="):
                 return $this->getMetadataV2p1();
+
+            default:
+                #note: no fixture beyond 2.1 yet; without this, 2.2+ returned null
+                #and seeded dataset_versions.metadata as JSON null
+                return $this->getMetadataV2p1();
         }
     }
 

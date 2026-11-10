@@ -139,7 +139,11 @@ trait IndexElastic
             return true; // shouldnt hit here, but perserve original behaviour if
         }
 
-        return app(GwdmHandlerFactory::class)->resolve($version)->supportsElasticIndexing();
+        $handler = app(GwdmHandlerFactory::class)->resolve($version);
+
+        // Case studies are stored as GWDM but are not datasets, so they stay
+        // out of the dataset index (and are removed if already there).
+        return $handler->supportsElasticIndexing() && $handler->isDatasetRecord($envelope);
     }
 
     /**

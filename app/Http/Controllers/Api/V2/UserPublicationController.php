@@ -383,7 +383,7 @@ class UserPublicationController extends Controller
     public function store(CreatePublicationByUserId $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $teamId = array_key_exists('team_id', $input) ? $input['team_id'] : null;
         if (!is_null($teamId)) {
             $this->checkAccess($input, $teamId, null, 'team');
@@ -538,7 +538,7 @@ class UserPublicationController extends Controller
     public function update(UpdatePublicationByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initPublication = Publication::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, null, $initPublication->owner_id, 'user');
 
@@ -694,7 +694,7 @@ class UserPublicationController extends Controller
     public function edit(EditPublicationByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $publicationModel = Publication::withTrashed()->where('id', $id)->first();
         $this->checkAccess($input, null, $publicationModel->owner_id, 'user');
 
@@ -822,7 +822,7 @@ class UserPublicationController extends Controller
     public function destroy(DeletePublicationByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $publication = Publication::where(['id' => $id, 'owner_id' => $userId])->first();
         $this->checkAccess($input, null, $publication->owner_id, 'user');
 

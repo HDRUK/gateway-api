@@ -1,0 +1,179 @@
+{
+    "identifier": "b00255bb-4d78-468d-a436-e08f4af23daa",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "b00255bb-4d78-468d-a436-e08f4af23daa",
+            "gatewayPid": "b00255bb-4d78-468d-a436-e08f4af23daa",
+            "issued": "2015-11-02T00:00:00.000Z",
+            "modified": "2025-10-14T10:36:03.207Z",
+            "version": "1.0.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "Generation Scotland (Scottish Family Health Study) is an intensively phenotyped, family-based cohort for the study of the genetic basis of common complex diseases and response to treatments. This record covers the 2015 genotyping: DNA from over 20,000 GS:SFHS participants analysed by high-density genome-wide chip genotyping (Illumina OmniExpress SNP GWAS, 700k) and exome chip (250K).",
+            "contactPoint": "user@example.com",
+            "keywords": "genetics;,;family-based cohort;,;genotyping;,;complex disease;,;Scotland",
+            "populationSize": 20000,
+            "description": "Genome-wide genotyping (Illumina OmniExpress 700k, exome chip 250k) carried out in 2015 on DNA extracted from blood/saliva samples collected during the main Generation Scotland recruitment (2006-2011). QC included population stratification analysis and imputation to the 1000 Genomes dataset.",
+            "shortTitle": "Generation Scotland — 2015 Genotyping",
+            "title": "Generation Scotland — 2015 Genotyping",
+            "publisher": {
+                "name": "University of Edinburgh",
+                "gatewayId": "uk.genscot.edinburgh"
+            },
+            "inPipeline": "Not available"
+        },
+        "coverage": {
+            "spatial": "Scotland",
+            "followUp": "Unknown",
+            "typicalAgeRange": "18-99"
+        },
+        "provenance": {
+            "temporal": {
+                "endDate": "2015-12-31",
+                "startDate": "2015-01-01",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Static"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://www.generationscotland.org/access"
+            },
+            "usage": {
+                "resourceCreator": {},
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {}
+        },
+        "linkage": {
+            "datasetLinkage": {
+                "waveOf": [
+                    {
+                        "pid": "9a4d4a54-6256-467b-b1f2-45c02aeb60fb",
+                        "title": "Generation Scotland (Scottish Family Health Study)",
+                        "url": "https://www.generationscotland.org"
+                    }
+                ]
+            }
+        },
+        "observations": [],
+        "tissuesSampleCollection": [],
+        "omics": {
+            "assay": "Genotyping by array",
+            "platform": "Illumina"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "genotyping-2015",
+                "waveType": "Sub-study",
+                "label": "2015 genotyping"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2006-01-01",
+                "endDate": "2011-12-31",
+                "samplingMethod": "Recruited via participating family members, primarily through general practices across Scotland."
+            },
+            "followUpSchedule": {
+                "frequency": "No scheduled follow-up",
+                "note": "Participants are not re-contacted on a schedule. Ongoing information comes from linked administrative and health records."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Adults (18+) with at least one first-degree relative also willing to participate."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "b00255bb-4d78-468d-a436-e08f4af23daa",
+        "version": "1.0.0",
+        "issued": "2015-11-02T00:00:00.000Z",
+        "modified": "2025-10-14T10:36:03.207Z",
+        "summary": {
+            "title": "Generation Scotland — 2015 Genotyping",
+            "abstract": "Generation Scotland (Scottish Family Health Study) is an intensively phenotyped, family-based cohort for the study of the genetic basis of common complex diseases and response to treatments. This record covers the 2015 genotyping: DNA from over 20,000 GS:SFHS participants analysed by high-density genome-wide chip genotyping (Illumina OmniExpress SNP GWAS, 700k) and exome chip (250K).",
+            "dataCustodian": {
+                "identifier": "uk.genscot.edinburgh",
+                "name": "University of Edinburgh",
+                "description": "https://www.ed.ac.uk",
+                "contactPoint": "gs.enquiries@example.ac.uk"
+            },
+            "populationSize": 20000,
+            "keywords": [
+                "genetics",
+                "family-based cohort",
+                "genotyping",
+                "complex disease",
+                "Scotland"
+            ],
+            "contactPoint": "user@example.com"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "genotyping-2015",
+                "waveType": "Sub-study",
+                "label": "2015 genotyping"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2006-01-01",
+                "endDate": "2011-12-31",
+                "samplingMethod": "Recruited via participating family members, primarily through general practices across Scotland."
+            },
+            "followUpSchedule": {
+                "frequency": "No scheduled follow-up",
+                "note": "Participants are not re-contacted on a schedule. Ongoing information comes from linked administrative and health records."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Adults (18+) with at least one first-degree relative also willing to participate."
+            }
+        },
+        "documentation": {
+            "description": "Genome-wide genotyping (Illumina OmniExpress 700k, exome chip 250k) carried out in 2015 on DNA extracted from blood/saliva samples collected during the main Generation Scotland recruitment (2006-2011). QC included population stratification analysis and imputation to the 1000 Genomes dataset."
+        },
+        "coverage": {
+            "spatial": "Scotland",
+            "typicalAgeRangeMin": 18,
+            "typicalAgeRangeMax": 99
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "2015-01-01",
+                "endDate": "2015-12-31"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://www.generationscotland.org/access"
+            },
+            "usage": {
+                "patientRecontact": "Yes"
+            }
+        },
+        "linkage": {
+            "waveOf": {
+                "pid": "9a4d4a54-6256-467b-b1f2-45c02aeb60fb",
+                "title": "Generation Scotland (Scottish Family Health Study)",
+                "url": "https://www.generationscotland.org"
+            }
+        },
+        "omics": {
+            "assay": "Genotyping by array",
+            "platform": "Illumina"
+        }
+    }
+}

@@ -54,7 +54,7 @@ class SavedSearchController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
@@ -139,7 +139,7 @@ class SavedSearchController extends Controller
     public function show(GetSavedSearch $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $jwtUserIsAdmin = $jwtUser['is_admin'];
@@ -226,7 +226,7 @@ class SavedSearchController extends Controller
     public function store(CreateSavedSearch $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arraySearch = array_filter($input, function ($key) {
@@ -346,7 +346,7 @@ class SavedSearchController extends Controller
     public function update(UpdateSavedSearch $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $savedSearch = SavedSearch::where('id', $id)->first();
@@ -462,7 +462,7 @@ class SavedSearchController extends Controller
     public function edit(EditSavedSearch $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -564,7 +564,7 @@ class SavedSearchController extends Controller
     public function destroy(DeleteSavedSearch $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $savedSearch = SavedSearch::findOrFail($id);

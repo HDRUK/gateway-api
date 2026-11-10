@@ -189,6 +189,9 @@ class DatasetController extends Controller
 
             $dataset = $this->datasetService->prepareForShow(
                 $dataset,
+                // Partner default applies when nothing is requested, so existing
+                // consumers keep the schema they get today. Callers that want the
+                // stored GWDM ask for it: ?schema_model=GWDM.
                 $request->query('schema_model') ?? $this->outputSchemaContext->schemaModel(),
                 $request->query('schema_version') ?? $this->outputSchemaContext->schemaVersion(),
             );
@@ -263,7 +266,7 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         list($userId, $teamId, $createOrigin, $status) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
@@ -375,7 +378,7 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
         $dataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 
@@ -452,7 +455,7 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
         $dataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 
@@ -508,7 +511,7 @@ class DatasetController extends Controller
     {
         $input = $request->all();
         list($userId, $teamId) = $this->getAccessorUserAndTeam($request);
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
         $dataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 

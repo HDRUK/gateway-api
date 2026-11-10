@@ -139,6 +139,13 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_get_dataset_views_bottom_without_auth_returns_unauthorised(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/bottom');
+
+        $response->assertStatus(401);
+    }
+
     public function test_get_collection_views_without_auth_returns_unauthorised(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/collections/views');
@@ -231,6 +238,14 @@ class TeamDashboardControllerTest extends TestCase
     public function test_get_dataset_views_top_with_invalid_team_id_returns_without_success(): void
     {
         $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/views/top', [], $this->headerNonAdmin);
+
+        $response->assertStatus(400);
+        $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
+    }
+
+    public function test_get_dataset_views_bottom_with_invalid_team_id_returns_without_success(): void
+    {
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getInvalidTeamId() . '/dashboard/datasets/views/bottom', [], $this->headerNonAdmin);
 
         $response->assertStatus(400);
         $this->assertEquals('Invalid argument(s)', $response->decodeResponseJson()['message']);
@@ -563,6 +578,27 @@ class TeamDashboardControllerTest extends TestCase
         foreach ($response->decodeResponseJson()['data'] as $row) {
             $this->assertIsNumeric($row['counter']);
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // dataset_views_bottom
+    // -------------------------------------------------------------------------
+
+    public function test_get_dataset_views_bottom_returns_least_viewed_datasets(): void
+    {
+        $leastViewed = [
+            ['id' => 2, 'title' => 'Dataset B', 'counter' => 1],
+            ['id' => 1, 'title' => 'Dataset A', 'counter' => 7],
+        ];
+
+        $this->serviceMock
+            ->shouldReceive('getDatasetViewsBottom')
+            ->andReturn($leastViewed);
+
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/bottom?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+
+        $response->assertOk();
+        $this->assertSame($leastViewed, $response->decodeResponseJson()['data']);
     }
 
     // -------------------------------------------------------------------------

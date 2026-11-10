@@ -80,7 +80,7 @@ class TeamNotificationController extends Controller
     public function show(Request $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $team = Team::where('id', $teamId)->with(['notifications'])->first();
@@ -172,7 +172,7 @@ class TeamNotificationController extends Controller
     public function store(CreateTeamNotification $request, int $teamId)
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             // team user has notification
@@ -213,7 +213,9 @@ class TeamNotificationController extends Controller
     private function teamUserNotification(array $input, int $teamId)
     {
         try {
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            // Private helper, no Request in scope; the helper resolves
+            // the current request, which Octane rebinds per request.
+            $jwtUser = request()->jwtUser();
             $jwtUserId = $jwtUser['id'];
 
             $teamHasUsers = TeamHasUser::where([

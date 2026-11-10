@@ -9,6 +9,7 @@ use App\Jobs\ExtractPublicationsFromMetadata;
 use App\Jobs\ExtractToolsFromMetadata;
 use App\Jobs\IndexDataset;
 use App\Jobs\ReindexDataset;
+use App\Jobs\SyncDatasetVariables;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 
@@ -80,6 +81,7 @@ class DatasetVersionObserver
                     ExtractToolsFromMetadata::dispatch($datasetVersion->id);
                     IndexDataset::dispatch($datasetId);
                 }
+                SyncDatasetVariables::dispatch((int) $datasetId);
                 break;
 
             case 'updated':
@@ -89,10 +91,11 @@ class DatasetVersionObserver
                     ExtractToolsFromMetadata::dispatch($datasetVersion->id);
                     ReindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
                 }
-
+                SyncDatasetVariables::dispatch((int) $dataset->id);
                 break;
             case 'deleted':
                 DeindexDataset::dispatch($dataset->id, $dataset->team_id ? (int) $dataset->team_id : null);
+                SyncDatasetVariables::dispatch((int) $dataset->id);
                 break;
         }
     }

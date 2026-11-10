@@ -413,7 +413,7 @@ class UserToolController extends Controller
     public function store(CreateToolByUserId $request, int $userId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $teamId = array_key_exists('team_id', $input) ? $input['team_id'] : null;
         if (!is_null($teamId)) {
             $this->checkAccess($input, null, $userId, 'team');
@@ -603,7 +603,7 @@ class UserToolController extends Controller
     public function update(UpdateToolByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initTool = Tool::where('id', $id)->first();
         if (!$initTool) {
             throw new NotFoundException();
@@ -825,7 +825,7 @@ class UserToolController extends Controller
     public function edit(EditToolByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $initTool = Tool::where('id', $id)->first();
         if (!$initTool) {
             throw new NotFoundException();
@@ -998,7 +998,7 @@ class UserToolController extends Controller
     public function destroy(DeleteToolByUserIdById $request, int $userId, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $tool = Tool::where('id', $id)->first();
         if (!$tool) {
             throw new NotFoundException();

@@ -1,0 +1,852 @@
+{
+    "identifier": "4733b419-6cb8-5178-9ebc-95ae4e4e6858",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "4733b419-6cb8-5178-9ebc-95ae4e4e6858",
+            "gatewayPid": "4733b419-6cb8-5178-9ebc-95ae4e4e6858",
+            "issued": "2004-02-01T00:00:00.000Z",
+            "modified": "2026-09-14T09:12:00.000Z",
+            "version": "2.0.0",
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://npri.example.org/studies/nlcs/wave-1/v1"
+                }
+            ],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "A longitudinal cohort study following 10,000 participants aged 20–55 at recruitment, collecting questionnaire, clinical, administrative and wearable-device data across six waves to investigate life-course determinants of population health. This record covers the baseline wave (2000–2003).",
+            "contactPoint": "dataaccess@npri.example.org",
+            "keywords": "cardiovascular risk;,;mental health;,;healthy ageing;,;health inequalities;,;life course;,;longitudinal cohort;,;population health",
+            "datasetType": "Health and disease;,;Lifestyle;,;Socioeconomic",
+            "datasetSubType": "Mental health;,;Cardiovascular;,;Physical activity;,;Alcohol;,;Smoking;,;Education;,;Labour",
+            "populationSize": 10000,
+            "description": "The study combines questionnaire responses, clinical measurements, administrative records and wearable device data collected across six waves between 2000 and 2023. The baseline wave established participants' health, lifestyle and socioeconomic circumstances, and linked each participant to their hospital records.",
+            "doiName": "10.5555/nlcs.wave1",
+            "shortTitle": "Northshore Life Course Study (NLCS) — Wave 1 baseline",
+            "title": "Northshore Life Course Study (NLCS) — Wave 1 baseline",
+            "datasetAliases": [
+                "NLCS W1",
+                "NLCS baseline"
+            ],
+            "publisher": {
+                "name": "Northshore Population Research Institute (NPRI)",
+                "gatewayId": "uk.npri.example"
+            },
+            "inPipeline": "Not available"
+        },
+        "coverage": {
+            "pathway": "Participants attend a research clinic for measurements and complete a postal questionnaire; hospital episodes are linked annually.",
+            "spatial": "United Kingdom",
+            "followUp": "> 10 Years",
+            "typicalAgeRange": "20-55"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Research cohort",
+                "source": "Paper-based;,;EPR",
+                "collectionSituation": "Cohort, study, trial;,;Clinic"
+            },
+            "temporal": {
+                "endDate": "2003-06-30",
+                "startDate": "2000-03-01",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Static",
+                "distributionReleaseDate": "2004-02-01"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "2-6 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Northshore Population Research Institute",
+                "dataProcessor": "Northshore Secure Data Services",
+                "accessRights": "https://npri.example.org/studies/nlcs/access",
+                "accessService": "Data are analysed in the NPRI Trusted Research Environment following an approved Data Access Request. Outputs are checked for disclosure risk before release.",
+                "accessRequestCost": "Medium cost: a fixed project fee covers data preparation and two years of TRE access. See https://npri.example.org/costs",
+                "accessServiceCategory": "TRE/SDE"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use;,;Not for profit use",
+                "dataUseRequirement": "Ethics approval required;,;Publication required;,;Disclosure control",
+                "resourceCreator": {
+                    "name": "Northshore Life Course Study team"
+                },
+                "duoCodes": "DUO:0000042;,;DUO:0000018;,;DUO:0000019",
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OPCS4;,;READ;,;SNOMED CT;,;ICD10;,;DM+D;,;NHS NATIONAL CODES;,;LOCAL",
+                "conformsTo": "LOCAL;,;NHS DATA DICTIONARY",
+                "languages": "en",
+                "formats": "SQL database table;,;CSV"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "associatedMedia": "https://npri.example.org/studies/nlcs/docs/data-dictionary-v2.1.pdf,https://npri.example.org/studies/nlcs/docs/user-guide-v1.3.pdf",
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "linkedDatasets": [
+                    {
+                        "pid": "0e13d792-8164-505c-a1d1-b9c7683bc474",
+                        "title": "Northshore Life Course Study (NLCS) — Wave 4",
+                        "url": "https://npri.example.org/studies/nlcs/wave-4"
+                    }
+                ],
+                "waveOf": [
+                    {
+                        "pid": "15d9061c-f0c3-5475-8e94-4cd8c8404db6",
+                        "title": "Northshore Life Course Study (NLCS)",
+                        "url": "https://npri.example.org/studies/nlcs"
+                    }
+                ]
+            },
+            "syntheticDataWebLink": "https://npri.example.org/studies/nlcs/synthetic"
+        },
+        "observations": [
+            {
+                "observedNode": "Persons",
+                "measuredValue": 10000,
+                "observationDate": "2003-06-30",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Participants who completed the baseline assessment."
+            }
+        ],
+        "structuralMetadata": [
+            {
+                "name": "Baseline questionnaire",
+                "description": "Postal questionnaire completed before the clinic visit.",
+                "columns": [
+                    {
+                        "name": "age_at_baseline",
+                        "dataType": "integer",
+                        "description": "Age in completed years at the baseline assessment. Recorded measurement; 98% complete.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sex_at_birth",
+                        "dataType": "string",
+                        "description": "Sex recorded at birth, from the administrative record. 94% complete.",
+                        "sensitive": true,
+                        "values": [
+                            {
+                                "name": "1",
+                                "description": "Male",
+                                "frequency": 4790
+                            },
+                            {
+                                "name": "2",
+                                "description": "Female",
+                                "frequency": 5210
+                            }
+                        ]
+                    },
+                    {
+                        "name": "ethnicity",
+                        "dataType": "string",
+                        "description": "Self-reported ethnic group (ONS 2001 categories). Single question; 75% complete.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "ghq12_score",
+                        "dataType": "integer",
+                        "description": "General Health Questionnaire (GHQ-12) total score, 0-36. 87% complete.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "alcohol_units_week",
+                        "dataType": "number",
+                        "description": "Self-reported alcohol consumption, units per week. Single question; 96% complete.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "smoking_status",
+                        "dataType": "string",
+                        "description": "Current, former or never smoker.",
+                        "sensitive": false,
+                        "values": [
+                            {
+                                "name": "never",
+                                "description": "Never smoked",
+                                "frequency": 5120
+                            },
+                            {
+                                "name": "former",
+                                "description": "Former smoker",
+                                "frequency": 2890
+                            },
+                            {
+                                "name": "current",
+                                "description": "Current smoker",
+                                "frequency": 1990
+                            }
+                        ]
+                    },
+                    {
+                        "name": "highest_qualification",
+                        "dataType": "string",
+                        "description": "Highest educational qualification. 92% complete.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "additional_health_concerns",
+                        "dataType": "string",
+                        "description": "Free-text health concerns from the interview. 93% complete.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "hads_depression_score",
+                        "dataType": "integer",
+                        "description": "Hospital Anxiety and Depression Scale (HADS) depression subscale score, 0-21. 89% complete.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "antidepressant_use",
+                        "dataType": "string",
+                        "description": "Whether the participant currently takes an antidepressant medicine, from the medicines inventory.",
+                        "sensitive": true,
+                        "values": [
+                            {
+                                "name": "0",
+                                "description": "No",
+                                "frequency": 9120
+                            },
+                            {
+                                "name": "1",
+                                "description": "Yes",
+                                "frequency": 760
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Reproductive history",
+                "description": "Asked of female participants only.",
+                "columns": [
+                    {
+                        "name": "number_of_pregnancies",
+                        "dataType": "integer",
+                        "description": "Total number of pregnancies, including miscarriages and terminations.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "live_births",
+                        "dataType": "integer",
+                        "description": "Number of live births.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "pregnancy_loss_ever",
+                        "dataType": "string",
+                        "description": "Whether the participant has ever had a miscarriage or stillbirth.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "hypertension_in_pregnancy",
+                        "dataType": "string",
+                        "description": "Self-reported high blood pressure or pre-eclampsia during any pregnancy.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "age_at_first_birth",
+                        "dataType": "integer",
+                        "description": "Age in years at the birth of the participant's first child.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "menopause_status",
+                        "dataType": "string",
+                        "description": "Pre-, peri- or post-menopausal, self-reported.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Clinical assessment",
+                "description": "Measurements taken by a research nurse at the baseline clinic.",
+                "columns": [
+                    {
+                        "name": "waist_circumference_cm",
+                        "dataType": "number",
+                        "description": "Waist circumference in centimetres. Recorded measurement; 99% complete.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "systolic_bp_mmhg",
+                        "dataType": "integer",
+                        "description": "Mean of two seated systolic blood pressure readings.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "diastolic_bp_mmhg",
+                        "dataType": "integer",
+                        "description": "Mean of two seated diastolic blood pressure readings.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "bmi",
+                        "dataType": "number",
+                        "description": "Body mass index derived from measured height and weight.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Linked hospital episodes",
+                "description": "Hospital admissions linked from national records, refreshed annually.",
+                "columns": [
+                    {
+                        "name": "admission_date",
+                        "dataType": "date",
+                        "description": "Date of admission.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "primary_diagnosis_icd10",
+                        "dataType": "string",
+                        "description": "Primary diagnosis, ICD-10 coded.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "procedure_opcs4",
+                        "dataType": "string",
+                        "description": "Main procedure, OPCS-4 coded.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [
+            {
+                "materialType": "Whole blood"
+            },
+            {
+                "materialType": "Serum"
+            }
+        ],
+        "demographicFrequency": {
+            "age": [
+                {
+                    "bin": "20-24 years",
+                    "count": 880
+                },
+                {
+                    "bin": "25-29 years",
+                    "count": 1260
+                },
+                {
+                    "bin": "30-34 years",
+                    "count": 1330
+                },
+                {
+                    "bin": "35-39 years",
+                    "count": 1380
+                },
+                {
+                    "bin": "40-44 years",
+                    "count": 1520
+                },
+                {
+                    "bin": "45-49 years",
+                    "count": 1500
+                },
+                {
+                    "bin": "50-54 years",
+                    "count": 1810
+                },
+                {
+                    "bin": "55-59 years",
+                    "count": 320
+                }
+            ]
+        },
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "nlcs-wave-1",
+                "waveType": "Contact wave",
+                "waveNumber": 1,
+                "label": "Wave 1 baseline (2000–2003)"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2000-03-01",
+                "endDate": "2003-06-30",
+                "samplingMethod": "Random sample of adults registered with general practices across the Northshore region, invited by letter with one reminder."
+            },
+            "followUpSchedule": {
+                "frequency": "Every 3-5 years",
+                "note": "Participants are invited to a follow-up wave every three to five years. Wave 6 completed in 2023."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Resident in the United Kingdom, aged 20–55 at baseline, able to provide informed consent, and willing to participate in questionnaire, clinical and wearable-device follow-up.",
+                "exclusionCriteria": "Participants unable to provide informed consent, those with severe mobility or cognitive impairment preventing follow-up, and individuals already participating in a conflicting longitudinal cohort."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "4733b419-6cb8-5178-9ebc-95ae4e4e6858",
+        "version": "2.0.0",
+        "revisions": [
+            {
+                "version": "1.0.0",
+                "url": "https://npri.example.org/studies/nlcs/wave-1/v1"
+            }
+        ],
+        "issued": "2004-02-01T00:00:00.000Z",
+        "modified": "2026-09-14T09:12:00.000Z",
+        "summary": {
+            "title": "Northshore Life Course Study (NLCS) — Wave 1 baseline",
+            "abstract": "A longitudinal cohort study following 10,000 participants aged 20–55 at recruitment, collecting questionnaire, clinical, administrative and wearable-device data across six waves to investigate life-course determinants of population health. This record covers the baseline wave (2000–2003).",
+            "dataCustodian": {
+                "identifier": "uk.npri.example",
+                "name": "Northshore Population Research Institute (NPRI)",
+                "description": "https://npri.example.org/about",
+                "contactPoint": "dataaccess@npri.example.org"
+            },
+            "populationSize": 10000,
+            "keywords": [
+                "cardiovascular risk",
+                "mental health",
+                "healthy ageing",
+                "health inequalities",
+                "life course",
+                "longitudinal cohort",
+                "population health"
+            ],
+            "doiName": "10.5555/nlcs.wave1",
+            "contactPoint": "dataaccess@npri.example.org",
+            "datasetAliases": [
+                "NLCS W1",
+                "NLCS baseline"
+            ]
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "nlcs-wave-1",
+                "waveType": "Contact wave",
+                "waveNumber": 1,
+                "label": "Wave 1 baseline (2000–2003)"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2000-03-01",
+                "endDate": "2003-06-30",
+                "samplingMethod": "Random sample of adults registered with general practices across the Northshore region, invited by letter with one reminder."
+            },
+            "followUpSchedule": {
+                "frequency": "Every 3-5 years",
+                "note": "Participants are invited to a follow-up wave every three to five years. Wave 6 completed in 2023."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Resident in the United Kingdom, aged 20–55 at baseline, able to provide informed consent, and willing to participate in questionnaire, clinical and wearable-device follow-up.",
+                "exclusionCriteria": "Participants unable to provide informed consent, those with severe mobility or cognitive impairment preventing follow-up, and individuals already participating in a conflicting longitudinal cohort."
+            }
+        },
+        "documentation": {
+            "description": "The study combines questionnaire responses, clinical measurements, administrative records and wearable device data collected across six waves between 2000 and 2023. The baseline wave established participants' health, lifestyle and socioeconomic circumstances, and linked each participant to their hospital records.",
+            "associatedMedia": [
+                "https://npri.example.org/studies/nlcs/docs/data-dictionary-v2.1.pdf",
+                "https://npri.example.org/studies/nlcs/docs/user-guide-v1.3.pdf"
+            ],
+            "inPipeline": "Not available"
+        },
+        "coverage": {
+            "spatial": "United Kingdom",
+            "typicalAgeRangeMin": 20,
+            "typicalAgeRangeMax": 55,
+            "followUp": "> 10 Years",
+            "pathway": "Participants attend a research clinic for measurements and complete a postal questionnaire; hospital episodes are linked annually.",
+            "materialType": [
+                "Whole blood",
+                "Serum"
+            ]
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Research cohort"
+                ],
+                "source": [
+                    "Paper-based",
+                    "EPR"
+                ],
+                "collectionSource": [
+                    "Cohort, study, trial",
+                    "Clinic"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Mental health",
+                            "Cardiovascular"
+                        ]
+                    },
+                    {
+                        "name": "Lifestyle",
+                        "subTypes": [
+                            "Physical activity",
+                            "Alcohol",
+                            "Smoking"
+                        ]
+                    },
+                    {
+                        "name": "Socioeconomic",
+                        "subTypes": [
+                            "Education",
+                            "Occupation"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "2000-03-01",
+                "endDate": "2003-06-30",
+                "distributionReleaseDate": "2004-02-01"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://npri.example.org/studies/nlcs/access",
+                "accessService": "Data are analysed in the NPRI Trusted Research Environment following an approved Data Access Request. Outputs are checked for disclosure risk before release.",
+                "accessRequestCost": "Medium cost: a fixed project fee covers data preparation and two years of TRE access. See https://npri.example.org/costs",
+                "deliveryLeadTime": "2-6 months",
+                "accessServiceCategory": "TRE/SDE",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Northshore Population Research Institute",
+                "dataProcessor": "Northshore Secure Data Services"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use",
+                    "Not for profit use"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Publication required",
+                    "Disclosure control"
+                ],
+                "resourceCreator": [
+                    "Northshore Life Course Study team"
+                ],
+                "duoCodes": [
+                    "DUO:0000042",
+                    "DUO:0000018",
+                    "DUO:0000019"
+                ],
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "OPCS4",
+                    "READ",
+                    "SNOMED CT",
+                    "ICD10",
+                    "DM+D",
+                    "NHS NATIONAL CODES",
+                    "LOCAL"
+                ],
+                "conformsTo": [
+                    "LOCAL",
+                    "NHS DATA DICTIONARY"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "SQL database table",
+                    "CSV"
+                ]
+            }
+        },
+        "linkage": {
+            "waveOf": {
+                "pid": "15d9061c-f0c3-5475-8e94-4cd8c8404db6",
+                "title": "Northshore Life Course Study (NLCS)",
+                "url": "https://npri.example.org/studies/nlcs"
+            },
+            "linkableDatasets": [
+                {
+                    "pid": "0e13d792-8164-505c-a1d1-b9c7683bc474",
+                    "title": "Northshore Life Course Study (NLCS) — Wave 4",
+                    "url": "https://npri.example.org/studies/nlcs/wave-4"
+                }
+            ]
+        },
+        "observations": [
+            {
+                "observedNode": "Persons",
+                "measuredValue": 10000,
+                "observationDate": "2003-06-30",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Participants who completed the baseline assessment."
+            }
+        ],
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Baseline questionnaire",
+                    "description": "Postal questionnaire completed before the clinic visit.",
+                    "columns": [
+                        {
+                            "name": "age_at_baseline",
+                            "dataType": "integer",
+                            "description": "Age in completed years at the baseline assessment. Recorded measurement; 98% complete.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sex_at_birth",
+                            "dataType": "string",
+                            "description": "Sex recorded at birth, from the administrative record. 94% complete.",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "1",
+                                    "description": "Male",
+                                    "frequency": 4790
+                                },
+                                {
+                                    "name": "2",
+                                    "description": "Female",
+                                    "frequency": 5210
+                                }
+                            ]
+                        },
+                        {
+                            "name": "ethnicity",
+                            "dataType": "string",
+                            "description": "Self-reported ethnic group (ONS 2001 categories). Single question; 75% complete.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "ghq12_score",
+                            "dataType": "integer",
+                            "description": "General Health Questionnaire (GHQ-12) total score, 0-36. 87% complete.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "alcohol_units_week",
+                            "dataType": "number",
+                            "description": "Self-reported alcohol consumption, units per week. Single question; 96% complete.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "smoking_status",
+                            "dataType": "string",
+                            "description": "Current, former or never smoker.",
+                            "sensitive": false,
+                            "values": [
+                                {
+                                    "name": "never",
+                                    "description": "Never smoked",
+                                    "frequency": 5120
+                                },
+                                {
+                                    "name": "former",
+                                    "description": "Former smoker",
+                                    "frequency": 2890
+                                },
+                                {
+                                    "name": "current",
+                                    "description": "Current smoker",
+                                    "frequency": 1990
+                                }
+                            ]
+                        },
+                        {
+                            "name": "highest_qualification",
+                            "dataType": "string",
+                            "description": "Highest educational qualification. 92% complete.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "additional_health_concerns",
+                            "dataType": "string",
+                            "description": "Free-text health concerns from the interview. 93% complete.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "hads_depression_score",
+                            "dataType": "integer",
+                            "description": "Hospital Anxiety and Depression Scale (HADS) depression subscale score, 0-21. 89% complete.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "antidepressant_use",
+                            "dataType": "string",
+                            "description": "Whether the participant currently takes an antidepressant medicine, from the medicines inventory.",
+                            "sensitive": true,
+                            "values": [
+                                {
+                                    "name": "0",
+                                    "description": "No",
+                                    "frequency": 9120
+                                },
+                                {
+                                    "name": "1",
+                                    "description": "Yes",
+                                    "frequency": 760
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Reproductive history",
+                    "description": "Asked of female participants only.",
+                    "columns": [
+                        {
+                            "name": "number_of_pregnancies",
+                            "dataType": "integer",
+                            "description": "Total number of pregnancies, including miscarriages and terminations.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "live_births",
+                            "dataType": "integer",
+                            "description": "Number of live births.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "pregnancy_loss_ever",
+                            "dataType": "string",
+                            "description": "Whether the participant has ever had a miscarriage or stillbirth.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "hypertension_in_pregnancy",
+                            "dataType": "string",
+                            "description": "Self-reported high blood pressure or pre-eclampsia during any pregnancy.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "age_at_first_birth",
+                            "dataType": "integer",
+                            "description": "Age in years at the birth of the participant's first child.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "menopause_status",
+                            "dataType": "string",
+                            "description": "Pre-, peri- or post-menopausal, self-reported.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Clinical assessment",
+                    "description": "Measurements taken by a research nurse at the baseline clinic.",
+                    "columns": [
+                        {
+                            "name": "waist_circumference_cm",
+                            "dataType": "number",
+                            "description": "Waist circumference in centimetres. Recorded measurement; 99% complete.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "systolic_bp_mmhg",
+                            "dataType": "integer",
+                            "description": "Mean of two seated systolic blood pressure readings.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "diastolic_bp_mmhg",
+                            "dataType": "integer",
+                            "description": "Mean of two seated diastolic blood pressure readings.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "bmi",
+                            "dataType": "number",
+                            "description": "Body mass index derived from measured height and weight.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Linked hospital episodes",
+                    "description": "Hospital admissions linked from national records, refreshed annually.",
+                    "columns": [
+                        {
+                            "name": "admission_date",
+                            "dataType": "date",
+                            "description": "Date of admission.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "primary_diagnosis_icd10",
+                            "dataType": "string",
+                            "description": "Primary diagnosis, ICD-10 coded.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "procedure_opcs4",
+                            "dataType": "string",
+                            "description": "Main procedure, OPCS-4 coded.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ],
+            "syntheticDataWebLink": [
+                "https://npri.example.org/studies/nlcs/synthetic"
+            ]
+        },
+        "demographicFrequency": {
+            "age": [
+                {
+                    "bin": "20-24 years",
+                    "count": 880
+                },
+                {
+                    "bin": "25-29 years",
+                    "count": 1260
+                },
+                {
+                    "bin": "30-34 years",
+                    "count": 1330
+                },
+                {
+                    "bin": "35-39 years",
+                    "count": 1380
+                },
+                {
+                    "bin": "40-44 years",
+                    "count": 1520
+                },
+                {
+                    "bin": "45-49 years",
+                    "count": 1500
+                },
+                {
+                    "bin": "50-54 years",
+                    "count": 1810
+                },
+                {
+                    "bin": "55-59 years",
+                    "count": 320
+                }
+            ]
+        }
+    }
+}

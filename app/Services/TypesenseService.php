@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\Facades\Http;
+use Psr\Http\Client\ClientInterface;
 use Typesense\Client;
 
 class TypesenseService
@@ -48,14 +50,29 @@ class TypesenseService
 
     public function __construct(?Client $client = null)
     {
-        if ($client !== null) {
-            $this->client = $client;
-            return;
-        }
+        $this->client = $client ?? self::makeClient();
+    }
 
+    /**
+     * A copy whose requests give up after $seconds. typesense-php accepts
+     * connection_timeout_seconds but never applies it, so the default client
+     * waits forever on a connection dropped mid-request (a proxy cutting off
+     * a long import, say). A timed-out request is retried num_retries times
+     * before the exception reaches the caller.
+     */
+    public function withTimeout(int $seconds): self
+    {
+        return new self(self::makeClient(new GuzzleClient([
+            'timeout'         => $seconds,
+            'connect_timeout' => min($seconds, 10),
+        ])));
+    }
+
+    private static function makeClient(?ClientInterface $http = null): Client
+    {
         $settings = config('scout.typesense.client-settings');
 
-        $this->client = new Client([
+        $config = [
             'api_key'                      => $settings['api_key'],
             'nodes'                        => $settings['nodes'],
             'nearest_node'                 => $settings['nearest_node'] ?? null,
@@ -63,7 +80,13 @@ class TypesenseService
             'healthcheck_interval_seconds' => $settings['healthcheck_interval_seconds'] ?? 30,
             'num_retries'                  => $settings['num_retries'] ?? 3,
             'retry_interval_seconds'       => $settings['retry_interval_seconds'] ?? 1,
-        ]);
+        ];
+
+        if ($http !== null) {
+            $config['client'] = $http;
+        }
+
+        return new Client($config);
     }
 
     /**
@@ -202,9 +225,23 @@ class TypesenseService
         return $this->client->collections[$collection]->documents->upsert($document);
     }
 
+    /**
+     * Imports documents in one request; returns one result per document,
+     * each with 'success' and, on failure, 'error'.
+     */
+    public function importDocuments(string $collection, array $documents, array $options = []): array
+    {
+        return $this->client->collections[$collection]->documents->import($documents, $options);
+    }
+
     public function deleteDocument(string $collection, string $id): array
     {
         return $this->client->collections[$collection]->documents[$id]->delete();
+    }
+
+    public function deleteDocumentsWhere(string $collection, string $filterBy): array
+    {
+        return $this->client->collections[$collection]->documents->delete(['filter_by' => $filterBy]);
     }
 
     public function getDocument(string $collection, string $id): array

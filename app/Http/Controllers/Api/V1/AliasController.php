@@ -49,7 +49,7 @@ class AliasController extends Controller
         }
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $aliases = Alias::paginate(Config::get('constants.per_page'), ['*'], 'page');
@@ -122,7 +122,7 @@ class AliasController extends Controller
         }
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $alias = Alias::find($id);
@@ -198,7 +198,7 @@ class AliasController extends Controller
         }
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $alias = Alias::create([
@@ -292,7 +292,7 @@ class AliasController extends Controller
         }
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             Alias::where('id', $id)->update([
@@ -384,7 +384,7 @@ class AliasController extends Controller
         }
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $input = $request->all();
@@ -470,7 +470,7 @@ class AliasController extends Controller
         }
 
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $teamHasAlias = TeamHasAlias::where(['alias_id' => $id])->first();

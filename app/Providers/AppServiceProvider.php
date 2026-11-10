@@ -81,8 +81,20 @@ class AppServiceProvider extends ServiceProvider
 
         Feature::resolveScopeUsing(fn ($driver) => null);
 
+        // Resolved identity lives on the attributes bag, which only the
+        // application can write to - never the input bag, which the client
+        // fills. Returns [] when unauthenticated; call sites that need the
+        // older ['id' => null] shape append `?: ['id' => null]`.
         Request::macro('jwtUser', function () {
-            return $this->input('jwt_user', []);
+            return $this->attributes->get('jwt_user', []);
+        });
+
+        // The roles/permissions the matched route demanded, recorded by
+        // CheckAccessMiddleware for CheckAccess::checkAccess() to re-check
+        // against the owning team. On the attributes bag for the same
+        // reason as jwtUser: the input bag is the client's.
+        Request::macro('accessContext', function () {
+            return $this->attributes->get('middleware', []);
         });
 
         $this->configureRateLimiting();

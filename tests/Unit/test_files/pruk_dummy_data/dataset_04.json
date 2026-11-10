@@ -1,0 +1,895 @@
+{
+    "identifier": "233c5d41-cad4-5c58-bcf0-9f5df413baa9",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "233c5d41-cad4-5c58-bcf0-9f5df413baa9",
+            "gatewayPid": "233c5d41-cad4-5c58-bcf0-9f5df413baa9",
+            "issued": "2004-09-01T00:00:00.000Z",
+            "modified": "2026-10-20T08:45:00.000Z",
+            "version": "3.1.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "A birth cohort of 5,240 children born in the Fernvale area in 2000, followed through five sweeps from age 3 to age 18 to study child development, family circumstances and the early origins of adult health.",
+            "contactPoint": "cohort-access@fernvale.example.org",
+            "keywords": "child development;,;birth cohort;,;family circumstances;,;education;,;adolescent mental health",
+            "datasetType": "Socioeconomic;,;Health and disease",
+            "datasetSubType": "Education;,;Family circumstance;,;Deprivation;,;Mental health;,;Cognitive function",
+            "populationSize": 5240,
+            "description": "Each sweep combines a parent (later self-completed) questionnaire, a home or clinic assessment and linked education records. Cognitive assessments use age-appropriate standardised instruments.",
+            "shortTitle": "Fernvale Birth Cohort (FBC)",
+            "title": "Fernvale Birth Cohort (FBC)",
+            "datasetAliases": [
+                "FBC"
+            ],
+            "publisher": {
+                "name": "Fernvale University Centre for Child Health",
+                "gatewayId": "uk.fernvale.example"
+            },
+            "inPipeline": "Available"
+        },
+        "coverage": {
+            "spatial": "England",
+            "followUp": "> 10 Years",
+            "typicalAgeRange": "0-18"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Research cohort",
+                "source": "Paper-based;,;Electronic survey",
+                "collectionSituation": "Cohort, study, trial;,;Home"
+            },
+            "temporal": {
+                "endDate": "2018-12-31",
+                "startDate": "2003-01-01",
+                "timeLag": "More than 6 months",
+                "accrualPeriodicity": "Irregular"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "1-2 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Fernvale University",
+                "accessRights": "https://fernvale.example.org/child-health/fbc/access",
+                "accessService": "De-identified files are released to approved researchers through the university's secure download service.",
+                "accessRequestCost": "Free for academic research.",
+                "accessServiceCategory": "Direct access"
+            },
+            "usage": {
+                "dataUseLimitation": "Research use only",
+                "dataUseRequirement": "Ethics approval required;,;Return to database or resource",
+                "resourceCreator": {
+                    "name": null
+                },
+                "duoCodes": null,
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "LOCAL",
+                "conformsTo": "DDI",
+                "languages": "en",
+                "formats": "SPSS;,;CSV"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "associatedMedia": "https://fernvale.example.org/child-health/fbc/data-guide.pdf",
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "waveOf": null
+            }
+        },
+        "observations": [
+            {
+                "observedNode": "Persons",
+                "measuredValue": 5240,
+                "observationDate": "2000-12-31",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Children recruited at birth."
+            },
+            {
+                "observedNode": "Persons",
+                "measuredValue": 1345,
+                "observationDate": "2003-12-31",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Cohort members taking part in the age-3 sweep."
+            }
+        ],
+        "structuralMetadata": [
+            {
+                "name": "Pregnancy and birth (2000)",
+                "description": "Abstracted from the maternity record and the mother's postnatal questionnaire.",
+                "columns": [
+                    {
+                        "name": "maternal_age_at_delivery",
+                        "dataType": "integer",
+                        "description": "Mother's age in years when the cohort child was born.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "birthweight_g",
+                        "dataType": "integer",
+                        "description": "Birthweight of the cohort child in grams, from the maternity record.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "gestational_age_weeks",
+                        "dataType": "integer",
+                        "description": "Completed weeks of gestation at delivery.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "preterm_birth",
+                        "dataType": "string",
+                        "description": "Born before 37 completed weeks of gestation.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "pre_eclampsia",
+                        "dataType": "string",
+                        "description": "Mother diagnosed with pre-eclampsia during this pregnancy.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "delivery_mode",
+                        "dataType": "string",
+                        "description": "Spontaneous vaginal, assisted or caesarean delivery.",
+                        "sensitive": false,
+                        "values": [
+                            {
+                                "name": "1",
+                                "description": "Spontaneous vaginal",
+                                "frequency": 3460
+                            },
+                            {
+                                "name": "2",
+                                "description": "Assisted vaginal",
+                                "frequency": 620
+                            },
+                            {
+                                "name": "3",
+                                "description": "Caesarean section",
+                                "frequency": 1160
+                            }
+                        ]
+                    },
+                    {
+                        "name": "smoking_in_pregnancy",
+                        "dataType": "string",
+                        "description": "Mother smoked at any point during pregnancy.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "epds_8_weeks",
+                        "dataType": "integer",
+                        "description": "Mother's Edinburgh Postnatal Depression Scale (EPDS) score eight weeks after the birth, 0-30.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "breastfed_6_weeks",
+                        "dataType": "string",
+                        "description": "Child was breastfed at six weeks.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Age 3 sweep (2003)",
+                "description": "Data collected when cohort members were around 3 years old.",
+                "columns": [
+                    {
+                        "name": "participants",
+                        "dataType": "integer",
+                        "description": "Cohort members taking part in the age-3 sweep.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sdq_total",
+                        "dataType": "integer",
+                        "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "household_income_band",
+                        "dataType": "string",
+                        "description": "Equivalised household income band.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "bmi_z",
+                        "dataType": "number",
+                        "description": "BMI z-score against UK 1990 reference.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "reading_age",
+                        "dataType": "number",
+                        "description": "Standardised reading assessment.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Age 7 sweep (2007)",
+                "description": "Data collected when cohort members were around 7 years old.",
+                "columns": [
+                    {
+                        "name": "participants",
+                        "dataType": "integer",
+                        "description": "Cohort members taking part in the age-7 sweep.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sdq_total",
+                        "dataType": "integer",
+                        "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "household_income_band",
+                        "dataType": "string",
+                        "description": "Equivalised household income band.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "bmi_z",
+                        "dataType": "number",
+                        "description": "BMI z-score against UK 1990 reference.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "reading_age",
+                        "dataType": "number",
+                        "description": "Standardised reading assessment.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Age 11 sweep (2011)",
+                "description": "Data collected when cohort members were around 11 years old.",
+                "columns": [
+                    {
+                        "name": "participants",
+                        "dataType": "integer",
+                        "description": "Cohort members taking part in the age-11 sweep.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sdq_total",
+                        "dataType": "integer",
+                        "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "household_income_band",
+                        "dataType": "string",
+                        "description": "Equivalised household income band.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "bmi_z",
+                        "dataType": "number",
+                        "description": "BMI z-score against UK 1990 reference.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "reading_age",
+                        "dataType": "number",
+                        "description": "Standardised reading assessment.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Age 16 sweep (2016)",
+                "description": "Data collected when cohort members were around 16 years old.",
+                "columns": [
+                    {
+                        "name": "participants",
+                        "dataType": "integer",
+                        "description": "Cohort members taking part in the age-16 sweep.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sdq_total",
+                        "dataType": "integer",
+                        "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "household_income_band",
+                        "dataType": "string",
+                        "description": "Equivalised household income band.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "bmi_z",
+                        "dataType": "number",
+                        "description": "BMI z-score against UK 1990 reference.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "gcse_points",
+                        "dataType": "integer",
+                        "description": "Linked GCSE point score.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Age 18 sweep (2018)",
+                "description": "Data collected when cohort members were around 18 years old.",
+                "columns": [
+                    {
+                        "name": "participants",
+                        "dataType": "integer",
+                        "description": "Cohort members taking part in the age-18 sweep.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sdq_total",
+                        "dataType": "integer",
+                        "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "household_income_band",
+                        "dataType": "string",
+                        "description": "Equivalised household income band.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "bmi_z",
+                        "dataType": "number",
+                        "description": "BMI z-score against UK 1990 reference.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "employment_status",
+                        "dataType": "string",
+                        "description": "Education, employment or training status.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [
+            {
+                "materialType": "Saliva"
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 3980
+                },
+                {
+                    "bin": "White - Any other White background",
+                    "count": 230
+                },
+                {
+                    "bin": "Asian or Asian British - Pakistani",
+                    "count": 310
+                },
+                {
+                    "bin": "Asian or Asian British - Indian",
+                    "count": 210
+                },
+                {
+                    "bin": "Black or Black British - Caribbean",
+                    "count": 130
+                },
+                {
+                    "bin": "Black or Black British - African",
+                    "count": 100
+                },
+                {
+                    "bin": "Mixed - White and Black Caribbean",
+                    "count": 110
+                },
+                {
+                    "bin": "Mixed - Any other mixed background",
+                    "count": 80
+                },
+                {
+                    "bin": "Other Ethnic Groups - Any other ethnic group",
+                    "count": 50
+                },
+                {
+                    "bin": "Not stated",
+                    "count": 40
+                }
+            ]
+        },
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2000-01-01",
+                "endDate": "2000-12-31",
+                "samplingMethod": "All births in the Fernvale maternity unit during 2000 were invited through the community midwifery service."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Sweeps at ages 3, 7, 11, 16 and 18. An age-25 sweep is being planned."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Live births in 2000 to mothers resident in the Fernvale catchment area.",
+                "exclusionCriteria": "Families who moved out of the UK before the age-3 sweep."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "233c5d41-cad4-5c58-bcf0-9f5df413baa9",
+        "version": "3.1.0",
+        "issued": "2004-09-01T00:00:00.000Z",
+        "modified": "2026-10-20T08:45:00.000Z",
+        "summary": {
+            "title": "Fernvale Birth Cohort (FBC)",
+            "abstract": "A birth cohort of 5,240 children born in the Fernvale area in 2000, followed through five sweeps from age 3 to age 18 to study child development, family circumstances and the early origins of adult health.",
+            "dataCustodian": {
+                "identifier": "uk.fernvale.example",
+                "name": "Fernvale University Centre for Child Health",
+                "description": "https://fernvale.example.org/child-health",
+                "contactPoint": "cohort-access@fernvale.example.org"
+            },
+            "populationSize": 5240,
+            "keywords": [
+                "child development",
+                "birth cohort",
+                "family circumstances",
+                "education",
+                "adolescent mental health"
+            ],
+            "contactPoint": "cohort-access@fernvale.example.org",
+            "datasetAliases": [
+                "FBC"
+            ]
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2000-01-01",
+                "endDate": "2000-12-31",
+                "samplingMethod": "All births in the Fernvale maternity unit during 2000 were invited through the community midwifery service."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Sweeps at ages 3, 7, 11, 16 and 18. An age-25 sweep is being planned."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Live births in 2000 to mothers resident in the Fernvale catchment area.",
+                "exclusionCriteria": "Families who moved out of the UK before the age-3 sweep."
+            }
+        },
+        "documentation": {
+            "description": "Each sweep combines a parent (later self-completed) questionnaire, a home or clinic assessment and linked education records. Cognitive assessments use age-appropriate standardised instruments.",
+            "associatedMedia": [
+                "https://fernvale.example.org/child-health/fbc/data-guide.pdf"
+            ],
+            "inPipeline": "Available"
+        },
+        "coverage": {
+            "spatial": "England",
+            "typicalAgeRangeMin": 0,
+            "typicalAgeRangeMax": 18,
+            "followUp": "> 10 Years",
+            "materialType": [
+                "Saliva"
+            ]
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Research cohort"
+                ],
+                "source": [
+                    "Paper-based",
+                    "Electronic survey"
+                ],
+                "collectionSource": [
+                    "Cohort, study, trial",
+                    "Home"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Socioeconomic",
+                        "subTypes": [
+                            "Education",
+                            "Family circumstance",
+                            "Deprivation"
+                        ]
+                    },
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Mental health",
+                            "Cognitive function"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Irregular",
+                "timeLag": "More than 6 months",
+                "startDate": "2003-01-01",
+                "endDate": "2018-12-31"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://fernvale.example.org/child-health/fbc/access",
+                "accessService": "De-identified files are released to approved researchers through the university's secure download service.",
+                "accessRequestCost": "Free for academic research.",
+                "deliveryLeadTime": "1-2 months",
+                "accessServiceCategory": "Direct access",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Fernvale University"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "Research use only"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Return to database or resource"
+                ],
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "LOCAL"
+                ],
+                "conformsTo": [
+                    "DDI"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "SPSS",
+                    "CSV"
+                ]
+            }
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Pregnancy and birth (2000)",
+                    "description": "Abstracted from the maternity record and the mother's postnatal questionnaire.",
+                    "columns": [
+                        {
+                            "name": "maternal_age_at_delivery",
+                            "dataType": "integer",
+                            "description": "Mother's age in years when the cohort child was born.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "birthweight_g",
+                            "dataType": "integer",
+                            "description": "Birthweight of the cohort child in grams, from the maternity record.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "gestational_age_weeks",
+                            "dataType": "integer",
+                            "description": "Completed weeks of gestation at delivery.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "preterm_birth",
+                            "dataType": "string",
+                            "description": "Born before 37 completed weeks of gestation.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "pre_eclampsia",
+                            "dataType": "string",
+                            "description": "Mother diagnosed with pre-eclampsia during this pregnancy.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "delivery_mode",
+                            "dataType": "string",
+                            "description": "Spontaneous vaginal, assisted or caesarean delivery.",
+                            "sensitive": false,
+                            "values": [
+                                {
+                                    "name": "1",
+                                    "description": "Spontaneous vaginal",
+                                    "frequency": 3460
+                                },
+                                {
+                                    "name": "2",
+                                    "description": "Assisted vaginal",
+                                    "frequency": 620
+                                },
+                                {
+                                    "name": "3",
+                                    "description": "Caesarean section",
+                                    "frequency": 1160
+                                }
+                            ]
+                        },
+                        {
+                            "name": "smoking_in_pregnancy",
+                            "dataType": "string",
+                            "description": "Mother smoked at any point during pregnancy.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "epds_8_weeks",
+                            "dataType": "integer",
+                            "description": "Mother's Edinburgh Postnatal Depression Scale (EPDS) score eight weeks after the birth, 0-30.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "breastfed_6_weeks",
+                            "dataType": "string",
+                            "description": "Child was breastfed at six weeks.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 3 sweep (2003)",
+                    "description": "Data collected when cohort members were around 3 years old.",
+                    "columns": [
+                        {
+                            "name": "participants",
+                            "dataType": "integer",
+                            "description": "Cohort members taking part in the age-3 sweep.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sdq_total",
+                            "dataType": "integer",
+                            "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "household_income_band",
+                            "dataType": "string",
+                            "description": "Equivalised household income band.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "bmi_z",
+                            "dataType": "number",
+                            "description": "BMI z-score against UK 1990 reference.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "reading_age",
+                            "dataType": "number",
+                            "description": "Standardised reading assessment.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 7 sweep (2007)",
+                    "description": "Data collected when cohort members were around 7 years old.",
+                    "columns": [
+                        {
+                            "name": "participants",
+                            "dataType": "integer",
+                            "description": "Cohort members taking part in the age-7 sweep.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sdq_total",
+                            "dataType": "integer",
+                            "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "household_income_band",
+                            "dataType": "string",
+                            "description": "Equivalised household income band.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "bmi_z",
+                            "dataType": "number",
+                            "description": "BMI z-score against UK 1990 reference.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "reading_age",
+                            "dataType": "number",
+                            "description": "Standardised reading assessment.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 11 sweep (2011)",
+                    "description": "Data collected when cohort members were around 11 years old.",
+                    "columns": [
+                        {
+                            "name": "participants",
+                            "dataType": "integer",
+                            "description": "Cohort members taking part in the age-11 sweep.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sdq_total",
+                            "dataType": "integer",
+                            "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "household_income_band",
+                            "dataType": "string",
+                            "description": "Equivalised household income band.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "bmi_z",
+                            "dataType": "number",
+                            "description": "BMI z-score against UK 1990 reference.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "reading_age",
+                            "dataType": "number",
+                            "description": "Standardised reading assessment.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 16 sweep (2016)",
+                    "description": "Data collected when cohort members were around 16 years old.",
+                    "columns": [
+                        {
+                            "name": "participants",
+                            "dataType": "integer",
+                            "description": "Cohort members taking part in the age-16 sweep.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sdq_total",
+                            "dataType": "integer",
+                            "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "household_income_band",
+                            "dataType": "string",
+                            "description": "Equivalised household income band.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "bmi_z",
+                            "dataType": "number",
+                            "description": "BMI z-score against UK 1990 reference.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "gcse_points",
+                            "dataType": "integer",
+                            "description": "Linked GCSE point score.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Age 18 sweep (2018)",
+                    "description": "Data collected when cohort members were around 18 years old.",
+                    "columns": [
+                        {
+                            "name": "participants",
+                            "dataType": "integer",
+                            "description": "Cohort members taking part in the age-18 sweep.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sdq_total",
+                            "dataType": "integer",
+                            "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "household_income_band",
+                            "dataType": "string",
+                            "description": "Equivalised household income band.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "bmi_z",
+                            "dataType": "number",
+                            "description": "BMI z-score against UK 1990 reference.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "employment_status",
+                            "dataType": "string",
+                            "description": "Education, employment or training status.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        },
+        "observations": [
+            {
+                "observedNode": "Persons",
+                "measuredValue": 5240,
+                "observationDate": "2000-12-31",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Children recruited at birth."
+            },
+            {
+                "observedNode": "Persons",
+                "measuredValue": 1345,
+                "observationDate": "2003-12-31",
+                "measuredProperty": "Count",
+                "disambiguatingDescription": "Cohort members taking part in the age-3 sweep."
+            }
+        ],
+        "demographicFrequency": {
+            "ethnicity": [
+                {
+                    "bin": "White - British",
+                    "count": 3980
+                },
+                {
+                    "bin": "White - Any other White background",
+                    "count": 230
+                },
+                {
+                    "bin": "Asian or Asian British - Pakistani",
+                    "count": 310
+                },
+                {
+                    "bin": "Asian or Asian British - Indian",
+                    "count": 210
+                },
+                {
+                    "bin": "Black or Black British - Caribbean",
+                    "count": 130
+                },
+                {
+                    "bin": "Black or Black British - African",
+                    "count": 100
+                },
+                {
+                    "bin": "Mixed - White and Black Caribbean",
+                    "count": 110
+                },
+                {
+                    "bin": "Mixed - Any other mixed background",
+                    "count": 80
+                },
+                {
+                    "bin": "Other Ethnic Groups - Any other ethnic group",
+                    "count": 50
+                },
+                {
+                    "bin": "Not stated",
+                    "count": 40
+                }
+            ]
+        }
+    }
+}

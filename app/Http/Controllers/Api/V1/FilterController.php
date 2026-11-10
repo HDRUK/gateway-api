@@ -326,7 +326,7 @@ class FilterController extends Controller
     public function store(CreateFilter $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $filter = Filter::create([
@@ -421,7 +421,7 @@ class FilterController extends Controller
     public function update(UpdateFilter $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             Filter::where('id', $id)->update([
@@ -515,7 +515,7 @@ class FilterController extends Controller
     public function edit(EditFilter $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -596,7 +596,7 @@ class FilterController extends Controller
     public function destroy(DeleteFilter $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             Filter::where(['id' => $id])->delete();

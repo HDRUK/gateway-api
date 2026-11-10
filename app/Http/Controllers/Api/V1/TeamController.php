@@ -87,7 +87,7 @@ class TeamController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $sort = [];
@@ -187,7 +187,7 @@ class TeamController extends Controller
     public function getNames(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         try {
             $query = Team::where('enabled', 1)
                 ->select(['id', 'name']);
@@ -263,7 +263,7 @@ class TeamController extends Controller
     public function show(GetTeam $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $userTeamCollection = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get();
@@ -377,7 +377,7 @@ class TeamController extends Controller
     public function searchByName(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $teams = Team::where('name', 'like', '%' . $input['name'] . '%')->get();
@@ -1301,7 +1301,7 @@ class TeamController extends Controller
     {
         $team = null;
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         $arrayTeam = array_filter($input, function ($key) {
             return $key !== 'notifications' || $key !== 'users';
@@ -1458,7 +1458,7 @@ class TeamController extends Controller
     public function update(UpdateTeam $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -1600,7 +1600,7 @@ class TeamController extends Controller
     public function edit(EditTeam $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         $this->checkAccess($input, $teamId, null, 'team');
         try {
@@ -1716,11 +1716,14 @@ class TeamController extends Controller
     public function destroy(DeleteTeam $request, int $teamId): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $team = Team::findOrFail($teamId);
-            $existsDatasets = Dataset::where('team_id', $teamId)->select('id')->first();
+            $existsDatasets = Dataset::where('team_id', $teamId)
+                ->where('status', '!=', Dataset::STATUS_ARCHIVED)
+                ->select('id')
+                ->first();
 
             if (!is_null($existsDatasets)) {
                 throw new Exception('The team cannot be deleted as there are datasets currently assigned to it.');
@@ -1730,10 +1733,6 @@ class TeamController extends Controller
 
             $team->delete();
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
@@ -1741,7 +1740,9 @@ class TeamController extends Controller
                 'description' => 'Team ' . $teamId . ' deleted',
             ]);
 
-            throw new NotFoundException();
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

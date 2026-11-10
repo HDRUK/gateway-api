@@ -391,7 +391,7 @@ class DataProviderCollController extends Controller
     public function store(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $array = [
@@ -518,7 +518,7 @@ class DataProviderCollController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $dpc = DataProviderColl::where('id', $id)->first();
@@ -631,7 +631,7 @@ class DataProviderCollController extends Controller
     public function edit(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $dpc = DataProviderColl::where('id', $id)->first();
@@ -722,7 +722,7 @@ class DataProviderCollController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();

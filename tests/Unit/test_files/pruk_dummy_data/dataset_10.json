@@ -1,0 +1,428 @@
+{
+    "identifier": "3faf4542-eb8b-58b9-ae92-8f8781f9cebf",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "3faf4542-eb8b-58b9-ae92-8f8781f9cebf",
+            "gatewayPid": "3faf4542-eb8b-58b9-ae92-8f8781f9cebf",
+            "issued": "2024-03-08T00:00:00.000Z",
+            "modified": "2026-10-19T15:05:00.000Z",
+            "version": "1.0.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "An online panel of 4,050 women aged 40 to 65 surveyed every two years on reproductive history, menopause, mental health and long-term conditions, to understand how pregnancy and the menopause shape health in midlife.",
+            "contactPoint": "whp@larkspur.example.org",
+            "keywords": "women's health;,;menopause;,;reproductive history;,;midlife;,;mental health",
+            "datasetType": "Health and disease",
+            "datasetSubType": "Reproductive;,;Mental health",
+            "populationSize": 4050,
+            "description": "Each wave repeats a core survey of reproductive history, menopause symptoms, mood and long-term conditions. Pregnancy history is collected once, at the first wave.",
+            "shortTitle": "Larkspur Women's Health Panel (LWHP)",
+            "title": "Larkspur Women's Health Panel (LWHP)",
+            "publisher": {
+                "name": "Larkspur Centre for Women's Health",
+                "gatewayId": "uk.larkspur.example"
+            },
+            "inPipeline": null
+        },
+        "coverage": {
+            "spatial": "England",
+            "followUp": "1 - 10 Years",
+            "typicalAgeRange": "40-65"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Study",
+                "source": "Electronic survey",
+                "collectionSituation": "Patient report outcome"
+            },
+            "temporal": {
+                "startDate": "2022-06-01",
+                "timeLag": "2-6 months",
+                "accrualPeriodicity": "Biennial"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Less than 1 week",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Larkspur University",
+                "accessRights": "https://larkspur.example.org/panel/access",
+                "accessService": "End-user files can be downloaded after registering and accepting the panel's licence.",
+                "accessRequestCost": "Free.",
+                "accessServiceCategory": "Open access"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Publication required",
+                "resourceCreator": {
+                    "name": null
+                },
+                "duoCodes": null,
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "LOCAL;,;SNOMED CT;,;ICD10",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": "CSV;,;Stata"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "waveOf": null
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "Reproductive history",
+                "description": "Collected once, at the first wave.",
+                "columns": [
+                    {
+                        "name": "gravidity",
+                        "dataType": "integer",
+                        "description": "Number of times the respondent has been pregnant.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "parity",
+                        "dataType": "integer",
+                        "description": "Number of births at 24 weeks or more.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "miscarriage_count",
+                        "dataType": "integer",
+                        "description": "Number of miscarriages.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "gestational_diabetes_history",
+                        "dataType": "string",
+                        "description": "Gestational diabetes in any pregnancy.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "hypertensive_pregnancy_history",
+                        "dataType": "string",
+                        "description": "High blood pressure or pre-eclampsia in any pregnancy.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "preterm_delivery_history",
+                        "dataType": "string",
+                        "description": "Any baby born before 37 weeks of gestation.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Menopause and symptoms",
+                "columns": [
+                    {
+                        "name": "menopause_stage",
+                        "dataType": "string",
+                        "description": "Pre-, peri- or post-menopausal, by STRAW+10 criteria.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "hot_flush_frequency",
+                        "dataType": "string",
+                        "description": "How often hot flushes or night sweats occurred in the last month.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "hrt_use",
+                        "dataType": "string",
+                        "description": "Current use of hormone replacement therapy.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sleep_disturbance",
+                        "dataType": "integer",
+                        "description": "Insomnia Severity Index score, 0-28.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Mental health and conditions",
+                "columns": [
+                    {
+                        "name": "phq8_score",
+                        "dataType": "integer",
+                        "description": "Eight-item Patient Health Questionnaire (PHQ-8) depression score, 0-24.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "diagnosed_depression_ever",
+                        "dataType": "string",
+                        "description": "Ever told by a doctor that she has depression.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "long_term_conditions",
+                        "dataType": "string",
+                        "description": "Long-term conditions diagnosed by a doctor.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "caring_responsibilities",
+                        "dataType": "string",
+                        "description": "Unpaid care for a child, partner or older relative.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Recruiting",
+                "startDate": "2022-06-01",
+                "samplingMethod": "Quota sample by age, region and ethnic group from an online research panel, topped up each wave."
+            },
+            "followUpSchedule": {
+                "frequency": "Biennial"
+            },
+            "eligibility": {
+                "inclusionCriteria": "Women aged 40 to 65 living in England."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "3faf4542-eb8b-58b9-ae92-8f8781f9cebf",
+        "version": "1.0.0",
+        "issued": "2024-03-08T00:00:00.000Z",
+        "modified": "2026-10-19T15:05:00.000Z",
+        "summary": {
+            "title": "Larkspur Women's Health Panel (LWHP)",
+            "abstract": "An online panel of 4,050 women aged 40 to 65 surveyed every two years on reproductive history, menopause, mental health and long-term conditions, to understand how pregnancy and the menopause shape health in midlife.",
+            "dataCustodian": {
+                "identifier": "uk.larkspur.example",
+                "name": "Larkspur Centre for Women's Health",
+                "description": "https://larkspur.example.org/panel",
+                "contactPoint": "whp@larkspur.example.org"
+            },
+            "populationSize": 4050,
+            "keywords": [
+                "women's health",
+                "menopause",
+                "reproductive history",
+                "midlife",
+                "mental health"
+            ],
+            "contactPoint": "whp@larkspur.example.org"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Recruiting",
+                "startDate": "2022-06-01",
+                "samplingMethod": "Quota sample by age, region and ethnic group from an online research panel, topped up each wave."
+            },
+            "followUpSchedule": {
+                "frequency": "Biennial"
+            },
+            "eligibility": {
+                "inclusionCriteria": "Women aged 40 to 65 living in England."
+            }
+        },
+        "documentation": {
+            "description": "Each wave repeats a core survey of reproductive history, menopause symptoms, mood and long-term conditions. Pregnancy history is collected once, at the first wave."
+        },
+        "coverage": {
+            "spatial": "England",
+            "typicalAgeRangeMin": 40,
+            "typicalAgeRangeMax": 65,
+            "followUp": "1 - 10 Years"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Study"
+                ],
+                "source": [
+                    "Electronic survey"
+                ],
+                "collectionSource": [
+                    "Patient report outcome"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Reproductive",
+                            "Mental health"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Biennial",
+                "timeLag": "2-6 months",
+                "startDate": "2022-06-01"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://larkspur.example.org/panel/access",
+                "accessService": "End-user files can be downloaded after registering and accepting the panel's licence.",
+                "accessRequestCost": "Free.",
+                "deliveryLeadTime": "Less than 1 week",
+                "accessServiceCategory": "Open access",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Larkspur University"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use"
+                ],
+                "dataUseRequirements": [
+                    "Publication required"
+                ],
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "LOCAL",
+                    "SNOMED CT",
+                    "ICD10"
+                ],
+                "conformsTo": [
+                    "LOCAL"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "CSV",
+                    "Stata"
+                ]
+            }
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Reproductive history",
+                    "description": "Collected once, at the first wave.",
+                    "columns": [
+                        {
+                            "name": "gravidity",
+                            "dataType": "integer",
+                            "description": "Number of times the respondent has been pregnant.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "parity",
+                            "dataType": "integer",
+                            "description": "Number of births at 24 weeks or more.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "miscarriage_count",
+                            "dataType": "integer",
+                            "description": "Number of miscarriages.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "gestational_diabetes_history",
+                            "dataType": "string",
+                            "description": "Gestational diabetes in any pregnancy.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "hypertensive_pregnancy_history",
+                            "dataType": "string",
+                            "description": "High blood pressure or pre-eclampsia in any pregnancy.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "preterm_delivery_history",
+                            "dataType": "string",
+                            "description": "Any baby born before 37 weeks of gestation.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Menopause and symptoms",
+                    "columns": [
+                        {
+                            "name": "menopause_stage",
+                            "dataType": "string",
+                            "description": "Pre-, peri- or post-menopausal, by STRAW+10 criteria.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "hot_flush_frequency",
+                            "dataType": "string",
+                            "description": "How often hot flushes or night sweats occurred in the last month.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "hrt_use",
+                            "dataType": "string",
+                            "description": "Current use of hormone replacement therapy.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sleep_disturbance",
+                            "dataType": "integer",
+                            "description": "Insomnia Severity Index score, 0-28.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Mental health and conditions",
+                    "columns": [
+                        {
+                            "name": "phq8_score",
+                            "dataType": "integer",
+                            "description": "Eight-item Patient Health Questionnaire (PHQ-8) depression score, 0-24.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "diagnosed_depression_ever",
+                            "dataType": "string",
+                            "description": "Ever told by a doctor that she has depression.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "long_term_conditions",
+                            "dataType": "string",
+                            "description": "Long-term conditions diagnosed by a doctor.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "caring_responsibilities",
+                            "dataType": "string",
+                            "description": "Unpaid care for a child, partner or older relative.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

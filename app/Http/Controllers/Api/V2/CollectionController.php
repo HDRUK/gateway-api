@@ -297,7 +297,7 @@ class CollectionController extends Controller
         // no checks on permissions are required, so long as you're logged in, and that will be checked by jwt middleware.
         $input = $request->all();
 
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $arrayKeys = [
@@ -431,7 +431,7 @@ class CollectionController extends Controller
     public function update(UpdateCollection $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
 
         // Allow access only to collaborators
         $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
@@ -598,7 +598,7 @@ class CollectionController extends Controller
     public function edit(EditCollection $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
 
         // Allow access only to collaborators
         $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();
@@ -797,7 +797,7 @@ class CollectionController extends Controller
     public function destroy(DeleteCollection $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
 
         // Allow access only to collaborators
         $collHasUsers = CollectionHasUser::where(['collection_id' => $id])->select(['user_id'])->get()->toArray();

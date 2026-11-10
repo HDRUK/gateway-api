@@ -69,7 +69,7 @@ class KeywordController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $perPage = (int) request('per_page', Config::get('constants.per_page'));
@@ -146,7 +146,7 @@ class KeywordController extends Controller
     public function show(GetKeyword $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $keyword = Keyword::where(['id' => $id])->get();
@@ -220,7 +220,7 @@ class KeywordController extends Controller
     public function store(CreateKeyword $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $checkKeyword = Keyword::where([
@@ -316,7 +316,7 @@ class KeywordController extends Controller
     public function update(UpdateKeyword $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             Keyword::where('id', $id)->update([
@@ -403,7 +403,7 @@ class KeywordController extends Controller
     public function edit(EditKeyword $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -484,7 +484,7 @@ class KeywordController extends Controller
     public function destroy(DeleteKeyword $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             Keyword::where('id', '=', $id)->delete();

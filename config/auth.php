@@ -46,6 +46,19 @@ return [
             'provider' => 'users',
             'hash' => false,
         ],
+
+        // Resolves the user carried by our own HS256 token, via
+        // App\Auth\JwtUserResolver (registered in AuthServiceProvider).
+        //
+        // Deliberately NOT the default guard: Auth::shouldUse() writes to
+        // auth.defaults.guard, which is process-global, and under Octane
+        // that would persist across requests on the worker. Reach for it
+        // explicitly with auth('jwt'), or use $request->user(), which
+        // JwtMiddleware populates per request.
+        'jwt' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+        ],
     ],
 
     /*

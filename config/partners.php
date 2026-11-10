@@ -52,11 +52,10 @@ return [
     |--------------------------------------------------------------------------
     | Cross-context read (HDRUK portal safeguard)
     |--------------------------------------------------------------------------
-    | When true (default), the HDRUK operator context sees datasets from ALL
-    | partners. Set to false to restrict HDRUK to its own datasets — useful
-    | while partner schemas are in development and risk breaking the portal.
+    | Which partner contexts the HDRUK operator context may read and render is
+    | controlled by the RenderSchemaCRUK / RenderSchemaPRUK / RenderSchemaCROCOD
+    | feature flags, not by config. See PartnerContext::CROSS_CONTEXT_FLAGS.
     */
-    'allow_cross_context_read' => env('HDRUK_CROSS_CONTEXT_READ', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -118,8 +117,31 @@ return [
 
         'HDRUK' => ['model' => 'HDRUK', 'version' => env('HDRUK_CURRENT_VERSION', '4.0.0')],
         'CRUK'  => ['model' => 'CRUK',  'version' => '1.1.0'],
-        // PRUK schema version is not yet finalised — placeholder until confirmed.
-        'PRUK'  => ['model' => 'PRUK',  'version' => '0.0.0'],
+        'PRUK'  => ['model' => 'PRUK',  'version' => '1.0.0'],
+        // Trial case studies, stored as GWDM 2.3 records with recordType caseStudy.
+        'CROCOD' => ['model' => 'CROCOD', 'version' => '1.0.0'],
+
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Partner display names
+    |--------------------------------------------------------------------------
+    | The organisation behind each partner context, for display to users - the
+    | "via Cancer Research UK" provenance line on a search result.
+    |
+    | Deliberately separate from 'schema' above: that is the translation target
+    | for a caller, a property of the request, while this names the context that
+    | owns a record. The two diverge - CROCOD datasets use the CROCOD schema but
+    | come from the University of Dundee - and a context needs a name whether or
+    | not it has a translation target.
+    */
+    'names' => [
+
+        'HDRUK' => 'Health Data Research UK',
+        'CRUK' => 'Cancer Research UK',
+        'PRUK' => 'Population Research UK',
+        'CROCOD' => 'University of Dundee',
 
     ],
 

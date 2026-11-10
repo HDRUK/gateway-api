@@ -50,7 +50,7 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $perPage = request('per_page', Config::get('constants.per_page'));
@@ -119,7 +119,7 @@ class NotificationController extends Controller
     public function show(GetNotification $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $notification = Notification::findOrFail($id);
@@ -201,7 +201,7 @@ class NotificationController extends Controller
     public function store(CreateNotification $request): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $notification = Notification::create([
@@ -296,7 +296,7 @@ class NotificationController extends Controller
     public function update(UpdateNotification $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             Notification::where('id', $id)->update([
@@ -390,7 +390,7 @@ class NotificationController extends Controller
     public function edit(EditNotification $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $arrayKeys = [
@@ -476,7 +476,7 @@ class NotificationController extends Controller
     public function destroy(DeleteNotification $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : ['id' => null];
+        $jwtUser = $request->jwtUser() ?: ['id' => null];
 
         try {
             $notification = Notification::findOrFail($id);

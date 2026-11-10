@@ -103,6 +103,19 @@ return [
         ],
     ],
     [
+        'name'                => 'dashboard.datasets.views.bottom',
+        'method'              => 'get',
+        'path'                => '/teams/{id}/dashboard/datasets/views/bottom',
+        'methodController'    => 'TeamDashboardController@datasetViewsBottom',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
         'name'                => 'dashboard.collections.views',
         'method'              => 'get',
         'path'                => '/teams/{id}/dashboard/collections/views',

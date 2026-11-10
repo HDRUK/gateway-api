@@ -486,7 +486,7 @@ class TeamDurController extends Controller
     {
         list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
@@ -720,7 +720,7 @@ class TeamDurController extends Controller
     {
         list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::where('id', $id)->first();
         if (!$initDur) {
@@ -971,7 +971,7 @@ class TeamDurController extends Controller
     {
         list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
         $initDur = Dur::where('id', $id)->first();
         if (!$initDur) {
@@ -1130,7 +1130,7 @@ class TeamDurController extends Controller
     {
         list($userId) = $this->getAccessorUserAndTeam($request);
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId;
 
         $initDur = Dur::where(['id' => $id])->first();

@@ -1,0 +1,440 @@
+{
+    "identifier": "0e13d792-8164-505c-a1d1-b9c7683bc474",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "0e13d792-8164-505c-a1d1-b9c7683bc474",
+            "gatewayPid": "0e13d792-8164-505c-a1d1-b9c7683bc474",
+            "issued": "2015-05-01T00:00:00.000Z",
+            "modified": "2026-08-02T14:30:00.000Z",
+            "version": "1.2.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "The fourth contact wave of the Northshore Life Course Study (2012–2014), when 7,412 of the original participants were re-assessed and wrist-worn accelerometers were introduced to measure physical activity and sleep.",
+            "contactPoint": "dataaccess@npri.example.org",
+            "keywords": "physical activity;,;accelerometry;,;sleep;,;mental health;,;longitudinal cohort",
+            "datasetType": "Lifestyle;,;Health and disease",
+            "datasetSubType": "Physical activity;,;Mental health",
+            "populationSize": 7412,
+            "description": "Wave 4 repeated the core questionnaire and clinic measures and added seven days of wrist-worn accelerometry. Derived activity and sleep summaries are provided; raw accelerometer files are available on request.",
+            "shortTitle": "Northshore Life Course Study (NLCS) — Wave 4",
+            "title": "Northshore Life Course Study (NLCS) — Wave 4",
+            "publisher": {
+                "name": "Northshore Population Research Institute (NPRI)",
+                "gatewayId": "uk.npri.example"
+            },
+            "inPipeline": null
+        },
+        "coverage": {
+            "spatial": "United Kingdom",
+            "followUp": "> 10 Years",
+            "typicalAgeRange": "32-69"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Research cohort",
+                "source": "Electronic survey;,;Machine generated",
+                "collectionSituation": "Cohort, study, trial;,;Wearables"
+            },
+            "temporal": {
+                "endDate": "2014-11-28",
+                "startDate": "2012-01-09",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Static"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "2-6 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Northshore Population Research Institute",
+                "dataProcessor": "Northshore Secure Data Services",
+                "accessRights": "https://npri.example.org/studies/nlcs/access",
+                "accessService": "Data are analysed in the NPRI Trusted Research Environment following an approved Data Access Request. Outputs are checked for disclosure risk before release.",
+                "accessRequestCost": "Medium cost: a fixed project fee covers data preparation and two years of TRE access. See https://npri.example.org/costs",
+                "accessServiceCategory": "TRE/SDE"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use;,;Not for profit use",
+                "dataUseRequirement": "Ethics approval required;,;Publication required;,;Disclosure control",
+                "resourceCreator": {
+                    "name": "Northshore Life Course Study team"
+                },
+                "duoCodes": "DUO:0000042;,;DUO:0000018;,;DUO:0000019",
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "OPCS4;,;READ;,;SNOMED CT;,;ICD10;,;DM+D;,;NHS NATIONAL CODES;,;LOCAL",
+                "conformsTo": "LOCAL;,;NHS DATA DICTIONARY",
+                "languages": "en",
+                "formats": "SQL database table;,;CSV"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "associatedMedia": "https://npri.example.org/studies/nlcs/docs/wave-4-accelerometry-protocol.pdf",
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "linkedDatasets": [
+                    {
+                        "pid": "4733b419-6cb8-5178-9ebc-95ae4e4e6858",
+                        "title": "Northshore Life Course Study (NLCS) — Wave 1 baseline",
+                        "url": "https://npri.example.org/studies/nlcs/wave-1"
+                    }
+                ],
+                "waveOf": [
+                    {
+                        "pid": "15d9061c-f0c3-5475-8e94-4cd8c8404db6",
+                        "title": "Northshore Life Course Study (NLCS)",
+                        "url": "https://npri.example.org/studies/nlcs"
+                    }
+                ]
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "Wave 4 questionnaire",
+                "columns": [
+                    {
+                        "name": "ethnicity",
+                        "dataType": "string",
+                        "description": "Self-reported ethnic group (ONS 2001 categories). Single question; 75% complete.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "ghq12_score",
+                        "dataType": "integer",
+                        "description": "General Health Questionnaire (GHQ-12) total score, 0-36. 87% complete.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "loneliness_ucla3",
+                        "dataType": "integer",
+                        "description": "UCLA 3-item loneliness score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "phq9_total",
+                        "dataType": "integer",
+                        "description": "Patient Health Questionnaire (PHQ-9) depression severity score, 0-27.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "antidepressant_current",
+                        "dataType": "string",
+                        "description": "Antidepressant medicine taken in the last two weeks, coded to BNF section 4.3.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "wemwbs_score",
+                        "dataType": "integer",
+                        "description": "Warwick-Edinburgh Mental Wellbeing Scale total score, 14-70.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Accelerometry summary",
+                "description": "Seven-day summaries derived from wrist-worn accelerometers.",
+                "columns": [
+                    {
+                        "name": "met_min_week",
+                        "dataType": "number",
+                        "description": "Physical activity, MET-minutes per week. Derived score; 100% of wearers.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sedentary_hours_day",
+                        "dataType": "number",
+                        "description": "Mean sedentary hours per day.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sleep_duration_hours",
+                        "dataType": "number",
+                        "description": "Mean nightly sleep duration.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "valid_wear_days",
+                        "dataType": "integer",
+                        "description": "Days meeting the wear-time criterion.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "nlcs-wave-4",
+                "waveType": "Contact wave",
+                "waveNumber": 4,
+                "label": "Wave 4 (2012–2014)"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2000-03-01",
+                "endDate": "2003-06-30"
+            },
+            "followUpSchedule": {
+                "frequency": "Every 3-5 years"
+            },
+            "eligibility": {
+                "inclusionCriteria": "Baseline participants who had not withdrawn and could be traced."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "0e13d792-8164-505c-a1d1-b9c7683bc474",
+        "version": "1.2.0",
+        "issued": "2015-05-01T00:00:00.000Z",
+        "modified": "2026-08-02T14:30:00.000Z",
+        "summary": {
+            "title": "Northshore Life Course Study (NLCS) — Wave 4",
+            "abstract": "The fourth contact wave of the Northshore Life Course Study (2012–2014), when 7,412 of the original participants were re-assessed and wrist-worn accelerometers were introduced to measure physical activity and sleep.",
+            "dataCustodian": {
+                "identifier": "uk.npri.example",
+                "name": "Northshore Population Research Institute (NPRI)",
+                "description": "https://npri.example.org/about",
+                "contactPoint": "dataaccess@npri.example.org"
+            },
+            "populationSize": 7412,
+            "keywords": [
+                "physical activity",
+                "accelerometry",
+                "sleep",
+                "mental health",
+                "longitudinal cohort"
+            ],
+            "contactPoint": "dataaccess@npri.example.org"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "nlcs-wave-4",
+                "waveType": "Contact wave",
+                "waveNumber": 4,
+                "label": "Wave 4 (2012–2014)"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2000-03-01",
+                "endDate": "2003-06-30"
+            },
+            "followUpSchedule": {
+                "frequency": "Every 3-5 years"
+            },
+            "eligibility": {
+                "inclusionCriteria": "Baseline participants who had not withdrawn and could be traced."
+            }
+        },
+        "documentation": {
+            "description": "Wave 4 repeated the core questionnaire and clinic measures and added seven days of wrist-worn accelerometry. Derived activity and sleep summaries are provided; raw accelerometer files are available on request.",
+            "associatedMedia": [
+                "https://npri.example.org/studies/nlcs/docs/wave-4-accelerometry-protocol.pdf"
+            ]
+        },
+        "coverage": {
+            "spatial": "United Kingdom",
+            "typicalAgeRangeMin": 32,
+            "typicalAgeRangeMax": 69,
+            "followUp": "> 10 Years"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Research cohort"
+                ],
+                "source": [
+                    "Electronic survey",
+                    "Machine generated"
+                ],
+                "collectionSource": [
+                    "Cohort, study, trial",
+                    "Wearables"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Lifestyle",
+                        "subTypes": [
+                            "Physical activity"
+                        ]
+                    },
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Mental health"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "2012-01-09",
+                "endDate": "2014-11-28"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://npri.example.org/studies/nlcs/access",
+                "accessService": "Data are analysed in the NPRI Trusted Research Environment following an approved Data Access Request. Outputs are checked for disclosure risk before release.",
+                "accessRequestCost": "Medium cost: a fixed project fee covers data preparation and two years of TRE access. See https://npri.example.org/costs",
+                "deliveryLeadTime": "2-6 months",
+                "accessServiceCategory": "TRE/SDE",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Northshore Population Research Institute",
+                "dataProcessor": "Northshore Secure Data Services"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use",
+                    "Not for profit use"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Publication required",
+                    "Disclosure control"
+                ],
+                "resourceCreator": [
+                    "Northshore Life Course Study team"
+                ],
+                "duoCodes": [
+                    "DUO:0000042",
+                    "DUO:0000018",
+                    "DUO:0000019"
+                ],
+                "patientRecontact": "No"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "OPCS4",
+                    "READ",
+                    "SNOMED CT",
+                    "ICD10",
+                    "DM+D",
+                    "NHS NATIONAL CODES",
+                    "LOCAL"
+                ],
+                "conformsTo": [
+                    "LOCAL",
+                    "NHS DATA DICTIONARY"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "SQL database table",
+                    "CSV"
+                ]
+            }
+        },
+        "linkage": {
+            "waveOf": {
+                "pid": "15d9061c-f0c3-5475-8e94-4cd8c8404db6",
+                "title": "Northshore Life Course Study (NLCS)",
+                "url": "https://npri.example.org/studies/nlcs"
+            },
+            "linkableDatasets": [
+                {
+                    "pid": "4733b419-6cb8-5178-9ebc-95ae4e4e6858",
+                    "title": "Northshore Life Course Study (NLCS) — Wave 1 baseline",
+                    "url": "https://npri.example.org/studies/nlcs/wave-1"
+                }
+            ]
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Wave 4 questionnaire",
+                    "columns": [
+                        {
+                            "name": "ethnicity",
+                            "dataType": "string",
+                            "description": "Self-reported ethnic group (ONS 2001 categories). Single question; 75% complete.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "ghq12_score",
+                            "dataType": "integer",
+                            "description": "General Health Questionnaire (GHQ-12) total score, 0-36. 87% complete.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "loneliness_ucla3",
+                            "dataType": "integer",
+                            "description": "UCLA 3-item loneliness score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "phq9_total",
+                            "dataType": "integer",
+                            "description": "Patient Health Questionnaire (PHQ-9) depression severity score, 0-27.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "antidepressant_current",
+                            "dataType": "string",
+                            "description": "Antidepressant medicine taken in the last two weeks, coded to BNF section 4.3.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "wemwbs_score",
+                            "dataType": "integer",
+                            "description": "Warwick-Edinburgh Mental Wellbeing Scale total score, 14-70.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Accelerometry summary",
+                    "description": "Seven-day summaries derived from wrist-worn accelerometers.",
+                    "columns": [
+                        {
+                            "name": "met_min_week",
+                            "dataType": "number",
+                            "description": "Physical activity, MET-minutes per week. Derived score; 100% of wearers.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sedentary_hours_day",
+                            "dataType": "number",
+                            "description": "Mean sedentary hours per day.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sleep_duration_hours",
+                            "dataType": "number",
+                            "description": "Mean nightly sleep duration.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "valid_wear_days",
+                            "dataType": "integer",
+                            "description": "Days meeting the wear-time criterion.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -79,7 +79,7 @@ class UserController extends Controller
     public function index(IndexUser $request): mixed
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         $perPage = request('per_page', Config::get('constants.per_page'));
         $mini = $request->has('mini');
         $users = [];
@@ -208,7 +208,7 @@ class UserController extends Controller
     public function show(GetUser $request, int $id): mixed
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
         try {
             $userTeam = User::where('id', $id)->with(
                 'roles',
@@ -297,7 +297,7 @@ class UserController extends Controller
     public function store(CreateUser $request): mixed
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $array = [
@@ -449,7 +449,7 @@ class UserController extends Controller
     public function update(UpdateUser $request, int $id): mixed
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $user = User::findOrFail($id);
@@ -648,7 +648,7 @@ class UserController extends Controller
     public function edit(EditUser $request, int $id): mixed
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $user = User::findOrFail($id);
@@ -934,7 +934,7 @@ class UserController extends Controller
     public function destroy(DeleteUser $request, int $id): mixed
     {
         $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $jwtUser = $request->jwtUser();
 
         try {
             UserHasNotification::where('user_id', $id)->delete();
