@@ -124,11 +124,11 @@ class TeamDashboardController extends Controller
     /**
      * @OA\Get(
      *      x={"internal"="true"},
-     *     path="/api/v3/teams/{id}/dashboard/datasets/views/360",
-     *     operationId="fetch_dataset_views_360_v3",
+     *     path="/api/v3/teams/{id}/dashboard/datasets/views/timeline",
+     *     operationId="fetch_dataset_views_timeline_v3",
      *     tags={"TeamDashboard"},
-     *     summary="TeamDashboardController@datasetViews360",
-     *     description="Get count of a datasets views 360 for a team",
+     *     summary="TeamDashboardController@datasetViewsTimeline",
+     *     description="Total views across all of a team's datasets within the date range, bucketed by day (range under 30 days, date as Y-m-d), week (30-179 days, date as Y-W) or month (180+ days, date as Y-m). Buckets with no views are omitted. Ordered by date ascending.",
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -157,15 +157,18 @@ class TeamDashboardController extends Controller
      *             @OA\Property(property="message", type="string", example="success"),
      *             @OA\Property(
      *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(property="date", type="string", example="2025-04-01"),
-     *                 @OA\Property(property="counter", type="integer", example=0)
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="date", type="string", example="2025-04"),
+     *                     @OA\Property(property="counter", type="integer", example=120)
+     *                 )
      *             )
      *         )
      *     )
      * )
      */
-    public function datasetViews360(GetTeamDashboard $request, $id)
+    public function datasetViewsTimeline(GetTeamDashboard $request, $id)
     {
         $dateRange = $this->resolveDateRange($request);
 

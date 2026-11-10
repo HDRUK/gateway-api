@@ -125,9 +125,9 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_get_dataset_views_360_without_auth_returns_unauthorised(): void
+    public function test_get_dataset_views_timeline_without_auth_returns_unauthorised(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360');
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline');
 
         $response->assertStatus(401);
     }
@@ -343,9 +343,9 @@ class TeamDashboardControllerTest extends TestCase
         $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
     }
 
-    public function test_get_dataset_views_360_with_invalid_interval_returns_without_success(): void
+    public function test_get_dataset_views_timeline_with_invalid_interval_returns_without_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline?startDate=2026-01-01&endDate=2025-01-01', [], $this->headerNonAdmin);
 
         $response->assertStatus(500);
         $this->assertEquals('startDate must be less than or equal to endDate', $response->decodeResponseJson()['data']);
@@ -464,9 +464,9 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertJsonStructure(['message', 'data' => ['total', 'total_by_interval']]);
     }
 
-    public function test_get_dataset_views_360_returns_expected_json_structure(): void
+    public function test_get_dataset_views_timeline_returns_expected_json_structure(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline', [], $this->headerNonAdmin);
 
         $response->assertOk();
         $response->assertJsonStructure(['message', 'data']);
@@ -497,20 +497,20 @@ class TeamDashboardControllerTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // dataset_views_360: data is an array
+    // dataset_views_timeline: data is an array
     // -------------------------------------------------------------------------
 
-    public function test_get_dataset_views_360_returns_array_data(): void
+    public function test_get_dataset_views_timeline_returns_array_data(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline', [], $this->headerNonAdmin);
 
         $response->assertOk();
         $this->assertIsArray($response->decodeResponseJson()['data']);
     }
 
-    public function test_get_dataset_views_360_each_row_has_date_and_counter_keys(): void
+    public function test_get_dataset_views_timeline_each_row_has_date_and_counter_keys(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
 
         $response->assertOk();
 
@@ -520,9 +520,9 @@ class TeamDashboardControllerTest extends TestCase
         }
     }
 
-    public function test_get_dataset_views_360_counter_values_are_numeric(): void
+    public function test_get_dataset_views_timeline_counter_values_are_numeric(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
 
         $response->assertOk();
 
@@ -684,9 +684,9 @@ class TeamDashboardControllerTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_get_dataset_views_360_with_valid_interval_returns_success(): void
+    public function test_get_dataset_views_timeline_with_valid_interval_returns_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline?startDate=2024-01-01&endDate=2024-12-31', [], $this->headerNonAdmin);
 
         $response->assertOk();
     }
@@ -737,9 +737,9 @@ class TeamDashboardControllerTest extends TestCase
     // No date params defaults to last 12 months
     // -------------------------------------------------------------------------
 
-    public function test_get_dataset_views_360_without_dates_returns_success(): void
+    public function test_get_dataset_views_timeline_without_dates_returns_success(): void
     {
-        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/360', [], $this->headerNonAdmin);
+        $response = $this->json('GET', '/api/v3/teams/' . $this->getValidTeamId() . '/dashboard/datasets/views/timeline', [], $this->headerNonAdmin);
 
         $response->assertOk();
         $this->assertIsArray($response->decodeResponseJson()['data']);

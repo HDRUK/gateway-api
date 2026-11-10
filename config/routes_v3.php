@@ -77,10 +77,10 @@ return [
         ],
     ],
     [
-        'name'                => 'dashboard.datasets.views.360',
+        'name'                => 'dashboard.datasets.views.timeline',
         'method'              => 'get',
-        'path'                => '/teams/{id}/dashboard/datasets/views/360',
-        'methodController'    => 'TeamDashboardController@datasetViews360',
+        'path'                => '/teams/{id}/dashboard/datasets/views/timeline',
+        'methodController'    => 'TeamDashboardController@datasetViewsTimeline',
         'namespaceController' => 'App\Http\Controllers\Api\V3',
         'middleware'          => [
             'jwt.verify',
