@@ -72,6 +72,80 @@ class TeamTest extends TestCase
     }
 
     /**
+     * Ensure the team index returns an array even if only one team is returned via filtering.
+     *
+     * @return void
+     */
+    public function test_the_application_team_index_returns_array_even_if_only_one_team_returned_via_filtering()
+    {
+        // make sure it can be returned by setting the team as enabled and not deleted
+        $firstTeamName = Team::factory()->create(['enabled' => 1, 'deleted_at' => null])->name;
+
+        $queryCheck = Team::where('name', 'like', "%{$firstTeamName}%")
+            ->where('enabled', 1)
+            ->where('deleted_at', null)
+            ->count();
+
+        $this->assertEquals(1, $queryCheck);
+
+        $response = $this->get('api/v1/teams?name=' . $firstTeamName, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    0 => [
+                        'id',
+                        'name',
+                        'enabled',
+                        'allows_messaging',
+                        'workflow_enabled',
+                        'access_requests_management',
+                        'uses_5_safes',
+                        'is_admin',
+                        'team_logo',
+                        'member_of',
+                        'contact_point',
+                        'application_form_updated_by',
+                        'application_form_updated_on',
+                        'users',
+                        'notifications',
+                        'is_question_bank',
+                        'is_provider',
+                        'url',
+                        'introduction',
+                        'dar_modal_content',
+                        'service',
+                    ],
+                ],
+            ])
+            ->assertJsonCount(1, 'data');
+    }
+
+    /**
+     * Ensure the team index returns an array even if no results are found.
+     *
+     * @return void
+     */
+    public function test_the_application_team_index_returns_array_even_if_no_results()
+    {
+        Team::query()->update(['enabled' => 0]);
+
+        $queryCheck = Team::where('enabled', 1)
+            ->where('deleted_at', null)
+            ->count();
+
+        $this->assertEquals(0, $queryCheck);
+
+        $response = $this->get('api/v1/teams', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [],
+            ])
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
      * List a particular team.
      *
      * @return void
