@@ -127,11 +127,13 @@ class TeamController extends Controller
                 ->with(['users', 'aliases'])
                 ->paginate($perPage, ['*'], 'page');
 
-            User::preloadCohortDataForUsers($teamsPaginator->getCollection()->flatMap(fn ($team) => $team->users));
+            $teamsData = $teamsPaginator->getCollection();
+
+            User::preloadCohortDataForUsers($teamsData->flatMap(fn ($team) => $team->users));
 
             $teams = $teamsPaginator->toArray();
 
-            $teams['data'] = $this->getTeams($teams['data']);
+            $teams['data'] = $this->getTeams($teamsData);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -266,11 +268,9 @@ class TeamController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $userTeamCollection = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->get();
+            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->first();
 
-            User::preloadCohortDataForUsers($userTeamCollection->flatMap(fn ($team) => $team->users));
-
-            $userTeam = $userTeamCollection->toArray();
+            User::preloadCohortDataForUsers($userTeam->users);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],
@@ -281,7 +281,7 @@ class TeamController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => $this->getTeams($userTeam),
+                'data' => $this->getTeam($userTeam),
             ], 200);
         } catch (Exception $e) {
             Auditor::log([
@@ -1313,7 +1313,7 @@ class TeamController extends Controller
         $arrayTeamNotification = $input['notifications'] ?? [];
         $arrayTeamAlias = $input['aliases'] ?? [];
         $arrayTeamUsers = $input['users'];
-        $superAdminIds = User::where('is_admin', true)->pluck('id');
+        $superAdminIds = User::where('is_admin', true)->whereNotIn('id', $arrayTeamUsers)->pluck('id');
         $team = Team::create($arrayTeam);
 
         try {
@@ -1329,14 +1329,16 @@ class TeamController extends Controller
 
                 //make sure the super admin is added to this team on creation
                 foreach ($superAdminIds as $adminId) {
-                    TeamHasUser::create(
-                        ['team_id' => $team->id, 'user_id' => $adminId],
-                    );
+                    if (!TeamHasUser::where('team_id', $team->id)->where('user_id', $adminId)->exists()) {
+                        TeamHasUser::create(
+                            ['team_id' => $team->id, 'user_id' => $adminId],
+                        );
+                    }
                 }
 
                 $roles = Role::where(['name' => 'custodian.team.admin'])->first();
                 foreach ($arrayTeamUsers as $value) {
-                    $teamHasUsers = TeamHasUser::create([
+                    $teamHasUsers = TeamHasUser::createOrFirst([
                         'team_id' => (int)$team->id,
                         'user_id' => (int)$value,
                     ]);

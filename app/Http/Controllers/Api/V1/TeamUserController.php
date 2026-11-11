@@ -933,12 +933,11 @@ class TeamUserController extends Controller
     {
         try {
             $admins = [];
-            $userTeamCollection = Team::where('id', $teamId)->with(['users', 'notifications'])->get();
+            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->first();
 
-            User::preloadCohortDataForUsers($userTeamCollection->flatMap(fn ($team) => $team->users));
+            User::preloadCohortDataForUsers($userTeam->users);
 
-            $userTeam = $userTeamCollection->toArray();
-            $team = $this->getTeams($userTeam);
+            $team = $this->getTeam($userTeam);
 
             $users = $team['users'];
             foreach ($users as $user) {

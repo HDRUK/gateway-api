@@ -10,37 +10,36 @@ use App\Models\Notification;
 use App\Models\TeamHasAlias;
 use App\Models\TeamHasNotification;
 use App\Models\TeamUserHasNotification;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection;
+use App\Models\Role;
+use App\Models\Team;
 
 trait TeamTransformation
 {
     /**
-     * Convert output for Team
+     * Convert output for multiple Teams
      *
-     * @param array $teams
+     * @param Collection<int, Team> $teams
      * @return array
      */
-    public function getTeams(array $teams): array
+    public function getTeams(Collection $teams): array
     {
+        if ($teams->isEmpty()) {
+            return [];
+        }
+
         $response = [];
 
-        $teamIds = array_column($teams, 'id');
+        $teamIds = $teams->pluck('id')->all();
 
-        $teamHasUserIds = [];
-        foreach ($teams as $team) {
-            foreach ($team['users'] as $user) {
-                if ($user['is_admin']) {
-                    continue;
-                }
-                $teamHasUserIds[] = (int)$user['pivot']['id'];
-            }
-        }
+        $teamHasUserIds = $teams->map(fn($team) => $this->getTeamHasUsers($team))->flatten()->all();
 
         $rolesByTeamHasUserId = TeamHasUser::whereIn('id', $teamHasUserIds)
             ->with('roles', 'roles.permissions')
             ->get()
-            ->keyBy('id')
-            ->toArray();
+            ->keyBy('id');
+
+        unset($teamHasUserIds);
 
         $notificationsByTeamId = TeamHasNotification::whereIn('team_id', $teamIds)
             ->get()
@@ -58,103 +57,76 @@ trait TeamTransformation
 
         $aliasesById = Alias::whereIn('id', $allAliasIds)->get()->keyBy('id');
 
-        foreach ($teams as $team) {
-            $tmpTeam = [
-                'id' => $team['id'],
-                'pid' => $team['pid'],
-                'created_at' => $team['created_at'],
-                'updated_at' => $team['updated_at'],
-                'name' => $team['name'],
-                'enabled' => $team['enabled'],
-                'allows_messaging' => $team['allows_messaging'],
-                'workflow_enabled' => $team['workflow_enabled'],
-                'access_requests_management' => $team['access_requests_management'],
-                'uses_5_safes' => $team['uses_5_safes'],
-                'is_admin' => $team['is_admin'],
-                'member_of' => $team['member_of'],
-                'contact_point' => $team['contact_point'],
-                'application_form_updated_by' => $team['application_form_updated_by'],
-                'application_form_updated_on' => $team['application_form_updated_on'],
-                'notification_status' => $team['notification_status'],
-                'is_question_bank' => $team['is_question_bank'],
-                'is_provider' => $team['is_provider'],
-                'url' => $team['url'],
-                'introduction' => $team['introduction'],
-                'dar_modal_header' => $team['dar_modal_header'],
-                'dar_modal_content' => $team['dar_modal_content'],
-                'dar_modal_footer' => $team['dar_modal_footer'],
-                'team_logo' => (is_null($team['team_logo']) || strlen(trim($team['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $team['team_logo']) ? $team['team_logo'] : Config::get('services.media.base_url') . $team['team_logo']),
-                'service' => $team['service'],
-            ];
+        return $teams->map(function ($team) 
+            use (
+                $notificationsByTeamId, 
+                $notificationsById, 
+                $aliasIdsByTeamId,
+                $aliasesById,
+                $rolesByTeamHasUserId,
+            ) {
 
-            $tmpUser = [];
-            foreach ($team['users'] as $user) {
-                if ($user['is_admin']) {
-                    continue;
-                }
-                $tmp = [
-                    'id' => $user['id'],
-                    'name' => $user['name'],
-                    'firstname' => $user['firstname'],
-                    'lastname' => $user['lastname'],
-                    'email' => $this->maskEmail($user['email']),
-                    'secondary_email' => $this->maskEmail($user['secondary_email']),
-                    'preferred_email' => $user['preferred_email'],
-                    'provider' => $user['provider'],
-                    'created_at' => $user['created_at'],
-                    'updated_at' => $user['updated_at'],
-                    'deleted_at' => $user['deleted_at'],
-                    'sector_id' => $user['sector_id'],
-                    'organisation' => $user['organisation'],
-                    'bio' => $user['bio'],
-                    'domain' => $user['domain'],
-                    'link' => $user['link'],
-                    'orcid' => $user['orcid'],
-                    'contact_feedback' => $user['contact_feedback'],
-                    'contact_news' => $user['contact_news'],
-                    'terms' => $user['terms'],
-                    'hubspot_id' => $user['hubspot_id'],
-                ];
+            $notificationIds = $notificationsByTeamId->get($team['id'], collect())->pluck('notification_id')->unique()->values()->all();
 
-                $teamHasUserId = (int)$user['pivot']['id'];
+            $notifications = $notificationsById->filter(fn ($notification, $key) => in_array($key, $notificationIds));
 
-                $tmpPerm = [];
-                foreach ($rolesByTeamHasUserId[$teamHasUserId]['roles'] ?? [] as $role) {
-                    $tmpPerm[] = $role;
-                }
-                $tmp['roles'] = $tmpPerm;
+            $teamAliasIds = $aliasIdsByTeamId->get($team['id'], collect())->pluck('alias_id')->all();
+            $aliases = $aliasesById->only($teamAliasIds)->sortBy('id')->values();
 
-                $tmpUser[] = $tmp;
-                unset($tmp);
-                unset($tmpPerm);
-            }
+            return $this->hydrateTeam(
+                team: $team,
+                teamUserRoles: $rolesByTeamHasUserId,
+                notifications: $notifications,
+                aliases: $aliases
+            );
+        })->toArray();
+    }
 
-            $tmpTeam['users'] = $tmpUser;
-
-            $tmpNotification = [];
-            foreach ($notificationsByTeamId->get($tmpTeam['id'], collect()) as $value) {
-                $notification = $notificationsById->get($value['notification_id']);
-                if ($notification === null) {
-                    throw (new ModelNotFoundException())->setModel(Notification::class, [$value['notification_id']]);
-                }
-                $tmpNotification[] = $notification;
-            }
-            $tmpTeam['notifications'] = $tmpNotification;
-
-            $teamAliasIds = $aliasIdsByTeamId->get($tmpTeam['id'], collect())->pluck('alias_id')->all();
-            $tmpTeam['aliases'] = $aliasesById->only($teamAliasIds)->sortBy('id')->values()->toArray();
-
-            $response[] = $tmpTeam;
-            unset($tmpTeam);
-            unset($tmpUser);
-            unset($tmpNotification);
+    /**
+     * Convert output for single team
+     *
+     * @param Team $team
+     * @return array
+     */
+    public function getTeam(?Team $team): array
+    {
+        if (!$team) {
+            return [];
         }
+           
+        $teamHasUserIds = $this->getTeamHasUsers($team);
 
-        if (count($response) > 1) {
-            return $response;
-        }
+        $rolesByTeamHasUserId = TeamHasUser::whereIn('id', $teamHasUserIds)
+            ->with('roles', 'roles.permissions')
+            ->get()
+            ->keyBy('id');
 
-        return $response[0];
+        unset($teamHasUserIds);
+
+        $notificationIds = TeamHasNotification::where('team_id', $team->id)
+            ->get()
+            ->pluck('notification_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $notifications = Notification::whereIn('id', $notificationIds)->get();
+
+        $aliasIds = TeamHasAlias::where('team_id', $team->id)
+            ->get()
+            ->pluck('alias_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $aliases = Alias::whereIn('id', $aliasIds)->get();
+
+        return $this->hydrateTeam(
+            team: $team,
+            teamUserRoles: $rolesByTeamHasUserId,
+            notifications: $notifications,
+            aliases: $aliases,
+        );
     }
 
     public function getTeamNotifications($team, int $teamId, int $userId)
@@ -205,5 +177,116 @@ trait TeamTransformation
         $maskedEmail = $maskedUsername . '@' . $maskedDomain;
 
         return $maskedEmail;
+    }
+
+    private function getTeamHasUsers(Team $team): array
+    {
+        $teamHasUserIds = [];
+
+        $teamHasUserIds = $team->users->map(function (User $user) {
+            if ($user->is_admin) {
+                return null;
+            }
+
+            return (int) $user->pivot->id;
+        })->filter()->toArray();
+
+        return $teamHasUserIds;
+    }
+
+    /**
+     * @param Collection<int, TeamHasUser> $teamUserRoles
+     * @param Collection<int, Notification> $notifications
+     * @param Collection<int, Alias> $aliases
+     */
+    private function hydrateTeam(
+        Team $team,
+        Collection $teamUserRoles,
+        Collection $notifications,
+        Collection $aliases,
+    ): array {
+
+        // to perform model casts
+        $teamArray = $team->toArray();
+
+        $tmpTeam = [
+            'id' => $teamArray['id'],
+            'pid' => $teamArray['pid'],
+            'created_at' => $teamArray['created_at'],
+            'updated_at' => $teamArray['updated_at'],
+            'name' => $teamArray['name'],
+            'enabled' => $teamArray['enabled'],
+            'allows_messaging' => $teamArray['allows_messaging'],
+            'workflow_enabled' => $teamArray['workflow_enabled'],
+            'access_requests_management' => $teamArray['access_requests_management'],
+            'uses_5_safes' => $teamArray['uses_5_safes'],
+            'is_admin' => $teamArray['is_admin'],
+            'member_of' => $teamArray['member_of'],
+            'contact_point' => $teamArray['contact_point'],
+            'application_form_updated_by' => $teamArray['application_form_updated_by'],
+            'application_form_updated_on' => $teamArray['application_form_updated_on'],
+            'notification_status' => $teamArray['notification_status'],
+            'is_question_bank' => $teamArray['is_question_bank'],
+            'is_provider' => $teamArray['is_provider'],
+            'url' => $teamArray['url'],
+            'introduction' => $teamArray['introduction'],
+            'dar_modal_header' => $teamArray['dar_modal_header'],
+            'dar_modal_content' => $teamArray['dar_modal_content'],
+            'dar_modal_footer' => $teamArray['dar_modal_footer'],
+            'team_logo' => (is_null($teamArray['team_logo']) || strlen(trim($teamArray['team_logo'])) === 0) ? '' : (preg_match('/^https?:\/\//', $teamArray['team_logo']) ? $teamArray['team_logo'] : Config::get('services.media.base_url') . $teamArray['team_logo']),
+            'service' => $teamArray['service'],
+        ];
+
+        $tmpTeam['users'] = $team->users->map(function (User $user) use ($teamUserRoles) {
+            if ($user->is_admin) {
+                return null;
+            }
+
+            return $this->hydrateTeamUser($user, $teamUserRoles);
+        })->filter()->values()->toArray();
+
+        $tmpTeam['notifications'] = $notifications->values()->all();
+        $tmpTeam['aliases'] = $aliases->values()->all();
+
+        return $tmpTeam;
+    }
+
+    /**
+     * @param Collection<int, TeamHasUser> $teamUserRoles
+     */
+    private function hydrateTeamUser(User $user, Collection $teamUserRoles): array
+    {
+        // to perform model casts
+        $userArray = $user->toArray();
+
+        $tmpUser = [
+            'id' => $userArray['id'],
+            'name' => $userArray['name'],
+            'firstname' => $userArray['firstname'],
+            'lastname' => $userArray['lastname'],
+            'email' => $this->maskEmail($userArray['email']),
+            'secondary_email' => $this->maskEmail($userArray['secondary_email']),
+            'preferred_email' => $userArray['preferred_email'],
+            'provider' => $userArray['provider'],
+            'created_at' => $userArray['created_at'],
+            'updated_at' => $userArray['updated_at'],
+            'deleted_at' => $userArray['deleted_at'],
+            'sector_id' => $userArray['sector_id'],
+            'organisation' => $userArray['organisation'],
+            'bio' => $userArray['bio'],
+            'domain' => $userArray['domain'],
+            'link' => $userArray['link'],
+            'orcid' => $userArray['orcid'],
+            'contact_feedback' => $userArray['contact_feedback'],
+            'contact_news' => $userArray['contact_news'],
+            'terms' => $userArray['terms'],
+            'hubspot_id' => $userArray['hubspot_id'],
+        ];
+
+        $teamHasUserId = (int) $userArray['pivot']['id'];
+
+        $tmpUser['roles'] = $teamUserRoles->get($teamHasUserId)->roles->map(fn(Role $role) => $role)->toArray();
+
+        return $tmpUser;
     }
 }
