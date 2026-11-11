@@ -2,16 +2,44 @@
 
 namespace App\Services;
 
+use App\Contracts\PartnerPortal;
 use App\Contracts\SearchProvider;
 
 class SearchAggregator
 {
+    public const PARTNERS = 'partners';
+
     /** @var SearchProvider[] */
     protected array $providers = [];
 
     public function __construct(iterable $providers)
     {
         $this->providers = $providers;
+    }
+
+    /** @return list<string> */
+    public function partnerShortNames(): array
+    {
+        return array_values(array_map(
+            fn (PartnerPortal $p) => $p->getShortName(),
+            array_filter($this->providers, fn ($p) => $p instanceof PartnerPortal)
+        ));
+    }
+
+    /**
+     * @param list<string> $only
+     * @return list<string>
+     */
+    public function expandPartners(array $only): array
+    {
+        if (!in_array(self::PARTNERS, $only, true)) {
+            return $only;
+        }
+
+        return array_values(array_unique(array_merge(
+            array_diff($only, [self::PARTNERS]),
+            $this->partnerShortNames()
+        )));
     }
 
     public function searchImmediate(string $query, string $type, array $params = [], array $only = []): array

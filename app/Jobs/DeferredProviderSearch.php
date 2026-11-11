@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Contracts\PartnerPortal;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -40,6 +41,23 @@ class DeferredProviderSearch implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
             $result = ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
+        }
+
+        if ($provider instanceof PartnerPortal) {
+            try {
+                $portal = $provider->toPartnerPortalResult($result, $this->query);
+            } catch (\Throwable $e) {
+                \Log::error("Partner portal result conversion for {$this->providerClass} failed", [
+                    'error' => $e->getMessage(),
+                ]);
+                $portal = $provider->toPartnerPortalResult(['hits' => [], 'total' => 0], $this->query);
+            }
+
+            Cache::put(
+                "search:deferred:{$this->token}:partner:{$provider->getShortName()}",
+                $portal->toArray(),
+                config('gateway.search_deferred_ttl')
+            );
         }
 
         Cache::put(

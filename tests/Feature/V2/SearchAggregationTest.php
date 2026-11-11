@@ -36,6 +36,8 @@ class SearchAggregationTest extends TestCase
 
     protected $metadata;
 
+    private array $ardcDocs = [];
+
     public function setUp(): void
     {
         $this->commonSetUp();
@@ -49,8 +51,8 @@ class SearchAggregationTest extends TestCase
 
         // Stub the ARDC external endpoint so it never hits the real network.
         Http::fake([
-            'https://researchdata.edu.au/*' => Http::response(
-                ['result' => ['docs' => []]],
+            'https://researchdata.edu.au/*' => fn () => Http::response(
+                ['result' => ['docs' => $this->ardcDocs, 'numFound' => count($this->ardcDocs)]],
                 200,
                 ['application/json']
             ),
@@ -181,9 +183,95 @@ class SearchAggregationTest extends TestCase
         );
 
         $response->assertStatus(200);
-        $response->assertJsonPath('data.pending', ['ARDC']);
+        $response->assertJsonPath('data.pending', ['ARDC', 'partners']);
         $response->assertJsonStructure(['data' => ['token', 'token_ttl']]);
         $this->assertStringStartsWith('srch_', $response->json('data.token'));
+    }
+
+    public function test_search_results_returns_partner_portals_in_a_common_format(): void
+    {
+        $this->ardcDocs = [[
+            'id'               => '123',
+            'slug'             => 'asthma-cohort',
+            'display_title'    => 'Asthma Cohort (display)',
+            'title'            => 'Asthma Cohort',
+            'group'            => 'Example University',
+            'list_description' => 'Short description',
+            'description'      => 'Long description',
+        ]];
+
+        $token = $this->json('POST', self::TEST_URL, ['query' => 'asthma', 'type' => 'datasets'], $this->header)
+            ->json('data.token');
+
+        $response = $this->json('GET', "/api/v2/search/aggregation/results/{$token}", [], $this->header);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.pending', []);
+        $response->assertJsonPath('data.results.partners', [
+            'total'   => 1,
+            'portals' => [[
+                'name'       => 'Australian Research Data Commons',
+                'logo'       => 'https://demo.researchdata.ardc.edu.au/hd-portal/images/ardc-logo.svg',
+                'search_url' => 'https://researchdata.edu.au/health/search?filter-type=all-fields&q=asthma',
+                'total'      => 1,
+                'hits'       => [[
+                    'id'           => '123',
+                    'title'        => 'Asthma Cohort (display)',
+                    'description'  => 'Short description',
+                    'organisation' => 'Example University',
+                    'url'          => 'https://researchdata.edu.au/health/view/123',
+                ]],
+            ]],
+        ]);
+    }
+
+    public function test_search_results_still_returns_ardc_when_a_partner_hit_cannot_be_converted(): void
+    {
+        $this->ardcDocs = [['id' => '123', 'title' => ['Asthma Cohort', 'Alternative title']]];
+
+        $token = $this->json('POST', self::TEST_URL, ['query' => 'asthma', 'type' => 'datasets'], $this->header)
+            ->json('data.token');
+
+        $response = $this->json('GET', "/api/v2/search/aggregation/results/{$token}", [], $this->header);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.pending', []);
+        $response->assertJsonPath('data.results.ARDC.hits', $this->ardcDocs);
+        $response->assertJsonPath('data.results.partners.total', 0);
+        $response->assertJsonPath('data.results.partners.portals.0.hits', []);
+    }
+
+    public function test_partners_provider_filter_searches_only_partner_portals(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['query' => 'asthma', 'type' => 'datasets', 'providers' => ['partners']],
+            $this->header
+        );
+
+        $response->assertStatus(200);
+        $response->assertJsonMissingPath('data.results.HDRUK');
+        $response->assertJsonPath('data.pending', ['ARDC', 'partners']);
+    }
+
+    public function test_partners_data_source_is_logged_to_analytics_as_the_partner_name(): void
+    {
+        $this->app->instance(TypesenseService::class, new FakeTypesenseService());
+        Queue::fake([LogSearchAnalytics::class]);
+        Feature::activate('TypesenseSearch');
+
+        $this->json(
+            'POST',
+            self::TEST_URL,
+            ['query' => 'asthma', 'type' => 'datasets', 'dataSource' => 'partners'],
+            $this->header
+        )->assertStatus(200);
+
+        Queue::assertPushed(
+            LogSearchAnalytics::class,
+            fn (LogSearchAnalytics $job) => json_decode($job->buildFilterUsed(), true)['dataSource'] === 'ARDC'
+        );
     }
 
     public function test_search_results_returns_ardc_after_job_runs(): void
