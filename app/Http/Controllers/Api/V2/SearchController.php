@@ -25,9 +25,9 @@ class SearchController extends Controller
         }
 
         $query  = $request->input('query') ?? '';
-        $only   = $request->input('providers') ?? [];
+        $only   = $this->aggregator->expandPartners($request->input('providers') ?? []);
         $params = $request->except(['query', 'type', 'providers']);
-        $params['dataSource'] = $request->input('dataSource') ?: 'HDRUK';
+        $params['dataSource'] = $this->analyticsDataSource($request->input('dataSource') ?: 'HDRUK');
 
         // LS - Debug code to avoid spamming external parties while developing
         //
@@ -61,6 +61,10 @@ class SearchController extends Controller
             }
 
             $pending = $pendingNames;
+
+            if (!empty($this->pendingPartners($pendingNames))) {
+                $pending[] = SearchAggregator::PARTNERS;
+            }
         }
 
         if (empty($immediateResults) && empty($pending)) {
@@ -103,6 +107,24 @@ class SearchController extends Controller
             }
         }
 
+        $partnerNames = $this->pendingPartners($pendingNames);
+
+        if (!empty($partnerNames)) {
+            $portals = array_map(
+                fn (string $shortName) => Cache::get("search:deferred:{$token}:partner:{$shortName}"),
+                $partnerNames
+            );
+
+            if (in_array(null, $portals, true)) {
+                $stillPending[] = SearchAggregator::PARTNERS;
+            } else {
+                $results[SearchAggregator::PARTNERS] = [
+                    'total'   => array_sum(array_column($portals, 'total')),
+                    'portals' => $portals,
+                ];
+            }
+        }
+
         return response()->json([
             'message' => 'success',
             'data'    => [
@@ -110,5 +132,21 @@ class SearchController extends Controller
                 'pending' => $stillPending,
             ],
         ]);
+    }
+
+    /**
+     * @param list<string> $pendingNames
+     * @return list<string>
+     */
+    private function pendingPartners(array $pendingNames): array
+    {
+        return array_values(array_intersect($pendingNames, $this->aggregator->partnerShortNames()));
+    }
+
+    private function analyticsDataSource(string $dataSource): string
+    {
+        return $dataSource === SearchAggregator::PARTNERS
+            ? implode(',', $this->aggregator->partnerShortNames())
+            : $dataSource;
     }
 }
