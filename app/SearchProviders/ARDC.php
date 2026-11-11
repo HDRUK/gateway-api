@@ -4,10 +4,13 @@ namespace App\SearchProviders;
 
 use Auditor;
 use Http;
-use App\Contracts\SearchProvider;
+use App\Contracts\PartnerPortal;
 
-class ARDC implements SearchProvider
+class ARDC implements PartnerPortal
 {
+    private const PORTAL_SEARCH_URL = 'https://researchdata.edu.au/health/search?filter-type=all-fields';
+    private const PORTAL_VIEW_URL   = 'https://researchdata.edu.au/health/view';
+
     public function isDeferred(): bool
     {
         return true;
@@ -23,7 +26,7 @@ class ARDC implements SearchProvider
         return 'ARDC';
     }
 
-    public function getProviderLogo(): string|null
+    public function getProviderLogo(): string
     {
         return 'https://demo.researchdata.ardc.edu.au/hd-portal/images/ardc-logo.svg';
     }
@@ -90,5 +93,29 @@ class ARDC implements SearchProvider
         }
 
         return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
+    }
+
+    public function toPartnerPortalResult(array $searchResult, string $query): PartnerPortalResult
+    {
+        return new PartnerPortalResult(
+            name: $this->getFullName(),
+            logo: $this->getProviderLogo(),
+            searchUrl: self::PORTAL_SEARCH_URL . ($query === '' ? '' : '&q=' . rawurlencode($query)),
+            total: (int) $searchResult['total'],
+            hits: array_map($this->toPartnerHit(...), $searchResult['hits']),
+        );
+    }
+
+    private function toPartnerHit(array $doc): PartnerHit
+    {
+        $id = (string) ($doc['id'] ?? '');
+
+        return new PartnerHit(
+            id: $id,
+            title: ($doc['display_title'] ?? null) ?: ($doc['title'] ?? null) ?: '',
+            description: ($doc['list_description'] ?? null) ?: ($doc['description'] ?? null) ?: '',
+            organisation: ($doc['group'] ?? null) ?: null,
+            url: $id === '' ? self::PORTAL_VIEW_URL : self::PORTAL_VIEW_URL . '/' . $id,
+        );
     }
 }
