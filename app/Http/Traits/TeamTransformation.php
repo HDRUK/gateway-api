@@ -104,7 +104,6 @@ trait TeamTransformation
         unset($teamHasUserIds);
 
         $notificationIds = TeamHasNotification::where('team_id', $team->id)
-            ->get()
             ->pluck('notification_id')
             ->unique()
             ->values()
@@ -113,7 +112,6 @@ trait TeamTransformation
         $notifications = Notification::whereIn('id', $notificationIds)->get();
 
         $aliasIds = TeamHasAlias::where('team_id', $team->id)
-            ->get()
             ->pluck('alias_id')
             ->unique()
             ->values()
