@@ -268,7 +268,7 @@ class TeamController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->first();
+            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->firstOrFail();
 
             User::preloadCohortDataForUsers($userTeam->users);
 
