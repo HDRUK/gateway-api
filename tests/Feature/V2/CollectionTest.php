@@ -1880,10 +1880,6 @@ class CollectionTest extends TestCase
 
     public function test_demoting_active_collection_to_draft_triggers_scout_removal(): void
     {
-        // unsearchable() is gated behind the TypesenseSearch Pennant flag in
-        // BaseTypesenseModel::queueRemoveFromSearch — activate it for this test.
-        Feature::activate('TypesenseSearch');
-
         $owner = $this->createCollectionOwner();
         $ownerHeader = $owner['ownerHeader'];
         $ownerId = $owner['userId'];
@@ -2129,5 +2125,26 @@ class CollectionTest extends TestCase
             'memberHeader' => $userHeader,
             'teamId' => $teamId
         ];
+    }
+
+    public function test_unsearchable_removes_from_typesense_when_the_stored_typesense_flag_is_off(): void
+    {
+        Feature::deactivate('TypesenseSearch');
+        $collection = Collection::factory()->create(['status' => Collection::STATUS_ACTIVE]);
+
+        $removedIds = [];
+        $engine = $this->createMock(Engine::class);
+        $engine->method('delete')->willReturnCallback(function ($models) use (&$removedIds) {
+            foreach ($models as $model) {
+                $removedIds[] = $model->getScoutKey();
+            }
+        });
+        $manager = $this->createMock(EngineManager::class);
+        $manager->method('engine')->willReturn($engine);
+        $this->app->instance(EngineManager::class, $manager);
+
+        $collection->unsearchable();
+
+        $this->assertContains((string) $collection->id, $removedIds);
     }
 }

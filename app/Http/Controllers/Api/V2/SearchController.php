@@ -9,23 +9,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Search\Search;
 use App\Jobs\DeferredProviderSearch;
 use App\Services\SearchAggregator;
-use Laravel\Pennant\Feature;
 
 class SearchController extends Controller
 {
-    private const FEATURE_FLAG = 'V2_SearchAggregation';
-    private const TYPESENSE_FEATURE_FLAG = 'TypesenseSearch';
-
     public function __construct(protected SearchAggregator $aggregator)
     {
     }
 
     public function search(Search $request): JsonResponse
     {
-        if (!Feature::active(self::FEATURE_FLAG)) {
-            return response()->json(['message' => 'Resource not found'], 404);
-        }
-
         $type = $request->input('type');
 
         if (!$type) {
@@ -92,10 +84,6 @@ class SearchController extends Controller
 
     public function searchResults(string $token): JsonResponse
     {
-        if (!Feature::active(self::FEATURE_FLAG)) {
-            return response()->json(['message' => 'Resource not found'], 404);
-        }
-
         $pendingNames = Cache::get("search:deferred:{$token}:pending");
 
         if ($pendingNames === null) {
@@ -122,15 +110,5 @@ class SearchController extends Controller
                 'pending' => $stillPending,
             ],
         ]);
-    }
-
-    public function searchTypesense(Search $request): JsonResponse
-    {
-        // TODO: Stub only for now
-        if (!Feature::active(self::TYPESENSE_FEATURE_FLAG)) {
-            return response()->json(['message' => 'Resource not found'], 404);
-        }
-
-        return response()->json(['message' => 'OK'], 200);
     }
 }
