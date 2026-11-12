@@ -1,7 +1,6 @@
 <?php
 
 use App\DeploymentSteps\DeploymentStep;
-use App\Jobs\IndexDataset;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 
@@ -107,14 +106,6 @@ return new class () extends DeploymentStep {
                 ]));
                 $version->provider_team_id = $dataset->team_id;
                 $version->save();
-            }
-
-            try {
-                IndexDataset::dispatchSync($dataset->id);
-            } catch (\Throwable $e) {
-                $this->warn(
-                    "Dataset {$dataset->id}: search index skipped ({$e->getMessage()})"
-                );
             }
         }
 

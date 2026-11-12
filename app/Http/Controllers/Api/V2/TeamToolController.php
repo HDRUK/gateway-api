@@ -9,7 +9,6 @@ use App\Models\Tool;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Http\Traits\CheckAccess;
-use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\ToolsV2Helper;
@@ -32,7 +31,6 @@ use App\Http\Requests\V2\Tool\GetToolCountByTeamAndStatus;
 
 class TeamToolController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use CheckAccess;
     use ToolsV2Helper;
@@ -480,11 +478,6 @@ class TeamToolController extends Controller
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($toolId, $collections, $currentUser);
 
-            $currentTool = Tool::where('id', $toolId)->first();
-            if ($currentTool->status === Tool::STATUS_ACTIVE) {
-                $this->indexElasticTools((int) $toolId);
-            }
-
             Auditor::log([
                 'user_id' => $currentUser,
                 'team_id' => $teamId,
@@ -695,18 +688,6 @@ class TeamToolController extends Controller
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($id, $collections, $currentUser);
 
-            $currentTool = Tool::where('id', $id)->first();
-            if ($currentTool->status === Tool::STATUS_ACTIVE) {
-                if ($request['enabled']) { //note Calum - this is crazy inconsistent
-                    $this->indexElasticTools((int) $id);
-                } else {
-                    //note Calum - adding this to be safe
-                    $this->deleteToolFromElastic((int) $id);
-                }
-            } else {
-                $this->deleteToolFromElastic((int) $id);
-            }
-
             Auditor::log([
                 'user_id' => $currentUser,
                 'team_id' => $teamId,
@@ -916,20 +897,6 @@ class TeamToolController extends Controller
             if (array_key_exists('collections', $input)) {
                 $collections = $input['collections'];
                 $this->checkCollections($id, $collections, $currentUser);
-            }
-
-            $currentTool = Tool::where('id', $id)->first();
-            if ($currentTool->status === Tool::STATUS_ACTIVE) {
-                if ($request['enabled']) { //note Calum - this is crazy inconsistent
-                    $this->indexElasticTools((int) $id);
-                } else {
-                    //note Calum - adding this to be safe
-                    $this->deleteToolFromElastic((int) $id);
-                }
-            }
-
-            if ($initTool->status === Tool::STATUS_ACTIVE && $initTool->enabled === 1 && $currentTool->status !== Tool::STATUS_ACTIVE) {
-                $this->deleteToolFromElastic((int) $id);
             }
 
             Auditor::log([

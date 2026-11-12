@@ -490,7 +490,6 @@ class TeamDatasetController extends Controller
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
 
             $team = Team::where('id', $teamId)->first()->toArray();
 
@@ -514,7 +513,6 @@ class TeamDatasetController extends Controller
                 $team,
                 $inputSchema,
                 $inputVersion,
-                $elasticIndexing,
                 $this->gwdmHandler,
                 $this->partnerContext->getPartner(),
             );
@@ -625,7 +623,6 @@ class TeamDatasetController extends Controller
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['team_id'] = $teamId;
@@ -700,7 +697,6 @@ class TeamDatasetController extends Controller
                         $datasetVersionId,
                         $versionNumber,
                         base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                        $elasticIndexing,
                         Config::get('ted.use_partial')
                     );
                 }
@@ -926,8 +922,6 @@ class TeamDatasetController extends Controller
                     'message' => Config::get('statuscodes.STATUS_UNAUTHORIZED.message'),
                 ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
             }
-
-            $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
 
             MMC::deleteDataset($id);
 

@@ -12,7 +12,6 @@ return [
     Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     App\Providers\CloudLoggerProvider::class,
     App\Providers\CloudPubSubProvider::class,
-    App\Providers\ElasticClientControllerServiceProvider::class,
     App\Providers\TypesenseServiceProvider::class,
     App\Providers\HelperServiceProvider::class,
     App\Providers\AppFeatureServiceProvider::class,

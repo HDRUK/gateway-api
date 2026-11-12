@@ -3,13 +3,11 @@
 namespace App\SearchProviders;
 
 use Auditor;
-use Http;
 use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
 use App\Jobs\LogSearchAnalytics;
 use App\Jobs\SearchAnalyticsData;
 use App\Services\Search\AdvancedQueryCompiler;
-use App\Services\Search\FilterCache;
 use App\Services\Search\CollectionHydrator;
 use App\Services\Search\DataCustodianHydrator;
 use App\Services\Search\DataCustodianNetworkHydrator;
@@ -19,20 +17,9 @@ use App\Services\Search\PublicationHydrator;
 use App\Services\Search\ToolHydrator;
 use App\Services\TypesenseService;
 use Illuminate\Support\Str;
-use Laravel\Pennant\Feature;
 
 class HDRUK implements SearchProvider
 {
-    private const SERVICE_PATH_MAP = [
-        'datasets'                => 'datasets',
-        'tools'                   => 'tools',
-        'collections'             => 'collections',
-        'dur'                     => 'dur',
-        'publications'            => 'publications',
-        'data_custodian_networks' => 'data_custodian_networks',
-        'data_custodians'         => 'data_providers',
-    ];
-
     private const FILTER_TYPE_MAP = [
         'datasets'                => ['type' => 'dataset',          'enabledOnly' => true],
         'tools'                   => ['type' => 'tool',             'enabledOnly' => false],
@@ -70,15 +57,6 @@ class HDRUK implements SearchProvider
         'data_custodians'         => \App\Models\Team::class,
     ];
 
-    public function __construct(private readonly ?PartnerContext $partnerContext = null)
-    {
-    }
-
-    private function resolvePartnerContext(): PartnerContext
-    {
-        return $this->partnerContext ?? app(PartnerContext::class);
-    }
-
     public function isDeferred(): bool
     {
         return false;
@@ -104,20 +82,9 @@ class HDRUK implements SearchProvider
         return null;
     }
 
-    public function getSearchURI(string $type): string
-    {
-        $path = self::SERVICE_PATH_MAP[$type] ?? $type;
-        return config('gateway.search_service_url') . "/search/{$path}";
-    }
-
     public function getSupportedTypes(): array
     {
-        return array_keys(self::SERVICE_PATH_MAP);
-    }
-
-    public function isTypesenseEnabled(): bool
-    {
-        return Feature::active('TypesenseSearch');
+        return array_keys(self::TYPESENSE_MODEL_MAP);
     }
 
     /**
@@ -143,8 +110,7 @@ class HDRUK implements SearchProvider
      * Resolves a Filter model's (type, keys) pair — e.g. ('dataset', 'dataType')
      * — to the Typesense collection name backing it, but only if that field is
      * actually facet-enabled in the model's typesenseCollectionSchema(). Fields
-     * not yet flattened/faceted for Typesense return null so callers can fall
-     * back to the legacy Elasticsearch filter service.
+     * not yet flattened/faceted for Typesense return null.
      */
     public function collectionForFacetableFilter(string $filterType, string $field): ?string
     {
@@ -163,11 +129,6 @@ class HDRUK implements SearchProvider
     public function search(string $query, string $type, array $params = []): array
     {
         try {
-            // Always offer a fallback in case of mismatched model map
-            if (!$this->isTypesenseEnabled() || !array_key_exists($type, self::TYPESENSE_MODEL_MAP)) {
-                return $this->searchViaElastic($query, $type, $params);
-            }
-
             return $this->searchViaTypesense($query, $type, $params);
         } catch (\Throwable $e) {
             Auditor::log([
@@ -366,55 +327,6 @@ class HDRUK implements SearchProvider
             'total'        => $total,
             'aggregations' => array_merge($this->mapFacetsToAggregations($facetCounts), $dateRangeAggs, $popSizeAgg),
             'ids'          => $entityIds,
-        ];
-    }
-
-    private function searchViaElastic(string $query, string $type, array $params): array
-    {
-        $filterConfig = self::FILTER_TYPE_MAP[$type] ?? ['type' => $type, 'enabledOnly' => false];
-
-        $input         = $params;
-        $input['aggs'] = FilterCache::get($filterConfig['type'], $filterConfig['enabledOnly']);
-
-        if ($query !== '') {
-            $input['query'] = $query;
-        }
-
-        if ($filterConfig['type'] === 'dataset') {
-            $partner = $this->resolvePartnerContext()->getPartner();
-            $shouldScope = $partner !== 'HDRUK' || !config('partners.allow_cross_context_read', true);
-            $input['partnerContext'] = $shouldScope ? $partner : null;
-        }
-
-        $response = Http::post($this->getSearchURI($type), $input);
-
-        if (!$response->successful()) {
-            return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
-        }
-
-        $body = $response->json();
-
-        if (
-            !isset($body['hits']) || !is_array($body['hits']) ||
-            !isset($body['hits']['hits']) || !is_array($body['hits']['hits']) ||
-            !isset($body['hits']['total']['value'])
-        ) {
-            return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
-        }
-
-        $rawHits = $body['hits']['hits'];
-        $total   = $body['hits']['total']['value'];
-        $ids     = array_column($rawHits, '_id');
-        $aggs    = $body['aggregations'] ?? [];
-
-        $hydrated = $this->hydrate($rawHits, $type, $params['view_type'] ?? 'full');
-        $sorted   = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
-
-        return [
-            'hits'         => $sorted,
-            'total'        => $total,
-            'aggregations' => $aggs,
-            'ids'          => $ids,
         ];
     }
 

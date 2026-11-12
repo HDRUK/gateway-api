@@ -11,17 +11,9 @@ use App\Services\TypesenseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Pennant\Feature;
 
 class AdminSearchController extends Controller
 {
-    /**
-     * Features an admin is allowed to flip via toggleFeature() — an explicit
-     * allow-list so this endpoint can't be used to activate arbitrary Pennant
-     * features by name.
-     */
-    private const TOGGLEABLE_FEATURES = ['TypesenseSearch', 'V2_SearchAggregation'];
-
     /**
      * @OA\Get(
      *      x={"internal"="true"},
@@ -59,8 +51,6 @@ class AdminSearchController extends Controller
                 'message' => 'success',
                 'data'    => [
                     'entities' => $entities,
-                    'features' => collect(self::TOGGLEABLE_FEATURES)
-                        ->mapWithKeys(fn ($feature) => [$feature => Feature::active($feature)]),
                 ],
             ], 200);
         } catch (Exception $e) {
@@ -124,67 +114,6 @@ class AdminSearchController extends Controller
                 'entity'  => $entity,
                 'mode'    => $mode,
             ], 202);
-        } catch (Exception $e) {
-            Auditor::log([
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Post(
-     *      x={"internal"="true"},
-     *     path="/api/v1/admin/search/feature",
-     *     operationId="update_admin_search_feature",
-     *     summary="Activate or deactivate a search-related Pennant feature flag",
-     *     tags={"Admin-Search"},
-     *     security={{"jwt": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="feature", type="string", example="TypesenseSearch"),
-     *             @OA\Property(property="enabled", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Success"),
-     *     @OA\Response(response=422, description="Unknown feature")
-     * )
-     */
-    public function toggleFeature(Request $request): JsonResponse
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'feature' => ['required', 'string', 'in:' . implode(',', self::TOGGLEABLE_FEATURES)],
-                'enabled' => ['required', 'boolean'],
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'message' => 'Unknown feature',
-                    'errors'  => $validator->errors(),
-                ], 422);
-            }
-
-            $feature = $request->input('feature');
-            $enabled = (bool) $request->input('enabled');
-
-            $enabled ? Feature::activate($feature) : Feature::deactivate($feature);
-
-            Auditor::log([
-                'action_type' => 'POST',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "Set feature '{$feature}' to " . ($enabled ? 'active' : 'inactive'),
-            ]);
-
-            return response()->json([
-                'message' => 'success',
-                'feature' => $feature,
-                'enabled' => $enabled,
-            ], 200);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',

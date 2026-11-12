@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Config;
 use App\Models\Base\BaseTypesenseModel;
-use App\Observers\TeamObserver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Validator;
@@ -13,7 +12,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
@@ -47,7 +45,6 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  *   @OA\Property(property="updated_at", type="string", format="date-time", example="2024-06-01T08:00:00Z"),
  * )
  */
-#[ObservedBy(TeamObserver::class)]
 class Team extends BaseTypesenseModel
 {
     use HasFactory;
@@ -384,8 +381,8 @@ class Team extends BaseTypesenseModel
 
     /**
      * Latest, non-null version of every ACTIVE dataset owned by this team.
-     * Mirrors legacy reindexElasticDataProvider(), bounded to this team's own
-     * datasets rather than an entire network's, so the per-record metadata
+     * Bounded to this team's own datasets rather than an entire network's, so
+     * the per-record metadata
      * load stays small (see DataCustodianNetworkHydrator for the OOM this
      * pattern avoids at larger scale).
      */

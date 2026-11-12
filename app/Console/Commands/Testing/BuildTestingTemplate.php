@@ -44,7 +44,7 @@ class BuildTestingTemplate extends Command
 
         // Mirror Tests\TestCase, which seeds with model events disabled so
         // seeding doesn't trigger observers that hit real external services
-        // (e.g. Elasticsearch indexing) via model creation events.
+        // via model creation events.
         Model::unsetEventDispatcher();
 
         Artisan::call('migrate', ['--force' => true]);

@@ -111,31 +111,6 @@ trait MockExternalApis
 
         Mail::fake();
 
-
-        // This is a PSR-7 response
-        // Mock two responses, one for creating a dataset, another for deleting
-        $elasticBaseUrl = Config::get('database.connections.elasticsearch.host');
-
-        // Define the URL pattern for the index document endpoint
-        $indexDocumentUrlPattern = $elasticBaseUrl . '/*/_doc/*';
-
-        // Fake the HTTP request
-        Http::fake([
-            $indexDocumentUrlPattern => function ($request) {
-                return Http::response('Document created', 200, ['application/json']);
-            },
-        ]);
-
-
-        $deleteDocumentsUrlPattern = $elasticBaseUrl . '/*/_delete_by_query';
-
-        // Fake the HTTP request
-        Http::fake([
-            $deleteDocumentsUrlPattern => function ($request) {
-                return Http::response('Document deleted', 200, ['application/json']);
-            },
-        ]);
-
         Http::fake([
             config("ted.url") . "/datasets" => Http::response(
                 ['id' => 11, 'extracted_terms' => ['test', 'fake']],
@@ -1257,11 +1232,5 @@ trait MockExternalApis
                 }
             },
         ]);
-    }
-
-    // Count requests made to the elastic mock client
-    public function countElasticClientRequests(object $client): int
-    {
-        return count($client->getTransport()->getClient()->getRequests());
     }
 }

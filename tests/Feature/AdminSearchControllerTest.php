@@ -8,7 +8,6 @@ use App\Jobs\ReindexTypesenseEntity;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Queue;
-use Laravel\Pennant\Feature;
 
 class AdminSearchControllerTest extends TestCase
 {
@@ -35,7 +34,6 @@ class AdminSearchControllerTest extends TestCase
                     'entities' => [
                         '*' => ['entity', 'model', 'collection', 'collectionExists', 'documentCount', 'databaseCount', 'eligibleCount', 'facetFields'],
                     ],
-                    'features',
                 ],
             ]);
     }
@@ -96,23 +94,6 @@ class AdminSearchControllerTest extends TestCase
 
         $response->assertStatus(422);
         Queue::assertNotPushed(ReindexTypesenseEntity::class);
-    }
-
-    public function test_toggle_feature_activates_and_deactivates(): void
-    {
-        $response = $this->json('POST', self::TEST_URL . '/feature', ['feature' => 'TypesenseSearch', 'enabled' => false], $this->header);
-        $response->assertStatus(200)->assertJson(['feature' => 'TypesenseSearch', 'enabled' => false]);
-        $this->assertFalse(Feature::active('TypesenseSearch'));
-
-        $response = $this->json('POST', self::TEST_URL . '/feature', ['feature' => 'TypesenseSearch', 'enabled' => true], $this->header);
-        $response->assertStatus(200)->assertJson(['feature' => 'TypesenseSearch', 'enabled' => true]);
-        $this->assertTrue(Feature::active('TypesenseSearch'));
-    }
-
-    public function test_toggle_feature_rejects_unknown_feature(): void
-    {
-        $response = $this->json('POST', self::TEST_URL . '/feature', ['feature' => 'SomeRandomFeature', 'enabled' => true], $this->header);
-        $response->assertStatus(422);
     }
 
     public function test_endpoints_reject_unauthorised_and_non_admin_users(): void

@@ -15,9 +15,7 @@ class FeatureSeeder extends Seeder
         'Widgets' => false,
         'RQuest' => true,
         'CohortDiscoveryService' => false,
-        'V2_SearchAggregation' => false,
         'V3_CustodianDashboard' => false,
-        'TypesenseSearch' => false,
         // Renders /dataset/{id} from native GWDM (gateway-web). Off = the
         // existing HDRUK-translated page.
         'GwdmDatasetPage' => false,

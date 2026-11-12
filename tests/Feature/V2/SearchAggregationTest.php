@@ -6,6 +6,7 @@ use App\Jobs\LogSearchAnalytics;
 use App\Models\DatasetVersion;
 use App\Services\TypesenseService;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Pennant\Feature;
@@ -17,7 +18,7 @@ use Tests\Traits\MockExternalApis;
  * Feature tests for POST /api/v2/search/aggregation.
  *
  * Covers:
- *  1. Feature flag guard (404 when inactive)
+ *  1. Retired V2_SearchAggregation / TypesenseSearch flag rows no longer change behaviour
  *  2. Input validation (400 when type missing or query invalid)
  *  3. Successful aggregation response shape
  *  4. HDRUK provider hydrates a snapshot-versioned dataset
@@ -42,11 +43,6 @@ class SearchAggregationTest extends TestCase
 
         $this->metadata = $this->getMetadata();
 
-        // Flush the Pennant in-memory cache, then write an explicit stored value
-        // so Feature::active() always sees a fresh result within each test.
-        Feature::flushCache();
-        Feature::activate('V2_SearchAggregation');
-
         // Stub the ARDC external endpoint so it never hits the real network.
         Http::fake([
             'https://researchdata.edu.au/*' => Http::response(
@@ -61,14 +57,39 @@ class SearchAggregationTest extends TestCase
     // Feature flag
     // -------------------------------------------------------------------------
 
-    public function test_returns_404_when_feature_flag_is_inactive(): void
+    public function test_searches_when_the_stored_aggregation_flag_is_off(): void
     {
         Feature::flushCache();
         Feature::deactivate('V2_SearchAggregation');
 
         $response = $this->json('POST', self::TEST_URL, ['query' => 'asthma', 'type' => 'datasets'], $this->header);
 
-        $response->assertStatus(404);
+        $response->assertStatus(200);
+    }
+
+    public function test_returns_deferred_results_when_the_stored_aggregation_flag_is_off(): void
+    {
+        Feature::flushCache();
+        Feature::deactivate('V2_SearchAggregation');
+        Cache::put('search:deferred:srch_flagoff:pending', ['ARDC'], 60);
+        Cache::put('search:deferred:srch_flagoff:result:ARDC', ['hits' => [], 'total' => 0], 60);
+
+        $response = $this->json('GET', '/api/v2/search/aggregation/results/srch_flagoff', [], $this->header);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.pending', []);
+    }
+
+    public function test_searches_variables_when_the_stored_aggregation_flag_is_off(): void
+    {
+        Feature::flushCache();
+        Feature::deactivate('V2_SearchAggregation');
+        config(['scout.driver' => 'typesense']);
+        $this->app->instance(TypesenseService::class, new FakeTypesenseService());
+
+        $response = $this->json('POST', '/api/v2/search/variables', ['dataset_ids' => [1]], $this->header);
+
+        $response->assertStatus(200);
     }
 
     // -------------------------------------------------------------------------
@@ -220,19 +241,20 @@ class SearchAggregationTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_search_results_returns_404_when_feature_flag_inactive(): void
-    {
-        Feature::flushCache();
-        Feature::deactivate('V2_SearchAggregation');
-
-        $response = $this->json('GET', '/api/v2/search/aggregation/results/srch_sometoken', [], $this->header);
-
-        $response->assertStatus(404);
-    }
-
     public function test_typesense_publisher_aggregation_includes_every_publisher_beyond_the_top_ten(): void
     {
         $publishers = $this->indexOnePublisherPerDataset(11);
+
+        $response = $this->json('POST', self::TEST_URL, ['type' => 'datasets'], $this->header);
+
+        $response->assertStatus(200);
+        $this->assertEqualsCanonicalizing($publishers, $this->publisherAggregationKeys($response->json()));
+    }
+
+    public function test_typesense_serves_the_search_when_the_stored_typesense_flag_is_off(): void
+    {
+        $publishers = $this->indexOnePublisherPerDataset(11);
+        Feature::deactivate('TypesenseSearch');
 
         $response = $this->json('POST', self::TEST_URL, ['type' => 'datasets'], $this->header);
 
@@ -268,7 +290,6 @@ class SearchAggregationTest extends TestCase
             )
         );
         Queue::fake([LogSearchAnalytics::class]);
-        Feature::activate('TypesenseSearch');
 
         return $publishers;
     }
