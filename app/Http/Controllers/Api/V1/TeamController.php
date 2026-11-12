@@ -293,8 +293,8 @@ class TeamController extends Controller
                 'description' => $e->getMessage(),
             ]);
 
-            if (get_class($e) === ModelNotFoundException::class) {
-                throw new Exception($e->getMessage(), 404);
+            if ($e instanceof ModelNotFoundException) {
+                throw new NotFoundException();
             }
 
             throw new Exception($e->getMessage());
