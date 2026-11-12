@@ -2,7 +2,6 @@
 
 namespace App\Http\Traits;
 
-use App\Jobs\IndexDataset;
 use Config;
 use Auditor;
 use Exception;
@@ -150,8 +149,6 @@ trait CollectionsV2Helpers
         $arrCreateCollectionHasDatasetVersion = [];
         $arrDeleteCollectionHasDatasetVersion = [];
 
-        $datasetCreateIds = [];
-
         foreach ($inDatasets as $dataset) {
             $datasetVersionLatestId = Dataset::where('id', (int) $dataset['id'])->select('id')->first()->latestVersion()->id;
             $datasetVersions = DatasetVersion::where('dataset_id', (int) $dataset['id'])->select('id')->get()->toArray();
@@ -163,7 +160,6 @@ trait CollectionsV2Helpers
             // If the supplied datasets are not in the existing set, then add them
             if (count($commonDatasetVersionIds) === 0) {
                 $arrCreateCollectionHasDatasetVersion[] = $this->buildAddCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionLatestId, $userId);
-                $datasetCreateIds[] = $dataset['id'];
                 continue;
             }
             // else, if the latest version isn't in there, then add it, and remove all the previously existing dataset versions that were linked
@@ -220,9 +216,6 @@ trait CollectionsV2Helpers
         CollectionHasDatasetVersion::insert($arrCreateCollectionHasDatasetVersion);
         if (!empty($arrDeleteCollectionHasDatasetVersion)) {
             CollectionHasDatasetVersion::where($arrDeleteCollectionHasDatasetVersion)->forceDelete();
-        }
-        foreach ($datasetCreateIds as $dataset) {
-            IndexDataset::dispatch($dataset);
         }
 
         // Now delete existing links to any dataset version that wasn't supplied.

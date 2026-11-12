@@ -100,7 +100,7 @@ class MetadataManagementTest extends TestCase
 
         $responseUpdateDataset = $this->json(
             'PUT',
-            self::TEST_URL_DATASET . '/' . $initialActiveId . '?elastic_indexing=0',
+            self::TEST_URL_DATASET . '/' . $initialActiveId,
             [
                 'team_id' => $this->teamId,
                 'user_id' => $this->userId,
@@ -140,7 +140,7 @@ class MetadataManagementTest extends TestCase
 
         $responseUpdateDataset = $this->json(
             'PUT',
-            self::TEST_URL_DATASET . '/' . $initialActiveId . '?elastic_indexing=0',
+            self::TEST_URL_DATASET . '/' . $initialActiveId,
             [
                 'team_id' => $this->teamId,
                 'user_id' => $this->userId,

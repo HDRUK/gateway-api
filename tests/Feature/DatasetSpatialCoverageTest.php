@@ -58,7 +58,6 @@ class DatasetSpatialCoverageTest extends TestCase
             $team,
             null,
             null,
-            false,
         );
 
         $this->assertTrue($created['translated']);
@@ -93,7 +92,6 @@ class DatasetSpatialCoverageTest extends TestCase
             $user->id,
             $team->id,
             Dataset::ORIGIN_MANUAL,
-            false,
             $team,
         );
 
@@ -121,7 +119,6 @@ class DatasetSpatialCoverageTest extends TestCase
             $user->id,
             $team->id,
             Dataset::ORIGIN_MANUAL,
-            false,
             $team,
         );
     }

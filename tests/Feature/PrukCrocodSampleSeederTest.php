@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Jobs\IndexDataset;
 use App\Jobs\LinkageExtraction;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -92,14 +91,5 @@ class PrukCrocodSampleSeederTest extends TestCase
     {
         $this->assertFalse($this->latestVersion(self::CROCOD_PID)->shouldBeSearchable());
         $this->assertTrue($this->latestVersion(self::PRUK_PID)->shouldBeSearchable());
-    }
-
-    public function test_case_study_is_kept_out_of_elastic_but_the_pruk_dataset_is_not(): void
-    {
-        $crocodId = (string) Dataset::where('pid', self::CROCOD_PID)->value('id');
-        $prukId = (string) Dataset::where('pid', self::PRUK_PID)->value('id');
-
-        $this->assertNull((new IndexDataset($crocodId))->reindexElastic($crocodId, true));
-        $this->assertIsArray((new IndexDataset($prukId))->reindexElastic($prukId, true));
     }
 }

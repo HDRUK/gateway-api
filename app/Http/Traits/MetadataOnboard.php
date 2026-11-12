@@ -27,7 +27,6 @@ trait MetadataOnboard
         array $team,
         string | null $inputSchema,
         string | null $inputVersion,
-        bool $elasticIndexing,
         GwdmMetadataHandler $handler,
         string $partnerContext = 'HDRUK',
         ?SourceSchema $sourceSchema = null,
@@ -174,7 +173,6 @@ trait MetadataOnboard
                         $version->id,
                         '1',
                         base64_encode(gzcompress(gzencode(json_encode($tedData)))),
-                        $elasticIndexing,
                         Config::get('ted.use_partial')
                     );
                 }

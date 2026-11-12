@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Jobs\IndexDataset;
 use App\Jobs\LinkageExtraction;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -110,12 +109,6 @@ class PrukCrocodSampleSeeder extends Seeder
         // The observer does not run linkage extraction, so waveOf and the other
         // datasetLinkage entries only become junction rows if it is run here.
         LinkageExtraction::dispatchSync((string) $dataset->id, (string) $version->id);
-
-        try {
-            IndexDataset::dispatchSync($dataset->id);
-        } catch (\Throwable $e) {
-            $this->command?->warn("Dataset {$dataset->id}: search index skipped ({$e->getMessage()})");
-        }
 
         $this->command?->info("{$sample['partner']} sample seeded: dataset {$dataset->id} ({$gatewayId})");
     }

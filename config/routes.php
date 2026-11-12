@@ -209,18 +209,6 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'admin_search.feature',
-        'method' => 'post',
-        'path' => '/admin/search/feature',
-        'methodController' => 'AdminSearchController@toggleFeature',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:roles,hdruk.superadmin',
-        ],
-        'constraint' => [],
-    ],
-    [
         'name' => 'widgets',
         'method' => 'get',
         'path' => '/teams/{teamId}/widgets',

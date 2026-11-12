@@ -7,12 +7,9 @@ use App\Http\Requests\Search\VariableSearch as VariableSearchRequest;
 use App\Services\Search\VariableIndex;
 use App\Services\Search\VariableSearch;
 use Illuminate\Http\JsonResponse;
-use Laravel\Pennant\Feature;
 
 class VariableSearchController extends Controller
 {
-    private const FEATURE_FLAG = 'V2_SearchAggregation';
-
     public function __construct(protected VariableSearch $variables)
     {
     }
@@ -23,7 +20,7 @@ class VariableSearchController extends Controller
      */
     public function search(VariableSearchRequest $request): JsonResponse
     {
-        if (! Feature::active(self::FEATURE_FLAG) || ! VariableIndex::enabled()) {
+        if (! VariableIndex::enabled()) {
             return response()->json(['message' => 'Resource not found'], 404);
         }
 

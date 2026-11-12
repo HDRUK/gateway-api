@@ -66,7 +66,6 @@ class ExtractMetadataDeltaRowTest extends TestCase
             $team,
             null,
             null,
-            false,
         );
         $datasetId = $created['dataset_id'];
 
@@ -78,7 +77,6 @@ class ExtractMetadataDeltaRowTest extends TestCase
             $user->id,
             $team->id,
             Dataset::ORIGIN_MANUAL,
-            false,
             $team,
         );
 

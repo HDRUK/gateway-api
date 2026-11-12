@@ -299,7 +299,6 @@ class DatasetService
         Team $team,
         ?string $inputSchema,
         ?string $inputVersion,
-        bool $elasticIndexing,
         string $partnerContext = 'HDRUK',
     ): array {
         $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -392,7 +391,7 @@ class DatasetService
         });
 
         $this->mapCoverage(['metadata' => $gwdm], $version);
-        $this->dispatchJobs($dataset, $version->id, $input['metadata']['metadata'], $elasticIndexing, $input['status']);
+        $this->dispatchJobs($dataset, $version->id, $input['metadata']['metadata'], $input['status']);
 
         return [
             'translated' => true,
@@ -418,7 +417,6 @@ class DatasetService
         int $userId,
         int $teamId,
         string $createOrigin,
-        bool $elasticIndexing,
         Team $team,
         bool $validateInput = true,
         bool $validateOutput = true,
@@ -486,7 +484,7 @@ class DatasetService
         // and indexing jobs on the "created" event — the observer never dispatches
         // linkage or term extraction. Pass the prepared GWDM object (not the input
         // wrapper) so the TED payload shape matches create() and updateV2().
-        $this->dispatchJobs($dataset, $datasetVersionId, $gwdm, $elasticIndexing, $input['status']);
+        $this->dispatchJobs($dataset, $datasetVersionId, $gwdm, $input['status']);
 
         return $newVersionNumber;
     }
@@ -506,7 +504,6 @@ class DatasetService
         int $userId,
         int $teamId,
         string $createOrigin,
-        bool $elasticIndexing,
         Team $team,
         bool $validateInput = true,
         bool $validateOutput = true,
@@ -568,7 +565,7 @@ class DatasetService
             SourceSchema::declared($inputSchema, $inputVersion),
         );
 
-        $this->dispatchJobs($dataset, $datasetVersionId, $submittedMetadata, $elasticIndexing, $input['status']);
+        $this->dispatchJobs($dataset, $datasetVersionId, $submittedMetadata, $input['status']);
 
         return $versionNumber;
     }
@@ -923,7 +920,6 @@ class DatasetService
         Dataset $dataset,
         int $versionId,
         array $metadata,
-        bool $elasticIndexing,
         string $status
     ): void {
         if ($status !== Dataset::STATUS_ACTIVE) {
@@ -939,7 +935,6 @@ class DatasetService
                 $versionId,
                 '1',
                 base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                $elasticIndexing,
                 Config::get('ted.use_partial')
             );
         }

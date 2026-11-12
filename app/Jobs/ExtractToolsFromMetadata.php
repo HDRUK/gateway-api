@@ -10,7 +10,6 @@ use App\Models\DatasetVersion;
 use App\Services\DatasetService;
 use Illuminate\Support\Arr;
 use Illuminate\Bus\Queueable;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\LoggingContext;
 use App\Models\DatasetVersionHasTool;
 use Illuminate\Queue\SerializesModels;
@@ -24,7 +23,6 @@ class ExtractToolsFromMetadata implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
-    use IndexElastic;
     use LoggingContext;
 
     public $tries   = 3;
@@ -91,7 +89,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
         $datasetUserId = (int) $dataset->user_id;
         $datasetTeamId = (int) $dataset->team_id;
 
-        $this->cleanToolDatasetVersion($datasetVersionId, $type, (int)$dataset->id);
+        $this->cleanToolDatasetVersion($datasetVersionId, $type);
 
         $data = app(DatasetService::class)->getReconstructedMetadataEnvelope($dv->dataset_id, $dv->version, false, $dv);
 
@@ -126,7 +124,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
         }
     }
 
-    public function cleanToolDatasetVersion(int $datasetVersionId, string $type, int $datasetId): void
+    public function cleanToolDatasetVersion(int $datasetVersionId, string $type): void
     {
         $datasetVersionHasTools = DatasetVersionHasTool::where([
             'dataset_version_id' => $datasetVersionId,
@@ -142,17 +140,7 @@ class ExtractToolsFromMetadata implements ShouldQueue
                 'tool_id' => $toolId,
             ])
                 ->delete();
-
-            // note: not sure about this...
-            // - shouldnt this be calling deleteFromElastic?
-            // - you've just soft deleted it?
-            $this->indexElasticTools((int) $toolId);
         }
-
-        // why? the dataset index has nothing to do with tools
-        // - the tool elastic index has something to do with datasets,
-        //   not the other way around
-        $this->reindexElastic((int) $datasetId);
     }
 
     public function createLinkToolDatasetVersion(int $toolId, int $datasetVersionId, string $type): ?DatasetVersionHasTool
@@ -173,7 +161,6 @@ class ExtractToolsFromMetadata implements ShouldQueue
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $type,
             ]);
-            $this->indexElasticTools((int) $toolId);
             return null;
         }
 

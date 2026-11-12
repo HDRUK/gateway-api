@@ -20,7 +20,7 @@ class AdminDatasetController extends Controller
      *     path="/api/v1/datasets/admin_ctrl/trigger/term_extraction",
      *     operationId="create_datasets_term_extraction",
      *     summary="Trigger Term Extraction for Datasets",
-     *     description="Triggers the term extraction job for datasets within a specified range and controls whether data is partially indexed in Elasticsearch.",
+     *     description="Triggers the term extraction job for datasets within a specified range.",
      *     tags={"Datasets"},
      *     security={{"jwt": {}}},
      *     @OA\RequestBody(
@@ -43,12 +43,6 @@ class AdminDatasetController extends Controller
      *                 property="maxId",
      *                 type="integer",
      *                 description="Maximum dataset ID to include in the term extraction. Defaults to the maximum dataset ID available."
-     *             ),
-     *             @OA\Property(
-     *                 property="indexElastic",
-     *                 type="boolean",
-     *                 default=true,
-     *                 description="Flag to determine if data should be indexed in Elasticsearch"
      *             )
      *         )
      *     ),
@@ -96,7 +90,6 @@ class AdminDatasetController extends Controller
             $partial = $request->input('partial', Config::get('ted.use_partial'));
             $minId = $request->input('minId', 1);
             $maxId = $request->input('maxId', Dataset::max('id'));
-            $elasticIndexing = $request->input('indexElastic', true);
 
             $datasetIds = Dataset::whereBetween("id", [$minId, $maxId])
                             ->select('id')
@@ -115,7 +108,6 @@ class AdminDatasetController extends Controller
                     $datasetVersionId,
                     $versionNumber,
                     base64_encode(gzcompress(gzencode(json_encode($tedData)))),
-                    $elasticIndexing,
                     $partial,
                 );
             }
@@ -140,7 +132,7 @@ class AdminDatasetController extends Controller
      *     path="/api/v1/datasets/admin_ctrl/trigger/linkage_extraction",
      *     operationId="create_datasets_linkage_extraction",
      *     summary="Trigger Term Extraction for Datasets",
-     *     description="Triggers the term extraction job for datasets within a specified range and controls whether data is partially indexed in Elasticsearch.",
+     *     description="Triggers the term extraction job for datasets within a specified range.",
      *     tags={"Datasets"},
      *     security={{"jwt": {}}},
      *     @OA\RequestBody(

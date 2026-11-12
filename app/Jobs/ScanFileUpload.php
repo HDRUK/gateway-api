@@ -53,7 +53,6 @@ class ScanFileUpload implements ShouldQueue
     private ?string $inputVersion = null;
     private ?string $outputSchema = null;
     private ?string $outputVersion = null;
-    private bool $elasticIndexing = true;
     private ?int $datasetId = null;
     private ?int $collectionId = null;
     private ?int $applicationId = null;
@@ -79,7 +78,6 @@ class ScanFileUpload implements ShouldQueue
         ?string $inputVersion,
         ?string $outputSchema,
         ?string $outputVersion,
-        bool $elasticIndexing,
         ?int $datasetId,
         ?int $collectionId,
         ?int $applicationId,
@@ -96,7 +94,6 @@ class ScanFileUpload implements ShouldQueue
         $this->inputVersion = $inputVersion;
         $this->outputSchema = $outputSchema;
         $this->outputVersion = $outputVersion;
-        $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
         $this->applicationId = $applicationId;
@@ -406,7 +403,6 @@ class ScanFileUpload implements ShouldQueue
                 $team,
                 $defineInputSchema,
                 $defineInputVersion,
-                $this->elasticIndexing,
                 $gwdmHandler,
             );
 

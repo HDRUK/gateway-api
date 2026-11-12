@@ -59,7 +59,6 @@ class DatasetVersionSearchableTest extends TestCase
             $team,
             null,
             null,
-            false,
         );
         $datasetId = $created['dataset_id'];
 
@@ -70,7 +69,6 @@ class DatasetVersionSearchableTest extends TestCase
             $user->id,
             $team->id,
             Dataset::ORIGIN_MANUAL,
-            false,
             $team,
         );
 
@@ -165,7 +163,6 @@ class DatasetVersionSearchableTest extends TestCase
             $team,
             null,
             null,
-            false,
         );
 
         $version = DatasetVersion::where('dataset_id', $created['dataset_id'])->first();
