@@ -933,7 +933,7 @@ class TeamUserController extends Controller
     {
         try {
             $admins = [];
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->firstOrFail();
+            $userTeam = Team::where('id', $teamId)->with(['users'])->firstOrFail();
 
             User::preloadCohortDataForUsers($userTeam->users);
 

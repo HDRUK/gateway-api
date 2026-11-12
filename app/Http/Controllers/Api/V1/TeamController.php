@@ -125,7 +125,7 @@ class TeamController extends Controller
 
             $perPage = request('per_page', Config::get('constants.per_page'));
             $teamsPaginator = $query
-                ->with(['users', 'aliases'])
+                ->with(['users'])
                 ->paginate($perPage, ['*'], 'page');
 
             $teamsData = $teamsPaginator->getCollection();
@@ -269,7 +269,7 @@ class TeamController extends Controller
         $jwtUser = $request->jwtUser();
 
         try {
-            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications', 'aliases'])->firstOrFail();
+            $userTeam = Team::where('id', $teamId)->with(['users'])->firstOrFail();
 
             User::preloadCohortDataForUsers($userTeam->users);
 

@@ -16,7 +16,7 @@ use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * @property Pivot $pivot
+ * @property ?Pivot $pivot
  * 
  * @OA\Schema(
  *   schema="User",

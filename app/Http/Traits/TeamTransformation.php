@@ -94,37 +94,7 @@ trait TeamTransformation
             return [];
         }
            
-        $teamHasUserIds = $this->getTeamHasUsers($team);
-
-        $rolesByTeamHasUserId = TeamHasUser::whereIn('id', $teamHasUserIds)
-            ->with('roles', 'roles.permissions')
-            ->get()
-            ->keyBy('id');
-
-        unset($teamHasUserIds);
-
-        $notificationIds = TeamHasNotification::where('team_id', $team->id)
-            ->pluck('notification_id')
-            ->unique()
-            ->values()
-            ->all();
-
-        $notifications = Notification::whereIn('id', $notificationIds)->get();
-
-        $aliasIds = TeamHasAlias::where('team_id', $team->id)
-            ->pluck('alias_id')
-            ->unique()
-            ->values()
-            ->all();
-
-        $aliases = Alias::whereIn('id', $aliasIds)->get();
-
-        return $this->hydrateTeam(
-            team: $team,
-            teamUserRoles: $rolesByTeamHasUserId,
-            notifications: $notifications,
-            aliases: $aliases,
-        );
+        return $this->getTeams(collect([$team]))[0];
     }
 
     public function getTeamNotifications($team, int $teamId, int $userId)
