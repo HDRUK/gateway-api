@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Config;
 use Tests\TestCase;
 use App\Jobs\AuditLogJob;
@@ -463,6 +464,101 @@ class TeamTest extends TestCase
         ->assertJsonStructure([
             'message',
         ]);
+    }
+
+    /**
+     * Team creation does not error if super admin is in list of team members
+     *
+     * @return void
+     */
+    public function test_the_application_can_create_a_team_with_super_admin_in_team_members()
+    {
+        $superAdminAdded = false;
+        $superAdmin = User::where('is_admin', 1)->first();
+
+        if ($superAdmin === null) {
+            $superAdmin = User::factory()->create(['is_admin' => 1]);
+
+            $superAdminAdded = true;
+        }
+
+        $aliasId = Alias::all()->random()->id;
+
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+                'email' => null,
+                'user_id' => $superAdmin->id,
+            ],
+            $this->header
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $response = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'is_question_bank' => 0,
+                'users' => [$superAdmin->id],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
+                'aliases' => [$aliasId],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $teamId = $content['data'];
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
+
+        if ($superAdminAdded) {
+            $superAdmin->delete();
+        }
     }
 
     /**
