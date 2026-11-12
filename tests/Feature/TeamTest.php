@@ -473,14 +473,7 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_create_a_team_with_super_admin_in_team_members()
     {
-        $superAdminAdded = false;
-        $superAdmin = User::where('is_admin', 1)->first();
-
-        if ($superAdmin === null) {
-            $superAdmin = User::factory()->create(['is_admin' => 1]);
-
-            $superAdminAdded = true;
-        }
+        $superAdminId = User::factory()->create(['is_admin' => 1])->id;
 
         $aliasId = Alias::all()->random()->id;
 
@@ -494,7 +487,7 @@ class TeamTest extends TestCase
                 'opt_in' => 1,
                 'enabled' => 1,
                 'email' => null,
-                'user_id' => $superAdmin->id,
+                'user_id' => $superAdminId,
             ],
             $this->header
         );
@@ -524,7 +517,7 @@ class TeamTest extends TestCase
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
                 'is_question_bank' => 0,
-                'users' => [$superAdmin->id],
+                'users' => [$superAdminId],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
@@ -555,10 +548,6 @@ class TeamTest extends TestCase
         ->assertJsonStructure([
             'message',
         ]);
-
-        if ($superAdminAdded) {
-            $superAdmin->delete();
-        }
     }
 
     /**
