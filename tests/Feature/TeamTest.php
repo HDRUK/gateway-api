@@ -264,6 +264,32 @@ class TeamTest extends TestCase
     }
 
     /**
+     * Returns a not found response if the team id does not exist.
+     *
+     * @return void
+     */
+    public function test_the_application_throws_not_found_if_team_id_does_not_exist()
+    {
+        $response = $this->get('api/v1/teams/' . (Team::max('id') + 1), $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    }
+
+    /**
+     * Returns a not found response if the team is soft deleted.
+     *
+     * @return void
+     */
+    public function test_the_application_throws_not_found_if_team_is_soft_deleted()
+    {
+        $teamId = Team::factory()->create(['enabled' => 1, 'deleted_at' => now()])->id;
+
+        $response = $this->get('api/v1/teams/' .$teamId, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    }
+
+    /**
      * Show info of a team.
      *
      * @return void

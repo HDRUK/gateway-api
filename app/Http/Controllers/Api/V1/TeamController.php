@@ -15,6 +15,7 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Publication;
 use App\Models\TeamHasUser;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
@@ -291,6 +292,10 @@ class TeamController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
+            if (get_class($e) === ModelNotFoundException::class) {
+                throw new Exception($e->getMessage(), 404);
+            }
 
             throw new Exception($e->getMessage());
         }

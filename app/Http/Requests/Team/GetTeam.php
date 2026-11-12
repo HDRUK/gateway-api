@@ -17,7 +17,6 @@ class GetTeam extends FormRequest
             'teamId' => [
                 'int',
                 'required',
-                'exists:teams,id',
             ],
         ];
     }
