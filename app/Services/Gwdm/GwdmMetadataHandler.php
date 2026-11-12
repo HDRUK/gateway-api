@@ -5,7 +5,6 @@ namespace App\Services\Gwdm;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
-use Illuminate\Support\Carbon;
 
 /**
  * Per-version metadata lifecycle handler.
@@ -192,14 +191,6 @@ abstract class GwdmMetadataHandler
     }
 
     /**
-     * Whether datasets on this GWDM version should be indexed into Elasticsearch.
-     */
-    public function supportsElasticIndexing(): bool
-    {
-        return true;
-    }
-
-    /**
      * Whether records on this GWDM version carry required.recordType. Lets
      * callers skip reconstructing an envelope just to call isDatasetRecord().
      */
@@ -315,43 +306,6 @@ abstract class GwdmMetadataHandler
     protected function nonEmptyString(mixed $value): ?string
     {
         return is_string($value) && trim($value) !== '' ? trim($value) : null;
-    }
-
-    /**
-     * Extract the metadata-derived fields for the Elasticsearch dataset index
-     * from a reconstructed GWDM envelope. Relationship/DB-derived fields
-     * (named entities, collections, spatial coverage, project grants, etc.) are
-     * NOT here — the handler only sees the envelope; the caller merges those in.
-     *
-     * Override when a version's field shapes diverge.
-     */
-    public function toElasticFields(array $envelope): array
-    {
-        $materialTypes = $this->getMaterialTypes(data_get($envelope, 'metadata', []) ?? []);
-        $conformsTo = $this->normalizeDelimited(data_get($envelope, 'metadata.accessibility.formatAndStandards.conformsTo') ?? '');
-
-        return [
-            'abstract' => data_get($envelope, 'metadata.summary.abstract') ?? '',
-            'keywords' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.keywords') ?? ''),
-            'description' => data_get($envelope, 'metadata.summary.description') ?? '',
-            'shortTitle' => data_get($envelope, 'metadata.summary.shortTitle') ?? '',
-            'title' => data_get($envelope, 'metadata.summary.title') ?? '',
-            'populationSize' => data_get($envelope, 'metadata.summary.populationSize') ?? -1,
-            'publisherName' => data_get($envelope, 'metadata.summary.publisher.name')
-                ?? data_get($envelope, 'metadata.summary.publisher.publisherName') ?? '',
-            'startDate' => data_get($envelope, 'metadata.provenance.temporal.startDate'),
-            'endDate' => data_get($envelope, 'metadata.provenance.temporal.endDate') ?? Carbon::now()->addYears(5),
-            'dataType' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.datasetType') ?? ''),
-            'dataSubType' => $this->normalizeDelimited(data_get($envelope, 'metadata.summary.datasetSubType') ?? ''),
-            'containsBioSamples' => $materialTypes !== null && count($materialTypes) > 0,
-            'sampleAvailability' => $materialTypes,
-            'conformsTo' => $conformsTo,
-            'hasTechnicalMetadata' => (bool) count((array) (data_get($envelope, 'metadata.structuralMetadata') ?? [])),
-            'accessService' => data_get($envelope, 'metadata.accessibility.access.accessServiceCategory'),
-            'datasetDOI' => data_get($envelope, 'metadata.summary.doiName') ?? '',
-            'formatAndStandards' => $conformsTo === [] ? null : $conformsTo,
-            'datasetAliases' => data_get($envelope, 'metadata.summary.datasetAliases') ?? '',
-        ];
     }
 
     /**

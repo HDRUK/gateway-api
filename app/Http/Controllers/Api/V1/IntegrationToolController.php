@@ -21,7 +21,6 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 use App\Http\Traits\IntegrationOverride;
-use App\Http\Traits\IndexElastic;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
 use App\Models\DurHasTool;
@@ -29,7 +28,6 @@ use App\Models\ToolHasProgrammingLanguage;
 
 class IntegrationToolController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use IntegrationOverride;
 
@@ -292,8 +290,6 @@ class IntegrationToolController extends Controller
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $userId, $appId);
-
-            $this->indexElasticTools((int) $tool->id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?

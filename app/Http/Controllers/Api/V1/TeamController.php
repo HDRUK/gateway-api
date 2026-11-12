@@ -20,7 +20,6 @@ use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
 use App\Models\TeamUserHasRole;
 use App\Http\Traits\TrimPayload;
-use App\Http\Traits\IndexElastic;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Team\GetTeam;
 use App\Models\TeamHasNotification;
@@ -39,7 +38,6 @@ use App\Models\TeamHasAlias;
 class TeamController extends Controller
 {
     use GetValueByPossibleKeys;
-    use IndexElastic;
     use CheckAccess;
     use TeamTransformation;
     use RequestTransformation;

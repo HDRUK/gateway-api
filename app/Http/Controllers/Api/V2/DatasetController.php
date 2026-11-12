@@ -286,7 +286,6 @@ class DatasetController extends Controller
                 team: $team,
                 inputSchema: $request->query('input_schema'),
                 inputVersion: $request->query('input_version'),
-                elasticIndexing: $request->boolean('elastic_indexing', false),
                 partnerContext: $this->partnerContext->getPartner(),
             );
 
@@ -390,7 +389,6 @@ class DatasetController extends Controller
                 userId: $userId,
                 teamId: $teamId,
                 createOrigin: $createOrigin,
-                elasticIndexing: $request->boolean('elastic_indexing', false),
                 team: $team,
                 validateInput: $request->boolean('validate_input', true),
                 validateOutput: $request->boolean('validate_output', true),

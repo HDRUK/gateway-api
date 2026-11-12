@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\CollectionsV2Helpers;
 use App\Models\CollectionHasDur;
-use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -33,7 +32,6 @@ use Symfony\Component\HttpFoundation\StreamedJsonResponse;
 
 class TeamCollectionController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use CheckAccess;
     use CollectionsV2Helpers;
@@ -527,10 +525,6 @@ class TeamCollectionController extends Controller
                 $collection->update(['updated_on' => $input['updated_on']]);
             }
 
-            if ($collection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $collection->id);
-            }
-
             Auditor::log([
                 'user_id' => (int)($jwtUser['id'] ?? 0),
                 'target_team_id' => $teamId,
@@ -686,13 +680,6 @@ class TeamCollectionController extends Controller
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
             }
 
-            $currentCollection = Collection::where('id', $id)->first();
-            if ($currentCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
-            } else {
-                $this->deleteCollectionFromElastic((int) $id);
-            }
-
             Auditor::log([
                 'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : null,
@@ -830,8 +817,6 @@ class TeamCollectionController extends Controller
 
             // update it
             Collection::where('id', $id)->update($array);
-            // get updated collection
-            $updatedCollection = Collection::where('id', $id)->first();
             // Check and update related datasets and tools etc if the collection is active
 
             if (array_key_exists('datasets', $input)) {
@@ -857,12 +842,6 @@ class TeamCollectionController extends Controller
             if (array_key_exists('keywords', $input)) {
                 $keywords = $input['keywords'];
                 $this->checkKeywords($id, $keywords);
-            }
-
-            if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
-            } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
-                $this->deleteCollectionFromElastic((int) $id);
             }
 
             Auditor::log([
@@ -967,8 +946,6 @@ class TeamCollectionController extends Controller
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
                 CollectionHasUser::where(['collection_id' => $id])->delete();
                 Collection::where(['id' => $id])->delete();
-
-                $this->deleteCollectionFromElastic($id);
 
                 Auditor::log([
                     'user_id' => (int)($jwtUser['id'] ?? 0),

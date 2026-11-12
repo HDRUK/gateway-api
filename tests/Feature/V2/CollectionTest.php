@@ -1810,8 +1810,7 @@ class CollectionTest extends TestCase
      * Regression: the update endpoint used Collection::where()->update() (query builder),
      * which bypasses Eloquent model events and therefore Scout's ModelObserver.
      * A collection created as DRAFT and later promoted to ACTIVE was never indexed
-     * by Typesense. The fix explicitly calls searchable()/unsearchable() at the same
-     * code sites as indexElasticCollections()/deleteCollectionFromElastic().
+     * by Typesense. The fix explicitly calls searchable()/unsearchable() after the update.
      *
      * These tests use the users/{userId}/collections route (UserCollectionController)
      * which is the primary personal-collection management path.

@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Observers\PublicationHasDatasetVersionObserver;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -15,7 +13,6 @@ use Illuminate\Notifications\Notifiable;
  *
  * @property-read string|null $paper_doi
  */
-#[ObservedBy([PublicationHasDatasetVersionObserver::class])]
 class PublicationHasDatasetVersion extends Model
 {
     use HasFactory;

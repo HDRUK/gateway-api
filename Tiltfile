@@ -112,9 +112,6 @@ if cfg.get("gmiEnabled"):
 if cfg.get("searchEnabled"):
     include(cfg.get("searchServiceRoot") + "/Tiltfile")
 
-if cfg.get("elasticEnabled"):
-    include(cfg.get("elasticServiceRoot") + "/Tiltfile")
-
 if cfg.get("qbEnabled"):
     include(cfg.get("qbServiceRoot") + "/Tiltfile")
 
@@ -164,9 +161,6 @@ deps = []
 
 if cfg.get("mysqlEnabled"):
     deps.append("mysql")
-
-if cfg.get("elasticEnabled"):
-    deps.append("elasticsearch")
 
 if cfg.get("mailhogEnabled"):
     deps.append("mailhog")
