@@ -16,7 +16,7 @@ class CancerTypeFilterCrudTest extends TestCase
         setUp as commonSetUp;
     }
 
-    public const TEST_URL = '/api/v1/cancer-type-filters';
+    public const TEST_URL = '/api/v1/cancer_type_filters';
 
     protected $header = [];
 
@@ -99,7 +99,7 @@ class CancerTypeFilterCrudTest extends TestCase
         $response->assertJsonPath('data.sort_order', 2);
     }
 
-    public function test_edit_moves_subtree_and_relevels_descendants(): void
+    public function test_update_moves_subtree_and_relevels_descendants(): void
     {
         $rootA = $this->makeFilter('74_0');
         $rootB = $this->makeFilter('75_0');
@@ -108,7 +108,15 @@ class CancerTypeFilterCrudTest extends TestCase
 
         $nested = $this->makeFilter('75_0_1', $rootB->id, 1);
 
-        $response = $this->json('PATCH', self::TEST_URL . '/74_0', ['parent_id' => $nested->id], $this->header);
+        $response = $this->json('PUT', self::TEST_URL . '/74_0', [
+            'filter_id' => '74_0',
+            'label' => 'Label 74_0',
+            'category' => 'filters',
+            'primary_group' => 'cancer-type',
+            'count' => '0',
+            'parent_id' => $nested->id,
+            'sort_order' => 0,
+        ], $this->header);
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.level', 2);
@@ -116,21 +124,36 @@ class CancerTypeFilterCrudTest extends TestCase
         $this->assertSame(4, $grandchild->fresh()->level);
     }
 
-    public function test_edit_rejects_moving_filter_under_its_descendant(): void
+    public function test_update_rejects_moving_filter_under_its_descendant(): void
     {
         $root = $this->makeFilter('76_0');
         $child = $this->makeFilter('76_0_1', $root->id, 1);
 
-        $this->json('PATCH', self::TEST_URL . '/76_0', ['parent_id' => $child->id], $this->header)
+        $payload = [
+            'filter_id' => '76_0',
+            'label' => 'Label 76_0',
+            'category' => 'filters',
+            'primary_group' => 'cancer-type',
+            'count' => '0',
+            'sort_order' => 0,
+        ];
+
+        $this->json('PUT', self::TEST_URL . '/76_0', array_merge($payload, ['parent_id' => $child->id]), $this->header)
             ->assertStatus(400);
 
-        $this->json('PATCH', self::TEST_URL . '/76_0', ['parent_id' => $root->id], $this->header)
+        $this->json('PUT', self::TEST_URL . '/76_0', array_merge($payload, ['parent_id' => $root->id]), $this->header)
             ->assertStatus(400);
     }
 
-    public function test_edit_returns_404_for_unknown_filter_id(): void
+    public function test_update_returns_404_for_unknown_filter_id(): void
     {
-        $this->json('PATCH', self::TEST_URL . '/0_0_999', ['label' => 'Nope'], $this->header)
+        $this->json('PUT', self::TEST_URL . '/0_0_999', [
+            'filter_id' => '0_0_999',
+            'label' => 'Nope',
+            'count' => '0',
+            'parent_id' => null,
+            'sort_order' => 0,
+        ], $this->header)
             ->assertStatus(404);
     }
 
@@ -176,8 +199,9 @@ class CancerTypeFilterCrudTest extends TestCase
         $this->assertDatabaseMissing('cancer_type_filters', ['filter_id' => '79_0']);
     }
 
-    public function test_store_allows_team_member_with_cancer_type_filter_permission(): void
+    public function test_store_forbidden_for_team_metadata_manager(): void
     {
+        // Cancer type filters are global, so team-scoped roles must not write them.
         $this->authorisationUser(false);
         $nonAdminJwt = $this->getAuthorisationJwt(false);
         $nonAdminUser = $this->getUserFromJwt($nonAdminJwt);
@@ -192,7 +216,6 @@ class CancerTypeFilterCrudTest extends TestCase
             'team_id' => $teamId,
         ]);
 
-        // custodian.metadata.manager holds the cancer_type_filters.* permissions
         $role = Role::where('name', 'custodian.metadata.manager')->first();
         TeamUserHasRole::firstOrCreate([
             'team_has_user_id' => $teamHasUser->id,
@@ -202,15 +225,12 @@ class CancerTypeFilterCrudTest extends TestCase
         $response = $this->json(
             'POST',
             self::TEST_URL,
-            ['filter_id' => '80_0', 'label' => 'Permitted Filter'],
+            ['filter_id' => '80_0', 'label' => 'Team Manager Filter'],
             $headerNonAdmin
         );
 
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('cancer_type_filters', [
-            'filter_id' => '80_0',
-            'label' => 'Permitted Filter',
-        ]);
+        $response->assertStatus(Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        $this->assertDatabaseMissing('cancer_type_filters', ['filter_id' => '80_0']);
     }
 
     public function test_update_forbidden_without_cancer_type_filter_permission(): void

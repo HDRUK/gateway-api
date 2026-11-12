@@ -43,18 +43,18 @@ return [
 
     // cancer type filters
     [
-        'name' => 'api.v1.cancer-type-filters.index',
+        'name' => 'api.v1.cancer_type_filters.index',
         'method' => 'get',
-        'path' => '/cancer-type-filters',
+        'path' => '/cancer_type_filters',
         'methodController' => 'CancerTypeFilterController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
     ],
     [
-        'name' => 'api.v1.cancer-type-filters.show',
+        'name' => 'api.v1.cancer_type_filters.show',
         'method' => 'get',
-        'path' => '/cancer-type-filters/{filter_id}',
+        'path' => '/cancer_type_filters/{filter_id}',
         'methodController' => 'CancerTypeFilterController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
@@ -63,27 +63,25 @@ return [
         ],
     ],
     [
-        'name' => 'api.v1.cancer-type-filters.store',
+        'name' => 'api.v1.cancer_type_filters.store',
         'method' => 'post',
-        'path' => '/cancer-type-filters',
+        'path' => '/cancer_type_filters',
         'methodController' => 'CancerTypeFilterController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,cancer_type_filters.create',
         ],
         'constraint' => [],
     ],
     [
-        'name' => 'api.v1.cancer-type-filters.update',
+        'name' => 'api.v1.cancer_type_filters.update',
         'method' => 'put',
-        'path' => '/cancer-type-filters/{filter_id}',
+        'path' => '/cancer_type_filters/{filter_id}',
         'methodController' => 'CancerTypeFilterController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,cancer_type_filters.update',
         ],
         'constraint' => [
@@ -91,24 +89,9 @@ return [
         ],
     ],
     [
-        'name' => 'api.v1.cancer-type-filters.edit',
-        'method' => 'patch',
-        'path' => '/cancer-type-filters/{filter_id}',
-        'methodController' => 'CancerTypeFilterController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,cancer_type_filters.update',
-        ],
-        'constraint' => [
-            'filter_id' => '[0-9_]+',
-        ],
-    ],
-    [
-        'name' => 'api.v1.cancer-type-filters.destroy',
+        'name' => 'api.v1.cancer_type_filters.destroy',
         'method' => 'delete',
-        'path' => '/cancer-type-filters/{filter_id}',
+        'path' => '/cancer_type_filters/{filter_id}',
         'methodController' => 'CancerTypeFilterController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -3629,21 +3612,6 @@ return [
         'method' => 'put',
         'path' => '/project_grants/{id}',
         'methodController' => 'ProjectGrantController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,project_grants.update',
-            'sunset',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'project_grants.edit',
-        'method' => 'patch',
-        'path' => '/project_grants/{id}',
-        'methodController' => 'ProjectGrantController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

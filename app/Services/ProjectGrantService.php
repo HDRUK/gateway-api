@@ -78,9 +78,9 @@ class ProjectGrantService
         return $query->first();
     }
 
-    public function create(array $data, int $userId, int $teamId): ProjectGrant
+    public function create(array $data, int $userId, int $teamId, bool $withRelated = true): ProjectGrant
     {
-        return DB::transaction(function () use ($data, $userId, $teamId) {
+        return DB::transaction(function () use ($data, $userId, $teamId, $withRelated) {
             $grant = ProjectGrant::create([
                 'pid' => $data['pid'],
                 'user_id' => $userId,
@@ -102,16 +102,16 @@ class ProjectGrantService
             $this->syncDatasets($grant->id, $data['datasets'] ?? []);
             $this->syncVersionRelations($version, $data);
 
-            return $grant;
+            return $this->freshWithRelations($grant, $withRelated);
         });
     }
 
     /**
      * Full replace: optionally update parent fields and always create a new version.
      */
-    public function update(ProjectGrant $grant, array $data): ProjectGrant
+    public function update(ProjectGrant $grant, array $data, bool $withRelated = true): ProjectGrant
     {
-        return DB::transaction(function () use ($grant, $data) {
+        return DB::transaction(function () use ($grant, $data, $withRelated) {
             $parentUpdates = [];
             if (array_key_exists('pid', $data)) {
                 $parentUpdates['pid'] = $data['pid'];
@@ -139,74 +139,35 @@ class ProjectGrantService
             $this->syncDatasets($grant->id, $data['datasets'] ?? []);
             $this->syncVersionRelations($version, $data);
 
-            return $grant->fresh();
-        });
-    }
-
-    /**
-     * Partial update of the parent and/or the latest version in place.
-     */
-    public function edit(ProjectGrant $grant, array $data): ProjectGrant
-    {
-        return DB::transaction(function () use ($grant, $data) {
-            $parentUpdates = [];
-            if (array_key_exists('pid', $data)) {
-                $parentUpdates['pid'] = $data['pid'];
-            }
-            if (!empty($parentUpdates)) {
-                $grant->update($parentUpdates);
-            }
-
-            $versionFieldMap = [
-                'projectGrantName' => 'project_grant_name',
-                'leadResearcher' => 'lead_researcher',
-                'leadResearchInstitute' => 'lead_research_institute',
-                'grantNumbers' => 'grant_numbers',
-                'projectGrantStartDate' => 'project_grant_start_date',
-                'projectGrantEndDate' => 'project_grant_end_date',
-                'projectGrantScope' => 'project_grant_scope',
-            ];
-
-            $versionUpdates = [];
-            foreach ($versionFieldMap as $inputKey => $column) {
-                if (array_key_exists($inputKey, $data)) {
-                    $versionUpdates[$column] = $data[$inputKey];
-                }
-            }
-
-            $latestVersion = $grant->latestVersion;
-            if (!empty($versionUpdates)) {
-                if (!$latestVersion) {
-                    $latestVersion = ProjectGrantVersion::create(array_merge([
-                        'project_grant_id' => $grant->id,
-                        'version' => 1,
-                        'project_grant_name' => $data['projectGrantName'] ?? 'Untitled',
-                    ], $versionUpdates));
-                } else {
-                    $latestVersion->update($versionUpdates);
-                }
-            }
-
-            if (array_key_exists('datasets', $data)) {
-                $this->syncDatasets($grant->id, $data['datasets'] ?? []);
-            }
-
-            if ($latestVersion) {
-                $this->syncVersionRelations($latestVersion, $data, onlyProvided: true);
-            }
-
-            return $grant->fresh();
+            return $this->freshWithRelations($grant, $withRelated);
         });
     }
 
     public function delete(ProjectGrant $grant): bool
     {
         return DB::transaction(function () use ($grant) {
+            // Mass soft-delete skips ProjectGrantVersionObserver (which would
+            // sync-reindex mid-transaction). ProjectGrantObserver::deleted
+            // queues IndexDataset with afterCommit() for linked datasets.
             ProjectGrantVersion::where('project_grant_id', $grant->id)->delete();
             $grant->delete();
 
             return true;
         });
+    }
+
+    private function freshWithRelations(ProjectGrant $grant, bool $withRelated): ProjectGrant
+    {
+        $relations = $withRelated
+            ? [
+                'datasets',
+                'versions' => fn ($q) => $q->orderByDesc('version'),
+                'versions.publications',
+                'versions.tools',
+            ]
+            : ['latestVersion'];
+
+        return $grant->fresh($relations);
     }
 
     private function syncDatasets(int $projectGrantId, array $datasetIds): void
@@ -227,14 +188,9 @@ class ProjectGrantService
         }
     }
 
-    private function syncVersionRelations(ProjectGrantVersion $version, array $data, bool $onlyProvided = false): void
+    private function syncVersionRelations(ProjectGrantVersion $version, array $data): void
     {
-        if (!$onlyProvided || array_key_exists('publications', $data)) {
-            $version->publications()->sync($data['publications'] ?? []);
-        }
-
-        if (!$onlyProvided || array_key_exists('tools', $data)) {
-            $version->tools()->sync($data['tools'] ?? []);
-        }
+        $version->publications()->sync($data['publications'] ?? []);
+        $version->tools()->sync($data['tools'] ?? []);
     }
 }

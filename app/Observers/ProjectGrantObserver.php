@@ -47,7 +47,10 @@ class ProjectGrantObserver
             ->pluck('id');
 
         foreach ($datasetIds as $datasetId) {
-            IndexDataset::dispatch((string) $datasetId);
+            // afterCommit: create/update/delete run inside DB transactions.
+            // With queue after_commit=false, an early worker could otherwise
+            // reindex while the grant change is still uncommitted.
+            IndexDataset::dispatch((string) $datasetId)->afterCommit();
         }
     }
 }

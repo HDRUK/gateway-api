@@ -11,11 +11,11 @@ return new class () extends Migration {
         'cancer_type_filters.delete',
     ];
 
-    // Mirrors the roles that hold project_grants.* permissions in RoleSeeder.
+    // Cancer type filters are global (not team-scoped), so only HDR UK
+    // superadmin should manage them. hdruk.superadmin already receives
+    // every permission via RoleSeeder's "all", but we still attach them
+    // explicitly for existing databases.
     private const ROLES = [
-        'custodian.team.admin',
-        'custodian.metadata.manager',
-        'custodian.dar.manager',
         'hdruk.superadmin',
     ];
 

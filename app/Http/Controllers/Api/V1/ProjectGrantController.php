@@ -12,7 +12,6 @@ use App\Context\PartnerContext;
 use App\Services\ProjectGrantService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectGrant\CreateProjectGrant;
-use App\Http\Requests\ProjectGrant\EditProjectGrant;
 use App\Http\Requests\ProjectGrant\UpdateProjectGrant;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\CheckAccess;
@@ -226,10 +225,12 @@ class ProjectGrantController extends Controller
         }
 
         try {
+            $withRelated = $request->boolean('with_related', true);
             $grant = $this->projectGrantService->create(
                 $request->validated(),
                 $currentUser,
-                (int) $teamId
+                (int) $teamId,
+                $withRelated
             );
 
             Auditor::log([
@@ -240,13 +241,11 @@ class ProjectGrantController extends Controller
                 'description' => 'ProjectGrant ' . $grant->id . ' created',
             ]);
 
-            $withRelated = $request->boolean('with_related', true);
-            $created = $this->getProjectGrantById($grant->id, $withRelated);
             $resourceClass = $this->partnerContext->resourceFor(ProjectGrant::class);
 
             return response()->json([
                 'message' => 'created',
-                'data' => $resourceClass::make($created)->resolve($request),
+                'data' => $resourceClass::make($grant)->resolve($request),
             ], 201);
         } catch (Exception $e) {
             Auditor::log([
@@ -288,8 +287,8 @@ class ProjectGrantController extends Controller
     public function update(UpdateProjectGrant $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $request->input('jwt_user', []);
-        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : 0;
+        $jwtUser = $request->jwtUser();
+        $currentUser = (int) $jwtUser['id'];
 
         try {
             $grant = ProjectGrant::where('id', $id)->first();
@@ -299,88 +298,17 @@ class ProjectGrantController extends Controller
 
             $this->checkAccess($input, $grant->team_id, null, 'team', $request->header());
 
-            $this->projectGrantService->update($grant, $request->validated());
+            $withRelated = $request->boolean('with_related', true);
+            $updated = $this->projectGrantService->update($grant, $request->validated(), $withRelated);
 
             Auditor::log([
                 'user_id' => $currentUser,
-                'team_id' => $grant->team_id,
+                'team_id' => $updated->team_id,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'ProjectGrant ' . $id . ' updated',
             ]);
 
-            $withRelated = $request->boolean('with_related', true);
-            $updated = $this->getProjectGrantById($id, $withRelated);
-            $resourceClass = $this->partnerContext->resourceFor(ProjectGrant::class);
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $resourceClass::make($updated)->resolve($request),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (NotFoundException $e) {
-            return $this->notFoundResponse($e->getMessage());
-        } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => $currentUser,
-                'action_type' => 'EXCEPTION',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => $e->getMessage(),
-            ]);
-
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Patch(
-     *    path="/api/v1/project_grants/{id}",
-     *    operationId="edit_project_grant",
-     *    tags={"Project Grant"},
-     *    summary="ProjectGrantController@edit",
-     *    description="Partially update a project grant and/or its latest version",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="id",
-     *       in="path",
-     *       required=true,
-     *       @OA\Schema(type="integer")
-     *    ),
-     *    @OA\Response(
-     *        response="200",
-     *        description="Success",
-     *        @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="success"),
-     *          @OA\Property(property="data", type="object")
-     *        )
-     *    )
-     * )
-     */
-    public function edit(EditProjectGrant $request, int $id): JsonResponse
-    {
-        $input = $request->all();
-        $jwtUser = $request->input('jwt_user', []);
-        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : 0;
-
-        try {
-            $grant = ProjectGrant::where('id', $id)->first();
-            if (!$grant) {
-                throw new NotFoundException();
-            }
-
-            $this->checkAccess($input, $grant->team_id, null, 'team', $request->header());
-
-            $this->projectGrantService->edit($grant, $request->validated());
-
-            Auditor::log([
-                'user_id' => $currentUser,
-                'team_id' => $grant->team_id,
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'ProjectGrant ' . $id . ' edited',
-            ]);
-
-            $withRelated = $request->boolean('with_related', true);
-            $updated = $this->getProjectGrantById($id, $withRelated);
             $resourceClass = $this->partnerContext->resourceFor(ProjectGrant::class);
 
             return response()->json([
@@ -427,8 +355,8 @@ class ProjectGrantController extends Controller
     public function destroy(Request $request, int $id): JsonResponse
     {
         $input = $request->all();
-        $jwtUser = $request->input('jwt_user', []);
-        $currentUser = isset($jwtUser['id']) ? (int) $jwtUser['id'] : 0;
+        $jwtUser = $request->jwtUser();
+        $currentUser = (int) $jwtUser['id'];
 
         try {
             $grant = ProjectGrant::where('id', $id)->first();

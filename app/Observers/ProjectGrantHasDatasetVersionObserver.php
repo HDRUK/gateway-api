@@ -44,6 +44,6 @@ class ProjectGrantHasDatasetVersionObserver
             return;
         }
 
-        IndexDataset::dispatch((string) $dataset->id);
+        IndexDataset::dispatch((string) $dataset->id)->afterCommit();
     }
 }

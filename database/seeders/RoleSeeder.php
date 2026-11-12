@@ -211,11 +211,6 @@ class RoleSeeder extends Seeder
                     'project_grants.create',
                     'project_grants.update',
                     'project_grants.delete',
-
-                    'cancer_type_filters.read',
-                    'cancer_type_filters.create',
-                    'cancer_type_filters.update',
-                    'cancer_type_filters.delete',
                 ],
             ],
             'custodian.team.cohortAdmin' => [
@@ -272,11 +267,6 @@ class RoleSeeder extends Seeder
                     'project_grants.create',
                     'project_grants.update',
                     'project_grants.delete',
-
-                    'cancer_type_filters.read',
-                    'cancer_type_filters.create',
-                    'cancer_type_filters.update',
-                    'cancer_type_filters.delete',
 
                     'tools.read',
                     'tools.create',
@@ -362,11 +352,6 @@ class RoleSeeder extends Seeder
                     'project_grants.create',
                     'project_grants.update',
                     'project_grants.delete',
-
-                    'cancer_type_filters.read',
-                    'cancer_type_filters.create',
-                    'cancer_type_filters.update',
-                    'cancer_type_filters.delete',
 
                 ],
             ],

@@ -335,35 +335,10 @@ class ProjectGrantTest extends TestCase
         ]);
     }
 
-    public function test_edit_partially_updates_latest_version(): void
-    {
-        $grant = $this->createProjectGrantWithVersion();
-
-        $response = $this->json(
-            'PATCH',
-            self::TEST_URL_INDEX . '/' . $grant->id,
-            ['projectGrantName' => 'Patched Name Only'],
-            $this->header
-        );
-
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-        $response->assertJsonPath('data.versions.0.projectGrantName', 'Patched Name Only');
-        $response->assertJsonPath('data.versions.0.leadResearcher', 'Dr Test');
-        $response->assertJsonPath('data.versions.0.version', 1);
-
-        $this->assertDatabaseHas('project_grant_versions', [
-            'project_grant_id' => $grant->id,
-            'version' => 1,
-            'project_grant_name' => 'Patched Name Only',
-            'lead_researcher' => 'Dr Test',
-        ]);
-        $this->assertSame(1, ProjectGrantVersion::where('project_grant_id', $grant->id)->count());
-    }
-
-    public function test_edit_returns_400_for_unknown_id(): void
+    public function test_update_returns_400_for_unknown_id(): void
     {
         $response = $this->json(
-            'PATCH',
+            'PUT',
             self::TEST_URL_INDEX . '/999999999',
             ['projectGrantName' => 'Nope'],
             $this->header

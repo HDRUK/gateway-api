@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CancerTypeFilter;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\NotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -46,13 +47,14 @@ class CancerTypeFilterService
     }
 
     /**
+     * @throws NotFoundException when the filter does not exist
      * @throws BadRequestException when the new parent would create a cycle
      */
-    public function update(string $filterId, array $data): ?array
+    public function update(string $filterId, array $data): array
     {
         $filter = CancerTypeFilter::where('filter_id', $filterId)->first();
         if (!$filter) {
-            return null;
+            throw new NotFoundException('Cancer type filter not found');
         }
 
         DB::transaction(function () use ($filter, $data) {
@@ -71,19 +73,20 @@ class CancerTypeFilterService
         return $this->formatFilter($filter->fresh('children'));
     }
 
-    public function delete(string $filterId): bool
+    /**
+     * @throws NotFoundException when the filter does not exist
+     */
+    public function delete(string $filterId): void
     {
         $filter = CancerTypeFilter::where('filter_id', $filterId)->first();
         if (!$filter) {
-            return false;
+            throw new NotFoundException('Cancer type filter not found');
         }
 
         DB::transaction(function () use ($filter) {
             CancerTypeFilter::whereIn('id', $this->descendantIds($filter))->delete();
             $filter->delete();
         });
-
-        return true;
     }
 
     // -------------------------------------------------------------------------

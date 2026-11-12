@@ -7,7 +7,7 @@ use App\Models\CancerTypeFilter;
 
 class CancerTypeFilterTest extends TestCase
 {
-    public const TEST_URL_INDEX = '/api/v1/cancer-type-filters';
+    public const TEST_URL_INDEX = '/api/v1/cancer_type_filters';
 
     public function test_index_returns_root_filters_with_children(): void
     {
@@ -87,7 +87,7 @@ class CancerTypeFilterTest extends TestCase
             'sort_order' => 0,
         ]);
 
-        $response = $this->json('GET', '/api/v1/cancer-type-filters/88_0', [], ['Accept' => 'application/json']);
+        $response = $this->json('GET', '/api/v1/cancer_type_filters/88_0', [], ['Accept' => 'application/json']);
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.filter_id', '88_0');
@@ -97,7 +97,7 @@ class CancerTypeFilterTest extends TestCase
 
     public function test_show_returns_404_for_unknown_filter_id(): void
     {
-        $response = $this->json('GET', '/api/v1/cancer-type-filters/0_0_999', [], ['Accept' => 'application/json']);
+        $response = $this->json('GET', '/api/v1/cancer_type_filters/0_0_999', [], ['Accept' => 'application/json']);
         $response->assertStatus(404);
         $response->assertJson([
             'message' => 'not found',
