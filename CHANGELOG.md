@@ -1,3 +1,9 @@
+## [2.57.1](https://github.com/HDRUK/gateway-api/compare/v2.57.0...v2.57.1) (2026-11-12)
+
+### 🐛 Bug Fixes
+
+* **GAT-9851:** remove elasticsearch (#1911) ([4337efb](https://github.com/HDRUK/gateway-api/commit/4337efb37fe59ef22e681b59191c562871834e5e)), closes [GAT-9851](undefinedGAT-9851)
+
 ## [2.57.0](https://github.com/HDRUK/gateway-api/compare/v2.56.0...v2.57.0) (2026-11-10)
 
 ### ✨ Features
