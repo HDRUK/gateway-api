@@ -24,6 +24,7 @@
     <!-- <env name="DB_DEFAULT" value="sqlite_testing" /> -->
     <env name="MAIL_MAILER" value="log"/>
     <env name="QUEUE_CONNECTION" value="sync"/>
+    <env name="JSM_API_TOKEN" value=""/>
     <env name="SESSION_DRIVER" value="array"/>
     <env name="TELESCOPE_ENABLED" value="false"/>
     <env name="GOOGLE_CLOUD_LOGGING_ENABLED" value="false"/>

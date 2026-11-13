@@ -7,6 +7,7 @@ use Auditor;
 use Config;
 use Exception;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\UserRolePermissions;
 use App\Jobs\ScanFileUpload;
 use App\Models\Upload;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UploadController extends Controller
 {
+    use UserRolePermissions;
+
     /**
      * @OA\Post(
      *      x={"internal"="true"},
@@ -76,6 +79,10 @@ class UploadController extends Controller
      */
     public function upload(Request $request): JsonResponse
     {
+        if ($request->query('entity_flag') === 'experiments-media' && !$this->isSuperAdmin($request->jwtUser())) {
+            throw new UnauthorizedException();
+        }
+
         try {
             $input = $request->all();
             $file  = $request->file('file');
@@ -209,6 +216,10 @@ class UploadController extends Controller
 
             if ($upload['structural_metadata']) {
                 $upload['structural_metadata'] = json_decode($upload['structural_metadata']);
+            }
+
+            if ($upload->entity_type === 'experiments' && $upload->status === 'PROCESSED') {
+                $upload['url'] = Config::get('services.media.base_url') . $upload->file_location;
             }
 
             Auditor::log([
@@ -413,5 +424,11 @@ class UploadController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function isSuperAdmin(array $jwtUser): bool
+    {
+        return $jwtUser['is_admin'] ||
+            in_array('hdruk.superadmin', $this->getUserRolesNoTeam((int)$jwtUser['id']), true);
     }
 }

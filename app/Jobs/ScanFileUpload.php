@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Exceptions\DecoderException;
 use Maatwebsite\Excel\Facades\Excel;
 use MetadataManagementController as MMC;
 
@@ -208,6 +209,9 @@ class ScanFileUpload implements ShouldQueue
                         break;
                     case 'collections-media':
                         $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
+                        break;
+                    case 'experiments-media':
+                        $this->uploadExperimentMedia($loc, $upload);
                         break;
                     case 'dar-application-upload':
                         $this->darApplicationUpload($loc, $upload);
@@ -757,6 +761,46 @@ class ScanFileUpload implements ShouldQueue
                 'description' => $e->getMessage(),
             ]);
 
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function uploadExperimentMedia(string $loc, Upload $upload): void
+    {
+        try {
+            $content = Storage::disk($this->fileSystem . '_scanned')->get($loc);
+            (new ImageManager(Driver::class))->read($content);
+
+            $newPath = '/experiments/' . $loc;
+            Storage::disk($this->fileSystem . '_media')->put($newPath, $content);
+
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $newPath,
+                'entity_type' => 'experiments',
+            ]);
+
+            \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+        } catch (DecoderException $e) {
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => 'The file you uploaded is not an image.'
+            ]);
+            \Log::info(
+                'Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage(),
+                $this->loggingContext
+            );
+        } catch (Exception $e) {
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+            \Log::info(
+                'Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage(),
+                $this->loggingContext
+            );
             throw new Exception($e->getMessage());
         }
     }

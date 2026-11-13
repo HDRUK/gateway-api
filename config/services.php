@@ -145,4 +145,19 @@ return [
     'slack' => [
         'feature_flag_webhook_url' => env('SLACK_FEATURE_FLAG_WEBHOOK_URL', ''),
     ],
+
+    'jsm' => [
+        'base_url' => env('JSM_BASE_URL', 'https://api.atlassian.com/ex/jira'),
+        'email' => env('JSM_EMAIL'),
+        'api_token' => env('JSM_API_TOKEN'),
+        'cloud_id' => env('JSM_CLOUD_ID'),
+        'service_desk_id' => env('JSM_SERVICE_DESK_ID', '7'),
+        'request_type_id' => env('JSM_REQUEST_TYPE_ID', '78'),
+        // Feedback Log (desk 7) > Gateway Enquiry (request type 78) fields.
+        'fields' => [
+            'enquiry_type' => ['id' => 'customfield_10752', 'share_feedback' => '11728'],
+            'future_contact' => ['id' => 'customfield_11447', 'no' => '13138'],
+            'user_type' => ['id' => 'customfield_10223', 'user' => '10397', 'data_custodian' => '10394'],
+        ],
+    ],
 ];
