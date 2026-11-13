@@ -142,14 +142,33 @@ class HDRUK implements SearchProvider
         return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
     }
 
-    private function searchViaTypesense(string $query, string $type, array $params): array
+    /**
+     * The first $limit rows of the search, hydrated for the CSV exports, in
+     * relevance order. Unlike search(), a Typesense failure is thrown, so the
+     * caller can't mistake an outage for an empty result.
+     */
+    public function export(string $query, string $type, array $params, int $limit): array
     {
         $modelClass = self::TYPESENSE_MODEL_MAP[$type];
         $model      = new $modelClass();
-        $collection = $model->searchableAs();
-        $q          = $query ?: '*';
+        $filterBy   = implode(' && ', $this->filterClauses($type, $params));
 
-        $searchParams = array_merge([
+        $result = app(TypesenseService::class)->rawSearch(
+            $model->searchableAs(),
+            $query,
+            array_merge(
+                $this->baseSearchParameters($model),
+                ['per_page' => $limit, 'page' => 1],
+                $filterBy !== '' ? ['filter_by' => $filterBy] : []
+            )
+        );
+
+        return array_values($this->hydrate($this->mapHitsToElastic($result['hits'] ?? [], $type), $type));
+    }
+
+    private function baseSearchParameters(object $model): array
+    {
+        return array_merge([
             // Typesense's default (1) stops widening the query as soon as ANY
             // result is found, so a query spanning multiple distinct terms
             // (e.g. "TOWNSEND_2011_QUINTILE, AGEM Derived...", pasted from two
@@ -159,16 +178,15 @@ class HDRUK implements SearchProvider
             // tokens until it has found a reasonable number of results across
             // ALL the query's distinct terms, not just the first one matched.
             'drop_tokens_threshold' => 15,
-        ], $model->typesenseSearchParameters(), [
-            'per_page' => (int) ($params['per_page'] ?? 20),
-            'page'     => (int) ($params['page'] ?? 1),
-        ]);
+        ], $model->typesenseSearchParameters());
+    }
 
-        $facetFields = array_values(array_filter(explode(',', config("typesense.facet_map.{$type}", ''))));
-        if (!empty($facetFields)) {
-            $searchParams = array_merge($searchParams, TypesenseService::facetParams($facetFields));
-        }
-
+    /**
+     * Every filter_by clause for a search, keyed by field: the filter panel's
+     * filters, the advanced rule tree and the partner scope.
+     */
+    private function filterClauses(string $type, array $params): array
+    {
         $clauses = $this->buildFilterClauses($type, $params);
 
         // The advanced rule tree compiles to one bracketed clause. Keyed apart
@@ -190,6 +208,28 @@ class HDRUK implements SearchProvider
         if ($partnerFilter !== null) {
             $clauses['partnerContext'] = $partnerFilter;
         }
+
+        return $clauses;
+    }
+
+    private function searchViaTypesense(string $query, string $type, array $params): array
+    {
+        $modelClass = self::TYPESENSE_MODEL_MAP[$type];
+        $model      = new $modelClass();
+        $collection = $model->searchableAs();
+        $q          = $query ?: '*';
+
+        $searchParams = array_merge($this->baseSearchParameters($model), [
+            'per_page' => (int) ($params['per_page'] ?? 20),
+            'page'     => (int) ($params['page'] ?? 1),
+        ]);
+
+        $facetFields = array_values(array_filter(explode(',', config("typesense.facet_map.{$type}", ''))));
+        if (!empty($facetFields)) {
+            $searchParams = array_merge($searchParams, TypesenseService::facetParams($facetFields));
+        }
+
+        $clauses = $this->filterClauses($type, $params);
 
         $combinedFilterBy = implode(' && ', $clauses);
         if ($combinedFilterBy !== '') {
