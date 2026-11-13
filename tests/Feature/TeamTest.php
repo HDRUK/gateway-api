@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Config;
 use Tests\TestCase;
 use App\Jobs\AuditLogJob;
@@ -69,6 +70,80 @@ class TeamTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    /**
+     * Ensure the team index returns an array even if only one team is returned via filtering.
+     *
+     * @return void
+     */
+    public function test_the_application_team_index_returns_array_even_if_only_one_team_returned_via_filtering()
+    {
+        // make sure it can be returned by setting the team as enabled and not deleted
+        $firstTeamName = Team::factory()->create(['enabled' => 1, 'deleted_at' => null])->name;
+
+        $queryCheck = Team::where('name', 'like', "%{$firstTeamName}%")
+            ->where('enabled', 1)
+            ->where('deleted_at', null)
+            ->count();
+
+        $this->assertEquals(1, $queryCheck);
+
+        $response = $this->get('api/v1/teams?name=' . $firstTeamName, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    0 => [
+                        'id',
+                        'name',
+                        'enabled',
+                        'allows_messaging',
+                        'workflow_enabled',
+                        'access_requests_management',
+                        'uses_5_safes',
+                        'is_admin',
+                        'team_logo',
+                        'member_of',
+                        'contact_point',
+                        'application_form_updated_by',
+                        'application_form_updated_on',
+                        'users',
+                        'notifications',
+                        'is_question_bank',
+                        'is_provider',
+                        'url',
+                        'introduction',
+                        'dar_modal_content',
+                        'service',
+                    ],
+                ],
+            ])
+            ->assertJsonCount(1, 'data');
+    }
+
+    /**
+     * Ensure the team index returns an array even if no results are found.
+     *
+     * @return void
+     */
+    public function test_the_application_team_index_returns_array_even_if_no_results()
+    {
+        Team::query()->update(['enabled' => 0]);
+
+        $queryCheck = Team::where('enabled', 1)
+            ->where('deleted_at', null)
+            ->count();
+
+        $this->assertEquals(0, $queryCheck);
+
+        $response = $this->get('api/v1/teams', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [],
+            ])
+            ->assertJsonCount(0, 'data');
     }
 
     /**
@@ -187,6 +262,32 @@ class TeamTest extends TestCase
         ->assertJsonStructure([
             'message',
         ]);
+    }
+
+    /**
+     * Returns a not found response if the team id does not exist.
+     *
+     * @return void
+     */
+    public function test_the_application_throws_not_found_if_team_id_does_not_exist()
+    {
+        $response = $this->get('api/v1/teams/' . (Team::max('id') + 1), $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    }
+
+    /**
+     * Returns a not found response if the team is soft deleted.
+     *
+     * @return void
+     */
+    public function test_the_application_throws_not_found_if_team_is_soft_deleted()
+    {
+        $teamId = Team::factory()->create(['enabled' => 1, 'deleted_at' => now()])->id;
+
+        $response = $this->get('api/v1/teams/' .$teamId, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
@@ -333,6 +434,90 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 0,
                 'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
+                'dar_modal_content' => fake()->sentence(),
+                'service' => 'https://service.local/test',
+                'aliases' => [$aliasId],
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $teamId = $content['data'];
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
+    }
+
+    /**
+     * Team creation does not error if super admin is in list of team members
+     *
+     * @return void
+     */
+    public function test_the_application_can_create_a_team_with_super_admin_in_team_members()
+    {
+        $superAdminId = User::factory()->create(['is_admin' => 1])->id;
+
+        $aliasId = Alias::all()->random()->id;
+
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+                'email' => null,
+                'user_id' => $superAdminId,
+            ],
+            $this->header
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $response = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'is_question_bank' => 0,
+                'users' => [$superAdminId],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
                 'introduction' => fake()->sentence(),
                 'dar_modal_content' => fake()->sentence(),
