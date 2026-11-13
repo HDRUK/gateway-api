@@ -2277,6 +2277,118 @@ return [
         ],
     ],
 
+    // experiments
+    [
+        'name' => 'experiments',
+        'method' => 'get',
+        'path' => '/experiments',
+        'methodController' => 'ExperimentController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'get',
+        'path' => '/experiments/{id}',
+        'methodController' => 'ExperimentController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'post',
+        'path' => '/experiments',
+        'methodController' => 'ExperimentController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'put',
+        'path' => '/experiments/{id}',
+        'methodController' => 'ExperimentController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'delete',
+        'path' => '/experiments/{id}',
+        'methodController' => 'ExperimentController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments.active',
+        'method' => 'get',
+        'path' => '/experiments/active',
+        'methodController' => 'ExperimentController@active',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments.active.me',
+        'method' => 'get',
+        'path' => '/experiments/active/me',
+        'methodController' => 'ExperimentController@activeForMe',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments.responses',
+        'method' => 'post',
+        'path' => '/experiments/{id}/responses',
+        'methodController' => 'ExperimentController@respond',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments.responses.me',
+        'method' => 'post',
+        'path' => '/experiments/{id}/responses/me',
+        'methodController' => 'ExperimentController@respondForMe',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // team.user.role
     [
         'name' => 'team.user.role',
