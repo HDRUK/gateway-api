@@ -16,6 +16,9 @@ class FakeTypesenseService extends TypesenseService
     // Typesense's own default when a search omits max_facet_values.
     private const DEFAULT_MAX_FACET_VALUES = 10;
 
+    // Typesense's own default when a search omits per_page.
+    private const DEFAULT_PER_PAGE = 10;
+
     /** @var array<string, array<int, array<string, mixed>>> */
     private array $documents = [];
 
@@ -218,13 +221,22 @@ class FakeTypesenseService extends TypesenseService
 
     private function searchCollection(string $collection, array $params): array
     {
-        $documents = $this->documents[$collection] ?? [];
+        $filterBy = $params['filter_by'] ?? '';
+        $documents = array_values(array_filter(
+            $this->documents[$collection] ?? [],
+            fn (array $document) => $filterBy === '' || $this->matchesFilter($document, $filterBy)
+        ));
         $fields = array_filter(explode(',', $params['facet_by'] ?? ''));
         $maxValues = (int) ($params['max_facet_values'] ?? self::DEFAULT_MAX_FACET_VALUES);
+        $perPage = (int) ($params['per_page'] ?? self::DEFAULT_PER_PAGE);
+        $page = max(1, (int) ($params['page'] ?? 1));
 
         return [
             'found'        => count($documents),
-            'hits'         => [],
+            'hits'         => array_map(
+                fn (array $document) => ['document' => $document, 'text_match' => 1, 'highlight' => []],
+                array_slice($documents, ($page - 1) * $perPage, $perPage)
+            ),
             'facet_counts' => array_map(
                 fn (string $field) => [
                     'field_name' => $field,
@@ -233,6 +245,52 @@ class FakeTypesenseService extends TypesenseService
                 array_values($fields)
             ),
         ];
+    }
+
+    /**
+     * Evaluates the subset of filter_by the app sends: clauses joined by
+     * " && ", each an exact match (field:=value or field:=[a,b]) or a numeric
+     * comparison (field:>n, >=, <, <=). Anything else throws, so a test can't
+     * pass by having its filter silently ignored.
+     */
+    private function matchesFilter(array $document, string $filterBy): bool
+    {
+        foreach (explode(' && ', $filterBy) as $clause) {
+            if (! $this->matchesClause($document, $clause)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function matchesClause(array $document, string $clause): bool
+    {
+        if (preg_match('/^(\w+):(>=|<=|>|<)(-?\d+)$/', $clause, $m)) {
+            $value = $document[$m[1]] ?? null;
+
+            return is_numeric($value) && match ($m[2]) {
+                '>='    => $value >= (int) $m[3],
+                '<='    => $value <= (int) $m[3],
+                '>'     => $value > (int) $m[3],
+                '<'     => $value < (int) $m[3],
+            };
+        }
+
+        if (! preg_match('/^(\w+):=(\[.*\]|[^\[\]]+)$/', $clause, $m)) {
+            throw new \LogicException("FakeTypesenseService can't evaluate filter clause: {$clause}");
+        }
+
+        $list = trim($m[2], '[]');
+        $wanted = str_contains($list, '`')
+            ? (preg_match_all('/`([^`]*)`/', $list, $quoted) ? $quoted[1] : [])
+            : explode(',', $list);
+        $values = array_map(
+            fn ($v) => is_bool($v) ? var_export($v, true) : (string) $v,
+            (array) ($document[$m[1]] ?? [])
+        );
+
+        return array_intersect($values, $wanted) !== [];
     }
 
     /**

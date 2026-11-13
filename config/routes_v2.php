@@ -1287,6 +1287,17 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'search_export.post',
+        'method' => 'post',
+        'path' => '/search/{type}/export',
+        'methodController' => 'SearchExportController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'type' => 'datasets|dur|tools',
+        ],
+    ],
+    [
         'name' => 'search_variables.post',
         'method' => 'post',
         'path' => '/search/variables',
