@@ -23,6 +23,9 @@ class FeatureSeeder extends Seeder
         // schema (gateway-web) and validates GWDM on activation. Off = the
         // existing form hydration flow.
         'SchemaOnboardingForm' => false,
+        // Lets users switch input schema on the onboarding form (gateway-web).
+        // Off = the default schema only.
+        'SchemaOnboardingFormSelector' => false,
         // Let the HDRUK context read and render each partner's datasets
         // (PartnerContext::CROSS_CONTEXT_FLAGS). Off = HDRUK datasets only.
         'RenderSchemaCRUK' => false,
