@@ -118,15 +118,15 @@ class ExperimentService
             return;
         }
 
-        CreateServiceDeskRequest::dispatch([
-            'experiment_id' => $experiment->id,
-            'answers' => $answers,
-            'path' => $path,
-            'signed_in' => $user !== null,
-            'user_id' => $contact && $user ? $user->id : null,
-            'user_type' => $user ? $this->userType($this->rolesFor($user->id)) : null,
-            'contact_email' => $contact ? ($user ? $user->preferredEmailAddress() : $email) : null,
-        ]);
+        CreateServiceDeskRequest::dispatch(new ExperimentSubmission(
+            experimentId: $experiment->id,
+            answers: $answers,
+            path: $path,
+            signedIn: $user !== null,
+            userId: $contact && $user ? $user->id : null,
+            userType: $user ? $this->userType($this->rolesFor($user->id)) : null,
+            contactEmail: $contact ? ($user ? $user->preferredEmailAddress() : $email) : null,
+        ));
     }
 
     private function userType(array $roles): string

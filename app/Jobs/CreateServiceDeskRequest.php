@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Http\Traits\LoggingContext;
 use App\Models\Experiment;
+use App\Services\Experiments\ExperimentSubmission;
 use App\Services\JiraServiceDesk;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
@@ -31,7 +32,7 @@ class CreateServiceDeskRequest implements ShouldQueue, ShouldBeEncrypted
 
     private array $loggingContext;
 
-    public function __construct(public readonly array $submission)
+    public function __construct(public readonly ExperimentSubmission $submission)
     {
         $this->loggingContext = $this->getLoggingContext(\request());
         $this->loggingContext['method_name'] = class_basename($this);
@@ -39,12 +40,12 @@ class CreateServiceDeskRequest implements ShouldQueue, ShouldBeEncrypted
 
     public function handle(JiraServiceDesk $serviceDesk): void
     {
-        $experiment = Experiment::find($this->submission['experiment_id']);
+        $experiment = Experiment::find($this->submission->experimentId);
 
         if (!$experiment) {
             \Log::warning('CreateServiceDeskRequest :: experiment no longer exists, request not raised.', array_merge(
                 $this->loggingContext,
-                ['experiment_id' => $this->submission['experiment_id']]
+                ['experiment_id' => $this->submission->experimentId]
             ));
 
             return;
@@ -53,7 +54,7 @@ class CreateServiceDeskRequest implements ShouldQueue, ShouldBeEncrypted
         $created = $serviceDesk->createFeedbackRequest(
             Str::limit('Feedback: ' . $experiment->name, 250),
             $this->description($experiment),
-            $this->submission['user_type']
+            $this->submission->userType
         );
 
         if ($created->clientError()) {
@@ -70,21 +71,21 @@ class CreateServiceDeskRequest implements ShouldQueue, ShouldBeEncrypted
     public function failed(Throwable $exception): void
     {
         \Log::error('CreateServiceDeskRequest :: request not raised.', array_merge($this->loggingContext, [
-            'experiment_id' => $this->submission['experiment_id'],
+            'experiment_id' => $this->submission->experimentId,
             'error' => $exception->getMessage(),
         ]));
     }
 
     public function tags(): array
     {
-        return ['experiments', 'experiment:' . $this->submission['experiment_id']];
+        return ['experiments', 'experiment:' . $this->submission->experimentId];
     }
 
     private function description(Experiment $experiment): string
     {
         $blocks = collect($experiment->blocks())->keyBy('id');
 
-        $lines = collect($this->submission['answers'])
+        $lines = collect($this->submission->answers)
             ->map(fn ($answer, $blockId) => ($blocks[$blockId]['label'] ?? $blockId) . ': ' .
                 $this->formatAnswer($blocks[$blockId] ?? [], $answer))
             ->values()
@@ -92,8 +93,8 @@ class CreateServiceDeskRequest implements ShouldQueue, ShouldBeEncrypted
 
         return implode("\n", array_merge(
             [
-                'Page: ' . $this->submission['path'],
-                'Contact: ' . ($this->submission['contact_email'] ?: 'not requested'),
+                'Page: ' . $this->submission->path,
+                'Contact: ' . ($this->submission->contactEmail ?: 'not requested'),
                 'Signed in: ' . $this->signedIn(),
                 '',
             ],
@@ -103,11 +104,11 @@ class CreateServiceDeskRequest implements ShouldQueue, ShouldBeEncrypted
 
     private function signedIn(): string
     {
-        if (!$this->submission['signed_in']) {
+        if (!$this->submission->signedIn) {
             return 'no';
         }
 
-        return $this->submission['user_id'] ? 'yes (user ' . $this->submission['user_id'] . ')' : 'yes';
+        return $this->submission->userId ? 'yes (user ' . $this->submission->userId . ')' : 'yes';
     }
 
     private function formatAnswer(array $block, mixed $answer): string

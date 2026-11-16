@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserHasRole;
 use App\Services\Experiments\ExperimentService;
+use App\Services\Experiments\ExperimentSubmission;
 use App\Services\JiraServiceDesk;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -82,17 +83,17 @@ class ServiceDeskRequestTest extends TestCase
         ]);
     }
 
-    private function submission(array $overrides = []): array
+    private function submission(array $overrides = []): ExperimentSubmission
     {
-        return array_merge([
-            'experiment_id' => $this->experiment()->id,
+        return new ExperimentSubmission(...array_merge([
+            'experimentId' => $this->experiment()->id,
             'answers' => ['score' => 2, 'areas' => ['filters', 'results'], 'comment' => 'Filters reset'],
             'path' => '/en/search',
-            'signed_in' => false,
-            'user_id' => null,
-            'user_type' => null,
-            'contact_email' => null,
-        ], $overrides);
+            'signedIn' => false,
+            'userId' => null,
+            'userType' => null,
+            'contactEmail' => null,
+        ], $overrides));
     }
 
     private function respond(string $path, array $body, array $headers): CreateServiceDeskRequest
@@ -122,9 +123,9 @@ class ServiceDeskRequestTest extends TestCase
         $job = $this->respond('', [], ['Accept' => 'application/json']);
 
         $this->assertNull($job->delay);
-        $this->assertSame(['score' => 4], $job->submission['answers']);
-        $this->assertFalse($job->submission['signed_in']);
-        $this->assertNull($job->submission['contact_email']);
+        $this->assertSame(['score' => 4], $job->submission->answers);
+        $this->assertFalse($job->submission->signedIn);
+        $this->assertNull($job->submission->contactEmail);
     }
 
     public function test_no_request_is_queued_when_the_service_desk_is_not_configured(): void
@@ -152,7 +153,7 @@ class ServiceDeskRequestTest extends TestCase
     {
         Http::fake([self::REQUEST_URL => Http::response(['issueKey' => 'FBL-101'], 201)]);
 
-        (new CreateServiceDeskRequest($this->submission(['contact_email' => 'user@example.com'])))->handle(app(JiraServiceDesk::class));
+        (new CreateServiceDeskRequest($this->submission(['contactEmail' => 'user@example.com'])))->handle(app(JiraServiceDesk::class));
 
         Http::assertSent(function ($request) {
             $fields = $request['requestFieldValues'];
@@ -200,7 +201,7 @@ class ServiceDeskRequestTest extends TestCase
     {
         Http::fake([self::REQUEST_URL => Http::response(['issueKey' => 'FBL-104'], 201)]);
 
-        (new CreateServiceDeskRequest($this->submission(['signed_in' => true, 'user_type' => 'data_custodian'])))->handle(app(JiraServiceDesk::class));
+        (new CreateServiceDeskRequest($this->submission(['signedIn' => true, 'userType' => 'data_custodian'])))->handle(app(JiraServiceDesk::class));
 
         Http::assertSent(fn ($request) => $request->url() === self::REQUEST_URL &&
             $request['requestFieldValues']['customfield_10223'] === ['id' => '10394']);
@@ -213,9 +214,9 @@ class ServiceDeskRequestTest extends TestCase
         $job = $this->respond('/me', [], $this->signedInHeaders());
         $job->handle(app(JiraServiceDesk::class));
 
-        $this->assertTrue($job->submission['signed_in']);
-        $this->assertNull($job->submission['user_id']);
-        $this->assertSame('user', $job->submission['user_type']);
+        $this->assertTrue($job->submission->signedIn);
+        $this->assertNull($job->submission->userId);
+        $this->assertSame('user', $job->submission->userType);
         Http::assertSent(fn ($request) => $request->url() === self::REQUEST_URL &&
             str_contains($request['requestFieldValues']['description'], "Signed in: yes\n"));
     }
@@ -238,14 +239,14 @@ class ServiceDeskRequestTest extends TestCase
     {
         $job = $this->respond('', ['contact' => true, 'email' => 'user@example.com'], ['Accept' => 'application/json']);
 
-        $this->assertSame('user@example.com', $job->submission['contact_email']);
+        $this->assertSame('user@example.com', $job->submission->contactEmail);
     }
 
     public function test_an_email_without_an_opt_in_is_not_sent(): void
     {
         $job = $this->respond('', ['contact' => false, 'email' => 'user@example.com'], ['Accept' => 'application/json']);
 
-        $this->assertNull($job->submission['contact_email']);
+        $this->assertNull($job->submission->contactEmail);
     }
 
     public function test_an_answer_of_an_unexpected_shape_does_not_stop_the_request(): void
@@ -274,7 +275,7 @@ class ServiceDeskRequestTest extends TestCase
         Http::fake([self::REQUEST_URL => Http::sequence()
             ->push(['errorMessage' => 'Bad value user@example.com'], 400)
             ->push(['errorMessage' => 'Outage near user@example.com'], 503)]);
-        $submission = $this->submission(['contact_email' => 'user@example.com']);
+        $submission = $this->submission(['contactEmail' => 'user@example.com']);
 
         $rejected = (new CreateServiceDeskRequest($submission))->withFakeQueueInteractions();
         $rejected->handle(app(JiraServiceDesk::class));
@@ -299,7 +300,7 @@ class ServiceDeskRequestTest extends TestCase
 
         $job = $this->respond('/me', [], $headers);
 
-        $this->assertSame('data_custodian', $job->submission['user_type']);
+        $this->assertSame('data_custodian', $job->submission->userType);
     }
 
     public function test_an_opt_in_uses_the_secondary_email_when_preferred(): void
@@ -310,7 +311,7 @@ class ServiceDeskRequestTest extends TestCase
 
         $job = $this->respond('/me', ['contact' => true], $headers);
 
-        $this->assertSame('secondary@example.com', $job->submission['contact_email']);
+        $this->assertSame('secondary@example.com', $job->submission->contactEmail);
     }
 
     public function test_an_opt_in_falls_back_to_the_primary_email_without_a_secondary(): void
@@ -321,7 +322,7 @@ class ServiceDeskRequestTest extends TestCase
 
         $job = $this->respond('/me', ['contact' => true], $headers);
 
-        $this->assertSame($user->email, $job->submission['contact_email']);
+        $this->assertSame($user->email, $job->submission->contactEmail);
     }
 
     public function test_a_deleted_experiment_is_logged_and_not_sent(): void
@@ -329,14 +330,14 @@ class ServiceDeskRequestTest extends TestCase
         Http::fake();
         Log::spy();
         $submission = $this->submission();
-        Experiment::find($submission['experiment_id'])->forceDelete();
+        Experiment::find($submission->experimentId)->forceDelete();
 
         (new CreateServiceDeskRequest($submission))->handle(app(JiraServiceDesk::class));
 
         Http::assertNothingSent();
         Log::shouldHaveReceived('warning')
             ->withArgs(fn ($message, $context) => str_contains($message, 'experiment no longer exists') &&
-                $context['experiment_id'] === $submission['experiment_id'])
+                $context['experiment_id'] === $submission->experimentId)
             ->once();
     }
 }
