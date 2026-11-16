@@ -30,6 +30,9 @@ class FeatureSeeder extends Seeder
         'RenderSchemaCRUK' => false,
         'RenderSchemaPRUK' => false,
         'RenderSchemaCROCOD' => false,
+        // In-app feedback prompts and the search admin Experiments tab
+        // (gateway-web). Off = no prompts served and responses rejected.
+        'POC_FeedbackExperiments' => false,
         'SafePeopleRegistrySSOEnabled' => false,
         'LoginDisabled' => false,
         'LoginGoogleEnabled' => true,

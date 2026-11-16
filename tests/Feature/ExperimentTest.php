@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Experiment;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
@@ -22,6 +23,8 @@ class ExperimentTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+
+        Feature::activate('POC_FeedbackExperiments');
     }
 
     private function payload(array $overrides = []): array
@@ -198,6 +201,31 @@ class ExperimentTest extends TestCase
             ['answers' => ['score' => 4], 'path' => '/en/search'],
             ['Accept' => 'application/json']
         )->assertStatus(404);
+    }
+
+    public function test_active_is_empty_when_the_feature_is_off(): void
+    {
+        Feature::deactivate('POC_FeedbackExperiments');
+        Experiment::create($this->payload());
+
+        $this->json('GET', self::TEST_URL . '/active', [], ['Accept' => 'application/json'])
+            ->assertStatus(200)
+            ->assertExactJson(['message' => 'success', 'data' => []]);
+    }
+
+    public function test_response_is_not_found_when_the_feature_is_off(): void
+    {
+        Feature::deactivate('POC_FeedbackExperiments');
+        $experiment = Experiment::create($this->payload());
+
+        $this->json(
+            'POST',
+            self::TEST_URL . '/' . $experiment->id . '/responses',
+            ['answers' => ['score' => 4], 'path' => '/en/search'],
+            ['Accept' => 'application/json']
+        )->assertStatus(404);
+
+        $this->assertSame(0, $experiment->fresh()->responses_count);
     }
 
     public function test_response_outside_the_audience_is_not_found(): void

@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\JiraServiceDesk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Laravel\Pennant\Feature;
 
 /**
  * @OA\Schema(
@@ -51,6 +52,10 @@ class ExperimentService
 
     public function activeFor(Request $request): Collection
     {
+        if (!Feature::active('POC_FeedbackExperiments')) {
+            return collect();
+        }
+
         $visitor = $this->visitor($request);
 
         return Experiment::running()->get()
@@ -69,6 +74,10 @@ class ExperimentService
 
     public function findShownTo(int $id, Request $request): Experiment
     {
+        if (!Feature::active('POC_FeedbackExperiments')) {
+            throw new NotFoundException();
+        }
+
         $experiment = Experiment::running()->find($id);
 
         if (!$experiment || !ExperimentTargeting::isShownTo($experiment, $this->visitor($request))) {
