@@ -38,12 +38,24 @@ class PartnerContext
         'CROCOD' => 'RenderSchemaCROCOD',
     ];
 
+    /** Gates storing the request partner context on team dataset update. */
+    public const SELECTOR_FLAG = 'SchemaOnboardingFormSelector';
+
     public function getPartner(): string
     {
         return request()->header(
             'x-partner-context',
             config('partners.default', 'HDRUK')
         );
+    }
+
+    /**
+     * The request partner context to store on a dataset, or null while the
+     * schema selector flag is off.
+     */
+    public function selectedPartner(): ?string
+    {
+        return Feature::active(self::SELECTOR_FLAG) ? $this->getPartner() : null;
     }
 
     /**

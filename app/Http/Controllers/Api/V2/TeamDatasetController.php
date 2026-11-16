@@ -665,6 +665,7 @@ class TeamDatasetController extends Controller
             }
 
             $updateTime = now();
+            $selectedPartner = $this->partnerContext->selectedPartner();
             $currDataset->update([
                 'user_id'          => $jwtUser['id'] ?? $userId,
                 'team_id'          => $teamId,
@@ -673,6 +674,7 @@ class TeamDatasetController extends Controller
                 'create_origin'    => $createOrigin,
                 'status'           => $request['status'],
                 'is_cohort_discovery' => $isCohortDiscovery,
+                ...($selectedPartner !== null ? ['partner_context' => $selectedPartner] : []),
             ]);
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
