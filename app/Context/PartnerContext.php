@@ -38,9 +38,6 @@ class PartnerContext
         'CROCOD' => 'RenderSchemaCROCOD',
     ];
 
-    /** Gates storing the request partner context on team dataset update. */
-    public const SELECTOR_FLAG = 'SchemaOnboardingFormSelector';
-
     public function getPartner(): string
     {
         return request()->header(
@@ -49,13 +46,16 @@ class PartnerContext
         );
     }
 
-    /**
-     * The request partner context to store on a dataset, or null while the
-     * schema selector flag is off.
-     */
-    public function selectedPartner(): ?string
+    /** The partner context the request names explicitly, or null if it sends none. */
+    public function requestedPartner(): ?string
     {
-        return Feature::active(self::SELECTOR_FLAG) ? $this->getPartner() : null;
+        return request()->header('x-partner-context');
+    }
+
+    /** Whether a partner context is HDRUK or one HDRUK can be flagged to read. */
+    public static function isKnown(string $partner): bool
+    {
+        return $partner === 'HDRUK' || array_key_exists($partner, self::CROSS_CONTEXT_FLAGS);
     }
 
     /**

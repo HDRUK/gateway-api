@@ -622,6 +622,13 @@ class TeamDatasetController extends Controller
         $initDataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
+        $requestedPartner = $this->partnerContext->requestedPartner();
+        if ($requestedPartner !== null && !PartnerContext::isKnown($requestedPartner)) {
+            return response()->json([
+                'message' => 'Unknown partner context',
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
+
         try {
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
@@ -665,7 +672,6 @@ class TeamDatasetController extends Controller
             }
 
             $updateTime = now();
-            $selectedPartner = $this->partnerContext->selectedPartner();
             $currDataset->update([
                 'user_id'          => $jwtUser['id'] ?? $userId,
                 'team_id'          => $teamId,
@@ -674,7 +680,7 @@ class TeamDatasetController extends Controller
                 'create_origin'    => $createOrigin,
                 'status'           => $request['status'],
                 'is_cohort_discovery' => $isCohortDiscovery,
-                ...($selectedPartner !== null ? ['partner_context' => $selectedPartner] : []),
+                ...($requestedPartner !== null ? ['partner_context' => $requestedPartner] : []),
             ]);
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
