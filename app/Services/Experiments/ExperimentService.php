@@ -32,6 +32,8 @@ class ExperimentService
     use LoggingContext;
     use UserRolePermissions;
 
+    public const FEATURE_FLAG = 'POC_FeedbackExperiments';
+
     public function __construct(
         private readonly JiraServiceDesk $serviceDesk,
     ) {
@@ -52,7 +54,7 @@ class ExperimentService
 
     public function activeFor(Request $request): Collection
     {
-        if (!Feature::active('POC_FeedbackExperiments')) {
+        if (!Feature::active(self::FEATURE_FLAG)) {
             return collect();
         }
 
@@ -74,7 +76,7 @@ class ExperimentService
 
     public function findShownTo(int $id, Request $request): Experiment
     {
-        if (!Feature::active('POC_FeedbackExperiments')) {
+        if (!Feature::active(self::FEATURE_FLAG)) {
             throw new NotFoundException();
         }
 

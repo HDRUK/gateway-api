@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Experiment;
+use App\Models\User;
+use App\Services\Experiments\ExperimentService;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Pennant\Feature;
 use Tests\TestCase;
@@ -24,7 +26,7 @@ class ExperimentTest extends TestCase
     {
         $this->commonSetUp();
 
-        Feature::activate('POC_FeedbackExperiments');
+        Feature::activate(ExperimentService::FEATURE_FLAG);
     }
 
     private function payload(array $overrides = []): array
@@ -205,7 +207,7 @@ class ExperimentTest extends TestCase
 
     public function test_active_is_empty_when_the_feature_is_off(): void
     {
-        Feature::deactivate('POC_FeedbackExperiments');
+        Feature::deactivate(ExperimentService::FEATURE_FLAG);
         Experiment::create($this->payload());
 
         $this->json('GET', self::TEST_URL . '/active', [], ['Accept' => 'application/json'])
@@ -215,7 +217,7 @@ class ExperimentTest extends TestCase
 
     public function test_response_is_not_found_when_the_feature_is_off(): void
     {
-        Feature::deactivate('POC_FeedbackExperiments');
+        Feature::deactivate(ExperimentService::FEATURE_FLAG);
         $experiment = Experiment::create($this->payload());
 
         $this->json(
@@ -327,5 +329,33 @@ class ExperimentTest extends TestCase
             $this->payload(['targeting' => ['audience' => 'roles', 'roles' => ['hdruk.admin']]]),
             $this->header
         )->assertStatus(400);
+    }
+
+    public function test_a_deleted_experiment_is_rejected_instead_of_erroring(): void
+    {
+        $experiment = Experiment::create($this->payload());
+        $experiment->delete();
+        $url = self::TEST_URL . '/' . $experiment->id;
+
+        $this->json('GET', $url, [], $this->header)->assertStatus(400);
+        $this->json('PUT', $url, $this->payload(), $this->header)->assertStatus(400);
+        $this->json('DELETE', $url, [], $this->header)->assertStatus(400);
+    }
+
+    public function test_user_ids_sent_as_strings_still_target_the_user(): void
+    {
+        $headers = $this->userHeader();
+        $userId = User::where('email', config(self::CFG_NONADMIN_EMAIL))->firstOrFail()->id;
+
+        $id = $this->json(
+            'POST',
+            self::TEST_URL,
+            $this->payload(['targeting' => ['audience' => 'user_ids', 'user_ids' => [(string)$userId]]]),
+            $this->header
+        )->assertStatus(201)->json('data');
+
+        $meIds = collect($this->json('GET', self::TEST_URL . '/active/me', [], $headers)->json('data'))->pluck('id');
+
+        $this->assertContains($id, $meIds);
     }
 }

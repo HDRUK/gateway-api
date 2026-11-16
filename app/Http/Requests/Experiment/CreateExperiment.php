@@ -55,6 +55,12 @@ class CreateExperiment extends BaseFormRequest
 
     public function experimentData(): array
     {
-        return $this->safe()->merge(['definition' => $this->input('definition')])->except(['id']);
+        $data = $this->safe()->merge(['definition' => $this->input('definition')])->except(['id']);
+
+        if (isset($data['targeting']['user_ids'])) {
+            $data['targeting']['user_ids'] = array_map('intval', $data['targeting']['user_ids']);
+        }
+
+        return $data;
     }
 }

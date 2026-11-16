@@ -7,6 +7,7 @@ use App\Models\Experiment;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserHasRole;
+use App\Services\Experiments\ExperimentService;
 use App\Services\JiraServiceDesk;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -27,7 +28,7 @@ class ServiceDeskRequestTest extends TestCase
     {
         $this->commonSetUp();
 
-        Feature::activate('POC_FeedbackExperiments');
+        Feature::activate(ExperimentService::FEATURE_FLAG);
 
         config([
             'services.jsm.email' => 'helpdesk-bot@example.com',

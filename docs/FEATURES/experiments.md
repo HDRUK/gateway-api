@@ -14,7 +14,7 @@ Super admins create feedback prompts and design reviews that gateway-web shows o
 
 An experiment runs while its `status` is `active` and today falls between `starts_at` and `ends_at`. `targeting` controls who sees it:
 
--   `audience`: `all`, `logged_in`, `logged_out`, or `user_ids`. `logged_out` is only shown on `/active`, since signed-in users call `/active/me`.
+-   `audience`: `all`, `logged_in`, `logged_out`, or `user_ids`. `logged_out` is only shown on `/active`, since signed-in users call `/active/me`. `user_ids` are stored as integers, even when sent as numeric strings.
 -   `percentage`: assignment is stable per user, or per `x-request-session-id` when signed out (`crc32` bucket).
 
 `trigger.on` is `load`, `delay` or `exitIntent`. The active endpoints also return `endsAt` (`Y-m-d` or null), so the web can expire its dismissal cookie when the experiment ends.
@@ -26,7 +26,9 @@ Only answers to question blocks (`rating`, `choice`, `textInput`, `abChoice`) ar
 -   Each accepted response adds 1 to `experiments.responses_count`, shown in the admin list. Nothing else about it is written to the database.
 -   There is no server-side check for repeat responses. The web's cookie stops the prompt reappearing.
 
-`starts_at` and `ends_at` must be `Y-m-d`.
+`starts_at` and `ends_at` must be `Y-m-d`. Deleting an experiment soft-deletes it; `GET`, `PUT` and `DELETE` on a deleted ID return 400.
+
+The public endpoints are behind the `POC_FeedbackExperiments` Pennant flag (`ExperimentService::FEATURE_FLAG`), off by default. While it is off, `/active` and `/active/me` return an empty list, and both `/responses` routes return 404.
 
 These routes sit behind the `api` group's global rate limit only. A per-route throttle would key on the load balancer's IP (`TrustProxies` trusts no proxies), so every anonymous visitor would share one bucket.
 

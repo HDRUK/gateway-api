@@ -17,7 +17,7 @@ class GetExperiment extends BaseFormRequest
             'id' => [
                 'required',
                 'int',
-                'exists:experiments,id',
+                'exists:experiments,id,deleted_at,NULL',
             ],
         ];
     }

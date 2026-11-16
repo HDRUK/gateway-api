@@ -12,7 +12,7 @@ class UpdateExperiment extends CreateExperiment
     public function rules(): array
     {
         return array_merge(
-            ['id' => 'required|int|exists:experiments,id'],
+            ['id' => 'required|int|exists:experiments,id,deleted_at,NULL'],
             parent::rules()
         );
     }
