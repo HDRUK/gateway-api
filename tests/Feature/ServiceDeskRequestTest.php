@@ -11,6 +11,7 @@ use App\Services\JiraServiceDesk;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Laravel\Pennant\Feature;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 
@@ -25,6 +26,8 @@ class ServiceDeskRequestTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+
+        Feature::activate('POC_FeedbackExperiments');
 
         config([
             'services.jsm.email' => 'helpdesk-bot@example.com',
