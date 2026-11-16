@@ -273,4 +273,11 @@ class User extends Authenticatable
             ->withPivot('user_id', 'workgroup_id')
             ->orderBy('user_has_workgroups.workgroup_id');
     }
+
+    public function preferredEmailAddress(): ?string
+    {
+        return ($this->provider === 'open-athens' || $this->preferred_email === 'secondary')
+            ? ($this->secondary_email ?: $this->email)
+            : $this->email;
+    }
 }

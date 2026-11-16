@@ -34,9 +34,11 @@ These routes sit behind the `api` group's global rate limit only. A per-route th
 
 ## Code
 
--   `ExperimentController`: CRUD, `active()`/`activeForMe()` and `respond()`/`respondForMe()`. The `/me` methods exist so each route has its own OpenAPI entry. Validation is in `app/Http/Requests/Experiment`, logic is in the services below.
--   `App\Services\Experiments\ExperimentService`: creates and updates experiments, lists active ones, and checks and submits responses. A user's roles are only looked up when a signed-in user responds, to set the ticket's User Type.
+-   `ExperimentController`: CRUD, `active()`/`activeForMe()` and `respond()`/`respondForMe()`. The `/me` methods exist so each route has its own OpenAPI entry. It reads the JWT user and `x-request-session-id` into an `ExperimentVisitor`, and turns the service's `InvalidArgumentException` into a 400. Validation is in `app/Http/Requests/Experiment`, logic is in the services below.
+-   `App\Services\Experiments\ExperimentService`: creates and updates experiments, lists active ones, and checks and submits responses. It takes no `Request`. A user's roles are only looked up when a signed-in user responds, to set the ticket's User Type.
+-   `App\Services\Experiments\ExperimentVisitor`: the user ID and session ID of the visitor, and the `subject` used for percentage bucketing.
 -   `App\Services\Experiments\ExperimentTargeting`: static audience and percentage checks.
+-   `User::preferredEmailAddress()`: the contact email for a signed-in opt-in. It falls back to the primary email when no secondary is set.
 -   `App\Services\JiraServiceDesk`: JSM configuration check and the create-request call.
 -   `App\Models\Experiment`: status, audience, trigger, frequency and block type constants, the `running` scope and `knownAnswers()`.
 

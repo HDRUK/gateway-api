@@ -6,10 +6,10 @@ use App\Models\Experiment;
 
 final class ExperimentTargeting
 {
-    public static function isShownTo(Experiment $experiment, array $visitor): bool
+    public static function isShownTo(Experiment $experiment, ExperimentVisitor $visitor): bool
     {
-        return self::inAudience($experiment, $visitor['userId']) &&
-            self::inPercentage($experiment, $visitor['subject']);
+        return self::inAudience($experiment, $visitor->userId) &&
+            self::inPercentage($experiment, $visitor->subject);
     }
 
     private static function inAudience(Experiment $experiment, ?int $userId): bool

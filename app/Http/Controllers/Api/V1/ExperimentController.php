@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+use InvalidArgumentException;
 use App\Models\Experiment;
+use App\Exceptions\BadRequestException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Services\Experiments\ExperimentService;
+use App\Services\Experiments\ExperimentVisitor;
 use App\Http\Requests\Experiment\GetExperiment;
 use App\Http\Requests\Experiment\CreateExperiment;
 use App\Http\Requests\Experiment\DeleteExperiment;
@@ -264,7 +267,7 @@ class ExperimentController extends Controller
     {
         return response()->json([
             'message' => 'success',
-            'data' => $this->experimentService->activeFor($request),
+            'data' => $this->experimentService->activeFor($this->visitor($request)),
         ]);
     }
 
@@ -315,9 +318,15 @@ class ExperimentController extends Controller
      */
     public function respond(CreateExperimentResponse $request, int $id): JsonResponse
     {
-        $experiment = $this->experimentService->findShownTo($id, $request);
-        $answers = $this->experimentService->answersFor($experiment, $request->input('answers', []));
-        $userId = $this->experimentService->userId($request);
+        $visitor = $this->visitor($request);
+        $experiment = $this->experimentService->findShownTo($id, $visitor);
+        $userId = $visitor->userId;
+
+        try {
+            $answers = $this->experimentService->answersFor($experiment, $request->input('answers', []));
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestException($e->getMessage());
+        }
 
         try {
             $contact = $request->boolean('contact');
@@ -377,6 +386,17 @@ class ExperimentController extends Controller
     public function respondForMe(CreateExperimentResponse $request, int $id): JsonResponse
     {
         return $this->respond($request, $id);
+    }
+
+    private function visitor(Request $request): ExperimentVisitor
+    {
+        $jwtUser = $request->jwtUser();
+        $sessionId = (string)$request->header('x-request-session-id');
+
+        return new ExperimentVisitor(
+            $jwtUser ? (int)$jwtUser['id'] : null,
+            preg_match('/^[A-Za-z0-9:_ -]{1,100}$/', $sessionId) ? $sessionId : null,
+        );
     }
 
     private function logException(Exception $e, ?array $jwtUser, string $action): void

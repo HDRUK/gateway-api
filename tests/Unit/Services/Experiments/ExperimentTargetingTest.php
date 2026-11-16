@@ -4,6 +4,7 @@ namespace Tests\Unit\Services\Experiments;
 
 use App\Models\Experiment;
 use App\Services\Experiments\ExperimentTargeting;
+use App\Services\Experiments\ExperimentVisitor;
 use PHPUnit\Framework\TestCase;
 
 class ExperimentTargetingTest extends TestCase
@@ -16,9 +17,9 @@ class ExperimentTargetingTest extends TestCase
         return $experiment;
     }
 
-    private function visitor(?int $userId = null, ?string $subject = null): array
+    private function visitor(?int $userId = null, ?string $sessionId = null): ExperimentVisitor
     {
-        return ['userId' => $userId, 'subject' => $subject ?? ($userId ? 'user:' . $userId : null)];
+        return new ExperimentVisitor($userId, $sessionId);
     }
 
     public function test_all_audience_includes_anonymous_visitors(): void

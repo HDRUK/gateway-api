@@ -2,7 +2,6 @@
 
 namespace App\Services\Experiments;
 
-use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\LoggingContext;
 use App\Http\Traits\UserRolePermissions;
@@ -10,8 +9,8 @@ use App\Jobs\CreateServiceDeskRequest;
 use App\Models\Experiment;
 use App\Models\User;
 use App\Services\JiraServiceDesk;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Laravel\Pennant\Feature;
 
 /**
@@ -52,13 +51,11 @@ class ExperimentService
         return $experiment->fresh();
     }
 
-    public function activeFor(Request $request): Collection
+    public function activeFor(ExperimentVisitor $visitor): Collection
     {
         if (!Feature::active(self::FEATURE_FLAG)) {
             return collect();
         }
-
-        $visitor = $this->visitor($request);
 
         return Experiment::running()->get()
             ->filter(fn (Experiment $experiment) => ExperimentTargeting::isShownTo($experiment, $visitor))
@@ -74,7 +71,7 @@ class ExperimentService
             ->values();
     }
 
-    public function findShownTo(int $id, Request $request): Experiment
+    public function findShownTo(int $id, ExperimentVisitor $visitor): Experiment
     {
         if (!Feature::active(self::FEATURE_FLAG)) {
             throw new NotFoundException();
@@ -82,7 +79,7 @@ class ExperimentService
 
         $experiment = Experiment::running()->find($id);
 
-        if (!$experiment || !ExperimentTargeting::isShownTo($experiment, $this->visitor($request))) {
+        if (!$experiment || !ExperimentTargeting::isShownTo($experiment, $visitor)) {
             throw new NotFoundException();
         }
 
@@ -94,7 +91,7 @@ class ExperimentService
         $known = $experiment->knownAnswers($answers);
 
         if (!$known) {
-            throw new BadRequestException('No answers to known questions');
+            throw new InvalidArgumentException('No answers to known questions');
         }
 
         return $known;
@@ -128,25 +125,8 @@ class ExperimentService
             'signed_in' => $user !== null,
             'user_id' => $contact && $user ? $user->id : null,
             'user_type' => $user ? $this->userType($this->rolesFor($user->id)) : null,
-            'contact_email' => $contact ? ($user ? $this->preferredEmail($user) : $email) : null,
+            'contact_email' => $contact ? ($user ? $user->preferredEmailAddress() : $email) : null,
         ]);
-    }
-
-    public function userId(Request $request): ?int
-    {
-        $jwtUser = $request->jwtUser();
-
-        return $jwtUser ? (int)$jwtUser['id'] : null;
-    }
-
-    private function visitor(Request $request): array
-    {
-        $userId = $this->userId($request);
-
-        return [
-            'userId' => $userId,
-            'subject' => $userId ? 'user:' . $userId : $this->sessionId($request),
-        ];
     }
 
     private function userType(array $roles): string
@@ -156,22 +136,8 @@ class ExperimentService
             : 'user';
     }
 
-    private function preferredEmail(User $user): ?string
-    {
-        return ($user->provider === 'open-athens' || $user->preferred_email === 'secondary')
-            ? ($user->secondary_email ?: $user->email)
-            : $user->email;
-    }
-
     private function rolesFor(int $userId): array
     {
         return array_values($this->getUserRolePerms($userId)['summary']['roles']);
-    }
-
-    private function sessionId(Request $request): ?string
-    {
-        $sessionId = (string)$request->header('x-request-session-id');
-
-        return preg_match('/^[A-Za-z0-9:_ -]{1,100}$/', $sessionId) ? $sessionId : null;
     }
 }
