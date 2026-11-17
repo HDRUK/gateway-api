@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ExperimentStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -47,18 +48,6 @@ class Experiment extends Model
 {
     use SoftDeletes;
 
-    public const STATUS_DRAFT = 'draft';
-    public const STATUS_ACTIVE = 'active';
-    public const STATUS_PAUSED = 'paused';
-    public const STATUS_ARCHIVED = 'archived';
-
-    public const STATUSES = [
-        self::STATUS_DRAFT,
-        self::STATUS_ACTIVE,
-        self::STATUS_PAUSED,
-        self::STATUS_ARCHIVED,
-    ];
-
     public const AUDIENCE_ALL = 'all';
     public const AUDIENCE_LOGGED_IN = 'logged_in';
     public const AUDIENCE_LOGGED_OUT = 'logged_out';
@@ -97,6 +86,7 @@ class Experiment extends Model
     protected $table = 'experiments';
 
     protected $casts = [
+        'status' => ExperimentStatus::class,
         'definition' => 'array',
         'targeting' => 'array',
         'trigger' => 'array',
@@ -111,7 +101,7 @@ class Experiment extends Model
     {
         $today = now()->toDateString();
 
-        return $query->where('status', self::STATUS_ACTIVE)
+        return $query->where('status', ExperimentStatus::ACTIVE)
             ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '<=', $today))
             ->where(fn ($query) => $query->whereNull('ends_at')->orWhere('ends_at', '>=', $today));
     }

@@ -41,7 +41,8 @@ These routes sit behind the `api` group's global rate limit only. A per-route th
 -   `App\Services\Experiments\ExperimentTargeting`: static audience and percentage checks.
 -   `User::preferredEmailAddress()`: the contact email for a signed-in opt-in. It falls back to the primary email when no secondary is set.
 -   `App\Services\JiraServiceDesk`: JSM configuration check and the create-request call.
--   `App\Models\Experiment`: status, audience, trigger, frequency and block type constants, the `running` scope and `knownAnswers()`.
+-   `App\Enums\ExperimentStatus`: `draft`, `active`, `paused`, `archived`. The column is a string and the model casts it to this enum, so adding a status needs no migration.
+-   `App\Models\Experiment`: audience, trigger, frequency and block type constants, the `running` scope and `knownAnswers()`.
 
 OpenAPI schemas: `Experiment` (model), `ExperimentInput` (`CreateExperiment`), `ExperimentResponseInput` (`CreateExperimentResponse`) and `ActiveExperiment` (`ExperimentService`).
 
@@ -69,13 +70,13 @@ A 4xx from JSM, such as a bad field ID, fails the job without retrying. A 5xx or
 
 If the Helpdesk is not configured, responses are counted, the answers are discarded and a warning is logged with the experiment ID.
 
-Field and option IDs are in `config/services.php` under `jsm.fields`. `JSM_BASE_URL` defaults to `https://api.atlassian.com/ex/jira`. Each environment sets `JSM_EMAIL`, `JSM_API_TOKEN` and `JSM_CLOUD_ID`. `JSM_SERVICE_DESK_ID` (7) and `JSM_REQUEST_TYPE_ID` (78) default to the desk and request type the field IDs belong to; override them only together with `jsm.fields`:
+Field and option IDs are in `config/services.php` under `jsm.fields`, each overridable from env and defaulting to the Feedback Log values: `JSM_FIELD_ENQUIRY_TYPE`, `JSM_OPTION_SHARE_FEEDBACK`, `JSM_FIELD_FUTURE_CONTACT`, `JSM_OPTION_FUTURE_CONTACT_NO`, `JSM_FIELD_USER_TYPE`, `JSM_OPTION_USER_TYPE_USER` and `JSM_OPTION_USER_TYPE_DATA_CUSTODIAN`. `JSM_BASE_URL` defaults to `https://api.atlassian.com/ex/jira`. Each environment sets `JSM_EMAIL`, `JSM_API_TOKEN` and `JSM_CLOUD_ID`. `JSM_SERVICE_DESK_ID` (7) and `JSM_REQUEST_TYPE_ID` (78) default to the desk and request type the field IDs belong to; override them only together with `jsm.fields`:
 
 -   The token belongs to an Atlassian service account, scoped `read:servicedesk-request` and `write:servicedesk-request`.
 -   Calls go to `{JSM_BASE_URL}/{cloudId}/rest/servicedeskapi/request`.
 -   If any of these values is missing, no job is queued.
 
-`phpunit.xml` blanks `JSM_API_TOKEN`, so tests can never reach Atlassian.
+`phpunit.xml` blanks `JSM_API_TOKEN`, and `ServiceDeskRequestTest` fakes the JSM URL and calls `Http::preventStrayRequests()`, so tests can never reach Atlassian.
 
 **Any environment with these set creates real tickets**, including local development with a worker on the `default` queue. The local `gateway` stack only runs the `high` worker.
 

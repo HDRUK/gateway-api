@@ -155,9 +155,19 @@ return [
         'request_type_id' => env('JSM_REQUEST_TYPE_ID', '78'),
         // Feedback Log (desk 7) > Gateway Enquiry (request type 78) fields.
         'fields' => [
-            'enquiry_type' => ['id' => 'customfield_10752', 'share_feedback' => '11728'],
-            'future_contact' => ['id' => 'customfield_11447', 'no' => '13138'],
-            'user_type' => ['id' => 'customfield_10223', 'user' => '10397', 'data_custodian' => '10394'],
+            'enquiry_type' => [
+                'id' => env('JSM_FIELD_ENQUIRY_TYPE', 'customfield_10752'),
+                'share_feedback' => env('JSM_OPTION_SHARE_FEEDBACK', '11728'),
+            ],
+            'future_contact' => [
+                'id' => env('JSM_FIELD_FUTURE_CONTACT', 'customfield_11447'),
+                'no' => env('JSM_OPTION_FUTURE_CONTACT_NO', '13138'),
+            ],
+            'user_type' => [
+                'id' => env('JSM_FIELD_USER_TYPE', 'customfield_10223'),
+                'user' => env('JSM_OPTION_USER_TYPE_USER', '10397'),
+                'data_custodian' => env('JSM_OPTION_USER_TYPE_DATA_CUSTODIAN', '10394'),
+            ],
         ],
     ],
 ];

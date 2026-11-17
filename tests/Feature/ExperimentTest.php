@@ -119,6 +119,16 @@ class ExperimentTest extends TestCase
         $response->assertStatus(400);
     }
 
+    public function test_create_rejects_an_unknown_status(): void
+    {
+        $this->json(
+            'POST',
+            self::TEST_URL,
+            $this->payload(['status' => 'live']),
+            $this->header
+        )->assertStatus(400);
+    }
+
     public function test_create_accepts_an_exit_intent_trigger(): void
     {
         $this->json(

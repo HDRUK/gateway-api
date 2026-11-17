@@ -29,6 +29,7 @@ class ServiceDeskRequestTest extends TestCase
     {
         $this->commonSetUp();
 
+        Http::preventStrayRequests();
         Feature::activate(ExperimentService::FEATURE_FLAG);
 
         config([

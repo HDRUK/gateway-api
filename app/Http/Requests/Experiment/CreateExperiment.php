@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Experiment;
 
+use App\Enums\ExperimentStatus;
 use App\Http\Requests\BaseFormRequest;
 use App\Models\Experiment;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\Schema(
@@ -29,7 +31,7 @@ class CreateExperiment extends BaseFormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'status' => 'required|string|in:' . implode(',', Experiment::STATUSES),
+            'status' => ['required', Rule::enum(ExperimentStatus::class)],
             'definition' => 'required|array',
             'definition.steps' => 'required|array|min:1',
             'definition.steps.*.id' => 'required|string|distinct',
