@@ -2,7 +2,7 @@
 
 Every dataset is stored with a partner context (`datasets.partner_context`). It decides who can read the dataset and which template the web renders it with.
 
-`PartnerContext::getPartner()` resolves a request's partner context from the `x-partner-context` header, falling back to `config('partners.default')`. `PartnerContext::requestedPartner()` returns the header only, and only while `SchemaOnboardingFormSelector` (`PartnerContext::SELECTOR_FLAG`) is on; otherwise null.
+`PartnerContext::getPartner()` resolves a request's partner context from the `x-partner-context` header, falling back to `config('partners.default')`. On update, `TeamDatasetController` reads the header directly, and only while `SchemaOnboardingFormSelector` (`PartnerContext::SELECTOR_FLAG`) is on.
 
 | Endpoint | Partner context stored |
 |---|---|

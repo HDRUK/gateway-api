@@ -622,7 +622,7 @@ class TeamDatasetController extends Controller
         $initDataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
-        $requestedPartner = $this->partnerContext->requestedPartner();
+        $requestedPartner = Feature::active(PartnerContext::SELECTOR_FLAG) ? $request->header('x-partner-context') : null;
         if ($requestedPartner !== null && !PartnerContext::isKnown($requestedPartner)) {
             return response()->json([
                 'message' => 'Unknown partner context',
