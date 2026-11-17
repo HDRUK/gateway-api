@@ -622,6 +622,13 @@ class TeamDatasetController extends Controller
         $initDataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
+        $requestedPartner = Feature::active(PartnerContext::SELECTOR_FLAG) ? $request->header('x-partner-context') : null;
+        if ($requestedPartner !== null && !PartnerContext::isKnown($requestedPartner)) {
+            return response()->json([
+                'message' => 'Unknown partner context',
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
+
         try {
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
@@ -673,6 +680,7 @@ class TeamDatasetController extends Controller
                 'create_origin'    => $createOrigin,
                 'status'           => $request['status'],
                 'is_cohort_discovery' => $isCohortDiscovery,
+                ...($requestedPartner !== null ? ['partner_context' => $requestedPartner] : []),
             ]);
 
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
