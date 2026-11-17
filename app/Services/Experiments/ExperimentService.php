@@ -9,7 +9,9 @@ use App\Jobs\CreateServiceDeskRequest;
 use App\Models\Experiment;
 use App\Models\User;
 use App\Services\JiraServiceDesk;
+use App\Services\ReCaptcha;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\RateLimiter;
 use InvalidArgumentException;
 use Laravel\Pennant\Feature;
 
@@ -33,9 +35,23 @@ class ExperimentService
 
     public const FEATURE_FLAG = 'POC_FeedbackExperiments';
 
+    public const TICKETS_PER_HOUR = 50;
+
+    private const TICKET_LIMIT_KEY = 'experiment-tickets:';
+
+    private const TICKET_WINDOW_SECONDS = 3600;
+
     public function __construct(
         private readonly JiraServiceDesk $serviceDesk,
+        private readonly ReCaptcha $recaptcha,
     ) {
+    }
+
+    public function verifyRecaptcha(string $token): void
+    {
+        if (!$this->recaptcha->verify($token, ReCaptcha::ACTION_EXPERIMENT_RESPONSE)) {
+            throw new InvalidArgumentException('reCAPTCHA check failed');
+        }
     }
 
     public function create(array $data, int $userId): Experiment
@@ -111,6 +127,15 @@ class ExperimentService
 
         if (!$this->serviceDesk->configured()) {
             \Log::warning('Experiment response not sent to the service desk: JSM is not configured', array_merge(
+                $this->getLoggingContext(\request()),
+                ['experiment_id' => $experiment->id]
+            ));
+
+            return;
+        }
+
+        if (RateLimiter::hit(self::TICKET_LIMIT_KEY . $experiment->id, self::TICKET_WINDOW_SECONDS) > self::TICKETS_PER_HOUR) {
+            \Log::warning('Experiment response not sent to the service desk: hourly ticket limit reached', array_merge(
                 $this->getLoggingContext(\request()),
                 ['experiment_id' => $experiment->id]
             ));

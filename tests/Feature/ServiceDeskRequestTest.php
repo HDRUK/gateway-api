@@ -10,6 +10,7 @@ use App\Models\UserHasRole;
 use App\Services\Experiments\ExperimentService;
 use App\Services\Experiments\ExperimentSubmission;
 use App\Services\JiraServiceDesk;
+use App\Services\ReCaptcha;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -31,6 +32,8 @@ class ServiceDeskRequestTest extends TestCase
 
         Http::preventStrayRequests();
         Feature::activate(ExperimentService::FEATURE_FLAG);
+        config(['services.recaptcha.secret_key' => 'recaptcha-secret', 'services.recaptcha.min_score' => 0.5]);
+        Http::fake([ReCaptcha::VERIFY_URL => Http::response(['success' => true, 'score' => 0.9, 'action' => ReCaptcha::ACTION_EXPERIMENT_RESPONSE])]);
 
         config([
             'services.jsm.email' => 'helpdesk-bot@example.com',
@@ -105,7 +108,7 @@ class ServiceDeskRequestTest extends TestCase
         $this->json(
             'POST',
             '/api/v1/experiments/' . $experiment->id . '/responses' . $path,
-            array_merge(['answers' => ['score' => 4, 'intro' => 'x', 'unknown' => 'y'], 'path' => '/en/search'], $body),
+            array_merge(['answers' => ['score' => 4, 'intro' => 'x', 'unknown' => 'y'], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'], $body),
             $headers
         )->assertStatus(201);
 
@@ -139,7 +142,7 @@ class ServiceDeskRequestTest extends TestCase
         $this->json(
             'POST',
             '/api/v1/experiments/' . $experiment->id . '/responses',
-            ['answers' => ['score' => 4], 'path' => '/en/search'],
+            ['answers' => ['score' => 4], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'],
             ['Accept' => 'application/json']
         )->assertStatus(201);
 
@@ -148,6 +151,35 @@ class ServiceDeskRequestTest extends TestCase
             ->withArgs(fn ($message, $context) => str_contains($message, 'JSM is not configured') &&
                 $context['experiment_id'] === $experiment->id)
             ->once();
+    }
+
+    public function test_tickets_per_experiment_are_capped_each_hour(): void
+    {
+        Queue::fake();
+        Log::spy();
+        $experiment = $this->experiment();
+        $respond = fn () => $this->json(
+            'POST',
+            '/api/v1/experiments/' . $experiment->id . '/responses',
+            ['answers' => ['score' => 4], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'],
+            ['Accept' => 'application/json']
+        )->assertStatus(201);
+
+        for ($i = 0; $i <= ExperimentService::TICKETS_PER_HOUR; $i++) {
+            $respond();
+        }
+
+        Queue::assertPushed(CreateServiceDeskRequest::class, ExperimentService::TICKETS_PER_HOUR);
+        $this->assertSame(ExperimentService::TICKETS_PER_HOUR + 1, $experiment->fresh()->responses_count);
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn ($message, $context) => str_contains($message, 'ticket limit') &&
+                $context['experiment_id'] === $experiment->id)
+            ->once();
+
+        $this->travel(61)->minutes();
+        $respond();
+
+        Queue::assertPushed(CreateServiceDeskRequest::class, ExperimentService::TICKETS_PER_HOUR + 1);
     }
 
     public function test_creates_a_gateway_feedback_request(): void

@@ -23,6 +23,7 @@ Only answers to question blocks (`rating`, `choice`, `textInput`, `abChoice`) ar
 
 -   A submission with none of those is rejected with 400.
 -   A signed-out `contact: true` without a valid `email` is rejected with 400.
+-   A response without a `recaptcha` token that Google accepts for the `experiment_response` action, with a high enough score, is rejected with 400 and is not counted.
 -   Each accepted response adds 1 to `experiments.responses_count`, shown in the admin list. Nothing else about it is written to the database.
 -   There is no server-side check for repeat responses. The web's cookie stops the prompt reappearing.
 
@@ -30,7 +31,14 @@ Only answers to question blocks (`rating`, `choice`, `textInput`, `abChoice`) ar
 
 The public endpoints are behind the `POC_FeedbackExperiments` Pennant flag (`ExperimentService::FEATURE_FLAG`), off by default. While it is off, `/active` and `/active/me` return an empty list, and both `/responses` routes return 404.
 
-These routes sit behind the `api` group's global rate limit only. A per-route throttle would key on the load balancer's IP (`TrustProxies` trusts no proxies), so every anonymous visitor would share one bucket.
+## Flood protection
+
+Each response raises a Jira ticket, so `/responses` has two protections against floods. The API stores nothing about the visitor; reCAPTCHA runs Google's script in the browser.
+
+-   **reCAPTCHA v3.** When someone submits, gateway-web asks Google's invisible reCAPTCHA v3 for a token (action `experiment_response`) and sends it as `recaptcha`. `ExperimentService::verifyRecaptcha()` checks it with Google's siteverify API (`App\Services\ReCaptcha`) and accepts it only if it succeeded, is for that action, and scores at least `RECAPTCHA_MIN_SCORE` (default 0.5; 1.0 is very likely human, 0.0 very likely a bot). Google rejects a reused or expired token (tokens are single-use and last 2 minutes). `RECAPTCHA_SECRET_KEY` must be set in every environment. Without it, with `RECAPTCHA_MIN_SCORE` at 0 or blank, if Google can't be reached or returns an error, or if Google rejects the secret key, responses are rejected and a warning is logged. When Google rejects a token (a low score, the wrong action, or a reused, expired or invalid token), Google's reason (success, error codes, score, action and hostname, never the token) is logged at debug level only, so a bot can't flood the warning logs; set `LOG_LEVEL=debug` to see it. Google's public test keys are for v2 and return no action or score, so local development needs a real v3 key pair registered for `localhost`.
+-   **Ticket cap.** Each experiment raises at most `ExperimentService::TICKETS_PER_HOUR` (50) Helpdesk tickets an hour. Past that, responses are still counted and get a 201, but the answers are discarded and a warning is logged with the experiment ID. The count is a cache counter keyed by experiment ID that resets an hour after its first hit. It uses the default cache store, so with more than one API pod on the `file` store each pod counts separately: treat 50 as a soft limit.
+
+A per-visitor throttle would not work: `TrustProxies` trusts no proxies, so every visitor shares the ingress IP, and a bot can change its `x-request-session-id` on every request. Otherwise these routes sit behind the `api` group's global rate limit only.
 
 ## Code
 
@@ -38,6 +46,7 @@ These routes sit behind the `api` group's global rate limit only. A per-route th
 -   `App\Services\Experiments\ExperimentService`: creates and updates experiments, lists active ones, and checks and submits responses. It takes no `Request`. A user's roles are only looked up when a signed-in user responds, to set the ticket's User Type.
 -   `App\Services\Experiments\ExperimentVisitor`: the user ID and session ID of the visitor, and the `subject` used for percentage bucketing.
 -   `App\Services\Experiments\ExperimentSubmission`: the typed submission that `submit()` passes to `CreateServiceDeskRequest`.
+-   `App\Services\ReCaptcha`: checks a reCAPTCHA v3 token, its action and its score with Google's siteverify API.
 -   `App\Services\Experiments\ExperimentTargeting`: static audience and percentage checks.
 -   `User::preferredEmailAddress()`: the contact email for a signed-in opt-in. It falls back to the primary email when no secondary is set.
 -   `App\Services\JiraServiceDesk`: JSM configuration check and the create-request call.
@@ -68,7 +77,7 @@ The job implements `ShouldBeEncrypted`, so the submission is encrypted while it 
 
 A 4xx from JSM, such as a bad field ID, fails the job without retrying. A 5xx or a timeout is retried, so in the rare case JSM created the ticket but the reply was lost, a retry can raise a duplicate. Neither keeps JSM's reply body, which could echo the email, so the logged error and `failed_jobs` hold only the status code. `failed()` logs the experiment ID and that error. If the experiment was deleted before the job ran, a warning is logged and no ticket is raised.
 
-If the Helpdesk is not configured, responses are counted, the answers are discarded and a warning is logged with the experiment ID.
+If the Helpdesk is not configured, or the experiment has reached its hourly ticket limit, responses are counted, the answers are discarded and a warning is logged with the experiment ID.
 
 Field and option IDs are in `config/services.php` under `jsm.fields`, each overridable from env and defaulting to the Feedback Log values: `JSM_FIELD_ENQUIRY_TYPE`, `JSM_OPTION_SHARE_FEEDBACK`, `JSM_FIELD_FUTURE_CONTACT`, `JSM_OPTION_FUTURE_CONTACT_NO`, `JSM_FIELD_USER_TYPE`, `JSM_OPTION_USER_TYPE_USER` and `JSM_OPTION_USER_TYPE_DATA_CUSTODIAN`. `JSM_BASE_URL` defaults to `https://api.atlassian.com/ex/jira`. Each environment sets `JSM_EMAIL`, `JSM_API_TOKEN` and `JSM_CLOUD_ID`. `JSM_SERVICE_DESK_ID` (7) and `JSM_REQUEST_TYPE_ID` (78) default to the desk and request type the field IDs belong to; override them only together with `jsm.fields`:
 

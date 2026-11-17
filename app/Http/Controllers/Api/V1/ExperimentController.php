@@ -312,7 +312,7 @@ class ExperimentController extends Controller
      *          @OA\Property(property="data", type="integer", example=1),
      *       ),
      *    ),
-     *    @OA\Response(response="400", description="Invalid payload or no answers to known questions"),
+     *    @OA\Response(response="400", description="Invalid payload, no answers to known questions or a failed reCAPTCHA check"),
      *    @OA\Response(response="404", description="Not running or not shown to this visitor"),
      * )
      */
@@ -324,6 +324,7 @@ class ExperimentController extends Controller
 
         try {
             $answers = $this->experimentService->answersFor($experiment, $request->input('answers', []));
+            $this->experimentService->verifyRecaptcha($request->input('recaptcha'));
         } catch (InvalidArgumentException $e) {
             throw new BadRequestException($e->getMessage());
         }
@@ -378,7 +379,7 @@ class ExperimentController extends Controller
      *          @OA\Property(property="data", type="integer", example=1),
      *       ),
      *    ),
-     *    @OA\Response(response="400", description="Invalid payload or no answers to known questions"),
+     *    @OA\Response(response="400", description="Invalid payload, no answers to known questions or a failed reCAPTCHA check"),
      *    @OA\Response(response="401", description="Unauthorized"),
      *    @OA\Response(response="404", description="Not running or not shown to this user"),
      * )

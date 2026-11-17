@@ -5,6 +5,11 @@ namespace Tests\Feature;
 use App\Models\Experiment;
 use App\Models\User;
 use App\Services\Experiments\ExperimentService;
+use App\Services\ReCaptcha;
+use Closure;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Pennant\Feature;
 use Tests\TestCase;
@@ -22,11 +27,16 @@ class ExperimentTest extends TestCase
 
     protected $header = [];
 
+    private Closure $recaptchaReply;
+
     public function setUp(): void
     {
         $this->commonSetUp();
 
         Feature::activate(ExperimentService::FEATURE_FLAG);
+        config(['services.recaptcha.secret_key' => 'recaptcha-secret', 'services.recaptcha.min_score' => 0.5]);
+        $this->recaptchaReply = fn () => Http::response(['success' => true, 'score' => 0.9, 'action' => ReCaptcha::ACTION_EXPERIMENT_RESPONSE]);
+        Http::fake([ReCaptcha::VERIFY_URL => fn () => ($this->recaptchaReply)()]);
     }
 
     private function payload(array $overrides = []): array
@@ -195,12 +205,167 @@ class ExperimentTest extends TestCase
         $this->json(
             'POST',
             self::TEST_URL . '/' . $experiment->id . '/responses',
-            ['answers' => ['score' => 4], 'path' => '/en/search'],
+            ['answers' => ['score' => 4], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'],
             ['Accept' => 'application/json', 'x-request-session-id' => self::SESSION_ID]
         )->assertStatus(201)->assertJsonPath('data', $experiment->id);
 
         $this->assertSame(1, $experiment->fresh()->responses_count);
         $this->assertFalse(Schema::hasTable('experiment_responses'));
+    }
+
+    private function respondWithRecaptcha(Experiment $experiment, array $body = [])
+    {
+        return $this->json(
+            'POST',
+            self::TEST_URL . '/' . $experiment->id . '/responses',
+            array_merge(['answers' => ['score' => 4], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'], $body),
+            ['Accept' => 'application/json']
+        );
+    }
+
+    public function test_response_without_a_recaptcha_token_is_rejected(): void
+    {
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment, ['recaptcha' => null])->assertStatus(400);
+
+        $this->assertSame(0, $experiment->fresh()->responses_count);
+    }
+
+    public function test_the_recaptcha_token_is_checked_with_google(): void
+    {
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(201);
+
+        Http::assertSent(fn ($request) => $request->url() === ReCaptcha::VERIFY_URL &&
+            $request['secret'] === 'recaptcha-secret' &&
+            $request['response'] === 'recaptcha-token');
+    }
+
+    public function test_response_with_a_rejected_recaptcha_token_is_rejected(): void
+    {
+        $this->recaptchaReply = fn () => Http::response(['success' => false, 'error-codes' => ['timeout-or-duplicate']]);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        $this->assertSame(0, $experiment->fresh()->responses_count);
+    }
+
+    public function test_a_recaptcha_score_below_the_minimum_is_rejected(): void
+    {
+        config(['services.recaptcha.min_score' => 0.5]);
+        $this->recaptchaReply = fn () => Http::response(['success' => true, 'score' => 0.3, 'action' => ReCaptcha::ACTION_EXPERIMENT_RESPONSE]);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        $this->assertSame(0, $experiment->fresh()->responses_count);
+    }
+
+    public function test_a_recaptcha_token_for_another_action_is_rejected(): void
+    {
+        $this->recaptchaReply = fn () => Http::response(['success' => true, 'score' => 0.9, 'action' => 'login']);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        $this->assertSame(0, $experiment->fresh()->responses_count);
+    }
+
+    public function test_responses_are_rejected_when_recaptcha_is_not_configured(): void
+    {
+        Log::spy();
+        config(['services.recaptcha.secret_key' => null]);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        Http::assertNotSent(fn ($request) => $request->url() === ReCaptcha::VERIFY_URL);
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn ($message) => str_contains($message, 'reCAPTCHA is not configured'))
+            ->once();
+    }
+
+    public function test_responses_are_rejected_when_google_cannot_be_reached(): void
+    {
+        Log::spy();
+        $this->recaptchaReply = fn () => throw new ConnectionException('Connection timed out');
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn ($message) => str_contains($message, 'reCAPTCHA verification failed'))
+            ->once();
+    }
+
+    public function test_responses_are_rejected_when_the_minimum_score_is_not_set(): void
+    {
+        Log::spy();
+        config(['services.recaptcha.min_score' => 0.0]);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        Http::assertNotSent(fn ($request) => $request->url() === ReCaptcha::VERIFY_URL);
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn ($message) => str_contains($message, 'reCAPTCHA is not configured'))
+            ->once();
+    }
+
+    public function test_responses_are_rejected_and_logged_when_google_errors(): void
+    {
+        Log::spy();
+        $this->recaptchaReply = fn () => Http::response('', 500);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn ($message, $context) => str_contains($message, 'reCAPTCHA verification failed') &&
+                $context['status'] === 500)
+            ->once();
+    }
+
+    public function test_a_rejected_secret_key_is_logged(): void
+    {
+        Log::spy();
+        $this->recaptchaReply = fn () => Http::response(['success' => false, 'error-codes' => ['invalid-input-secret']]);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn ($message, $context) => str_contains($message, 'rejected the secret key') &&
+                $context['error_codes'] === ['invalid-input-secret'])
+            ->once();
+    }
+
+    public function test_googles_reason_for_rejecting_a_token_is_logged(): void
+    {
+        Log::spy();
+        $this->recaptchaReply = fn () => Http::response([
+            'success' => true,
+            'score' => 0.1,
+            'action' => ReCaptcha::ACTION_EXPERIMENT_RESPONSE,
+            'hostname' => 'localhost',
+        ]);
+        $experiment = Experiment::create($this->payload());
+
+        $this->respondWithRecaptcha($experiment)->assertStatus(400);
+
+        Log::shouldHaveReceived('debug')
+            ->withArgs(fn ($message, $context) => str_contains($message, 'reCAPTCHA rejected the token') &&
+                $context === [
+                    'success' => true,
+                    'error_codes' => [],
+                    'score' => 0.1,
+                    'action' => ReCaptcha::ACTION_EXPERIMENT_RESPONSE,
+                    'hostname' => 'localhost',
+                ])
+            ->once();
     }
 
     public function test_response_to_an_inactive_experiment_is_not_found(): void
@@ -210,9 +375,11 @@ class ExperimentTest extends TestCase
         $this->json(
             'POST',
             self::TEST_URL . '/' . $experiment->id . '/responses',
-            ['answers' => ['score' => 4], 'path' => '/en/search'],
+            ['answers' => ['score' => 4], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'],
             ['Accept' => 'application/json']
         )->assertStatus(404);
+
+        Http::assertNotSent(fn ($request) => $request->url() === ReCaptcha::VERIFY_URL);
     }
 
     public function test_active_is_empty_when_the_feature_is_off(): void
@@ -233,7 +400,7 @@ class ExperimentTest extends TestCase
         $this->json(
             'POST',
             self::TEST_URL . '/' . $experiment->id . '/responses',
-            ['answers' => ['score' => 4], 'path' => '/en/search'],
+            ['answers' => ['score' => 4], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'],
             ['Accept' => 'application/json']
         )->assertStatus(404);
 
@@ -249,7 +416,7 @@ class ExperimentTest extends TestCase
         $this->json(
             'POST',
             self::TEST_URL . '/' . $experiment->id . '/responses',
-            ['answers' => ['score' => 4], 'path' => '/en/search'],
+            ['answers' => ['score' => 4], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'],
             ['Accept' => 'application/json']
         )->assertStatus(404);
     }
@@ -261,7 +428,7 @@ class ExperimentTest extends TestCase
         $this->json(
             'POST',
             self::TEST_URL . '/' . $experiment->id . '/responses',
-            ['answers' => ['score' => 4], 'path' => '/en/search', 'contact' => true, 'email' => 'not-an-email'],
+            ['answers' => ['score' => 4], 'path' => '/en/search', 'contact' => true, 'email' => 'not-an-email', 'recaptcha' => 'recaptcha-token'],
             ['Accept' => 'application/json', 'x-request-session-id' => self::SESSION_ID]
         )->assertStatus(400);
     }
@@ -273,9 +440,11 @@ class ExperimentTest extends TestCase
         $this->json(
             'POST',
             self::TEST_URL . '/' . $experiment->id . '/responses',
-            ['answers' => ['unknown' => 'y'], 'path' => '/en/search'],
+            ['answers' => ['unknown' => 'y'], 'path' => '/en/search', 'recaptcha' => 'recaptcha-token'],
             ['Accept' => 'application/json', 'x-request-session-id' => self::SESSION_ID]
         )->assertStatus(400);
+
+        Http::assertNotSent(fn ($request) => $request->url() === ReCaptcha::VERIFY_URL);
 
         $this->assertSame(0, $experiment->fresh()->responses_count);
     }

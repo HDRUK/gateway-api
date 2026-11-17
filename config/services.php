@@ -146,6 +146,11 @@ return [
         'feature_flag_webhook_url' => env('SLACK_FEATURE_FLAG_WEBHOOK_URL', ''),
     ],
 
+    'recaptcha' => [
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+        'min_score' => (float)env('RECAPTCHA_MIN_SCORE', 0.5),
+    ],
+
     'jsm' => [
         'base_url' => env('JSM_BASE_URL', 'https://api.atlassian.com/ex/jira'),
         'email' => env('JSM_EMAIL'),

@@ -7,13 +7,14 @@ use App\Http\Requests\BaseFormRequest;
 /**
  * @OA\Schema(
  *   schema="ExperimentResponseInput",
- *   required={"answers","path"},
+ *   required={"answers","path","recaptcha"},
  *   @OA\Property(property="answers", type="object", description="Answers keyed by question block id; unknown ids are dropped",
  *     example={"score": 4, "areas": {"filters"}}),
  *   @OA\Property(property="path", type="string", maxLength=255, example="/en/search"),
  *   @OA\Property(property="variant", type="string", nullable=true),
  *   @OA\Property(property="contact", type="boolean", example=false),
  *   @OA\Property(property="email", type="string", format="email", nullable=true, description="Required when contact is true and not signed in"),
+ *   @OA\Property(property="recaptcha", type="string", description="reCAPTCHA v3 token for the experiment_response action"),
  * )
  */
 class CreateExperimentResponse extends BaseFormRequest
@@ -43,6 +44,7 @@ class CreateExperimentResponse extends BaseFormRequest
             'variant' => 'nullable|string|max:255',
             'contact' => 'sometimes|boolean',
             'email' => $this->jwtUser() ? 'nullable' : 'exclude_unless:contact,true|required|email|max:255',
+            'recaptcha' => 'required|string|max:4096',
         ];
     }
 
