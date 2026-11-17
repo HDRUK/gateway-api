@@ -153,6 +153,7 @@ return [
                 'Http/Controllers/Api/V1/ActivityLogTypeController',
                 'Http/Controllers/Api/V1/ActivityLogUserTypeController',
                 'Http/Controllers/Api/V1/CohortRequestController',
+                'Http/Controllers/Api/V1/ExperimentController',
                 'Http/Controllers/Api/V1/FeatureController',
                 'Http/Controllers/Api/V1/TeamController',
                 'Http/Controllers/Api/V1/TeamNotificationController',
