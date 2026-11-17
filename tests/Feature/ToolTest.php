@@ -21,7 +21,6 @@ use App\Models\CollectionHasTool;
 use App\Models\PublicationHasTool;
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
-use ElasticClientController as ECC;
 use App\Models\DatasetVersionHasTool;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
@@ -161,8 +160,6 @@ class ToolTest extends TestCase
      */
     public function test_v1_add_new_tool_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
         $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
         $this->assertNotNull($licenseId, 'No valid license ID found');
@@ -561,11 +558,7 @@ class ToolTest extends TestCase
     public function test_v1_update_tool_with_success(): void
     {
 
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
 
 
         $licenseId = License::where('valid_until', null)->get()->random()->id;

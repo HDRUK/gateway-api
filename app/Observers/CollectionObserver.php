@@ -3,38 +3,15 @@
 namespace App\Observers;
 
 use App\Models\Collection;
-use App\Http\Traits\IndexElastic;
 
 class CollectionObserver
 {
-    use IndexElastic;
-
     /**
      * Handle the Collection "created" event.
      */
     public function created(Collection $collection): void
     {
-        if ($collection->status === Collection::STATUS_ACTIVE) {
-            $this->indexElasticCollections((int) $collection->id);
-            if ($collection->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
-            }
-        }
-
-        if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
-            $collection->active_date = now();
-            $collection->withoutEvents(function () use ($collection) {
-                $collection->save();
-            });
-        }
-    }
-
-    /**
-     * Handle the Collection "updating" event.
-     */
-    public function updating(Collection $collection)
-    {
-        $collection->prevStatus = (string) $collection->getOriginal('status'); // 'status' before updating
+        $this->setActiveDate($collection);
     }
 
     /**
@@ -42,58 +19,16 @@ class CollectionObserver
      */
     public function updated(Collection $collection): void
     {
-        $prevStatus = $collection->prevStatus;
+        $this->setActiveDate($collection);
+    }
 
-        if ($prevStatus === Collection::STATUS_ACTIVE && $collection->status !== Collection::STATUS_ACTIVE) {
-            $this->deleteCollectionFromElastic((int) $collection->id);
-            if ($collection->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
-            }
-
-        }
-
-        if ($collection->status === Collection::STATUS_ACTIVE) {
-            $this->indexElasticCollections((int) $collection->id);
-            if ($collection->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
-            }
-        }
-
-        if (!is_null($collection) && $collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
+    private function setActiveDate(Collection $collection): void
+    {
+        if ($collection->status === Collection::STATUS_ACTIVE && $collection->active_date === null) {
             $collection->active_date = now();
             $collection->withoutEvents(function () use ($collection) {
                 $collection->save();
             });
         }
-    }
-
-    /**
-     * Handle the Collection "deleted" event.
-     */
-    public function deleted(Collection $collection): void
-    {
-        if ($collection->status === Collection::STATUS_ACTIVE) {
-            $this->deleteCollectionFromElastic((int) $collection->id);
-            if ($collection->team_id) {
-                $this->reindexElasticDataProviderWithRelations((int) $collection->team_id, 'dataset');
-            }
-
-        }
-    }
-
-    /**
-     * Handle the Collection "restored" event.
-     */
-    public function restored(Collection $collection): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Collection "force deleted" event.
-     */
-    public function forceDeleted(Collection $collection): void
-    {
-        //
     }
 }

@@ -54,7 +54,6 @@ class Publication extends BaseTypesenseModel
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
 
-    public string $prevStatus = '';
 
     /**
      * The table associated with this model.
@@ -188,7 +187,7 @@ class Publication extends BaseTypesenseModel
         return $query->with('versions');
     }
 
-    // Mirrors legacy indexElasticPublication(): publication_type is a
+    // publication_type is a
     // comma-delimited string column; empty segments display as
     // "Research articles" rather than being dropped.
     private function facetPublicationTypes(): array
@@ -212,7 +211,7 @@ class Publication extends BaseTypesenseModel
     }
 
     // Database link_type is USING/ABOUT/UNKNOWN; the FE displays these
-    // translated labels rather than the raw enum (see indexElasticPublication()).
+    // translated labels rather than the raw enum.
     private const LINK_TYPE_LABELS = [
         'USING'   => 'Using a dataset',
         'ABOUT'   => 'About a dataset',

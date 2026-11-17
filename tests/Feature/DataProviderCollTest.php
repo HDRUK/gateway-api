@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\DataProviderColl;
 use Tests\Traits\MockExternalApis;
-use ElasticClientController as ECC;
 use App\Models\DataProviderCollHasTeam;
 
 class DataProviderCollTest extends TestCase
@@ -150,8 +149,6 @@ class DataProviderCollTest extends TestCase
     public function test_create_data_provider_coll_with_success(): void
     {
 
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
         $payload = [
             'enabled' => true,
@@ -189,8 +186,6 @@ class DataProviderCollTest extends TestCase
 
     public function test_update_data_provider_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(2);
 
         $payload = [
             'enabled' => true,
@@ -240,10 +235,6 @@ class DataProviderCollTest extends TestCase
 
     public function test_delete_data_provider_coll_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
 
         $payload = [
             'enabled' => true,

@@ -83,7 +83,6 @@ If you've opted to use Tilt/Helm, then you'll need to create a `tiltconf.json` f
 
     "gatewayWeb2Root": "/path/to/gateway-web/repo",
 
-    "elasticServiceRoot": "/path/to/elastic/repo",
     "traserServiceRoot": "/path/to/traser/repo",
     "tedServiceRoot": "/path/to/ted/repo",
     "fmaServiceRoot": "/path/to/gmi/repo",
@@ -92,7 +91,6 @@ If you've opted to use Tilt/Helm, then you'll need to create a `tiltconf.json` f
     "darasServiceRoot": "/path/to/daras/repo",
     "clamavServiceRoot": "/path/to/clamav/repo",
 
-    "elasticEnabled": true||false,
     "traserEnabled": true||false,
     "tedEnabled": true||false,
     "fmaEnabled": true||false,

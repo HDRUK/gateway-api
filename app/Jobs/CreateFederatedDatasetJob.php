@@ -14,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 class CreateFederatedDatasetJob implements ShouldQueue
 {
@@ -66,6 +67,18 @@ class CreateFederatedDatasetJob implements ShouldQueue
             $this->jobUuid,
             $this->attempts,
             $handler,
+        );
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        $this->recordUnexpectedFailure(
+            $this->federation->team[0]->id,
+            $this->federation->id,
+            $this->pid,
+            $this->jobUuid,
+            $this->attempts,
+            'creating',
         );
     }
 }

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Events\FederationProcessingFailed;
 use App\Http\Traits\MetadataVersioning;
 use App\Models\Federation;
+use App\Models\FederationJobRun;
 use App\Services\GatewayMetadataIngestionService;
 use App\Services\GoogleSecretManagerService;
 use App\Traits\GatewayMetadataIngestionTrait;
@@ -79,6 +80,8 @@ class ProcessFederation implements ShouldQueue
                 $this->log('info', "federation {$this->federation->id} is already running - skipping this attempt");
                 return;
             }
+
+            FederationJobRun::startRun($this->federation->team[0]->id, $this->federation->id, $this->jobUuid);
         }
 
         // Here and not in constructor because this library makes excessive use

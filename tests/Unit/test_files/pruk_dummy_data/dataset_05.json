@@ -1,0 +1,402 @@
+{
+    "identifier": "70fb1ab7-7bdd-5338-b084-1ca87bc539f7",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "70fb1ab7-7bdd-5338-b084-1ca87bc539f7",
+            "gatewayPid": "70fb1ab7-7bdd-5338-b084-1ca87bc539f7",
+            "issued": "2020-06-01T00:00:00.000Z",
+            "modified": "2026-10-26T16:20:00.000Z",
+            "version": "1.4.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "An open panel study of adults aged 60 and over in coastal communities, interviewed every two years since 2019 on health, social connection, care needs and finances. Recruitment is ongoing to refresh the sample.",
+            "contactPoint": "panel@haru.example.org",
+            "keywords": "ageing;,;social care;,;loneliness;,;frailty;,;coastal communities",
+            "datasetType": "Socioeconomic;,;Health and disease",
+            "datasetSubType": "Ageing;,;Social support;,;Finances;,;Mental health",
+            "populationSize": 3610,
+            "description": "Computer-assisted interviews cover physical and mental health, frailty, caring responsibilities, social contact, income and wealth. From wave 2 the panel is linked to local authority adult social care records.",
+            "shortTitle": "Harbourside Older Adults Panel (HOAP)",
+            "title": "Harbourside Older Adults Panel (HOAP)",
+            "publisher": {
+                "name": "Harbourside Ageing Research Unit",
+                "gatewayId": "uk.haru.example"
+            },
+            "inPipeline": null
+        },
+        "coverage": {
+            "spatial": "England",
+            "followUp": "1 - 10 Years",
+            "typicalAgeRange": "60-98"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Study",
+                "source": "Electronic survey",
+                "collectionSituation": "Home;,;Local authority"
+            },
+            "temporal": {
+                "startDate": "2019-04-01",
+                "timeLag": "More than 6 months",
+                "accrualPeriodicity": "Biennial"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "Variable",
+                "jurisdiction": "GB-ENG",
+                "accessRights": "https://haru.example.org/hoap/access",
+                "accessService": "End-user licence files through the unit's data service; social care linked data only in the regional secure data environment.",
+                "accessRequestCost": "Low cost: no charge for end-user files; linked data carries a cost-recovery fee.",
+                "accessServiceCategory": "Varies based on project"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use",
+                "dataUseRequirement": "Disclosure control",
+                "resourceCreator": {
+                    "name": null
+                },
+                "duoCodes": null,
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "LOCAL",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": "Stata;,;CSV"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "waveOf": null
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "Panel interview",
+                "description": "Core computer-assisted interview, repeated every wave.",
+                "columns": [
+                    {
+                        "name": "age_at_interview",
+                        "dataType": "integer",
+                        "description": "Age in completed years at the interview.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sex",
+                        "dataType": "string",
+                        "description": "Sex as reported by the respondent.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "cesd8_score",
+                        "dataType": "integer",
+                        "description": "Eight-item Centre for Epidemiologic Studies Depression scale (CES-D 8) score, 0-8.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "gds15_score",
+                        "dataType": "integer",
+                        "description": "Geriatric Depression Scale short form (GDS-15) score, administered from wave 3.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "antidepressant_prescribed",
+                        "dataType": "string",
+                        "description": "Antidepressant on repeat prescription, from the medicines check.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "ucla_loneliness",
+                        "dataType": "integer",
+                        "description": "UCLA 3-item loneliness score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "frailty_index",
+                        "dataType": "number",
+                        "description": "Deficit-accumulation frailty index, 0-1.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "sleep_quality",
+                        "dataType": "string",
+                        "description": "Self-rated sleep quality over the last month.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "net_household_income",
+                        "dataType": "number",
+                        "description": "Net weekly household income, banded for release.",
+                        "sensitive": true
+                    }
+                ]
+            },
+            {
+                "name": "Linked adult social care",
+                "description": "Local authority social care records, linked from wave 2.",
+                "columns": [
+                    {
+                        "name": "care_package_start",
+                        "dataType": "date",
+                        "description": "Start date of a long-term care package.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "care_hours_week",
+                        "dataType": "number",
+                        "description": "Planned hours of home care per week.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "primary_support_reason",
+                        "dataType": "string",
+                        "description": "Primary support reason recorded by the local authority.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Recruiting",
+                "startDate": "2019-04-01",
+                "samplingMethod": "Address-based random sample in twelve coastal local authorities, topped up every second wave."
+            },
+            "followUpSchedule": {
+                "frequency": "Biennial"
+            },
+            "eligibility": {
+                "inclusionCriteria": "Aged 60 or over and living in a private household in a participating local authority.",
+                "exclusionCriteria": "Living in a care home at first contact."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "70fb1ab7-7bdd-5338-b084-1ca87bc539f7",
+        "version": "1.4.0",
+        "issued": "2020-06-01T00:00:00.000Z",
+        "modified": "2026-10-26T16:20:00.000Z",
+        "summary": {
+            "title": "Harbourside Older Adults Panel (HOAP)",
+            "abstract": "An open panel study of adults aged 60 and over in coastal communities, interviewed every two years since 2019 on health, social connection, care needs and finances. Recruitment is ongoing to refresh the sample.",
+            "dataCustodian": {
+                "identifier": "uk.haru.example",
+                "name": "Harbourside Ageing Research Unit",
+                "description": "https://haru.example.org",
+                "contactPoint": "panel@haru.example.org"
+            },
+            "populationSize": 3610,
+            "keywords": [
+                "ageing",
+                "social care",
+                "loneliness",
+                "frailty",
+                "coastal communities"
+            ],
+            "contactPoint": "panel@haru.example.org"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Recruiting",
+                "startDate": "2019-04-01",
+                "samplingMethod": "Address-based random sample in twelve coastal local authorities, topped up every second wave."
+            },
+            "followUpSchedule": {
+                "frequency": "Biennial"
+            },
+            "eligibility": {
+                "inclusionCriteria": "Aged 60 or over and living in a private household in a participating local authority.",
+                "exclusionCriteria": "Living in a care home at first contact."
+            }
+        },
+        "documentation": {
+            "description": "Computer-assisted interviews cover physical and mental health, frailty, caring responsibilities, social contact, income and wealth. From wave 2 the panel is linked to local authority adult social care records."
+        },
+        "coverage": {
+            "spatial": "England",
+            "typicalAgeRangeMin": 60,
+            "typicalAgeRangeMax": 98,
+            "followUp": "1 - 10 Years"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Study"
+                ],
+                "source": [
+                    "Electronic survey"
+                ],
+                "collectionSource": [
+                    "Home",
+                    "Local authority"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Socioeconomic",
+                        "subTypes": [
+                            "Ageing",
+                            "Social support",
+                            "Finances"
+                        ]
+                    },
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Mental health"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Biennial",
+                "timeLag": "More than 6 months",
+                "startDate": "2019-04-01"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://haru.example.org/hoap/access",
+                "accessService": "End-user licence files through the unit's data service; social care linked data only in the regional secure data environment.",
+                "accessRequestCost": "Low cost: no charge for end-user files; linked data carries a cost-recovery fee.",
+                "deliveryLeadTime": "Variable",
+                "accessServiceCategory": "Varies based on project",
+                "jurisdiction": [
+                    "GB-ENG"
+                ]
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use"
+                ],
+                "dataUseRequirements": [
+                    "Disclosure control"
+                ],
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "LOCAL"
+                ],
+                "conformsTo": [
+                    "LOCAL"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "Stata",
+                    "CSV"
+                ]
+            }
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Panel interview",
+                    "description": "Core computer-assisted interview, repeated every wave.",
+                    "columns": [
+                        {
+                            "name": "age_at_interview",
+                            "dataType": "integer",
+                            "description": "Age in completed years at the interview.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sex",
+                            "dataType": "string",
+                            "description": "Sex as reported by the respondent.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "cesd8_score",
+                            "dataType": "integer",
+                            "description": "Eight-item Centre for Epidemiologic Studies Depression scale (CES-D 8) score, 0-8.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "gds15_score",
+                            "dataType": "integer",
+                            "description": "Geriatric Depression Scale short form (GDS-15) score, administered from wave 3.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "antidepressant_prescribed",
+                            "dataType": "string",
+                            "description": "Antidepressant on repeat prescription, from the medicines check.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "ucla_loneliness",
+                            "dataType": "integer",
+                            "description": "UCLA 3-item loneliness score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "frailty_index",
+                            "dataType": "number",
+                            "description": "Deficit-accumulation frailty index, 0-1.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "sleep_quality",
+                            "dataType": "string",
+                            "description": "Self-rated sleep quality over the last month.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "net_household_income",
+                            "dataType": "number",
+                            "description": "Net weekly household income, banded for release.",
+                            "sensitive": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Linked adult social care",
+                    "description": "Local authority social care records, linked from wave 2.",
+                    "columns": [
+                        {
+                            "name": "care_package_start",
+                            "dataType": "date",
+                            "description": "Start date of a long-term care package.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "care_hours_week",
+                            "dataType": "number",
+                            "description": "Planned hours of home care per week.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "primary_support_reason",
+                            "dataType": "string",
+                            "description": "Primary support reason recorded by the local authority.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

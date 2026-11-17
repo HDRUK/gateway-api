@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\Facades\Http;
+use Psr\Http\Client\ClientInterface;
 use Typesense\Client;
+use Typesense\Exceptions\ObjectNotFound;
 
 class TypesenseService
 {
@@ -48,14 +51,29 @@ class TypesenseService
 
     public function __construct(?Client $client = null)
     {
-        if ($client !== null) {
-            $this->client = $client;
-            return;
-        }
+        $this->client = $client ?? self::makeClient();
+    }
 
+    /**
+     * A copy whose requests give up after $seconds. typesense-php accepts
+     * connection_timeout_seconds but never applies it, so the default client
+     * waits forever on a connection dropped mid-request (a proxy cutting off
+     * a long import, say). A timed-out request is retried num_retries times
+     * before the exception reaches the caller.
+     */
+    public function withTimeout(int $seconds): self
+    {
+        return new self(self::makeClient(new GuzzleClient([
+            'timeout'         => $seconds,
+            'connect_timeout' => min($seconds, 10),
+        ])));
+    }
+
+    private static function makeClient(?ClientInterface $http = null): Client
+    {
         $settings = config('scout.typesense.client-settings');
 
-        $this->client = new Client([
+        $config = [
             'api_key'                      => $settings['api_key'],
             'nodes'                        => $settings['nodes'],
             'nearest_node'                 => $settings['nearest_node'] ?? null,
@@ -63,7 +81,13 @@ class TypesenseService
             'healthcheck_interval_seconds' => $settings['healthcheck_interval_seconds'] ?? 30,
             'num_retries'                  => $settings['num_retries'] ?? 3,
             'retry_interval_seconds'       => $settings['retry_interval_seconds'] ?? 1,
-        ]);
+        ];
+
+        if ($http !== null) {
+            $config['client'] = $http;
+        }
+
+        return new Client($config);
     }
 
     /**
@@ -194,6 +218,29 @@ class TypesenseService
     }
 
     /**
+     * The collection an alias points at, or null when no alias has that
+     * name. Collection and document calls made with an alias name resolve
+     * to its target, so Scout keeps using searchableAs() unchanged.
+     */
+    public function aliasTarget(string $alias): ?string
+    {
+        try {
+            return $this->client->aliases[$alias]->retrieve()['collection_name'] ?? null;
+        } catch (ObjectNotFound) {
+            return null;
+        }
+    }
+
+    /**
+     * Creates the alias, or repoints it, atomically. Fails if a physical
+     * collection already has the alias's name.
+     */
+    public function upsertAlias(string $alias, string $collection): array
+    {
+        return $this->client->aliases->upsert($alias, ['collection_name' => $collection]);
+    }
+
+    /**
      * Upsert a single document. The document must include the collection's
      * default_sorting_field if one is defined.
      */
@@ -202,9 +249,63 @@ class TypesenseService
         return $this->client->collections[$collection]->documents->upsert($document);
     }
 
+    /**
+     * Imports documents in one request; returns one result per document,
+     * each with 'success' and, on failure, 'error'.
+     */
+    public function importDocuments(string $collection, array $documents, array $options = []): array
+    {
+        return $this->client->collections[$collection]->documents->import($documents, $options);
+    }
+
     public function deleteDocument(string $collection, string $id): array
     {
         return $this->client->collections[$collection]->documents[$id]->delete();
+    }
+
+    public function deleteDocumentsWhere(string $collection, string $filterBy): array
+    {
+        return $this->client->collections[$collection]->documents->delete(['filter_by' => $filterBy]);
+    }
+
+    /**
+     * Ids of every document in a collection, streamed as JSONL with only
+     * the id field included.
+     *
+     * @return string[]
+     */
+    public function exportDocumentIds(string $collection): array
+    {
+        $jsonl = $this->client->collections[$collection]->documents->export(['include_fields' => 'id']);
+
+        $ids = [];
+        foreach (explode("\n", $jsonl) as $line) {
+            if (trim($line) !== '') {
+                $ids[] = (string) json_decode($line, true)['id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Deletes documents by id in batches, which is far cheaper than one
+     * request per id. Returns how many were deleted.
+     *
+     * @param  string[]  $ids
+     */
+    public function deleteDocumentsByIds(string $collection, array $ids, int $batchSize = 250): int
+    {
+        $deleted = 0;
+
+        foreach (array_chunk(array_values($ids), $batchSize) as $batch) {
+            // Backticks keep ids containing commas or brackets intact.
+            $quoted = array_map(fn ($id) => '`' . $id . '`', $batch);
+            $result = $this->deleteDocumentsWhere($collection, 'id:[' . implode(',', $quoted) . ']');
+            $deleted += (int) ($result['num_deleted'] ?? 0);
+        }
+
+        return $deleted;
     }
 
     public function getDocument(string $collection, string $id): array

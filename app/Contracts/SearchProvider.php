@@ -21,10 +21,6 @@ interface SearchProvider
      */
     public function getProviderBlurb(): string|null;
     /**
-     * Utility function to return search endpoint for Search Provider.
-     */
-    public function getSearchURI(string $type): string;
-    /**
      * Utility function that denotes available search types for Search Provider.
      */
     public function getSupportedTypes(): array;
@@ -33,11 +29,6 @@ interface SearchProvider
      * to a queue for processing.
      */
     public function isDeferred(): bool;
-    /**
-     * Utility function to determine if this Search Provider offers indexing via
-     * Typesense deployment.
-     */
-    public function isTypesenseEnabled(): bool;
 
     /**
      * Core interface function which provies the main search functionality for a Search Provider.

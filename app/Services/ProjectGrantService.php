@@ -146,9 +146,6 @@ class ProjectGrantService
     public function delete(ProjectGrant $grant): bool
     {
         return DB::transaction(function () use ($grant) {
-            // Mass soft-delete skips ProjectGrantVersionObserver (which would
-            // sync-reindex mid-transaction). ProjectGrantObserver::deleted
-            // queues IndexDataset with afterCommit() for linked datasets.
             ProjectGrantVersion::where('project_grant_id', $grant->id)->delete();
             $grant->delete();
 

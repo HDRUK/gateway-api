@@ -685,8 +685,6 @@ class DatasetController extends Controller
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         // try {
-        $elasticIndexing = $request->boolean('elastic_indexing', false);
-
         $team = Team::where('id', $teamId)->first()->toArray();
 
         $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -710,7 +708,6 @@ class DatasetController extends Controller
             $team,
             $inputSchema,
             $inputVersion,
-            $elasticIndexing,
             $this->gwdmHandler,
         );
 
@@ -815,7 +812,6 @@ class DatasetController extends Controller
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $user = User::where('id', $userId)->first();
@@ -902,7 +898,6 @@ class DatasetController extends Controller
                         $datasetVersionId,
                         $versionNumber,
                         base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                        $elasticIndexing,
                         Config::get('ted.use_partial')
                     );
                 }

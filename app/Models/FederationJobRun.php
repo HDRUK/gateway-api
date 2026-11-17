@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\FederationJobRunStatus;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
@@ -10,8 +13,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
- * @property-read string|null $started_at only populated on rows returned by executionsForFederation()
- * @property-read string|null $finished_at only populated on rows returned by executionsForFederation()
+ * @property-read CarbonImmutable|null $started_at only populated on rows returned by executionsForFederation()
+ * @property-read CarbonImmutable|null $finished_at only populated on rows returned by executionsForFederation()
  */
 class FederationJobRun extends Model
 {
@@ -45,7 +48,69 @@ class FederationJobRun extends Model
 
     protected $casts = [
         'details' => 'array',
+        'status' => FederationJobRunStatus::class,
     ];
+
+    public static function startRun(int $teamId, int $federationId, string $jobUuid): self
+    {
+        return static::create([
+            'team_id' => $teamId,
+            'federation_id' => $federationId,
+            'pid' => null,
+            'job_uuid' => $jobUuid,
+            'status' => null,
+            'details' => ['message' => 'RUN'],
+            'job_attempts' => 1,
+        ]);
+    }
+
+    /**
+     * @param array<mixed>|string $message
+     */
+    public static function recordDatasetOutcome(
+        int $teamId,
+        int $federationId,
+        string $pid,
+        string $jobUuid,
+        array|string $message,
+        FederationJobRunStatus $status,
+        int $attempts,
+    ): self {
+        return static::create([
+            'team_id' => $teamId,
+            'federation_id' => $federationId,
+            'pid' => $pid,
+            'job_uuid' => $jobUuid,
+            'status' => $status,
+            'details' => ['message' => $message],
+            'job_attempts' => $attempts,
+        ]);
+    }
+
+    public static function runRowForExecution(int $federationId, string $jobUuid): ?self
+    {
+        return static::where('federation_id', $federationId)
+            ->where('job_uuid', $jobUuid)
+            ->whereNull('pid')
+            ->first();
+    }
+
+    public static function closeRun(int $federationId, string $jobUuid, FederationJobRunStatus $status, ?string $message = null): void
+    {
+        $run = static::runRowForExecution($federationId, $jobUuid);
+
+        if (!$run) {
+            return;
+        }
+
+        $run->status = $status;
+
+        if ($message !== null) {
+            $run->details = ['message' => $message];
+        }
+
+        $run->save();
+    }
 
     /**
      * Latest recorded row per dataset (pid) for one federation execution.
@@ -54,16 +119,27 @@ class FederationJobRun extends Model
      */
     public static function latestPerPidForExecution(int $federationId, string $jobUuid): Collection
     {
-        return static::where('federation_id', $federationId)
+        return static::datasetRows()
+            ->where('federation_id', $federationId)
             ->where('job_uuid', $jobUuid)
             ->whereIn('id', function ($query) use ($federationId, $jobUuid) {
                 $query->selectRaw('MAX(id)')
                     ->from((new self())->getTable())
                     ->where('federation_id', $federationId)
                     ->where('job_uuid', $jobUuid)
+                    ->whereNotNull('pid')
                     ->groupBy('pid');
             })
             ->get();
+    }
+
+    /**
+     * @param Builder<FederationJobRun> $query
+     * @return Builder<FederationJobRun>
+     */
+    public function scopeDatasetRows(Builder $query): Builder
+    {
+        return $query->whereNotNull('pid');
     }
 
     /**
@@ -76,7 +152,8 @@ class FederationJobRun extends Model
         return static::where('federation_id', $federationId)
             ->select('job_uuid')
             ->selectRaw('MIN(created_at) as started_at')
-            ->selectRaw('MAX(created_at) as finished_at')
+            ->selectRaw('MAX(updated_at) as finished_at')
+            ->withCasts(['started_at' => 'immutable_datetime', 'finished_at' => 'immutable_datetime'])
             ->groupBy('job_uuid')
             ->orderByDesc('started_at')
             ->paginate($perPage, ['*'], 'page');
@@ -84,7 +161,7 @@ class FederationJobRun extends Model
 
     /**
      * @param non-empty-array<int, int> $federationIds
-     * @return Collection<int, string> federation_id => last_run_at
+     * @return Collection<int, CarbonImmutable> federation_id => last_run_at
      */
     public static function latestRunTimesForFederationIds(array $federationIds): Collection
     {
@@ -92,6 +169,7 @@ class FederationJobRun extends Model
             ->selectRaw('MAX(created_at) as last_run_at')
             ->whereIn('federation_id', $federationIds)
             ->groupBy('federation_id')
+            ->withCasts(['last_run_at' => 'immutable_datetime'])
             ->get()
             ->pluck('last_run_at', 'federation_id');
     }

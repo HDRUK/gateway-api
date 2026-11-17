@@ -1,0 +1,534 @@
+{
+    "identifier": "ef470e58-c706-5167-8d36-a3ba472566fa",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "ef470e58-c706-5167-8d36-a3ba472566fa",
+            "gatewayPid": "ef470e58-c706-5167-8d36-a3ba472566fa",
+            "issued": "2011-05-01T00:00:00.000Z",
+            "modified": "2026-10-02T09:15:00.000Z",
+            "version": "4.0.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "A mother-child cohort that enrolled 9,300 pregnant women in Ashcombe between 2008 and 2010 and has followed mothers and their children since, with pregnancy questionnaires, delivery records and repeated assessments of maternal mental health and child development.",
+            "contactPoint": "amcs-access@ashcombe.example.org",
+            "keywords": "mother-child cohort;,;pregnancy;,;maternal mental health;,;child development;,;family health",
+            "datasetType": "Health and disease;,;Socioeconomic",
+            "datasetSubType": "Maternity and neonatology;,;Mental health;,;Family circumstance;,;Education",
+            "populationSize": 9300,
+            "description": "Mothers completed questionnaires at 12 and 28 weeks of pregnancy. Delivery details come from the maternity record. Mothers and children have been reassessed four times, with questionnaires on maternal mood and medicines and child health, behaviour and school outcomes.",
+            "shortTitle": "Ashcombe Mothers and Children Study (AMCS)",
+            "title": "Ashcombe Mothers and Children Study (AMCS)",
+            "datasetAliases": [
+                "AMCS",
+                "Ashcombe Mums and Kids"
+            ],
+            "publisher": {
+                "name": "Ashcombe Institute for Family Health",
+                "gatewayId": "uk.ashcombe.example"
+            },
+            "inPipeline": "Available"
+        },
+        "coverage": {
+            "spatial": "England",
+            "followUp": "> 10 Years",
+            "typicalAgeRange": "0-60"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Research cohort",
+                "source": "Paper-based;,;Electronic survey;,;EPR",
+                "collectionSituation": "Cohort, study, trial;,;Home"
+            },
+            "temporal": {
+                "endDate": "2025-12-31",
+                "startDate": "2008-01-07",
+                "timeLag": "More than 6 months",
+                "accrualPeriodicity": "Irregular"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "1-2 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Ashcombe Institute for Family Health",
+                "accessRights": "https://ashcombe.example.org/amcs/access",
+                "accessService": "Approved researchers receive project-specific de-identified files through the study's secure download service.",
+                "accessRequestCost": "Free for academic research; a cost-recovery fee applies to biological samples.",
+                "accessServiceCategory": "Direct access"
+            },
+            "usage": {
+                "dataUseLimitation": "General research use;,;Not for profit use",
+                "dataUseRequirement": "Ethics approval required;,;Return to database or resource",
+                "resourceCreator": {
+                    "name": null
+                },
+                "duoCodes": null,
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "LOCAL;,;SNOMED CT;,;ICD10",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": "CSV;,;Stata"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "associatedMedia": "https://ashcombe.example.org/amcs/variable-search-guide.pdf",
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "linkedDatasets": [
+                    {
+                        "pid": "da3ce4f6-80b9-5fbe-a785-11f8b34712d7",
+                        "title": "Westmoor Primary Care Mental Health Linked Dataset",
+                        "url": "https://westmoor.example.org/data/pcmh"
+                    }
+                ],
+                "waveOf": null
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "Pregnancy questionnaires",
+                "description": "Completed by the mother at 12 and 28 weeks of gestation.",
+                "columns": [
+                    {
+                        "name": "planned_pregnancy",
+                        "dataType": "string",
+                        "description": "Whether the pregnancy was planned.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "nausea_severity",
+                        "dataType": "string",
+                        "description": "Severity of nausea and vomiting in early pregnancy.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "alcohol_in_pregnancy",
+                        "dataType": "string",
+                        "description": "Any alcohol drunk since finding out about the pregnancy.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "epds_28_weeks",
+                        "dataType": "integer",
+                        "description": "Mother's Edinburgh Postnatal Depression Scale (EPDS) score at 28 weeks of pregnancy.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "household_income_band",
+                        "dataType": "string",
+                        "description": "Household income band during pregnancy.",
+                        "sensitive": true
+                    }
+                ]
+            },
+            {
+                "name": "Delivery record",
+                "columns": [
+                    {
+                        "name": "birthweight_g",
+                        "dataType": "integer",
+                        "description": "Birthweight of the child in grams.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "gestational_age_weeks",
+                        "dataType": "integer",
+                        "description": "Completed weeks of gestation at birth.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "small_for_gestational_age",
+                        "dataType": "string",
+                        "description": "Birthweight below the 10th centile for gestational age and sex.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "caesarean_section",
+                        "dataType": "string",
+                        "description": "Baby delivered by planned or emergency caesarean section.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "pre_eclampsia",
+                        "dataType": "string",
+                        "description": "Pre-eclampsia recorded in the maternity notes.",
+                        "sensitive": true
+                    }
+                ]
+            },
+            {
+                "name": "Maternal follow-up",
+                "description": "Mother's questionnaire at each child assessment.",
+                "columns": [
+                    {
+                        "name": "maternal_phq9",
+                        "dataType": "integer",
+                        "description": "Mother's PHQ-9 depression score at the child assessment.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "maternal_antidepressant_use",
+                        "dataType": "string",
+                        "description": "Mother's report of antidepressant use since the last questionnaire.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "maternal_employment",
+                        "dataType": "string",
+                        "description": "Mother's employment status.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Child assessments",
+                "columns": [
+                    {
+                        "name": "child_age_years",
+                        "dataType": "integer",
+                        "description": "Child's age at the assessment.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "child_sdq_total",
+                        "dataType": "integer",
+                        "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "child_bmi_z",
+                        "dataType": "number",
+                        "description": "Child's BMI z-score against UK 1990 reference.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "key_stage_2_attainment",
+                        "dataType": "string",
+                        "description": "Linked Key Stage 2 reading and maths attainment.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [
+            {
+                "materialType": "DNA"
+            },
+            {
+                "materialType": "Whole blood"
+            }
+        ],
+        "demographicFrequency": null,
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2008-01-07",
+                "endDate": "2010-12-17",
+                "samplingMethod": "Pregnant women resident in Ashcombe were invited at their 12-week dating scan."
+            },
+            "followUpSchedule": {
+                "frequency": "Every 3-5 years",
+                "note": "Mother and child assessments when the child was 3, 7, 11 and 15 years old."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant women resident in Ashcombe with an expected delivery date between July 2008 and June 2011."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "ef470e58-c706-5167-8d36-a3ba472566fa",
+        "version": "4.0.0",
+        "issued": "2011-05-01T00:00:00.000Z",
+        "modified": "2026-10-02T09:15:00.000Z",
+        "summary": {
+            "title": "Ashcombe Mothers and Children Study (AMCS)",
+            "abstract": "A mother-child cohort that enrolled 9,300 pregnant women in Ashcombe between 2008 and 2010 and has followed mothers and their children since, with pregnancy questionnaires, delivery records and repeated assessments of maternal mental health and child development.",
+            "dataCustodian": {
+                "identifier": "uk.ashcombe.example",
+                "name": "Ashcombe Institute for Family Health",
+                "description": "https://ashcombe.example.org/amcs",
+                "contactPoint": "amcs-access@ashcombe.example.org"
+            },
+            "populationSize": 9300,
+            "keywords": [
+                "mother-child cohort",
+                "pregnancy",
+                "maternal mental health",
+                "child development",
+                "family health"
+            ],
+            "contactPoint": "amcs-access@ashcombe.example.org",
+            "datasetAliases": [
+                "AMCS",
+                "Ashcombe Mums and Kids"
+            ]
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2008-01-07",
+                "endDate": "2010-12-17",
+                "samplingMethod": "Pregnant women resident in Ashcombe were invited at their 12-week dating scan."
+            },
+            "followUpSchedule": {
+                "frequency": "Every 3-5 years",
+                "note": "Mother and child assessments when the child was 3, 7, 11 and 15 years old."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant women resident in Ashcombe with an expected delivery date between July 2008 and June 2011."
+            }
+        },
+        "documentation": {
+            "description": "Mothers completed questionnaires at 12 and 28 weeks of pregnancy. Delivery details come from the maternity record. Mothers and children have been reassessed four times, with questionnaires on maternal mood and medicines and child health, behaviour and school outcomes.",
+            "associatedMedia": [
+                "https://ashcombe.example.org/amcs/variable-search-guide.pdf"
+            ],
+            "inPipeline": "Available"
+        },
+        "coverage": {
+            "spatial": "England",
+            "typicalAgeRangeMin": 0,
+            "typicalAgeRangeMax": 60,
+            "followUp": "> 10 Years",
+            "materialType": [
+                "DNA",
+                "Whole blood"
+            ]
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Research cohort"
+                ],
+                "source": [
+                    "Paper-based",
+                    "Electronic survey",
+                    "EPR"
+                ],
+                "collectionSource": [
+                    "Cohort, study, trial",
+                    "Home"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Maternity and neonatology",
+                            "Mental health"
+                        ]
+                    },
+                    {
+                        "name": "Socioeconomic",
+                        "subTypes": [
+                            "Family circumstance",
+                            "Education"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Irregular",
+                "timeLag": "More than 6 months",
+                "startDate": "2008-01-07",
+                "endDate": "2025-12-31"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://ashcombe.example.org/amcs/access",
+                "accessService": "Approved researchers receive project-specific de-identified files through the study's secure download service.",
+                "accessRequestCost": "Free for academic research; a cost-recovery fee applies to biological samples.",
+                "deliveryLeadTime": "1-2 months",
+                "accessServiceCategory": "Direct access",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Ashcombe Institute for Family Health"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "General research use",
+                    "Not for profit use"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Return to database or resource"
+                ],
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "LOCAL",
+                    "SNOMED CT",
+                    "ICD10"
+                ],
+                "conformsTo": [
+                    "LOCAL"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "CSV",
+                    "Stata"
+                ]
+            }
+        },
+        "linkage": {
+            "linkableDatasets": [
+                {
+                    "pid": "da3ce4f6-80b9-5fbe-a785-11f8b34712d7",
+                    "title": "Westmoor Primary Care Mental Health Linked Dataset",
+                    "url": "https://westmoor.example.org/data/pcmh"
+                }
+            ]
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Pregnancy questionnaires",
+                    "description": "Completed by the mother at 12 and 28 weeks of gestation.",
+                    "columns": [
+                        {
+                            "name": "planned_pregnancy",
+                            "dataType": "string",
+                            "description": "Whether the pregnancy was planned.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "nausea_severity",
+                            "dataType": "string",
+                            "description": "Severity of nausea and vomiting in early pregnancy.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "alcohol_in_pregnancy",
+                            "dataType": "string",
+                            "description": "Any alcohol drunk since finding out about the pregnancy.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "epds_28_weeks",
+                            "dataType": "integer",
+                            "description": "Mother's Edinburgh Postnatal Depression Scale (EPDS) score at 28 weeks of pregnancy.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "household_income_band",
+                            "dataType": "string",
+                            "description": "Household income band during pregnancy.",
+                            "sensitive": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Delivery record",
+                    "columns": [
+                        {
+                            "name": "birthweight_g",
+                            "dataType": "integer",
+                            "description": "Birthweight of the child in grams.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "gestational_age_weeks",
+                            "dataType": "integer",
+                            "description": "Completed weeks of gestation at birth.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "small_for_gestational_age",
+                            "dataType": "string",
+                            "description": "Birthweight below the 10th centile for gestational age and sex.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "caesarean_section",
+                            "dataType": "string",
+                            "description": "Baby delivered by planned or emergency caesarean section.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "pre_eclampsia",
+                            "dataType": "string",
+                            "description": "Pre-eclampsia recorded in the maternity notes.",
+                            "sensitive": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Maternal follow-up",
+                    "description": "Mother's questionnaire at each child assessment.",
+                    "columns": [
+                        {
+                            "name": "maternal_phq9",
+                            "dataType": "integer",
+                            "description": "Mother's PHQ-9 depression score at the child assessment.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "maternal_antidepressant_use",
+                            "dataType": "string",
+                            "description": "Mother's report of antidepressant use since the last questionnaire.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "maternal_employment",
+                            "dataType": "string",
+                            "description": "Mother's employment status.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Child assessments",
+                    "columns": [
+                        {
+                            "name": "child_age_years",
+                            "dataType": "integer",
+                            "description": "Child's age at the assessment.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "child_sdq_total",
+                            "dataType": "integer",
+                            "description": "Strengths and Difficulties Questionnaire total difficulties score.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "child_bmi_z",
+                            "dataType": "number",
+                            "description": "Child's BMI z-score against UK 1990 reference.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "key_stage_2_attainment",
+                            "dataType": "string",
+                            "description": "Linked Key Stage 2 reading and maths attainment.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -6,6 +6,7 @@ use App\Models\Federation;
 use App\Models\FederationJobRun;
 use App\Models\Team;
 use App\Models\TeamHasFederation;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
@@ -267,6 +268,40 @@ class FederationHistoryTest extends TestCase
         $this->assertSame('success', $content['data'][0]['status']);
     }
 
+    public function test_finished_run_times_are_reported_as_utc(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        $run = $this->makeRun($team, $federation, 'uuid-done', 'pid-1', 1, 'CREATED', '2026-07-25 09:12:04');
+        FederationJobRun::where('id', $run->id)->update(['updated_at' => '2026-07-25 09:15:30']);
+
+        $response = $this->get($this->historyUrl($team->id, $federation->id), $this->header);
+        $content = $response->decodeResponseJson();
+
+        $this->assertSame('2026-07-25T09:12:04.000000Z', $content['data'][0]['started_at']);
+        $this->assertSame('2026-07-25T09:15:30.000000Z', $content['data'][0]['finished_at']);
+    }
+
+    public function test_in_progress_run_start_time_is_reported_as_utc(): void
+    {
+        [$team, $federation] = $this->makeFederation();
+
+        $this->makeRun($team, $federation, 'uuid-live', 'pid-1', 1, 'CREATED', '2026-07-25 09:20:00');
+        $this->seedBatch(
+            $this->batchName($federation->id, 'uuid-live'),
+            total: 10,
+            pending: 8,
+            failed: 0,
+            finishedAt: null,
+            createdAt: Carbon::parse('2026-07-25 09:12:04', 'UTC')->timestamp,
+        );
+
+        $response = $this->get($this->historyUrl($team->id, $federation->id), $this->header);
+        $content = $response->decodeResponseJson();
+
+        $this->assertSame('2026-07-25T09:12:04.000000Z', $content['data'][0]['started_at']);
+    }
+
     public function test_in_progress_timestamps_come_from_the_batch_not_the_completed_job_run_rows(): void
     {
         [$team, $federation] = $this->makeFederation();
@@ -280,7 +315,7 @@ class FederationHistoryTest extends TestCase
         $response = $this->get($this->historyUrl($team->id, $federation->id), $this->header);
         $content = $response->decodeResponseJson();
 
-        $this->assertSame(date('Y-m-d H:i:s', $batchCreatedAt), $content['data'][0]['started_at']);
+        $this->assertSame(Carbon::createFromTimestamp($batchCreatedAt)->toJSON(), $content['data'][0]['started_at']);
         $this->assertNull($content['data'][0]['finished_at']);
     }
 

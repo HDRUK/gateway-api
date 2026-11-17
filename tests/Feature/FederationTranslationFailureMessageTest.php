@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\FederationJobRunStatus;
 use App\Models\Federation;
+use App\Models\FederationJobRun;
 use App\Models\Team;
 use App\Models\TeamHasFederation;
 use Illuminate\Support\Facades\Config;
@@ -68,7 +70,7 @@ class FederationTranslationFailureMessageTest extends TestCase
             use \App\Traits\GatewayMetadataIngestionTrait;
         };
         $stored = $ingestion->translationFailureForHistory($traserResponse, $catalogueItem, $validateAgainst);
-        $ingestion->sendToHistory($team->id, $federation->id, 'pid-1', 'uuid-1', $stored, 0, 1);
+        FederationJobRun::recordDatasetOutcome($team->id, $federation->id, 'pid-1', 'uuid-1', $stored, FederationJobRunStatus::FAILED, 1);
 
         $content = $this->get("api/v1/teams/{$team->id}/federations/{$federation->id}/history", $this->header)
             ->decodeResponseJson();

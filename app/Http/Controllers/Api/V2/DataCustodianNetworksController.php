@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V2;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\RequestTransformation;
 use App\Models\Collection;
 use App\Models\DataProviderColl;
@@ -24,7 +23,6 @@ use Illuminate\Http\Request;
 
 class DataCustodianNetworksController extends Controller
 {
-    use IndexElastic;
     use GetValueByPossibleKeys;
     use RequestTransformation;
 
@@ -1308,8 +1306,6 @@ class DataCustodianNetworksController extends Controller
                 ]);
             }
 
-            $this->indexElasticDataCustodianNetwork((int) $dpc->id);
-
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $dpc->id,
@@ -1410,8 +1406,6 @@ class DataCustodianNetworksController extends Controller
                     ]);
                 }
             }
-
-            $this->indexElasticDataCustodianNetwork((int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -1516,8 +1510,6 @@ class DataCustodianNetworksController extends Controller
                 }
             }
 
-            $this->indexElasticDataCustodianNetwork((int) $id);
-
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $dpc,
@@ -1587,8 +1579,6 @@ class DataCustodianNetworksController extends Controller
         try {
             DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();
             DataProviderColl::where(['id' => $id])->delete();
-
-            $this->deleteDataProviderCollFromElastic($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

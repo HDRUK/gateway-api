@@ -11,7 +11,6 @@ use App\Models\Dur;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\CollectionsV2Helpers;
 use App\Models\CollectionHasDur;
-use App\Http\Traits\IndexElastic;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +32,6 @@ use App\Models\CollectionHasUser;
 // LS: Refactor candidate - needs sorting out.
 class UserCollectionController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use CheckAccess;
     use CollectionsV2Helpers;
@@ -519,7 +517,6 @@ class UserCollectionController extends Controller
             }
 
             if ($collection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $collection->id);
                 // Re-index after datasets are attached so Typesense gets the full document.
                 // Collection::create() fires Scout immediately with empty datasetTitles;
                 // this call corrects that once all relations are in place.
@@ -687,12 +684,10 @@ class UserCollectionController extends Controller
 
             $currentCollection = Collection::where('id', $id)->first();
             if ($currentCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
                 // Collection::where()->update doesn't hit the observer for Scout to index
                 // changes within typesense. This fixes that.
                 $currentCollection->searchable();
             } else {
-                $this->deleteCollectionFromElastic((int) $id);
                 // As above.
                 $currentCollection->unsearchable();
             }
@@ -876,12 +871,10 @@ class UserCollectionController extends Controller
                 Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
             }
             if ($updatedCollection->status === Collection::STATUS_ACTIVE) {
-                $this->indexElasticCollections((int) $id);
                 // Collection::where()->update doesn't hit the observer for Scout to index
                 // changes within typesense. This fixes that.
                 $updatedCollection->searchable();
             } elseif ($initCollection->status === Collection::STATUS_ACTIVE) {
-                $this->deleteCollectionFromElastic((int) $id);
                 // As above.
                 $updatedCollection->unsearchable();
             }
@@ -995,8 +988,6 @@ class UserCollectionController extends Controller
                 CollectionHasPublication::where(['collection_id' => $id])->delete();
                 CollectionHasUser::where(['collection_id' => $id])->delete();
                 Collection::where(['id' => $id])->delete();
-
-                $this->deleteCollectionFromElastic($id);
 
                 Auditor::log([
                     'user_id' => (int)$jwtUser['id'],

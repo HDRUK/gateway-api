@@ -27,6 +27,7 @@ class RoleSeeder extends Seeder
                 'full_name' => 'HDR UK Admin',
                 'is_privileged' => true,
                 'permissions' => [
+                    'dashboard.read',
                     'datasets.read',
                     'datasets.delete',
 
@@ -146,6 +147,7 @@ class RoleSeeder extends Seeder
             'custodian.team.admin' => [
                 'full_name' => 'Team Admin',
                 'permissions' => [
+                    'dashboard.read',
                     'applications.read',
                     'applications.create',
                     'applications.update',
@@ -216,6 +218,7 @@ class RoleSeeder extends Seeder
             'custodian.team.cohortAdmin' => [
                 'full_name' => 'Team Cohort Discovery Admin',
                 'permissions' => [
+                    'dashboard.read',
                     'cohort.team.create',
                     'cohort.team.read',
                     'cohort.team.update',
@@ -244,6 +247,7 @@ class RoleSeeder extends Seeder
             'custodian.metadata.manager' => [
                 'full_name' => 'Metadata Manager',
                 'permissions' => [
+                    'dashboard.read',
                     'datasets.read',
                     'datasets.create',
                     'datasets.update',
@@ -287,6 +291,7 @@ class RoleSeeder extends Seeder
             'custodian.dar.manager' => [
                 'full_name' => 'DAR Manager',
                 'permissions' => [
+                    'dashboard.read',
                     'datasets.read',
 
                     'enquiries.read',

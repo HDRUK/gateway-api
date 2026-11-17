@@ -45,9 +45,8 @@ class DatasetVersionSchemaChangeTest extends TestCase
 
     public function test_schema_change_forces_snapshot_while_same_schema_stays_delta(): void
     {
-        // This test asserts the service's snapshot/delta versioning decision, not
-        // Elasticsearch indexing. Disable observers so no ReindexDataset/IndexDataset
-        // jobs are dispatched from the create/update model writes.
+        // This test asserts the service's snapshot/delta versioning decision.
+        // Disable observers so no jobs are dispatched from the create/update model writes.
         $this->disableObservers();
 
         $team = Team::first();
@@ -67,7 +66,6 @@ class DatasetVersionSchemaChangeTest extends TestCase
             $team,
             null,
             null,
-            false,
         );
 
         $this->assertTrue($created['translated']);
@@ -85,7 +83,6 @@ class DatasetVersionSchemaChangeTest extends TestCase
             $user->id,
             $team->id,
             Dataset::ORIGIN_MANUAL,
-            false,
             $team,
         );
 
@@ -101,7 +98,6 @@ class DatasetVersionSchemaChangeTest extends TestCase
             $user->id,
             $team->id,
             Dataset::ORIGIN_MANUAL,
-            false,
             $team,
         );
 

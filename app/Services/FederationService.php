@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\FederationJobRunStatus;
 use App\Exceptions\FederationAlreadyRunningException;
 use App\Exceptions\FederationSecretException;
 use App\Exceptions\NotFoundException;
@@ -40,7 +41,7 @@ class FederationService
                 $federation->auth_secret_key_location,
                 $federation->auth_type
             ));
-            $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id));
+            $federation->setAttribute('last_run_at', $lastRunTimes->get($federation->id)?->toJSON());
             $federation->setAttribute('progress', $this->currentProgress($federation));
             return $federation;
         });
@@ -261,7 +262,7 @@ class FederationService
         $executions->getCollection()->transform(function (FederationJobRun $execution) use ($federationId) {
             $rows = FederationJobRun::latestPerPidForExecution($federationId, $execution->job_uuid);
 
-            $failed = $rows->filter(fn ($row) => $row->status === 0);
+            $failed = $rows->filter(fn ($row) => $row->status === FederationJobRunStatus::FAILED);
 
             $failedDatasets = $failed->map(fn ($row) => [
                 'pid' => $row->pid,
@@ -272,13 +273,18 @@ class FederationService
 
             $onlyFailure = count($failedDatasets) === 1 ? $failedDatasets[0] : null;
 
-            $startedAt = $execution->started_at;
-            $finishedAt = $execution->finished_at;
+            $startedAt = $execution->started_at?->toJSON();
+            $finishedAt = $execution->finished_at?->toJSON();
             $batch = $this->findBatchForExecution($federationId, $execution->job_uuid);
+            $runRow = FederationJobRun::runRowForExecution($federationId, $execution->job_uuid);
 
             if ($batch?->cancelled()) {
                 $status = 'failed';
                 $message = 'Stopped because the integration was disabled';
+            } elseif ($runRow && $runRow->status === null) {
+                $status = 'in_progress';
+                $message = null;
+                $finishedAt = null;
             } elseif ($onlyFailure) {
                 $status = 'failed';
                 $message = $onlyFailure['message'];
@@ -289,11 +295,14 @@ class FederationService
                 if ($batch && batchHasJobsLeftToRun($batch)) {
                     $status = 'in_progress';
                     $message = null;
-                    $startedAt = $batch->createdAt->toDateTimeString();
+                    $startedAt = $batch->createdAt->toJSON();
                     $finishedAt = null;
                 } elseif ($batch?->hasFailures()) {
                     $status = 'failed';
                     $message = "{$batch->failedJobs} of {$batch->totalJobs} jobs failed unexpectedly. Please contact support and reference job: {$execution->job_uuid}";
+                } elseif ($runRow?->status === FederationJobRunStatus::FAILED) {
+                    $status = 'failed';
+                    $message = data_get($runRow->details, 'message');
                 } else {
                     $status = 'success';
                     $message = null;

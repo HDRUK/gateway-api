@@ -19,6 +19,11 @@ trait MockExternalApis
     private $dataset = null;
     private $datasetUpdate = null;
     protected $header = [];
+    protected array $traserUntranslatable = [];
+    protected array $traserValidationErrors = [];
+    protected array $traserInvalidSchemas = [];
+    protected array $traserSchemaProperties = [];
+    protected array $traserSchemaRequired = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
     public function getMetadataV1p0()
@@ -105,31 +110,6 @@ trait MockExternalApis
         ];
 
         Mail::fake();
-
-
-        // This is a PSR-7 response
-        // Mock two responses, one for creating a dataset, another for deleting
-        $elasticBaseUrl = Config::get('database.connections.elasticsearch.host');
-
-        // Define the URL pattern for the index document endpoint
-        $indexDocumentUrlPattern = $elasticBaseUrl . '/*/_doc/*';
-
-        // Fake the HTTP request
-        Http::fake([
-            $indexDocumentUrlPattern => function ($request) {
-                return Http::response('Document created', 200, ['application/json']);
-            },
-        ]);
-
-
-        $deleteDocumentsUrlPattern = $elasticBaseUrl . '/*/_delete_by_query';
-
-        // Fake the HTTP request
-        Http::fake([
-            $deleteDocumentsUrlPattern => function ($request) {
-                return Http::response('Document deleted', 200, ['application/json']);
-            },
-        ]);
 
         Http::fake([
             config("ted.url") . "/datasets" => Http::response(
@@ -1144,6 +1124,15 @@ trait MockExternalApis
                bool $validateOutput = true,
                ?string $subsection = null
            ) {
+               if (in_array($outputSchema, $this->traserUntranslatable, true)) {
+                   return [
+                       "traser_message" => "translation failed",
+                       "wasTranslated" => false,
+                       "metadata" => null,
+                       "statusCode" => 400,
+                   ];
+               }
+
                $metadata = json_decode($dataset, true)["metadata"];
                //mock translating alternative schemas via traser - just give it a new GWDM metadata
 
@@ -1157,7 +1146,40 @@ trait MockExternalApis
                    "statusCode" => "200",
                ];
            });
-        MMC::shouldReceive("validateDataModelType")->andReturn(true);
+        MMC::shouldReceive("validateDataModelType")
+            ->andReturnUsing(fn (string $json, string $schema) => !count($this->traserValidationErrors)
+                && !in_array($schema, $this->traserInvalidSchemas));
+        MMC::shouldReceive("listSchemas")->andReturn([
+            'HDRUK' => ['2.1.2', '4.0.0', '4.1.0'],
+            'PRUK' => ['1.0.0'],
+            'CRUK' => ['1.0.0'],
+            'CROCOD' => ['1.0.0'],
+            'GWDM' => ['2.0', '2.1', '2.2', '2.3'],
+            'SchemaOrg' => ['default'],
+        ]);
+        MMC::shouldReceive("getSchema")
+            ->andReturnUsing(fn (string $name, string $version) => [
+                'name' => $name,
+                'version' => $version,
+                'schema' => [
+                    'title' => $name . ' ' . $version,
+                    'type' => 'object',
+                    'required' => $this->traserSchemaRequired,
+                    'properties' => array_merge([
+                        'summary' => ['$ref' => '#/$defs/Summary'],
+                    ], $this->traserSchemaProperties),
+                    '$defs' => [
+                        'Summary' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'title' => ['type' => 'string'],
+                                'abstract' => ['type' => 'string'],
+                                'populationSize' => ['type' => 'integer'],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
         MMC::makePartial();
 
         $this->dataset_store = [];
@@ -1210,11 +1232,5 @@ trait MockExternalApis
                 }
             },
         ]);
-    }
-
-    // Count requests made to the elastic mock client
-    public function countElasticClientRequests(object $client): int
-    {
-        return count($client->getTransport()->getClient()->getRequests());
     }
 }

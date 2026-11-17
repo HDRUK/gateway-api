@@ -1,0 +1,461 @@
+{
+    "identifier": "2cb981a1-4467-5f7e-96c3-ef0975fd22bb",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "2cb981a1-4467-5f7e-96c3-ef0975fd22bb",
+            "gatewayPid": "2cb981a1-4467-5f7e-96c3-ef0975fd22bb",
+            "issued": "2022-02-14T00:00:00.000Z",
+            "modified": "2026-10-11T13:40:00.000Z",
+            "version": "1.1.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "A clinical cohort of 2,140 women recruited in pregnancy through antenatal clinics and perinatal mental health services, with repeated mood assessments from the first trimester to two years after the birth and linked birth outcomes.",
+            "contactPoint": "pmood@bridgewater.example.org",
+            "keywords": "perinatal mental health;,;postnatal depression;,;antidepressants;,;pregnancy;,;anxiety",
+            "datasetType": "Health and disease",
+            "datasetSubType": "Mental health;,;Maternity and neonatology",
+            "populationSize": 2140,
+            "description": "Standardised mood and anxiety questionnaires are repeated at seven time points, with a structured clinical interview at 32 weeks of gestation and six months after the birth. Medicines taken in pregnancy and birth outcomes come from the maternity record.",
+            "shortTitle": "Bridgewater Perinatal Mood Study (BPMS)",
+            "title": "Bridgewater Perinatal Mood Study (BPMS)",
+            "datasetAliases": [
+                "BPMS"
+            ],
+            "publisher": {
+                "name": "Bridgewater Centre for Perinatal Psychiatry",
+                "gatewayId": "uk.bridgewater.example"
+            },
+            "inPipeline": "Available"
+        },
+        "coverage": {
+            "spatial": "England",
+            "followUp": "1 - 10 Years",
+            "typicalAgeRange": "18-45"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": "Study",
+                "source": "Electronic survey;,;EPR",
+                "collectionSituation": "Cohort, study, trial;,;Secondary care - Outpatients;,;Patient report outcome"
+            },
+            "temporal": {
+                "endDate": "2022-03-31",
+                "startDate": "2017-09-01",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Static"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "deliveryLeadTime": "1-2 months",
+                "jurisdiction": "GB-ENG",
+                "dataController": "Bridgewater University",
+                "accessRights": "https://bridgewater.example.org/research/bpms/access",
+                "accessService": "Applications are reviewed by the study steering group. Mood questionnaire data are released as de-identified files; linked maternity data are analysed in a secure environment.",
+                "accessRequestCost": "Low cost: free for academic use; a contribution to data preparation is asked for commercial projects.",
+                "accessServiceCategory": "Varies based on project"
+            },
+            "usage": {
+                "dataUseLimitation": "Research use only",
+                "dataUseRequirement": "Ethics approval required;,;Collaboration required",
+                "resourceCreator": {
+                    "name": null
+                },
+                "duoCodes": null,
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingSchemes": "LOCAL;,;SNOMED CT;,;ICD10",
+                "conformsTo": "LOCAL",
+                "languages": "en",
+                "formats": "CSV;,;Stata"
+            }
+        },
+        "linkage": {
+            "isGeneratedUsing": null,
+            "dataUses": null,
+            "isReferenceIn": null,
+            "datasetLinkage": {
+                "waveOf": null
+            }
+        },
+        "observations": [],
+        "structuralMetadata": [
+            {
+                "name": "Mood assessments",
+                "description": "Repeated at each assessment; one row per participant per time point.",
+                "columns": [
+                    {
+                        "name": "assessment_point",
+                        "dataType": "string",
+                        "description": "Trimester or months after the birth at which the questionnaires were completed.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "epds_total",
+                        "dataType": "integer",
+                        "description": "Edinburgh Postnatal Depression Scale (EPDS) total score, 0-30.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "phq9_total",
+                        "dataType": "integer",
+                        "description": "Patient Health Questionnaire (PHQ-9) depression severity score, 0-27.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "gad7_total",
+                        "dataType": "integer",
+                        "description": "Generalised Anxiety Disorder (GAD-7) score, 0-21.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "scid_major_depression",
+                        "dataType": "string",
+                        "description": "Major depressive episode diagnosed by structured clinical interview (SCID-5).",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "history_of_depression",
+                        "dataType": "string",
+                        "description": "Depression before this pregnancy, from the clinical interview.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "sleep_hours",
+                        "dataType": "number",
+                        "description": "Self-reported average hours of sleep per night.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "partner_support_score",
+                        "dataType": "integer",
+                        "description": "Perceived support from partner, 0-24.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Medicines in pregnancy",
+                "columns": [
+                    {
+                        "name": "antidepressant_in_pregnancy",
+                        "dataType": "string",
+                        "description": "Antidepressant taken at any point during pregnancy, with trimester of exposure.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "antidepressant_name",
+                        "dataType": "string",
+                        "description": "Name of the antidepressant, coded to dm+d.",
+                        "sensitive": true
+                    },
+                    {
+                        "name": "daily_dose_mg",
+                        "dataType": "number",
+                        "description": "Daily dose in milligrams.",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "Birth outcomes",
+                "description": "Linked from the maternity record.",
+                "columns": [
+                    {
+                        "name": "gestational_age_weeks",
+                        "dataType": "integer",
+                        "description": "Completed weeks of gestation at birth.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "birthweight_g",
+                        "dataType": "integer",
+                        "description": "Birthweight in grams.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "apgar_5_min",
+                        "dataType": "integer",
+                        "description": "Apgar score five minutes after birth.",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "neonatal_unit_admission",
+                        "dataType": "string",
+                        "description": "Baby admitted to a neonatal unit.",
+                        "sensitive": false
+                    }
+                ]
+            }
+        ],
+        "tissuesSampleCollection": [],
+        "demographicFrequency": null,
+        "omics": null,
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": true
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2017-09-01",
+                "endDate": "2020-02-28",
+                "samplingMethod": "Women with and without a history of mental illness were invited in a 1:2 ratio from perinatal mental health services and routine antenatal clinics."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Assessments in each trimester, at six weeks, six months, one year and two years after the birth."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant, aged 18 or over, less than 16 weeks of gestation and able to complete questionnaires in English.",
+                "exclusionCriteria": "Current psychosis or substance dependence at recruitment."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "2cb981a1-4467-5f7e-96c3-ef0975fd22bb",
+        "version": "1.1.0",
+        "issued": "2022-02-14T00:00:00.000Z",
+        "modified": "2026-10-11T13:40:00.000Z",
+        "summary": {
+            "title": "Bridgewater Perinatal Mood Study (BPMS)",
+            "abstract": "A clinical cohort of 2,140 women recruited in pregnancy through antenatal clinics and perinatal mental health services, with repeated mood assessments from the first trimester to two years after the birth and linked birth outcomes.",
+            "dataCustodian": {
+                "identifier": "uk.bridgewater.example",
+                "name": "Bridgewater Centre for Perinatal Psychiatry",
+                "description": "https://bridgewater.example.org/research",
+                "contactPoint": "pmood@bridgewater.example.org"
+            },
+            "populationSize": 2140,
+            "keywords": [
+                "perinatal mental health",
+                "postnatal depression",
+                "antidepressants",
+                "pregnancy",
+                "anxiety"
+            ],
+            "contactPoint": "pmood@bridgewater.example.org",
+            "datasetAliases": [
+                "BPMS"
+            ]
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": false,
+                "isClinicalBased": true
+            },
+            "recruitment": {
+                "status": "Closed",
+                "startDate": "2017-09-01",
+                "endDate": "2020-02-28",
+                "samplingMethod": "Women with and without a history of mental illness were invited in a 1:2 ratio from perinatal mental health services and routine antenatal clinics."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Assessments in each trimester, at six weeks, six months, one year and two years after the birth."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant, aged 18 or over, less than 16 weeks of gestation and able to complete questionnaires in English.",
+                "exclusionCriteria": "Current psychosis or substance dependence at recruitment."
+            }
+        },
+        "documentation": {
+            "description": "Standardised mood and anxiety questionnaires are repeated at seven time points, with a structured clinical interview at 32 weeks of gestation and six months after the birth. Medicines taken in pregnancy and birth outcomes come from the maternity record.",
+            "inPipeline": "Available"
+        },
+        "coverage": {
+            "spatial": "England",
+            "typicalAgeRangeMin": 18,
+            "typicalAgeRangeMax": 45,
+            "followUp": "1 - 10 Years"
+        },
+        "provenance": {
+            "origin": {
+                "purpose": [
+                    "Study"
+                ],
+                "source": [
+                    "Electronic survey",
+                    "EPR"
+                ],
+                "collectionSource": [
+                    "Cohort, study, trial",
+                    "Secondary care - Outpatients",
+                    "Patient report outcome"
+                ],
+                "datasetType": [
+                    {
+                        "name": "Health and disease",
+                        "subTypes": [
+                            "Mental health",
+                            "Maternity and neonatology"
+                        ]
+                    }
+                ]
+            },
+            "temporal": {
+                "publishingFrequency": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "2017-09-01",
+                "endDate": "2022-03-31"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://bridgewater.example.org/research/bpms/access",
+                "accessService": "Applications are reviewed by the study steering group. Mood questionnaire data are released as de-identified files; linked maternity data are analysed in a secure environment.",
+                "accessRequestCost": "Low cost: free for academic use; a contribution to data preparation is asked for commercial projects.",
+                "deliveryLeadTime": "1-2 months",
+                "accessServiceCategory": "Varies based on project",
+                "jurisdiction": [
+                    "GB-ENG"
+                ],
+                "dataController": "Bridgewater University"
+            },
+            "usage": {
+                "dataUseLimitation": [
+                    "Research use only"
+                ],
+                "dataUseRequirements": [
+                    "Ethics approval required",
+                    "Collaboration required"
+                ],
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {
+                "vocabularyEncodingScheme": [
+                    "LOCAL",
+                    "SNOMED CT",
+                    "ICD10"
+                ],
+                "conformsTo": [
+                    "LOCAL"
+                ],
+                "language": [
+                    "en"
+                ],
+                "format": [
+                    "CSV",
+                    "Stata"
+                ]
+            }
+        },
+        "structuralMetadata": {
+            "tables": [
+                {
+                    "name": "Mood assessments",
+                    "description": "Repeated at each assessment; one row per participant per time point.",
+                    "columns": [
+                        {
+                            "name": "assessment_point",
+                            "dataType": "string",
+                            "description": "Trimester or months after the birth at which the questionnaires were completed.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "epds_total",
+                            "dataType": "integer",
+                            "description": "Edinburgh Postnatal Depression Scale (EPDS) total score, 0-30.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "phq9_total",
+                            "dataType": "integer",
+                            "description": "Patient Health Questionnaire (PHQ-9) depression severity score, 0-27.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "gad7_total",
+                            "dataType": "integer",
+                            "description": "Generalised Anxiety Disorder (GAD-7) score, 0-21.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "scid_major_depression",
+                            "dataType": "string",
+                            "description": "Major depressive episode diagnosed by structured clinical interview (SCID-5).",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "history_of_depression",
+                            "dataType": "string",
+                            "description": "Depression before this pregnancy, from the clinical interview.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "sleep_hours",
+                            "dataType": "number",
+                            "description": "Self-reported average hours of sleep per night.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "partner_support_score",
+                            "dataType": "integer",
+                            "description": "Perceived support from partner, 0-24.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Medicines in pregnancy",
+                    "columns": [
+                        {
+                            "name": "antidepressant_in_pregnancy",
+                            "dataType": "string",
+                            "description": "Antidepressant taken at any point during pregnancy, with trimester of exposure.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "antidepressant_name",
+                            "dataType": "string",
+                            "description": "Name of the antidepressant, coded to dm+d.",
+                            "sensitive": true
+                        },
+                        {
+                            "name": "daily_dose_mg",
+                            "dataType": "number",
+                            "description": "Daily dose in milligrams.",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Birth outcomes",
+                    "description": "Linked from the maternity record.",
+                    "columns": [
+                        {
+                            "name": "gestational_age_weeks",
+                            "dataType": "integer",
+                            "description": "Completed weeks of gestation at birth.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "birthweight_g",
+                            "dataType": "integer",
+                            "description": "Birthweight in grams.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "apgar_5_min",
+                            "dataType": "integer",
+                            "description": "Apgar score five minutes after birth.",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "neonatal_unit_admission",
+                            "dataType": "string",
+                            "description": "Baby admitted to a neonatal unit.",
+                            "sensitive": false
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -11,7 +11,6 @@ use App\Services\TypesenseService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Http;
 use App\Http\Traits\PaginateFromArray;
 use App\Http\Requests\Filter\GetFilter;
 use App\Http\Requests\Filter\EditFilter;
@@ -85,28 +84,8 @@ class FilterController extends Controller
         try {
             $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
 
-            [$typesenseFiltersByCollection, $unfacetableIndices, $elasticIndices] =
-                $this->partitionFiltersByProvider($filters);
-
-            // Legacy Elasticsearch path — only used while TypesenseSearch is inactive.
-            if (!empty($elasticIndices)) {
-                $elasticFilters = array_map(fn ($i) => $filters[$i], $elasticIndices);
-
-                $urlString = config('gateway.search_service_url') . '/filters';
-
-                $response = Http::withBody(
-                    json_encode(['filters' => $elasticFilters]),
-                    'application/json'
-                )->post($urlString);
-
-                $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
-
-                foreach ($elasticIndices as $position => $i) {
-                    $type = $filters[$i]['type'];
-                    $keys = $filters[$i]['keys'];
-                    $filters[$i]['buckets'] = $filterBuckets[$position][$type][$keys]['buckets'] ?? [];
-                }
-            }
+            [$typesenseFiltersByCollection, $unfacetableIndices] =
+                $this->partitionFiltersByCollection($filters);
 
             // Typesense path — facet-ready fields, grouped by collection so each
             // collection is queried once regardless of how many filters use it.
@@ -119,8 +98,7 @@ class FilterController extends Controller
                 }
             }
 
-            // Typesense is active but this field isn't flattened/faceted yet —
-            // no Elasticsearch fallback while the feature is on, so no buckets.
+            // This field isn't flattened/faceted in Typesense yet, so no buckets.
             foreach ($unfacetableIndices as $i) {
                 $filters[$i]['buckets'] = [];
             }
@@ -147,24 +125,16 @@ class FilterController extends Controller
     }
 
     /**
-     * Splits filter row indices into: a Typesense group (keyed by collection
-     * name, for fields already flattened/facet-enabled there), an
-     * "unfacetable" group (Typesense is active but this field isn't indexed
-     * as a facet yet — resolves to empty buckets, no Elasticsearch call), and
-     * a legacy Elasticsearch group used only while TypesenseSearch is off.
+     * Splits filter row indices into a Typesense group (keyed by collection
+     * name, for fields already flattened/facet-enabled there) and an
+     * "unfacetable" group (this field isn't indexed as a facet yet, so it
+     * resolves to empty buckets).
      *
-     * Elasticsearch is never queried while the feature flag is active — that
-     * legacy service isn't guaranteed to be running once Typesense takes over.
-     *
-     * @return array{0: array<string, int[]>, 1: int[], 2: int[]}
+     * @return array{0: array<string, int[]>, 1: int[]}
      */
-    private function partitionFiltersByProvider(array $filters): array
+    private function partitionFiltersByCollection(array $filters): array
     {
         $provider = app(HDRUK::class);
-
-        if (!$provider->isTypesenseEnabled()) {
-            return [[], [], array_keys($filters)];
-        }
 
         $typesenseFiltersByCollection = [];
         $unfacetableIndices = [];
@@ -179,7 +149,7 @@ class FilterController extends Controller
             }
         }
 
-        return [$typesenseFiltersByCollection, $unfacetableIndices, []];
+        return [$typesenseFiltersByCollection, $unfacetableIndices];
     }
 
     /**
@@ -236,32 +206,12 @@ class FilterController extends Controller
         try {
             $filter = Filter::findOrFail($id);
             if ($filter) {
-                $provider = app(HDRUK::class);
+                // An unfaceted field resolves to no buckets.
+                $collection = app(HDRUK::class)->collectionForFacetableFilter($filter->type, $filter->keys);
 
-                if ($provider->isTypesenseEnabled()) {
-                    // No Elasticsearch fallback while the feature is active —
-                    // an unfaceted field simply resolves to no buckets.
-                    $collection = $provider->collectionForFacetableFilter($filter->type, $filter->keys);
-
-                    $filter['buckets'] = $collection !== null
-                        ? (app(TypesenseService::class)->facetCounts($collection, [$filter->keys])[$filter->keys]['buckets'] ?? [])
-                        : [];
-                } else {
-                    $urlString = config('gateway.search_service_url') . '/filters';
-
-                    $response = Http::withBody(
-                        json_encode(['filters' => [$filter->toArray()]]),
-                        'application/json'
-                    )->post($urlString);
-
-                    $filterBuckets = isset($response->json()['filters'][0]) ?
-                        $response->json()['filters'][0] : [];
-                    if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
-                        $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
-                    } else {
-                        $filter['buckets'] = [];
-                    }
-                }
+                $filter['buckets'] = $collection !== null
+                    ? (app(TypesenseService::class)->facetCounts($collection, [$filter->keys])[$filter->keys]['buckets'] ?? [])
+                    : [];
 
                 Auditor::log([
                     'action_type' => 'GET',

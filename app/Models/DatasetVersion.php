@@ -108,6 +108,21 @@ class DatasetVersion extends BaseTypesenseModel
     }
 
     /**
+     * The document as submitted in its source schema. Some writes store the
+     * whole form envelope ({schemaModel, schemaVersion, metadata}) as the
+     * original, so it is unwrapped.
+     */
+    public static function submittedMetadata(array $envelope): array
+    {
+        $original = (array) ($envelope['original_metadata'] ?? []);
+        if (isset($original['schemaModel'], $original['metadata'])) {
+            $original = (array) $original['metadata'];
+        }
+
+        return $original;
+    }
+
+    /**
      * Accessor for the metadata field to convert json string to
      * php array for inclusion in json response object. Weirdly
      * the $casts of metadata to array _was_ failing. Possibly due
@@ -466,6 +481,17 @@ class DatasetVersion extends BaseTypesenseModel
                 ['name' => 'structuralTableNames',         'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnNames',        'type' => 'string[]', 'optional' => true],
                 ['name' => 'structuralColumnDescriptions', 'type' => 'string[]', 'optional' => true],
+                // Advanced search fields. The typical age range is split into
+                // bounds so a search can ask for ranges that overlap its own.
+                ['name' => 'ageRangeMin',                  'type' => 'int32',    'optional' => true],
+                ['name' => 'ageRangeMax',                  'type' => 'int32',    'optional' => true],
+                ['name' => 'deliveryLeadTime',             'type' => 'string',   'facet' => true, 'optional' => true],
+                // GWDM 2.3 population section; empty for earlier versions.
+                ['name' => 'waveType',                     'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'recruitmentStatus',            'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'followUpFrequency',            'type' => 'string',   'facet' => true, 'optional' => true],
+                ['name' => 'isLongitudinal',               'type' => 'bool',     'facet' => true, 'optional' => true],
+                ['name' => 'isFamilyBased',                'type' => 'bool',     'facet' => true, 'optional' => true],
             ],
         ];
     }

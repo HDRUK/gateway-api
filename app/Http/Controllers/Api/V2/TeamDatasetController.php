@@ -30,6 +30,8 @@ use App\Http\Requests\V2\Dataset\DeleteDataset;
 use App\Http\Requests\V2\Dataset\EditTeamDataset;
 use App\Context\PartnerContext;
 use App\Services\Gwdm\GwdmMetadataHandler;
+use App\Services\OnboardingForm\DatasetActivationService;
+use Laravel\Pennant\Feature;
 use App\Http\Requests\V2\Dataset\CreateTeamDataset;
 use App\Http\Requests\V2\Dataset\UpdateTeamDataset;
 use App\Exports\DatasetStructuralMetadataExport;
@@ -49,6 +51,7 @@ class TeamDatasetController extends Controller
     public function __construct(
         private readonly PartnerContext $partnerContext,
         private readonly GwdmMetadataHandler $gwdmHandler,
+        private readonly DatasetActivationService $datasetActivationService,
     ) {
     }
 
@@ -173,6 +176,12 @@ class TeamDatasetController extends Controller
                     'summary',
                     'required',
                 ]);
+
+                if (Feature::active('SchemaOnboardingForm')) {
+                    $d['source_schema'] = SourceSchema::fromColumns(
+                        $d->latestMetadata->only(['source_schema_model', 'source_schema_version'])
+                    )->toArray();
+                }
 
                 // latestMetadata is a relation and cannot be assigned at this
                 // level, safely. So, unset all forms of metadata on the object
@@ -481,7 +490,6 @@ class TeamDatasetController extends Controller
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
 
             $team = Team::where('id', $teamId)->first()->toArray();
 
@@ -505,7 +513,6 @@ class TeamDatasetController extends Controller
                 $team,
                 $inputSchema,
                 $inputVersion,
-                $elasticIndexing,
                 $this->gwdmHandler,
                 $this->partnerContext->getPartner(),
             );
@@ -616,7 +623,6 @@ class TeamDatasetController extends Controller
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['team_id'] = $teamId;
@@ -691,7 +697,6 @@ class TeamDatasetController extends Controller
                         $datasetVersionId,
                         $versionNumber,
                         base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                        $elasticIndexing,
                         Config::get('ted.use_partial')
                     );
                 }
@@ -769,6 +774,13 @@ class TeamDatasetController extends Controller
      *       )
      *    ),
      *    @OA\Response(
+     *       response=422,
+     *       description="Activating a draft refused because its metadata fails source-schema or GWDM validation, or leaves a required list of values empty (SchemaOnboardingForm flag only)",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Dataset metadata is not valid for activation"),
+     *       )
+     *    ),
+     *    @OA\Response(
      *       response=500,
      *       description="Error",
      *       @OA\JsonContent(
@@ -788,6 +800,18 @@ class TeamDatasetController extends Controller
         try {
             //TODO: how to edit correctly, particularly the metadata? Assume if it's provided then it overwrites, otherwise leave as it is?
             $datasetModel = Dataset::where('id', $id)->first();
+
+            if (
+                $request['status'] === Dataset::STATUS_ACTIVE
+                && $datasetModel->status === Dataset::STATUS_DRAFT
+                && Feature::active('SchemaOnboardingForm')
+            ) {
+                if (!$this->datasetActivationService->isValid($datasetModel)) {
+                    return response()->json([
+                        'message' => 'Dataset metadata is not valid for activation',
+                    ], 422);
+                }
+            }
 
             $datasetModel->status = $request['status'];
             $datasetModel->save();
@@ -898,8 +922,6 @@ class TeamDatasetController extends Controller
                     'message' => Config::get('statuscodes.STATUS_UNAUTHORIZED.message'),
                 ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
             }
-
-            $deleteFromElastic = ($dataset->status === Dataset::STATUS_ACTIVE);
 
             MMC::deleteDataset($id);
 

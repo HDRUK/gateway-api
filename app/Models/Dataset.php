@@ -67,7 +67,6 @@ class Dataset extends Model
     public const ORIGIN_API = 'API';
     public const ORIGIN_GMI = 'GMI';
 
-    public string $prevStatus = '';
 
     /**
      * Cached version IDs to avoid repeated `versions()->pluck('id')` queries

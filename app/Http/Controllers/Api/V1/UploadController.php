@@ -87,7 +87,6 @@ class UploadController extends Controller
             $inputVersion = $request->query('input_version', null);
             $outputSchema = $request->query('output_schema', null);
             $outputVersion = $request->query('output_version', null);
-            $elasticIndexing = $request->boolean('elastic_indexing', true);
             $datasetId = $request->query('dataset_id', null);
             $collectionId = $request->query('collection_id', null);
             $applicationId = $request->query('application_id', null);
@@ -127,7 +126,6 @@ class UploadController extends Controller
                 $inputVersion,
                 $outputSchema,
                 $outputVersion,
-                $elasticIndexing,
                 $datasetId,
                 (int)$collectionId,
                 (int)$applicationId,

@@ -6,17 +6,15 @@ use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
-use App\Http\Traits\IndexElastic;
 
 class CleanTeamNames extends Command
 {
-    use IndexElastic;
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:clean-team-names {reindex?}';
+    protected $signature = 'app:clean-team-names';
 
     /**
      * The console command description.
@@ -30,9 +28,6 @@ class CleanTeamNames extends Command
      */
     public function handle()
     {
-        $reindex = $this->argument('reindex');
-        $reindexEnabled = $reindex !== null;
-
         $teams = Team::all();
 
         $progressbar = $this->output->createProgressBar(count($teams));
@@ -59,11 +54,6 @@ class CleanTeamNames extends Command
                     "metadata" => $metadata
                 ]);
 
-            }
-
-            if ($reindexEnabled) {
-                $this->reindexElasticDataProvider($team->id);
-                sleep(1);
             }
 
             $progressbar->advance();
