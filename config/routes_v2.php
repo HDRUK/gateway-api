@@ -1298,6 +1298,15 @@ return [
         ],
     ],
     [
+        'name' => 'search_similar_datasets.post',
+        'method' => 'post',
+        'path' => '/search/similar/datasets',
+        'methodController' => 'SimilarDatasetsController@search',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'search_variables.post',
         'method' => 'post',
         'path' => '/search/variables',

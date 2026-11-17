@@ -47,6 +47,10 @@ class HDRUK implements SearchProvider
         ['key' => '1.0E8-1.0E9',        'from' => 100000000, 'to' => 1000000000],
     ];
 
+    private const MAX_SIMILARITY_TERMS = 10;
+
+    private const SIMILAR_CANDIDATES_PER_TERM = 50;
+
     private const TYPESENSE_MODEL_MAP = [
         'datasets'                => \App\Models\DatasetVersion::class,
         'tools'                   => \App\Models\Tool::class,
@@ -164,6 +168,81 @@ class HDRUK implements SearchProvider
         );
 
         return array_values($this->hydrate($this->mapHitsToElastic($result['hits'] ?? [], $type), $type));
+    }
+
+    public function similarDatasets(int $datasetId, int $limit): array
+    {
+        $modelClass = self::TYPESENSE_MODEL_MAP['datasets'];
+        $model      = new $modelClass();
+        $collection = $model->searchableAs();
+        $typesense  = app(TypesenseService::class);
+
+        $partnerFilter = $this->buildPartnerContextFilter('datasets');
+        $scoped        = fn (string $clause) => implode(' && ', array_filter([$clause, $partnerFilter]));
+
+        $source = $typesense->rawSearch($collection, '*', [
+            'filter_by' => $scoped("dataset_id:={$datasetId}"),
+            'per_page'  => 1,
+        ])['hits'][0]['document'] ?? null;
+
+        if ($source === null) {
+            return [];
+        }
+
+        $terms = $this->similarityTerms($source);
+        if ($terms === []) {
+            return [];
+        }
+
+        $termSearch = array_merge($this->baseSearchParameters($model), [
+            'collection' => $collection,
+            'filter_by'  => $scoped("dataset_id:!={$datasetId}"),
+            'per_page'   => self::SIMILAR_CANDIDATES_PER_TERM,
+        ]);
+        $results = $typesense->multiSearch(
+            array_map(fn (string $term) => ['q' => $term] + $termSearch, $terms)
+        )['results'];
+
+        $hits = $this->rankByTermsMatched($results, $limit);
+
+        return array_values($this->hydrate($this->mapHitsToElastic($hits, 'datasets'), 'datasets'));
+    }
+
+    /** @return string[] */
+    private function similarityTerms(array $document): array
+    {
+        $text  = mb_strtolower(implode(' ', [...($document['keywords'] ?? []), $document['title'] ?? '']));
+        $words = preg_split('/[^\p{L}\p{N}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+        $terms = array_diff(array_unique($words), TypesenseService::DEFAULT_STOPWORDS);
+
+        return array_slice(array_values($terms), 0, self::MAX_SIMILARITY_TERMS);
+    }
+
+    private function rankByTermsMatched(array $results, int $limit): array
+    {
+        $candidates = [];
+        foreach ($results as $result) {
+            if (isset($result['error'])) {
+                throw new \RuntimeException("Typesense similar datasets search failed: {$result['error']}");
+            }
+
+            foreach ($result['hits'] ?? [] as $hit) {
+                $id = (int) $hit['document']['dataset_id'];
+                $candidates[$id] = [
+                    'hit'          => $candidates[$id]['hit'] ?? $hit,
+                    'termsMatched' => ($candidates[$id]['termsMatched'] ?? 0) + 1,
+                    'bestMatch'    => max($candidates[$id]['bestMatch'] ?? 0, $hit['text_match'] ?? 0),
+                ];
+            }
+        }
+
+        uksort($candidates, fn (int $a, int $b) => [
+            $candidates[$b]['termsMatched'], $candidates[$b]['bestMatch'], $a,
+        ] <=> [
+            $candidates[$a]['termsMatched'], $candidates[$a]['bestMatch'], $b,
+        ]);
+
+        return array_column(array_slice($candidates, 0, $limit), 'hit');
     }
 
     private function baseSearchParameters(object $model): array

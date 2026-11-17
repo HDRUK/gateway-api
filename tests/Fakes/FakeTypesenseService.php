@@ -41,6 +41,21 @@ class FakeTypesenseService extends TypesenseService
         return $clone;
     }
 
+    private bool $textMatching = false;
+
+    /**
+     * Makes searches keep only documents containing every word of q in a
+     * query_by field, as Typesense does before any drop_tokens relaxation.
+     * No typos, prefixes or relaxation, and every hit still scores 1.
+     */
+    public function withTextMatching(): self
+    {
+        $clone = clone $this;
+        $clone->textMatching = true;
+
+        return $clone;
+    }
+
     // The real one builds a new client; the fake has nothing to time out.
     public function withTimeout(int $seconds): TypesenseService
     {
@@ -206,7 +221,7 @@ class FakeTypesenseService extends TypesenseService
 
     public function rawSearch(string $collection, string $query, array $params = []): array
     {
-        return $this->searchCollection($collection, $params);
+        return $this->searchCollection($collection, ['q' => $query] + $params);
     }
 
     public function multiSearch(array $searches): array
@@ -224,7 +239,8 @@ class FakeTypesenseService extends TypesenseService
         $filterBy = $params['filter_by'] ?? '';
         $documents = array_values(array_filter(
             $this->documents[$collection] ?? [],
-            fn (array $document) => $filterBy === '' || $this->matchesFilter($document, $filterBy)
+            fn (array $document) => ($filterBy === '' || $this->matchesFilter($document, $filterBy))
+                && $this->matchesText($document, $params)
         ));
         $fields = array_filter(explode(',', $params['facet_by'] ?? ''));
         $maxValues = (int) ($params['max_facet_values'] ?? self::DEFAULT_MAX_FACET_VALUES);
@@ -245,6 +261,29 @@ class FakeTypesenseService extends TypesenseService
                 array_values($fields)
             ),
         ];
+    }
+
+    private function matchesText(array $document, array $params): bool
+    {
+        $query = $params['q'] ?? '*';
+        if (! $this->textMatching || $query === '*' || $query === '') {
+            return true;
+        }
+
+        $fieldWords = [];
+        foreach (explode(',', $params['query_by'] ?? '') as $field) {
+            foreach ((array) ($document[$field] ?? []) as $value) {
+                array_push($fieldWords, ...$this->words((string) $value));
+            }
+        }
+
+        return array_diff($this->words($query), $fieldWords) === [];
+    }
+
+    /** @return string[] */
+    private function words(string $text): array
+    {
+        return preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($text), -1, PREG_SPLIT_NO_EMPTY);
     }
 
     /**
@@ -275,6 +314,10 @@ class FakeTypesenseService extends TypesenseService
                 '>'     => $value > (int) $m[3],
                 '<'     => $value < (int) $m[3],
             };
+        }
+
+        if (preg_match('/^(\w+):!=([^\[\]]+)$/', $clause, $m)) {
+            return ! in_array($m[2], array_map('strval', (array) ($document[$m[1]] ?? [])), true);
         }
 
         if (! preg_match('/^(\w+):=(\[.*\]|[^\[\]]+)$/', $clause, $m)) {
