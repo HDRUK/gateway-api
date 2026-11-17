@@ -46,10 +46,16 @@ class PartnerContext
         );
     }
 
-    /** The partner context the request names explicitly, or null if it sends none. */
+    /** Gates writing the request's partner context on team dataset update. */
+    public const SELECTOR_FLAG = 'SchemaOnboardingFormSelector';
+
+    /**
+     * The partner context the request names explicitly, or null if it sends
+     * none or the schema selector flag is off.
+     */
     public function requestedPartner(): ?string
     {
-        return request()->header('x-partner-context');
+        return Feature::active(self::SELECTOR_FLAG) ? request()->header('x-partner-context') : null;
     }
 
     /** Whether a partner context is HDRUK or one HDRUK can be flagged to read. */
