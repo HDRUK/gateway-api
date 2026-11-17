@@ -15,6 +15,10 @@ A Typesense failure returns a 500 rather than an empty list, so callers can tell
 
 Both the source lookup and the per-word searches are scoped to the partner contexts the caller may read (`PartnerContext::readableContextsFor()`), the same as the main search. A source dataset outside those contexts is treated as not indexed.
 
+## v1
+
+`POST /api/v1/search/similar/datasets` is served by the same handler as v2, so it returns identical results. It is deprecated: every response carries `Deprecation`, `Sunset` (17 May 2027) and a `Link` to the v2 endpoint. See [API deprecation](../CONVENTIONS/api-deprecation.md).
+
 ## Testing
 
 `FakeTypesenseService::withTextMatching()` keeps only documents containing every query word, which is enough to test the ranking. It doesn't model typos, prefixes or scores, so the ranking was also checked by hand against a real Typesense 30.2.

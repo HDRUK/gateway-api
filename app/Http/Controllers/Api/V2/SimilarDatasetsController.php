@@ -44,6 +44,27 @@ class SimilarDatasetsController extends Controller
      *      ),
      *      @OA\Response(response=400, description="Missing or invalid dataset id")
      * )
+     *
+     * @OA\Post(
+     *      path="/api/v1/search/similar/datasets",
+     *      operationId="search_similar_datasets",
+     *      summary="Search for similar datasets (deprecated)",
+     *      description="Deprecated: use /api/v2/search/similar/datasets, which this endpoint now serves. Responses carry Deprecation, Sunset and Link headers; it stops working after the Sunset date (17 May 2027).",
+     *      tags={"Search-Similar-Datasets"},
+     *      deprecated=true,
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  required={"id"},
+     *                  @OA\Property(property="id", type="integer", example=1, description="Dataset id")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(response=200, description="Same as /api/v2/search/similar/datasets"),
+     *      @OA\Response(response=400, description="Missing or invalid dataset id")
+     * )
      */
     public function search(SimilarDatasets $request): JsonResponse
     {
