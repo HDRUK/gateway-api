@@ -3680,7 +3680,7 @@ return [
         'path' => '/project_grants',
         'methodController' => 'ProjectGrantController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset:2025-07-23,2026-01-22'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -3692,7 +3692,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,project_grants.create',
-            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -3702,7 +3701,7 @@ return [
         'path' => '/project_grants/{id}',
         'methodController' => 'ProjectGrantController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset:2025-07-23,2026-01-22'],
+        'middleware' => [],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -3716,7 +3715,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,project_grants.update',
-            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3731,7 +3729,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,project_grants.delete',
-            'sunset',
         ],
         'constraint' => [
             'id' => '[0-9]+',
