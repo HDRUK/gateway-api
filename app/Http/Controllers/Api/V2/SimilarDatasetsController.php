@@ -68,7 +68,7 @@ class SimilarDatasetsController extends Controller
      */
     public function search(SimilarDatasets $request): JsonResponse
     {
-        $datasets = app(HDRUK::class)->similarDatasets($request->integer('id'),self::SIMILAR_LIMIT);
+        $datasets = app(HDRUK::class)->similarDatasets($request->integer('id'), self::SIMILAR_LIMIT);
 
         Auditor::log([
             'action_type' => 'POST',
