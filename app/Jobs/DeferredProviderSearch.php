@@ -58,6 +58,8 @@ class DeferredProviderSearch implements ShouldQueue
                 $portal->toArray(),
                 config('gateway.search_deferred_ttl')
             );
+
+            return;
         }
 
         Cache::put(

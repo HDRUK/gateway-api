@@ -74,7 +74,6 @@ class SearchAggregationTest extends TestCase
         Feature::flushCache();
         Feature::deactivate('V2_SearchAggregation');
         Cache::put('search:deferred:srch_flagoff:pending', ['ARDC'], 60);
-        Cache::put('search:deferred:srch_flagoff:result:ARDC', ['hits' => [], 'total' => 0], 60);
         Cache::put('search:deferred:srch_flagoff:partner:ARDC', ['name' => 'ARDC', 'logo' => '', 'search_url' => '', 'total' => 0, 'hits' => []], 60);
 
         $response = $this->json('GET', '/api/v2/search/aggregation/results/srch_flagoff', [], $this->header);
@@ -195,7 +194,7 @@ class SearchAggregationTest extends TestCase
         ]);
     }
 
-    public function test_ardc_is_deferred_for_dataset_search(): void
+    public function test_partner_portals_are_deferred_for_dataset_search(): void
     {
         $response = $this->json(
             'POST',
@@ -205,7 +204,7 @@ class SearchAggregationTest extends TestCase
         );
 
         $response->assertStatus(200);
-        $response->assertJsonPath('data.pending', ['ARDC', 'partners']);
+        $response->assertJsonPath('data.pending', ['partners']);
         $response->assertJsonStructure(['data' => ['token', 'token_ttl']]);
         $this->assertStringStartsWith('srch_', $response->json('data.token'));
     }
@@ -229,6 +228,7 @@ class SearchAggregationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.pending', []);
+        $response->assertJsonMissingPath('data.results.ARDC');
         $response->assertJsonPath('data.results.partners', [
             'total'   => 1,
             'portals' => [[
@@ -247,7 +247,7 @@ class SearchAggregationTest extends TestCase
         ]);
     }
 
-    public function test_search_results_still_returns_ardc_when_a_partner_hit_cannot_be_converted(): void
+    public function test_search_results_returns_an_empty_portal_when_a_partner_hit_cannot_be_converted(): void
     {
         $this->ardcDocs = [['id' => '123', 'title' => ['Asthma Cohort', 'Alternative title']]];
 
@@ -258,7 +258,7 @@ class SearchAggregationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.pending', []);
-        $response->assertJsonPath('data.results.ARDC.hits', $this->ardcDocs);
+        $response->assertJsonMissingPath('data.results.ARDC');
         $response->assertJsonPath('data.results.partners.total', 0);
         $response->assertJsonPath('data.results.partners.portals.0.hits', []);
     }
@@ -274,7 +274,19 @@ class SearchAggregationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonMissingPath('data.results.HDRUK');
-        $response->assertJsonPath('data.pending', ['ARDC', 'partners']);
+        $response->assertJsonPath('data.pending', ['partners']);
+    }
+
+    public function test_returns_400_when_a_partner_portal_is_requested_by_name(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            ['query' => 'asthma', 'type' => 'datasets', 'providers' => ['ARDC']],
+            $this->header
+        );
+
+        $response->assertStatus(400);
     }
 
     public function test_partners_data_source_is_logged_to_analytics_as_the_partner_name(): void
@@ -294,33 +306,6 @@ class SearchAggregationTest extends TestCase
             LogSearchAnalytics::class,
             fn (LogSearchAnalytics $job) => json_decode($job->buildFilterUsed(), true)['dataSource'] === 'ARDC'
         );
-    }
-
-    public function test_search_results_returns_ardc_after_job_runs(): void
-    {
-        // Queue driver is sync in tests, so DeferredProviderSearch runs immediately
-        // on dispatch and writes ARDC results to cache before we poll.
-        $postResponse = $this->json(
-            'POST',
-            self::TEST_URL,
-            ['query' => 'asthma', 'type' => 'datasets'],
-            $this->header
-        );
-
-        $token = $postResponse->json('data.token');
-        $this->assertNotNull($token);
-
-        $response = $this->json('GET', "/api/v2/search/aggregation/results/{$token}", [], $this->header);
-
-        $response->assertStatus(200);
-        $response->assertJsonPath('data.pending', []);
-        $response->assertJsonStructure([
-            'data' => [
-                'results' => [
-                    'ARDC' => ['provider_logo', 'about', 'hits', 'total', 'aggregations', 'ids'],
-                ],
-            ],
-        ]);
     }
 
     public function test_search_results_returns_404_for_unknown_token(): void
