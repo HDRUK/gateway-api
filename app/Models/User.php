@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * @property ?Pivot $pivot
- * 
+ *
  * @OA\Schema(
  *   schema="User",
  *   description="A registered Gateway user",

@@ -3,7 +3,6 @@
 namespace Tests\Traits;
 
 use Config;
-use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
