@@ -13,6 +13,7 @@ use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Models\Team;
 use App\Services\Gwdm\GwdmHandlerFactory;
+use App\Services\Gwdm\SnapshotRule;
 use App\Services\Gwdm\SourceSchema;
 use Config;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -32,8 +33,6 @@ class DatasetService
      *
      * Intentionally not configurable within .env.
      */
-    private const SNAPSHOT_INTERVAL = 10;
-
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
@@ -648,12 +647,12 @@ class DatasetService
      *
      * Algorithm:
      *  1. Find the nearest full snapshot at or below $targetVersion
-     *     (identified by patch IS NULL — both the base v1 and every SNAPSHOT_INTERVAL
+     *     (identified by patch IS NULL — both the base v1 and every SnapshotRule::INTERVAL
      *     version are snapshots).
      *  2. Apply each subsequent delta patch in ascending version order up to
      *     and including $targetVersion.
      *
-     * The worst-case forward walk is (SNAPSHOT_INTERVAL - 1) delta applications.
+     * The worst-case forward walk is (SnapshotRule::INTERVAL - 1) delta applications.
      *
      * @return array The GWDM metadata object (i.e. the value of metadata.metadata
      *               in a full snapshot row).
@@ -797,7 +796,7 @@ class DatasetService
 
     /**
      * Write a new DatasetVersion row for an update, choosing between a delta
-     * and a materialised snapshot based on SNAPSHOT_INTERVAL.
+     * and a materialised snapshot based on SnapshotRule::INTERVAL.
      *
      * Delta row    : stores only a reduced metadata envelope + the RFC 6902 patch describing
      *                 the change from the previous version.
@@ -805,7 +804,7 @@ class DatasetService
      *                 This is NOT a rollup of accumulated patches — it is the fully-materialised
      *                 metadata object, identical in shape to v1. Storing the final state (rather
      *                 than a diff) means reconstruction can start here with zero patch applications,
-     *                 capping the forward-walk cost at ≤ (SNAPSHOT_INTERVAL - 1) deltas for any
+     *                 capping the forward-walk cost at ≤ (SnapshotRule::INTERVAL - 1) deltas for any
      *                 version in the next window.
      *
      * @return int The ID of the newly created DatasetVersion row.
@@ -831,9 +830,8 @@ class DatasetService
         $previousGwdmVersion = DatasetVersion::where('dataset_id', $dataset->id)
             ->where('version', $versionNumber)
             ->value('gwdm_version');
-        $schemaChanged = $previousGwdmVersion !== null && $previousGwdmVersion !== $targetGwdmVersion;
 
-        $isSnapshot = ($newVersionNumber % self::SNAPSHOT_INTERVAL === 0) || $schemaChanged;
+        $isSnapshot = SnapshotRule::shouldSnapshot($newVersionNumber, $previousGwdmVersion, $targetGwdmVersion);
 
         // Persist the version row and its handler-owned structured tables in a
         // single transaction. Without this, a failure inside afterStore() (e.g.
@@ -854,8 +852,8 @@ class DatasetService
             $sourceSchema,
         ) {
             if ($isSnapshot) {
-                // For every SNAPSHOT_INTERVAL version we write a full snapshot so that
-                // reconstruction never has to walk more than (SNAPSHOT_INTERVAL - 1)
+                // For every SnapshotRule::INTERVAL version we write a full snapshot so that
+                // reconstruction never has to walk more than (SnapshotRule::INTERVAL - 1)
                 // deltas. The shape is identical to the base (v1) row.
                 $envelope = $handler->buildEnvelope($newGwdmMetadata, $previousMetadata);
 

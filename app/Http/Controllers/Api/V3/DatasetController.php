@@ -41,7 +41,7 @@ class DatasetController extends Controller
      *
      * Update dataset metadata using the delta-versioning strategy: each save
      * creates an immutable version row (RFC 6902 patch for deltas, full
-     * snapshot every SNAPSHOT_INTERVAL versions).
+     * snapshot every SnapshotRule::INTERVAL versions).
      */
     public function update(UpdateDataset $request, int $id): JsonResponse
     {
