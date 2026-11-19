@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Context\GwdmVersionContext;
+use App\Enums\Partner;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use App\Models\DataAccessTemplate;
@@ -416,6 +417,7 @@ class DatasetService
         array $input,
         int $userId,
         string $createOrigin,
+        ?Partner $partnerContext,
         bool $validateInput = true,
         bool $validateOutput = true,
     ): int {
@@ -467,6 +469,7 @@ class DatasetService
             'create_origin' => $createOrigin,
             'status' => $input['status'],
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? $dataset->is_cohort_discovery,
+            'partner_context' => $partnerContext?->value ?? $dataset->partner_context,
         ]);
 
         $datasetVersionId = $this->persistMetadataVersion(

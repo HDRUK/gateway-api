@@ -2,6 +2,7 @@
 
 namespace App\Context;
 
+use App\Enums\Partner;
 use App\Http\Resources\DatasetResource;
 use App\Models\Dataset;
 use Laravel\Pennant\Feature;
@@ -52,7 +53,7 @@ class PartnerContext
     /** Whether a partner context is HDRUK or one HDRUK can be flagged to read. */
     public static function isKnown(string $partner): bool
     {
-        return $partner === 'HDRUK' || array_key_exists($partner, self::CROSS_CONTEXT_FLAGS);
+        return Partner::tryFrom($partner) !== null;
     }
 
     /**
