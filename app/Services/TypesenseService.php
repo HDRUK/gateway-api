@@ -6,6 +6,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Support\Facades\Http;
 use Psr\Http\Client\ClientInterface;
 use Typesense\Client;
+use Typesense\Exceptions\ObjectNotFound;
 
 class TypesenseService
 {
@@ -217,6 +218,29 @@ class TypesenseService
     }
 
     /**
+     * The collection an alias points at, or null when no alias has that
+     * name. Collection and document calls made with an alias name resolve
+     * to its target, so Scout keeps using searchableAs() unchanged.
+     */
+    public function aliasTarget(string $alias): ?string
+    {
+        try {
+            return $this->client->aliases[$alias]->retrieve()['collection_name'] ?? null;
+        } catch (ObjectNotFound) {
+            return null;
+        }
+    }
+
+    /**
+     * Creates the alias, or repoints it, atomically. Fails if a physical
+     * collection already has the alias's name.
+     */
+    public function upsertAlias(string $alias, string $collection): array
+    {
+        return $this->client->aliases->upsert($alias, ['collection_name' => $collection]);
+    }
+
+    /**
      * Upsert a single document. The document must include the collection's
      * default_sorting_field if one is defined.
      */
@@ -242,6 +266,46 @@ class TypesenseService
     public function deleteDocumentsWhere(string $collection, string $filterBy): array
     {
         return $this->client->collections[$collection]->documents->delete(['filter_by' => $filterBy]);
+    }
+
+    /**
+     * Ids of every document in a collection, streamed as JSONL with only
+     * the id field included.
+     *
+     * @return string[]
+     */
+    public function exportDocumentIds(string $collection): array
+    {
+        $jsonl = $this->client->collections[$collection]->documents->export(['include_fields' => 'id']);
+
+        $ids = [];
+        foreach (explode("\n", $jsonl) as $line) {
+            if (trim($line) !== '') {
+                $ids[] = (string) json_decode($line, true)['id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Deletes documents by id in batches, which is far cheaper than one
+     * request per id. Returns how many were deleted.
+     *
+     * @param  string[]  $ids
+     */
+    public function deleteDocumentsByIds(string $collection, array $ids, int $batchSize = 250): int
+    {
+        $deleted = 0;
+
+        foreach (array_chunk(array_values($ids), $batchSize) as $batch) {
+            // Backticks keep ids containing commas or brackets intact.
+            $quoted = array_map(fn ($id) => '`' . $id . '`', $batch);
+            $result = $this->deleteDocumentsWhere($collection, 'id:[' . implode(',', $quoted) . ']');
+            $deleted += (int) ($result['num_deleted'] ?? 0);
+        }
+
+        return $deleted;
     }
 
     public function getDocument(string $collection, string $id): array

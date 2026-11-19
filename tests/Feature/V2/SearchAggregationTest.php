@@ -286,7 +286,11 @@ class SearchAggregationTest extends TestCase
             TypesenseService::class,
             (new FakeTypesenseService())->withDocuments(
                 (new DatasetVersion())->searchableAs(),
-                array_map(fn ($name) => ['publisherName' => $name], $publishers)
+                array_map(
+                    fn ($i, $name) => ['id' => (string) $i, 'publisherName' => $name, 'partnerContext' => 'HDRUK'],
+                    array_keys($publishers),
+                    $publishers
+                )
             )
         );
         Queue::fake([LogSearchAnalytics::class]);

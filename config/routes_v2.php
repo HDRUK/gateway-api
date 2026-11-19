@@ -524,6 +524,20 @@ return [
             'teamId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'form_hydration',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/form_hydration',
+        'methodController' => 'FormHydrationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
 
     // v2 data uses
     [
@@ -1268,6 +1282,26 @@ return [
         'method' => 'get',
         'path' => '/search/aggregation/results/{token}',
         'methodController' => 'SearchController@searchResults',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search_export.post',
+        'method' => 'post',
+        'path' => '/search/{type}/export',
+        'methodController' => 'SearchExportController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [
+            'type' => 'datasets|dur|tools',
+        ],
+    ],
+    [
+        'name' => 'search_similar_datasets.post',
+        'method' => 'post',
+        'path' => '/search/similar/datasets',
+        'methodController' => 'SimilarDatasetsController@search',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
         'middleware' => [],
         'constraint' => [],

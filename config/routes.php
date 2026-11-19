@@ -787,7 +787,7 @@ return [
         'path' => '/tools',
         'methodController' => 'ToolController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -796,7 +796,7 @@ return [
         'path' => '/tools/count/{field}',
         'methodController' => 'ToolController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -805,7 +805,7 @@ return [
         'path' => '/tools/{id}',
         'methodController' => 'ToolController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -818,7 +818,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -830,7 +830,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -844,7 +844,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -858,7 +858,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -875,7 +875,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -888,7 +888,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -903,7 +903,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -916,7 +916,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -931,7 +931,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -946,7 +946,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,tools.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1667,7 +1667,7 @@ return [
         'path' => '/collections',
         'methodController' => 'CollectionController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -1676,7 +1676,7 @@ return [
         'path' => '/collections/count/{field}',
         'methodController' => 'CollectionController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -1685,7 +1685,7 @@ return [
         'path' => '/collections/{id}',
         'methodController' => 'CollectionController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -1699,7 +1699,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -1712,7 +1712,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1727,7 +1727,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1742,7 +1742,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1759,7 +1759,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -1772,7 +1772,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1787,7 +1787,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -1800,7 +1800,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1815,7 +1815,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1830,7 +1830,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,collections.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1929,7 +1929,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -1942,7 +1942,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1957,7 +1957,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -1970,7 +1970,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1985,7 +1985,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2000,7 +2000,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2277,6 +2277,118 @@ return [
         ],
     ],
 
+    // experiments
+    [
+        'name' => 'experiments',
+        'method' => 'get',
+        'path' => '/experiments',
+        'methodController' => 'ExperimentController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'get',
+        'path' => '/experiments/{id}',
+        'methodController' => 'ExperimentController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'post',
+        'path' => '/experiments',
+        'methodController' => 'ExperimentController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'put',
+        'path' => '/experiments/{id}',
+        'methodController' => 'ExperimentController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments',
+        'method' => 'delete',
+        'path' => '/experiments/{id}',
+        'methodController' => 'ExperimentController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments.active',
+        'method' => 'get',
+        'path' => '/experiments/active',
+        'methodController' => 'ExperimentController@active',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments.active.me',
+        'method' => 'get',
+        'path' => '/experiments/active/me',
+        'methodController' => 'ExperimentController@activeForMe',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'experiments.responses',
+        'method' => 'post',
+        'path' => '/experiments/{id}/responses',
+        'methodController' => 'ExperimentController@respond',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'experiments.responses.me',
+        'method' => 'post',
+        'path' => '/experiments/{id}/responses/me',
+        'methodController' => 'ExperimentController@respondForMe',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // team.user.role
     [
         'name' => 'team.user.role',
@@ -2455,7 +2567,7 @@ return [
         'path' => '/datasets',
         'methodController' => 'DatasetController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -2464,7 +2576,7 @@ return [
         'path' => '/datasets/count/{field}',
         'methodController' => 'DatasetController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -2473,7 +2585,7 @@ return [
         'path' => '/datasets/{id}',
         'methodController' => 'DatasetController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -2487,7 +2599,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -2500,7 +2612,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id', '[0-9]+',
@@ -2515,7 +2627,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id', '[0-9]+',
@@ -2530,7 +2642,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id', '[0-9]+',
@@ -2600,7 +2712,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -2613,7 +2725,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.read',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2628,7 +2740,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -2641,7 +2753,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -2654,7 +2766,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id', '[0-9]+',
@@ -2668,7 +2780,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -3009,9 +3121,9 @@ return [
         'name' => 'search.similarDatasets',
         'method' => 'post',
         'path' => '/search/similar/datasets',
-        'methodController' => 'SearchController@similarDatasets',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'methodController' => 'SimilarDatasetsController@search',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => ['sunset:2026-11-17,2027-05-17,/api/v2/search/similar/datasets'],
         'constraint' => [],
     ],
     [
@@ -3324,7 +3436,7 @@ return [
         'path' => '/dur',
         'methodController' => 'DurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -3333,7 +3445,7 @@ return [
         'path' => '/dur/count/{field}',
         'methodController' => 'DurController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -3342,7 +3454,7 @@ return [
         'path' => '/dur/{id}',
         'methodController' => 'DurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -3356,7 +3468,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3371,7 +3483,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3386,7 +3498,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3401,7 +3513,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -3446,7 +3558,7 @@ return [
         'path' => 'publications',
         'methodController' => 'PublicationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -3455,7 +3567,7 @@ return [
         'path' => '/publications/count/{field}',
         'methodController' => 'PublicationController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -3464,7 +3576,7 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -3476,7 +3588,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [
         ],
@@ -3490,7 +3602,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -3503,7 +3615,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.update',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -3516,7 +3628,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,papers.delete',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -3528,7 +3640,7 @@ return [
         'path' => '/project_grants',
         'methodController' => 'ProjectGrantController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [],
     ],
     [
@@ -3540,7 +3652,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,project_grants.create',
-            'sunset',
+            'sunset:2025-07-23,2026-01-22',
         ],
         'constraint' => [],
     ],
@@ -3550,7 +3662,7 @@ return [
         'path' => '/project_grants/{id}',
         'methodController' => 'ProjectGrantController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['sunset'],
+        'middleware' => ['sunset:2025-07-23,2026-01-22'],
         'constraint' => [
             'id' => '[0-9]+',
         ],

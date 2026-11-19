@@ -46,14 +46,14 @@ class DataUseExport implements WithHeadings, FromCollection, WithMapping
 
     public function exportable(array $data): array
     {
-        // Project Title		'_source/projectTitle'
+        // Project Title		'projectTitle'
         // Organisation Name	'organisationName'
         // Dataset Title		'_source/datasetTitles'
         // Publisher		'team/name'
 
         $array = [];
         foreach ($data as $item) {
-            $projectTitle = $this->getValueFromPath($item, '_source/projectTitle');
+            $projectTitle = $this->getValueFromPath($item, 'projectTitle');
             $organisationName = $this->getValueFromPath($item, 'organisationName');
             $datasetTitles = $this->getValueFromPath($item, '_source/datasetTitles');
             $publisher = $this->getValueFromPath($item, 'team/name');

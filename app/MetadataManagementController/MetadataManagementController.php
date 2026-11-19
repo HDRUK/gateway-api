@@ -328,4 +328,42 @@ class MetadataManagementController
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * @return array{name: string, version: string, schema: array<string, mixed>}
+     */
+    public function getSchema(string $name, string $version): array
+    {
+        try {
+            $queryParams = [
+                'name' => $name,
+                'version' => $version,
+            ];
+
+            $urlString = config('services.traser.url') . '/get/schema?' . http_build_query($queryParams);
+            $response = Http::get($urlString);
+
+            unset(
+                $queryParams,
+            );
+
+            return $response->throw()->json();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @return array<string, string[]> e.g. ["HDRUK" => ["4.0.0", "4.1.0"]]
+     */
+    public function listSchemas(): array
+    {
+        try {
+            $response = Http::get(config('services.traser.url') . '/list/schemas');
+
+            return $response->throw()->json();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 }

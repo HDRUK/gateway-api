@@ -108,6 +108,21 @@ class DatasetVersion extends BaseTypesenseModel
     }
 
     /**
+     * The document as submitted in its source schema. Some writes store the
+     * whole form envelope ({schemaModel, schemaVersion, metadata}) as the
+     * original, so it is unwrapped.
+     */
+    public static function submittedMetadata(array $envelope): array
+    {
+        $original = (array) ($envelope['original_metadata'] ?? []);
+        if (isset($original['schemaModel'], $original['metadata'])) {
+            $original = (array) $original['metadata'];
+        }
+
+        return $original;
+    }
+
+    /**
      * Accessor for the metadata field to convert json string to
      * php array for inclusion in json response object. Weirdly
      * the $casts of metadata to array _was_ failing. Possibly due

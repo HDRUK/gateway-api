@@ -38,12 +38,21 @@ class PartnerContext
         'CROCOD' => 'RenderSchemaCROCOD',
     ];
 
+    /** Gates writing the request's partner context on team dataset update. */
+    public const SELECTOR_FLAG = 'SchemaOnboardingFormSelector';
+
     public function getPartner(): string
     {
         return request()->header(
             'x-partner-context',
             config('partners.default', 'HDRUK')
         );
+    }
+
+    /** Whether a partner context is HDRUK or one HDRUK can be flagged to read. */
+    public static function isKnown(string $partner): bool
+    {
+        return $partner === 'HDRUK' || array_key_exists($partner, self::CROSS_CONTEXT_FLAGS);
     }
 
     /**

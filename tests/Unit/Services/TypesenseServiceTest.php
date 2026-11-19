@@ -7,8 +7,11 @@ use Mockery;
 use Mockery\MockInterface;
 use App\Services\TypesenseService;
 use Illuminate\Support\Facades\Http;
+use Typesense\Alias;
+use Typesense\Aliases;
 use Typesense\Client;
 use Typesense\Collection;
+use Typesense\Exceptions\ObjectNotFound;
 use Typesense\Collections;
 use Typesense\Document;
 use Typesense\Documents;
@@ -241,8 +244,96 @@ class TypesenseServiceTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Aliases
+    // -------------------------------------------------------------------------
+
+    public function test_aliasTarget_returns_the_collection_an_alias_points_at(): void
+    {
+        ['service' => $service, 'mockClient' => $mockClient] = $this->makeService();
+
+        $alias = Mockery::mock(Alias::class);
+        $alias->shouldReceive('retrieve')->once()->andReturn(['name' => 'datasets', 'collection_name' => 'datasets_1']);
+        $aliases = Mockery::mock(Aliases::class);
+        $aliases->shouldReceive('offsetGet')->with('datasets')->andReturn($alias);
+        $mockClient->aliases = $aliases;
+
+        $this->assertSame('datasets_1', $service->aliasTarget('datasets'));
+    }
+
+    public function test_aliasTarget_returns_null_when_no_alias_exists(): void
+    {
+        ['service' => $service, 'mockClient' => $mockClient] = $this->makeService();
+
+        $alias = Mockery::mock(Alias::class);
+        $alias->shouldReceive('retrieve')->andThrow(new ObjectNotFound('Not Found'));
+        $aliases = Mockery::mock(Aliases::class);
+        $aliases->shouldReceive('offsetGet')->andReturn($alias);
+        $mockClient->aliases = $aliases;
+
+        $this->assertNull($service->aliasTarget('datasets'));
+    }
+
+    public function test_upsertAlias_points_the_alias_at_a_collection(): void
+    {
+        ['service' => $service, 'mockClient' => $mockClient] = $this->makeService();
+
+        $aliases = Mockery::mock(Aliases::class);
+        $aliases->shouldReceive('upsert')->once()
+            ->with('datasets', ['collection_name' => 'datasets_2'])
+            ->andReturn(['name' => 'datasets', 'collection_name' => 'datasets_2']);
+        $mockClient->aliases = $aliases;
+
+        $this->assertSame('datasets_2', $service->upsertAlias('datasets', 'datasets_2')['collection_name']);
+    }
+
+    // -------------------------------------------------------------------------
     // Document operations
     // -------------------------------------------------------------------------
+
+    public function test_exportDocumentIds_reads_only_ids_from_the_export(): void
+    {
+        ['service' => $service, 'mockDocuments' => $mockDocuments] = $this->makeService();
+
+        $mockDocuments->shouldReceive('export')->once()
+            ->with(['include_fields' => 'id'])
+            ->andReturn("{\"id\":\"1\"}\n{\"id\":\"22\"}\n");
+
+        $this->assertSame(['1', '22'], $service->exportDocumentIds('datasets'));
+    }
+
+    public function test_exportDocumentIds_handles_an_empty_collection(): void
+    {
+        ['service' => $service, 'mockDocuments' => $mockDocuments] = $this->makeService();
+
+        $mockDocuments->shouldReceive('export')->andReturn('');
+
+        $this->assertSame([], $service->exportDocumentIds('datasets'));
+    }
+
+    public function test_deleteDocumentsByIds_deletes_in_batches_by_quoted_id(): void
+    {
+        ['service' => $service, 'mockDocuments' => $mockDocuments] = $this->makeService();
+
+        $ids = array_map('strval', range(1, 251));
+        $filters = [];
+        $mockDocuments->shouldReceive('delete')->twice()->andReturnUsing(function (array $params) use (&$filters) {
+            $filters[] = $params['filter_by'];
+            return ['num_deleted' => substr_count($params['filter_by'], '`') / 2];
+        });
+
+        $this->assertSame(251, $service->deleteDocumentsByIds('datasets', $ids));
+        $this->assertStringStartsWith('id:[`1`,`2`,', $filters[0]);
+        $this->assertSame('id:[`251`]', $filters[1]);
+    }
+
+    public function test_deleteDocumentsByIds_skips_the_call_for_no_ids(): void
+    {
+        ['service' => $service, 'mockDocuments' => $mockDocuments] = $this->makeService();
+
+        $mockDocuments->shouldNotReceive('delete');
+
+        $this->assertSame(0, $service->deleteDocumentsByIds('datasets', []));
+    }
 
     public function test_upsertDocument_passes_document_to_typesense(): void
     {

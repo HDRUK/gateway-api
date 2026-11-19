@@ -19,6 +19,11 @@ trait MockExternalApis
     private $dataset = null;
     private $datasetUpdate = null;
     protected $header = [];
+    protected array $traserUntranslatable = [];
+    protected array $traserValidationErrors = [];
+    protected array $traserInvalidSchemas = [];
+    protected array $traserSchemaProperties = [];
+    protected array $traserSchemaRequired = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
     public function getMetadataV1p0()
@@ -227,105 +232,6 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Fourth asthma dataset',
                                     'title' => 'Fourth asthma dataset',
-                                    'dataUseTitles' => [],
-                                    'populationSize' => 1000,
-                                ],
-                                'highlight' => [
-                                    'abstract' => [],
-                                    'description' => []
-                                ]
-                            ]
-                        ]
-                    ],
-                    'aggregations' => [
-                        'publisherName' => [
-                            'buckets' => [
-                                0 => [
-                                    'doc_count' => 10,
-                                    'key' => 'A PUBLISHER'
-                                ]
-                            ]
-                        ]
-                    ]
-                ],
-                200,
-                ['application/json']
-            )
-        ]);
-
-        // Mock the search service - similar datasets
-        Http::fake([
-            config('gateway.search_service_url', 'http://localhost:8003') . '/similar/datasets*' => Http::response(
-                [
-                    'took' => 1000,
-                    'timed_out' => false,
-                    '_shards' => [],
-                    'hits' => [
-                        'total' => [
-                            'value' => 3
-                        ],
-                        'hits' => [
-                            0 => [
-                                '_explanation' => [],
-                                '_id' => '1',
-                                '_index' => 'datasets',
-                                '_node' => 'abcd-123-efgh',
-                                '_score' => 20.0,
-                                '_shard' => '[datasets][0]',
-                                '_source' => [
-                                    'abstract' => '',
-                                    'description' => '',
-                                    'keywords' => '',
-                                    'named_entities' => [],
-                                    'publisherName' => '',
-                                    'shortTitle' => 'Asthma dataset',
-                                    'title' => 'Asthma dataset',
-                                    'dataUseTitles' => [],
-                                    'populationSize' => 1000,
-                                ],
-                                'highlight' => [
-                                    'abstract' => [],
-                                    'description' => []
-                                ]
-                            ],
-                            1 => [
-                                '_explanation' => [],
-                                '_id' => '2',
-                                '_index' => 'datasets',
-                                '_node' => 'abcd-123-efgh',
-                                '_score' => 18.0,
-                                '_shard' => '[datasets][0]',
-                                '_source' => [
-                                    'abstract' => '',
-                                    'description' => '',
-                                    'keywords' => '',
-                                    'named_entities' => [],
-                                    'publisherName' => '',
-                                    'shortTitle' => 'Another asthma dataset',
-                                    'title' => 'Another asthma dataset',
-                                    'dataUseTitles' => [],
-                                    'populationSize' => 1000,
-                                ],
-                                'highlight' => [
-                                    'abstract' => [],
-                                    'description' => []
-                                ]
-                            ],
-                            2 => [
-                                '_explanation' => [],
-                                '_id' => '3',
-                                '_index' => 'datasets',
-                                '_node' => 'abcd-123-efgh',
-                                '_score' => 16.0,
-                                '_shard' => '[datasets][0]',
-                                '_source' => [
-                                    'abstract' => '',
-                                    'description' => '',
-                                    'keywords' => '',
-                                    'named_entities' => [],
-                                    'publisherName' => '',
-                                    'shortTitle' => 'Third asthma dataset',
-                                    'title' => 'Third asthma dataset',
                                     'dataUseTitles' => [],
                                     'populationSize' => 1000,
                                 ],
@@ -1119,6 +1025,15 @@ trait MockExternalApis
                bool $validateOutput = true,
                ?string $subsection = null
            ) {
+               if (in_array($outputSchema, $this->traserUntranslatable, true)) {
+                   return [
+                       "traser_message" => "translation failed",
+                       "wasTranslated" => false,
+                       "metadata" => null,
+                       "statusCode" => 400,
+                   ];
+               }
+
                $metadata = json_decode($dataset, true)["metadata"];
                //mock translating alternative schemas via traser - just give it a new GWDM metadata
 
@@ -1132,7 +1047,40 @@ trait MockExternalApis
                    "statusCode" => "200",
                ];
            });
-        MMC::shouldReceive("validateDataModelType")->andReturn(true);
+        MMC::shouldReceive("validateDataModelType")
+            ->andReturnUsing(fn (string $json, string $schema) => !count($this->traserValidationErrors)
+                && !in_array($schema, $this->traserInvalidSchemas));
+        MMC::shouldReceive("listSchemas")->andReturn([
+            'HDRUK' => ['2.1.2', '4.0.0', '4.1.0'],
+            'PRUK' => ['1.0.0'],
+            'CRUK' => ['1.0.0'],
+            'CROCOD' => ['1.0.0'],
+            'GWDM' => ['2.0', '2.1', '2.2', '2.3'],
+            'SchemaOrg' => ['default'],
+        ]);
+        MMC::shouldReceive("getSchema")
+            ->andReturnUsing(fn (string $name, string $version) => [
+                'name' => $name,
+                'version' => $version,
+                'schema' => [
+                    'title' => $name . ' ' . $version,
+                    'type' => 'object',
+                    'required' => $this->traserSchemaRequired,
+                    'properties' => array_merge([
+                        'summary' => ['$ref' => '#/$defs/Summary'],
+                    ], $this->traserSchemaProperties),
+                    '$defs' => [
+                        'Summary' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'title' => ['type' => 'string'],
+                                'abstract' => ['type' => 'string'],
+                                'populationSize' => ['type' => 'integer'],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
         MMC::makePartial();
 
         $this->dataset_store = [];
