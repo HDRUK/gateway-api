@@ -282,6 +282,27 @@ class DatasetVersioningTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
+    public function test_update_returns_404_for_nonexistent_dataset(): void
+    {
+        [, $userId] = $this->createTeamAndUser();
+        $missingDatasetId = Dataset::withTrashed()->max('id') + 1;
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $missingDatasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        $response->assertJson(['message' => 'Dataset not found']);
+    }
+
     public function test_update_does_not_move_dataset_to_the_team_named_in_the_body(): void
     {
         [$owningTeamId, $userId] = $this->createTeamAndUser();
