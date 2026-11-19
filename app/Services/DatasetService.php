@@ -467,7 +467,7 @@ class DatasetService
             'pid' => $dataset->pid,
             'create_origin' => $createOrigin,
             'status' => $input['status'],
-            'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
+            'is_cohort_discovery' => $input['is_cohort_discovery'] ?? $dataset->is_cohort_discovery,
         ]);
 
         DatasetShareToken::revokeForActivatedDataset($dataset->id, $input['status']);
