@@ -90,9 +90,7 @@ class DatasetSpatialCoverageTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $updateMetadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            $team->id,
             Dataset::ORIGIN_MANUAL,
-            $team,
         );
 
         $regionsV2 = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
@@ -117,9 +115,7 @@ class DatasetSpatialCoverageTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            $team->id,
             Dataset::ORIGIN_MANUAL,
-            $team,
         );
     }
 
