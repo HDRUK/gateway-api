@@ -563,7 +563,7 @@ class TeamDataAccessApplicationController extends Controller
                 throw new InternalServerErrorException("Zip file creation failed");
             }
 
-            $uploads = Upload::where('entity_id', $id)->get();
+            $uploads = Upload::forDataAccessApplication($id)->get();
             if ($uploads) {
                 $files = $uploads->all();
 
@@ -708,7 +708,7 @@ class TeamDataAccessApplicationController extends Controller
             if ($isDraft) {
                 throw new Exception('Files associated with a data access request cannot be viewed when the request is still a draft.');
             }
-            $uploads = Upload::where('entity_id', $id)->get();
+            $uploads = Upload::forDataAccessApplication($id)->get();
 
             if ($uploads) {
                 Auditor::log([
@@ -817,7 +817,7 @@ class TeamDataAccessApplicationController extends Controller
             $file = Upload::where('uuid', $fileId)->first();
 
             // Check the file belongs to the application
-            if ($file->entity_id !== $id || $file->entity_type !== 'dataAccessApplication') {
+            if ($file->entity_id !== $id || $file->entity_type !== Upload::ENTITY_TYPE_DATA_ACCESS_APPLICATION) {
                 throw new UnauthorizedException("File does not belong to this application.");
             }
 

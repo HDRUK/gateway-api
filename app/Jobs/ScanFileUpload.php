@@ -652,7 +652,7 @@ class ScanFileUpload implements ShouldQueue
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
-                'entity_type' => 'dataAccessApplication',
+                'entity_type' => Upload::ENTITY_TYPE_DATA_ACCESS_APPLICATION,
                 'entity_id' => $this->applicationId,
                 'question_id' => $this->questionId,
                 'answer_index' => $this->answerIndex,
