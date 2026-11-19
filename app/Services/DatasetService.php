@@ -416,12 +416,11 @@ class DatasetService
         Dataset $dataset,
         array $input,
         int $userId,
-        int $teamId,
         string $createOrigin,
-        Team $team,
         bool $validateInput = true,
         bool $validateOutput = true,
     ): int {
+        $team = $dataset->team;
         $payload = $this->extractMetadata($input['metadata']);
         $payload['extra'] = [
             'id' => $dataset->id,
@@ -464,7 +463,6 @@ class DatasetService
 
         $dataset->update([
             'user_id' => $userId,
-            'team_id' => $teamId,
             'updated' => now(),
             'pid' => $dataset->pid,
             'create_origin' => $createOrigin,
