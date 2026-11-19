@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -9,6 +10,8 @@ use Illuminate\Support\Str;
 class Upload extends Model
 {
     use HasFactory;
+
+    public const ENTITY_TYPE_DATA_ACCESS_APPLICATION = 'dataAccessApplication';
 
     protected $fillable = [
         'filename',
@@ -44,5 +47,12 @@ class Upload extends Model
         static::creating(function ($model) {
             $model->uuid = (string) Str::uuid();
         });
+    }
+
+    public function scopeForDataAccessApplication(Builder $query, int $applicationId): Builder
+    {
+        return $query
+            ->where('entity_type', self::ENTITY_TYPE_DATA_ACCESS_APPLICATION)
+            ->where('entity_id', $applicationId);
     }
 }

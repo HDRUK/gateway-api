@@ -1,3 +1,9 @@
+## [2.57.2](https://github.com/HDRUK/gateway-api/compare/v2.57.1...v2.57.2) (2026-11-19)
+
+### 🐛 Bug Fixes
+
+* **GAT-9897:** Scope DAR file queries to dataAccessApplication uploads ([1b3815d](https://github.com/HDRUK/gateway-api/commit/1b3815d4907dd1863085bc660633dc4fb82a943c)), closes [GAT-9897](undefinedGAT-9897) [across](undefinedoss)
+
 ## [2.57.1](https://github.com/HDRUK/gateway-api/compare/v2.57.0...v2.57.1) (2026-11-12)
 
 ### 🐛 Bug Fixes

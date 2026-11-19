@@ -9,6 +9,7 @@ use App\Models\Dataset;
 use App\Models\DataAccessSection;
 use App\Models\DataAccessTemplate;
 use App\Models\QuestionBank;
+use App\Models\Upload;
 use App\Jobs\SendEmailJob;
 use App\Jobs\TermExtraction;
 use App\Jobs\LinkageExtraction;
@@ -17,6 +18,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 
 class DataAccessApplicationTest extends TestCase
 {
@@ -678,6 +680,70 @@ class DataAccessApplicationTest extends TestCase
             $this->header,
         );
         $response->assertStatus(Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+    }
+
+    /**
+     * A team can download a submitted DAR as a ZIP containing only that DAR's files,
+     * even when an upload for another entity type shares the DAR's id.
+     */
+    public function test_team_zip_download_contains_only_the_dar_files_when_another_entity_shares_its_id()
+    {
+        $fixture = $this->createSubmittedDarWithTeamUploadSharingItsId();
+
+        $response = $this->get(
+            'api/v1/teams/' . $fixture['teamId'] . '/dar/applications/' . $fixture['applicationId'] . '/download',
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertEqualsCanonicalizing(
+            [$fixture['applicationFile']->filename, 'dar_application.csv'],
+            $this->zipEntryNames($response->baseResponse->getFile()->getPathname()),
+        );
+    }
+
+    /**
+     * A team listing a submitted DAR's files sees only the files uploaded to that DAR,
+     * even when an upload for another entity type shares the DAR's id.
+     */
+    public function test_team_file_list_contains_only_the_dar_files_when_another_entity_shares_its_id()
+    {
+        $fixture = $this->createSubmittedDarWithTeamUploadSharingItsId();
+
+        $response = $this->json(
+            'GET',
+            'api/v1/teams/' . $fixture['teamId'] . '/dar/applications/' . $fixture['applicationId'] . '/files',
+            [],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertEquals(
+            [$fixture['applicationFile']->uuid],
+            array_column($response->decodeResponseJson()['data'], 'uuid'),
+        );
+    }
+
+    /**
+     * An applicant listing their DAR's files sees only the files uploaded to that DAR,
+     * even when an upload for another entity type shares the DAR's id.
+     */
+    public function test_applicant_file_list_contains_only_the_dar_files_when_another_entity_shares_its_id()
+    {
+        $fixture = $this->createSubmittedDarWithTeamUploadSharingItsId();
+
+        $response = $this->json(
+            'GET',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $fixture['applicationId'] . '/files',
+            [],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertEquals(
+            [$fixture['applicationFile']->uuid],
+            array_column($response->decodeResponseJson()['data'], 'uuid'),
+        );
     }
 
     /**
@@ -3417,5 +3483,73 @@ class DataAccessApplicationTest extends TestCase
             'teamId' => $teamId,
             'questionId' => $questionId,
         ];
+    }
+
+    private function createSubmittedDarWithTeamUploadSharingItsId(): array
+    {
+        $entityIds = $this->createDatasetForDar();
+
+        $response = $this->json(
+            'POST',
+            'api/v1/dar/applications',
+            [
+                'applicant_id' => $this->currentUser['id'],
+                'submission_status' => 'DRAFT',
+                'project_title' => 'A test DAR',
+                'dataset_ids' => [$entityIds['datasetId']],
+            ],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $applicationId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json(
+            'PATCH',
+            'api/v1/users/' . $this->currentUser['id'] . '/dar/applications/' . $applicationId,
+            ['submission_status' => 'SUBMITTED'],
+            $this->header
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $scannedDisk = Storage::fake(config('gateway.scanning_filesystem_disk') . '_scanned', ['throw' => true]);
+
+        $applicationFile = Upload::create([
+            'filename' => 'applicant_document.pdf',
+            'file_location' => '/dar/applicant_document.pdf',
+            'user_id' => $this->currentUser['id'],
+            'status' => 'PROCESSED',
+            'entity_type' => 'dataAccessApplication',
+            'entity_id' => $applicationId,
+        ]);
+        $scannedDisk->put($applicationFile->file_location, 'applicant document contents');
+
+        Upload::create([
+            'filename' => 'team_logo.png',
+            'file_location' => '/teams/team_logo.png',
+            'user_id' => $this->currentUser['id'],
+            'status' => 'PROCESSED',
+            'entity_type' => 'teams',
+            'entity_id' => $applicationId,
+        ]);
+
+        return [
+            'teamId' => $entityIds['teamId'],
+            'applicationId' => $applicationId,
+            'applicationFile' => $applicationFile,
+        ];
+    }
+
+    private function zipEntryNames(string $zipPath): array
+    {
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($zipPath));
+
+        $names = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $names[] = $zip->getNameIndex($i);
+        }
+        $zip->close();
+
+        return $names;
     }
 }
