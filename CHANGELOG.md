@@ -1,3 +1,23 @@
+## [2.58.0](https://github.com/HDRUK/gateway-api/compare/v2.57.2...v2.58.0) (2026-11-19)
+
+### ✨ Features
+
+* **GAT-9744:** Schema-driven onboarding form (#1896) ([3e38608](https://github.com/HDRUK/gateway-api/commit/3e38608487b4ab948dc0173fddbb9b16dace7d7f)), closes [GAT-9744](undefinedGAT-9744)
+* **GAT-9836:** Adds the ability to properly upsert TS collections an… (#1902) ([e4d4f20](https://github.com/HDRUK/gateway-api/commit/e4d4f202ca05ed6facf8fde0a8d2f68bc2b04cb6)), closes [GAT-9836](undefinedGAT-9836)
+* **GAT-9853:** Add feature flag to show schema selector (#1910) ([7858052](https://github.com/HDRUK/gateway-api/commit/7858052f77dea32783c79db1da53bb4c541ca8a3)), closes [GAT-9853](undefinedGAT-9853)
+* **GAT-9857:** Add experiments API with Jira Service Management feedback requests (#1915) ([edda9ed](https://github.com/HDRUK/gateway-api/commit/edda9ed5503a6db928b9714b0b380f1c12c1457e)), closes [GAT-9857](undefinedGAT-9857)
+
+### 🐛 Bug Fixes
+
+* **GAT-9477:** team search no results (#1909) ([db107db](https://github.com/HDRUK/gateway-api/commit/db107db16e7f0f866b4c316ea8c68e7d1d6084e8)), closes [GAT-9477](undefinedGAT-9477)
+* **GAT-9705:** Keep Cohort Discovery access when NHS SDE access expires ([2128027](https://github.com/HDRUK/gateway-api/commit/2128027ec1058389305d71bd278321a6b5a45701)), closes [GAT-9705](undefinedGAT-9705) [lost](undefinedost)
+* **GAT-9744:** store partner context on team dataset update (#1916) ([0da8063](https://github.com/HDRUK/gateway-api/commit/0da8063874de310090932f9088ca42cc4d99389e)), closes [GAT-9744](undefinedGAT-9744)
+* **GAT-9746:** rename dashboard dataset views endpoint from /360 to /timeline ([34c83ec](https://github.com/HDRUK/gateway-api/commit/34c83eced91a84ba32e7a92132ee95d88eb7a4df)), closes [GAT-9746](undefinedGAT-9746) [across](undefinedoss)
+* **GAT-9746:** restrict team dashboard to team members with dashboard.read ([bd10d0c](https://github.com/HDRUK/gateway-api/commit/bd10d0ce0784fc399c8fddc88c1fe9010131a77b)), closes [GAT-9746](undefinedGAT-9746)
+* **GAT-9862:** export search results from Typesense ([adc8ea8](https://github.com/HDRUK/gateway-api/commit/adc8ea853069592191151be4e6b68fd501d4992c)), closes [GAT-9862](undefinedGAT-9862) [posted](undefinedosted) [POST](undefinedOST) [chosen](undefinedosen)
+* **GAT-9867:** find similar datasets with Typesense ([e6d03c3](https://github.com/HDRUK/gateway-api/commit/e6d03c3aec59b2f63db9e8c14220b0e3d0561a23)), closes [GAT-9867](undefinedGAT-9867) [POST](undefinedOST) [POST](undefinedOST)
+* **GAT-9867:** serve v1 similar datasets from v2 and mark it deprecated ([a9a2629](https://github.com/HDRUK/gateway-api/commit/a9a2629823c73f795e0a5876ebff5edb0a960bc9)), closes [GAT-9867](undefinedGAT-9867)
+
 ## [2.57.2](https://github.com/HDRUK/gateway-api/compare/v2.57.1...v2.57.2) (2026-11-19)
 
 ### 🐛 Bug Fixes
