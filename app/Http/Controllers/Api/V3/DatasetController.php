@@ -42,9 +42,11 @@ class DatasetController extends Controller
      */
     public function update(UpdateDataset $request, int $id): JsonResponse
     {
-        $input = $request->all();
-        [$userId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
         $jwtUser = $request->jwtUser();
+        $input = $this->isSuperAdmin($jwtUser)
+            ? $request->all()
+            : $request->except('is_cohort_discovery');
+        [$userId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
         $dataset = Dataset::find($id);
 
         if (!$dataset) {
