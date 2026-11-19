@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Enums\Partner;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\DatasetService;
@@ -58,6 +59,7 @@ class DatasetServiceUpdateTest extends TestCase
             ],
             $user->id,
             Dataset::ORIGIN_MANUAL,
+            Partner::HDRUK,
         );
 
         $this->assertTrue((bool) Dataset::findOrFail($created['dataset_id'])->is_cohort_discovery);

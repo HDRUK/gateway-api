@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Enums\Partner;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\DatasetService;
@@ -91,6 +92,7 @@ class DatasetSpatialCoverageTest extends TestCase
             ['metadata' => $updateMetadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
             Dataset::ORIGIN_MANUAL,
+            Partner::HDRUK,
         );
 
         $regionsV2 = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
@@ -116,6 +118,7 @@ class DatasetSpatialCoverageTest extends TestCase
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
             Dataset::ORIGIN_MANUAL,
+            Partner::HDRUK,
         );
     }
 
