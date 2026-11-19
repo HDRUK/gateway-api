@@ -5,6 +5,7 @@ namespace Tests\Feature\Jobs;
 use App\Jobs\ExtractPublicationsFromMetadata;
 use App\Jobs\ExtractToolsFromMetadata;
 use App\Models\Dataset;
+use App\Enums\Partner;
 use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\Team;
@@ -76,6 +77,7 @@ class ExtractMetadataDeltaRowTest extends TestCase
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
             Dataset::ORIGIN_MANUAL,
+            Partner::HDRUK,
         );
 
         $v2 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 2)->first();
