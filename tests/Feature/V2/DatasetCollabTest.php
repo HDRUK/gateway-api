@@ -139,6 +139,30 @@ class DatasetCollabTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_public_update_returns_404_and_writes_nothing_when_feature_flag_disabled(): void
+    {
+        [$token, $datasetId] = $this->createShareToken();
+        $before = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata;
+        Feature::deactivate('CollaborativeMetadataOnboarding');
+
+        $this->json('PUT', $this->collabUrl($token), ['metadata' => $this->metadata], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+
+        $this->assertEquals($before, DatasetVersion::where('dataset_id', $datasetId)->first()->metadata);
+        $this->assertNull(DatasetShareToken::where('token', $token)->first()->last_submitted_at);
+    }
+
+    public function test_mark_ready_returns_404_and_writes_nothing_when_feature_flag_disabled(): void
+    {
+        [$token] = $this->createShareToken();
+        Feature::deactivate('CollaborativeMetadataOnboarding');
+
+        $this->json('PATCH', $this->collabUrl($token).'/ready', [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+
+        $this->assertNull(DatasetShareToken::where('token', $token)->first()->ready_for_review_at);
+    }
+
     public function test_public_update_saves_draft_progress_without_auth(): void
     {
         [$token, $datasetId] = $this->createShareToken();
@@ -220,6 +244,31 @@ class DatasetCollabTest extends TestCase
         $this->assertNotEquals(
             $firstSave['original_metadata']['modified'],
             $secondSave['original_metadata']['modified'],
+        );
+    }
+
+    /**
+     * Regression test: the schema the collaborator's form submitted in (e.g.
+     * a partner schema) must be recorded on the overwritten version row, the
+     * same as the authenticated onboarding paths - otherwise GWDM-native
+     * rendering sees the collab draft's source schema as unknown.
+     */
+    public function test_public_update_records_the_declared_source_schema(): void
+    {
+        [$token, $datasetId] = $this->createShareToken();
+
+        $submitted = array_merge($this->metadata, [
+            'schemaModel' => 'HDRUK',
+            'schemaVersion' => '4.1.0',
+        ]);
+
+        $this->json('PUT', $this->collabUrl($token), ['metadata' => $submitted], ['Accept' => 'application/json'])
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $row = DatasetVersion::where('dataset_id', $datasetId)->orderByDesc('version')->first();
+        $this->assertSame(
+            ['HDRUK', '4.1.0'],
+            [$row->source_schema_model, $row->source_schema_version],
         );
     }
 

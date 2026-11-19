@@ -14,6 +14,7 @@ use App\Http\Traits\MetadataVersioning;
 use App\Http\Traits\MetadataExtraction;
 use App\Http\Traits\CollabMetadataSeed;
 use App\Http\Controllers\Controller;
+use App\Services\Gwdm\SourceSchema;
 use MetadataManagementController as MMC;
 use Laravel\Pennant\Feature;
 
@@ -181,6 +182,7 @@ class DatasetCollabController extends Controller
                 $dataset,
                 $traserResponse['metadata'],
                 $submittedMetadata,
+                SourceSchema::declared($inputSchema, $inputVersion),
             );
 
             $shareToken->update(['last_submitted_at' => now()]);

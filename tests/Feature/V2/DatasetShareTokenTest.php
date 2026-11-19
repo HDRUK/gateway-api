@@ -176,6 +176,31 @@ class DatasetShareTokenTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_list_share_tokens_returns_404_when_feature_flag_disabled(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+        $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin)->assertStatus(201);
+        Feature::deactivate('CollaborativeMetadataOnboarding');
+
+        $this->json('GET', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin)
+            ->assertStatus(404);
+    }
+
+    public function test_revoke_share_token_returns_404_and_leaves_token_live_when_feature_flag_disabled(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+        $create = $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin);
+        $tokenId = $create->decodeResponseJson()['data']['id'];
+        Feature::deactivate('CollaborativeMetadataOnboarding');
+
+        $this->json('DELETE', $this->shareTokensUrl($teamId).'/'.$tokenId, [], $this->headerNonAdmin)
+            ->assertStatus(404);
+
+        $this->assertNull(DatasetShareToken::where('id', $tokenId)->first()->revoked_at);
+    }
+
     public function test_can_list_share_tokens_for_team(): void
     {
         $notificationId = $this->createNotification();

@@ -591,9 +591,7 @@ return [
         'path' => '/collab/{token}',
         'methodController' => 'DatasetCollabController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'sanitize.input',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -602,9 +600,7 @@ return [
         'path' => '/collab/{token}',
         'methodController' => 'DatasetCollabController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'sanitize.input',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -613,9 +609,7 @@ return [
         'path' => '/collab/{token}/ready',
         'methodController' => 'DatasetCollabController@markReadyForReview',
         'namespaceController' => 'App\Http\Controllers\Api\V2',
-        'middleware' => [
-            'sanitize.input',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
 

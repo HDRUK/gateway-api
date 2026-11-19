@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  *   @OA\Property(
  *     property="create_origin",
  *     type="string",
- *     enum={"MANUAL","API","GMI","COLLAB"},
+ *     enum={"MANUAL","API","GMI"},
  *     nullable=true,
  *     example="MANUAL"
  *   ),

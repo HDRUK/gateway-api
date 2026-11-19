@@ -66,7 +66,7 @@ class DatasetShareTokenController extends Controller
 
         $input = $request->all();
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
-        $jwtUser = $input['jwt_user'] ?? [];
+        $jwtUser = $request->jwtUser();
 
         try {
             $team = Team::where('id', $teamId)->first();
