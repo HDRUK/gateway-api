@@ -6,6 +6,7 @@ use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\TeamHasUser;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -282,6 +283,75 @@ class DatasetVersioningTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
+    public function test_update_without_cohort_discovery_keeps_the_current_setting(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        Dataset::findOrFail($datasetId)->update(['is_cohort_discovery' => true]);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertTrue((bool) Dataset::findOrFail($datasetId)->is_cohort_discovery);
+    }
+
+    public function test_non_admin_update_cannot_change_cohort_discovery(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        Dataset::findOrFail($datasetId)->update(['is_cohort_discovery' => true]);
+        $metadataManagerHeader = $this->metadataManagerHeaderForTeam($teamId);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+                'is_cohort_discovery' => false,
+            ],
+            $metadataManagerHeader,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertTrue((bool) Dataset::findOrFail($datasetId)->is_cohort_discovery);
+    }
+
+    public function test_admin_update_can_change_cohort_discovery(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        Dataset::findOrFail($datasetId)->update(['is_cohort_discovery' => true]);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+                'is_cohort_discovery' => false,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertFalse((bool) Dataset::findOrFail($datasetId)->is_cohort_discovery);
+    }
+
     public function test_update_returns_404_for_nonexistent_dataset(): void
     {
         [, $userId] = $this->createTeamAndUser();
@@ -416,6 +486,33 @@ class DatasetVersioningTest extends TestCase
      * Create a notification, team, and user in one call.
      * Returns [$teamId, $userId].
      */
+    private function metadataManagerHeaderForTeam(int $teamId): array
+    {
+        $this->authorisationUser(false);
+        $jwt = $this->getAuthorisationJwt(false);
+        $metadataManager = $this->getUserFromJwt($jwt);
+
+        TeamHasUser::create([
+            'team_id' => $teamId,
+            'user_id' => (int) $metadataManager['id'],
+        ]);
+
+        $this->json(
+            'POST',
+            self::TEST_URL_TEAM . '/' . $teamId . '/users',
+            [
+                'userId' => $metadataManager['id'],
+                'roles' => ['custodian.metadata.manager'],
+            ],
+            $this->header,
+        )->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
+    }
+
     private function createTeamAndUser(): array
     {
         $notificationId = $this->createNotification();
