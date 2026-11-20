@@ -45,7 +45,12 @@ class DatasetController extends Controller
         $input = $request->all();
         [$userId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
         $jwtUser = $request->jwtUser();
-        $dataset = Dataset::where('id', $id)->first();
+        $dataset = Dataset::find($id);
+
+        if (!$dataset) {
+            return response()->json(['message' => 'Dataset not found'], 404);
+        }
+
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 
         try {
