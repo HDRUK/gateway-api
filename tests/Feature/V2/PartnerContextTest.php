@@ -11,7 +11,6 @@ use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Laravel\Pennant\Feature;
-use Illuminate\Testing\TestResponse;
 
 /**
  * Tests for partner_context isolation (GAT-8924).
@@ -34,7 +33,6 @@ class PartnerContextTest extends TestCase
     }
 
     public const DATASETS_URL      = '/api/v2/datasets';
-    public const DATASETS_V3_URL   = '/api/v3/datasets';
     public const TEAMS_URL         = '/api/v1/teams';
     public const NOTIFICATIONS_URL = '/api/v1/notifications';
     public const USERS_URL         = '/api/v1/users';
@@ -209,67 +207,6 @@ class PartnerContextTest extends TestCase
         $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
 
         $this->updateViaTeam($teamId, $userId, $datasetId, array_merge($this->header, ['x-partner-context' => 'PRUKK']));
-
-        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
-    }
-
-    public function test_v3_update_restamps_cruk_partner_context_when_header_present(): void
-    {
-        Feature::activate(PartnerContext::SELECTOR_FLAG);
-        [$teamId, $userId] = $this->createTeamAndUser();
-        $datasetId = $this->createViaTeam($teamId, $userId, $this->header);
-
-        $this->updateViaV3($userId, $datasetId, array_merge($this->header, ['x-partner-context' => 'CRUK']))
-            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
-    }
-
-    public function test_v3_update_rejects_an_unknown_partner_context(): void
-    {
-        Feature::activate(PartnerContext::SELECTOR_FLAG);
-        [$teamId, $userId] = $this->createTeamAndUser();
-        $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
-
-        $this->updateViaV3($userId, $datasetId, array_merge($this->header, ['x-partner-context' => 'PRUKK']))
-            ->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'))
-            ->assertJson(['message' => 'Unknown partner context']);
-
-        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
-    }
-
-    public function test_v3_update_leaves_partner_context_when_no_header(): void
-    {
-        Feature::activate(PartnerContext::SELECTOR_FLAG);
-        [$teamId, $userId] = $this->createTeamAndUser();
-        $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
-
-        $this->updateViaV3($userId, $datasetId, $this->header)
-            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
-    }
-
-    public function test_v3_update_without_a_header_keeps_a_stored_partner_outside_the_known_list(): void
-    {
-        Feature::activate(PartnerContext::SELECTOR_FLAG);
-        [$teamId, $userId] = $this->createTeamAndUser();
-        $datasetId = $this->createViaTeam($teamId, $userId, $this->header);
-        Dataset::whereKey($datasetId)->update(['partner_context' => 'cruk']);
-
-        $this->updateViaV3($userId, $datasetId, $this->header)
-            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $this->assertSame('cruk', Dataset::find($datasetId)->partner_context);
-    }
-
-    public function test_v3_update_ignores_the_header_when_selector_flag_is_off(): void
-    {
-        [$teamId, $userId] = $this->createTeamAndUser();
-        $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
-
-        $this->updateViaV3($userId, $datasetId, array_merge($this->header, ['x-partner-context' => 'PRUKK']))
-            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
     }
@@ -771,21 +708,6 @@ class PartnerContextTest extends TestCase
             ],
             $headers,
         )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-    }
-
-    private function updateViaV3(int $userId, int $datasetId, array $headers): TestResponse
-    {
-        return $this->json(
-            'PUT',
-            self::DATASETS_V3_URL . '/' . $datasetId,
-            [
-                'user_id'       => $userId,
-                'metadata'      => $this->metadata,
-                'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status'        => Dataset::STATUS_ACTIVE,
-            ],
-            $headers,
-        );
     }
 
     private function teamDatasetsUrl(int $teamId): string
