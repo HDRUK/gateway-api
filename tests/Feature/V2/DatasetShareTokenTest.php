@@ -46,6 +46,8 @@ class DatasetShareTokenTest extends TestCase
         // unreachable without it.
         Feature::flushCache();
         Feature::activate('CollaborativeMetadataOnboarding');
+        // Collab mode is built on the schema-driven onboarding form only.
+        Feature::activate('SchemaOnboardingForm');
 
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
@@ -174,6 +176,40 @@ class DatasetShareTokenTest extends TestCase
         );
 
         $response->assertStatus(404);
+    }
+
+    /**
+     * A share link opens the schema-driven form, so minting one while that
+     * form is off would hand out a link that can only 404.
+     */
+    public function test_create_share_token_returns_404_when_schema_onboarding_form_is_off(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+        Feature::deactivate('SchemaOnboardingForm');
+
+        $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin)
+            ->assertStatus(404);
+    }
+
+    /**
+     * Listing and revoking only need the collab flag, so a team can always
+     * find and kill its live links even if the schema form is switched off.
+     */
+    public function test_can_still_list_and_revoke_when_schema_onboarding_form_is_off(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+        $create = $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin);
+        $tokenId = $create->decodeResponseJson()['data']['id'];
+        Feature::deactivate('SchemaOnboardingForm');
+
+        $this->json('GET', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin)
+            ->assertStatus(200);
+        $this->json('DELETE', $this->shareTokensUrl($teamId).'/'.$tokenId, [], $this->headerNonAdmin)
+            ->assertStatus(200);
+
+        $this->assertNotNull(DatasetShareToken::where('id', $tokenId)->first()->revoked_at);
     }
 
     public function test_list_share_tokens_returns_404_when_feature_flag_disabled(): void

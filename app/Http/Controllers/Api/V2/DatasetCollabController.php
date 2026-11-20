@@ -15,6 +15,10 @@ use App\Http\Traits\MetadataExtraction;
 use App\Http\Traits\CollabMetadataSeed;
 use App\Http\Controllers\Controller;
 use App\Services\Gwdm\SourceSchema;
+use App\Exceptions\UnprocessableException;
+use App\Services\OnboardingForm\JsonSchema;
+use App\Services\OnboardingForm\OnboardingFormService;
+use App\Services\OnboardingForm\OnboardingSchemaCatalogueService;
 use MetadataManagementController as MMC;
 use Laravel\Pennant\Feature;
 
@@ -31,8 +35,17 @@ class DatasetCollabController extends Controller
 
     private const FEATURE_FLAG = 'CollaborativeMetadataOnboarding';
 
+    /** Collab mode is built on the schema-driven onboarding form only. */
+    private const SCHEMA_FORM_FLAG = 'SchemaOnboardingForm';
+
+    public function __construct(
+        private readonly OnboardingFormService $onboardingFormService,
+        private readonly OnboardingSchemaCatalogueService $schemaCatalogue,
+    ) {
+    }
+
     /**
-     * Folds the feature flag into the same null-return path as an invalid
+     * Folds the feature flags into the same null-return path as an invalid
      * token, so a disabled feature and an unknown/expired/revoked token are
      * indistinguishable to an anonymous caller - this is a public,
      * unauthenticated endpoint, so there's no reason to leak which one it
@@ -40,7 +53,7 @@ class DatasetCollabController extends Controller
      */
     private function resolveToken(string $token): ?DatasetShareToken
     {
-        if (!Feature::active(self::FEATURE_FLAG)) {
+        if (!Feature::active(self::FEATURE_FLAG) || !Feature::active(self::SCHEMA_FORM_FLAG)) {
             return null;
         }
 
@@ -64,6 +77,19 @@ class DatasetCollabController extends Controller
         $dataset = Dataset::where('id', $shareToken->dataset_id)->first();
         $team = Team::where('id', $dataset->team_id)->first();
 
+        // The same hydrated form the authenticated form_hydration endpoint
+        // returns; model/version come from the form's schema picker.
+        try {
+            $form = $this->onboardingFormService->hydrate(
+                $team,
+                $dataset,
+                $request->query('model'),
+                $request->query('version'),
+            );
+        } catch (UnprocessableException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
         return response()->json([
             'message' => Config::get('statuscodes.STATUS_OK.message'),
             'data' => [
@@ -80,6 +106,7 @@ class DatasetCollabController extends Controller
                     'model' => Config::get('metadata.GWDM.name'),
                     'version' => Config::get('metadata.GWDM.version'),
                 ],
+                'form' => $form,
                 'expires_at' => $shareToken->expires_at,
                 'ready_for_review_at' => $shareToken->ready_for_review_at,
             ],
@@ -135,14 +162,39 @@ class DatasetCollabController extends Controller
             // collaborators, so these must be forced here rather than trusted
             // from the submission. `issued` is preserved across saves; everything
             // else is refreshed on every save.
+            //
+            // The form's schema picker means the submission may be in any
+            // offered schema, so the declared one must be offered, and each
+            // field is only forced where that schema actually has it. An
+            // undeclared submission keeps the legacy behaviour (force all).
+            $inputSchema = $input['metadata']['schemaModel'] ?? null;
+            $inputVersion = $input['metadata']['schemaVersion'] ?? null;
+
+            $schema = null;
+            if ($inputSchema !== null) {
+                if (!$this->schemaCatalogue->offers($inputSchema, $inputVersion)) {
+                    return response()->json([
+                        'message' => 'Schema ' . $inputSchema . ' ' . $inputVersion . ' is not offered for onboarding',
+                    ], 422);
+                }
+                $schema = $this->onboardingFormService->schemaFor($inputSchema, $inputVersion);
+            }
+
             $existingIssued = $dataset->lastMetadata()['original_metadata']['issued'] ?? null;
             $seed = $this->collabMetadataSeed($team, $dataset->id, $existingIssued);
 
-            $input['metadata']['metadata']['version'] = $seed['version'];
-            $input['metadata']['metadata']['issued'] = $seed['issued'];
-            $input['metadata']['metadata']['modified'] = $seed['modified'];
-            $input['metadata']['metadata']['revisions'] = $seed['revisions'];
-            $input['metadata']['metadata']['summary']['dataCustodian'] = $seed['summary']['dataCustodian'];
+            $forced = [
+                'version' => $seed['version'],
+                'issued' => $seed['issued'],
+                'modified' => $seed['modified'],
+                'revisions' => $seed['revisions'],
+                'summary.dataCustodian' => $seed['summary']['dataCustodian'],
+            ];
+            foreach ($forced as $path => $value) {
+                if ($schema === null || JsonSchema::hasPath($schema, $path)) {
+                    data_set($input['metadata']['metadata'], $path, $value);
+                }
+            }
 
             $payload = $this->extractMetadata($input['metadata']);
             $payload['extra'] = [
@@ -153,8 +205,6 @@ class DatasetCollabController extends Controller
                 'publisherName' => $team['name'],
             ];
 
-            $inputSchema = $input['metadata']['schemaModel'] ?? null;
-            $inputVersion = $input['metadata']['schemaVersion'] ?? null;
             $submittedMetadata = $input['metadata']['metadata'];
 
             // Collaborative submissions are always treated as drafts: validation

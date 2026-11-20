@@ -60,7 +60,9 @@ class DatasetShareTokenController extends Controller
      */
     public function store(Request $request, int $teamId): JsonResponse
     {
-        if (!Feature::active(self::FEATURE_FLAG)) {
+        // A link opens the schema-driven form, so don't mint links that can
+        // only 404. List/revoke stay available so live links can be killed.
+        if (!Feature::active(self::FEATURE_FLAG) || !Feature::active('SchemaOnboardingForm')) {
             return response()->json(['message' => 'Resource not found'], 404);
         }
 

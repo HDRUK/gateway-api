@@ -71,7 +71,7 @@ class OnboardingDefaultsService
         $defaults = $this->withoutPlaceholders($translated, $placeholders, $schema, $schema['properties'] ?? []);
 
         foreach ($this->formDefaults($team) as $path => $value) {
-            if ($value !== null && $this->hasPath($schema, $path)) {
+            if ($value !== null && JsonSchema::hasPath($schema, $path)) {
                 data_set($defaults, $path, $value);
             }
         }
@@ -96,19 +96,6 @@ class OnboardingDefaultsService
             'summary.dataCustodian.memberOf' => $team->member_of,
             'coverage.materialType' => ['None/not available'],
         ];
-    }
-
-    private function hasPath(array $schema, string $path): bool
-    {
-        $node = ['properties' => $schema['properties'] ?? []];
-        foreach (explode('.', $path) as $key) {
-            if (!isset($node['properties'][$key])) {
-                return false;
-            }
-            $node = JsonSchema::resolveNode($schema, $node['properties'][$key]);
-        }
-
-        return true;
     }
 
     private function translate(array|\stdClass $gwdm, string $model, string $version, string $gwdmVersion): array

@@ -46,6 +46,8 @@ class DatasetCollabTest extends TestCase
         // unreachable without it.
         Feature::flushCache();
         Feature::activate('CollaborativeMetadataOnboarding');
+        // Collab mode is built on the schema-driven onboarding form only.
+        Feature::activate('SchemaOnboardingForm');
 
         $this->authorisationUser(false);
         $this->nonAdminJwt = $this->getAuthorisationJwt(false);
@@ -98,6 +100,62 @@ class DatasetCollabTest extends TestCase
         // here instead, so the web app has a fallback for the hidden
         // required "contact point" fields.
         $this->assertEquals($team->contact_point, $data['team_contact_point']);
+    }
+
+    /**
+     * The web app builds the schema-driven onboarding form from this - the
+     * same hydrated shape the authenticated form_hydration endpoint returns,
+     * which anonymous collaborators can't call.
+     */
+    public function test_public_show_returns_the_hydrated_onboarding_form(): void
+    {
+        [$token] = $this->createShareToken();
+
+        $response = $this->json('GET', $this->collabUrl($token), [], ['Accept' => 'application/json']);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'data' => [
+                    'form' => ['schemas', 'model', 'version', 'schema', 'defaultValues'],
+                ],
+            ])
+            ->assertJsonPath('data.form.model', 'HDRUK')
+            ->assertJsonPath('data.form.version', '4.1.0');
+    }
+
+    public function test_public_show_hydrates_the_requested_schema(): void
+    {
+        [$token] = $this->createShareToken();
+
+        $this->json('GET', $this->collabUrl($token).'?model=PRUK&version=1.0.0', [], ['Accept' => 'application/json'])
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonPath('data.form.model', 'PRUK')
+            ->assertJsonPath('data.form.version', '1.0.0');
+    }
+
+    public function test_public_show_rejects_a_schema_that_is_not_offered(): void
+    {
+        [$token] = $this->createShareToken();
+
+        $this->json('GET', $this->collabUrl($token).'?model=NOPE&version=9.9.9', [], ['Accept' => 'application/json'])
+            ->assertStatus(422);
+    }
+
+    /**
+     * Collab mode only exists on the schema-driven form, so a valid token
+     * must 404 like an unknown one while that form is switched off.
+     */
+    public function test_public_endpoints_return_404_when_schema_onboarding_form_is_off(): void
+    {
+        [$token] = $this->createShareToken();
+        Feature::deactivate('SchemaOnboardingForm');
+
+        $this->json('GET', $this->collabUrl($token), [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+        $this->json('PUT', $this->collabUrl($token), ['metadata' => $this->metadata], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+        $this->json('PATCH', $this->collabUrl($token).'/ready', [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
     }
 
     public function test_public_show_returns_404_for_unknown_token(): void
@@ -217,6 +275,127 @@ class DatasetCollabTest extends TestCase
                 $wrapper[$key]['summary']['dataCustodian']['identifier'] ?? null,
             );
         }
+    }
+
+    /**
+     * Gives the mocked TRASER schema the backend-owned paths the real
+     * HDRUK 4.1.0 / PRUK 1.0.0 / CRUK 1.0.0 schemas all have. Pass
+     * $withCustodian = false to model a schema without a data custodian.
+     */
+    private function declareSchemaWithBackendOwnedPaths(bool $withCustodian = true): void
+    {
+        $summary = [
+            'title' => ['type' => 'string'],
+            'abstract' => ['type' => 'string'],
+        ];
+        if ($withCustodian) {
+            $summary['dataCustodian'] = [
+                'type' => 'object',
+                'properties' => [
+                    'identifier' => ['type' => 'string'],
+                    'name' => ['type' => 'string'],
+                    'contactPoint' => ['type' => 'string'],
+                ],
+            ];
+        }
+
+        $this->traserSchemaProperties = [
+            'version' => ['type' => 'string'],
+            'issued' => ['type' => 'string'],
+            'modified' => ['type' => 'string'],
+            'revisions' => ['type' => 'array'],
+            'summary' => ['type' => 'object', 'properties' => $summary],
+        ];
+    }
+
+    private function declaring(string $model, string $version, ?array $metadata = null): array
+    {
+        return array_merge($metadata ?? $this->metadata, [
+            'schemaModel' => $model,
+            'schemaVersion' => $version,
+        ]);
+    }
+
+    /**
+     * A collaborator using the schema picker must still not be able to set
+     * the custodian - the server forces it whenever the schema has one.
+     */
+    public function test_public_update_forces_the_team_custodian_for_a_declared_schema(): void
+    {
+        $this->declareSchemaWithBackendOwnedPaths();
+        [$token, $datasetId] = $this->createShareToken();
+        $team = \App\Models\Team::where('id', Dataset::find($datasetId)->team_id)->first();
+
+        $submitted = $this->declaring('PRUK', '1.0.0');
+        $submitted['metadata']['summary']['dataCustodian'] = [
+            'identifier' => 'someone-else',
+            'name' => 'Not The Team',
+        ];
+
+        $this->json('PUT', $this->collabUrl($token), ['metadata' => $submitted], ['Accept' => 'application/json'])
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $original = Dataset::find($datasetId)->lastMetadata()['original_metadata'];
+        $this->assertEquals($team->pid, $original['summary']['dataCustodian']['identifier']);
+        $this->assertEquals($team->name, $original['summary']['dataCustodian']['name']);
+        $this->assertNotNull($original['issued'] ?? null);
+    }
+
+    /**
+     * Prepared for schemas shaped differently from today's: a backend-owned
+     * field is only forced where the declared schema actually has it, so no
+     * foreign paths are injected into the submission.
+     */
+    public function test_public_update_does_not_inject_paths_the_declared_schema_lacks(): void
+    {
+        $this->declareSchemaWithBackendOwnedPaths(withCustodian: false);
+        [$token, $datasetId] = $this->createShareToken();
+
+        $submitted = $this->declaring('CRUK', '1.0.0');
+        unset($submitted['metadata']['summary']['dataCustodian']);
+
+        $this->json('PUT', $this->collabUrl($token), ['metadata' => $submitted], ['Accept' => 'application/json'])
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $original = Dataset::find($datasetId)->lastMetadata()['original_metadata'];
+        $this->assertArrayNotHasKey('dataCustodian', $original['summary']);
+        $this->assertNotNull($original['modified'] ?? null);
+    }
+
+    public function test_public_update_rejects_a_schema_that_is_not_offered_and_writes_nothing(): void
+    {
+        [$token, $datasetId] = $this->createShareToken();
+        $before = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata;
+
+        $this->json(
+            'PUT',
+            $this->collabUrl($token),
+            ['metadata' => $this->declaring('NOPE', '9.9.9')],
+            ['Accept' => 'application/json'],
+        )->assertStatus(422);
+
+        $this->assertEquals($before, DatasetVersion::where('dataset_id', $datasetId)->first()->metadata);
+        $this->assertNull(DatasetShareToken::where('token', $token)->first()->last_submitted_at);
+    }
+
+    /**
+     * A collab draft belongs to the portal its link was minted in - other
+     * partner portals onboard their own data - so picking a partner schema
+     * must never move the draft to that partner's context.
+     */
+    public function test_public_update_never_changes_the_partner_context(): void
+    {
+        [$token, $datasetId] = $this->createShareToken();
+        $before = Dataset::find($datasetId)->partner_context;
+
+        $this->json(
+            'PUT',
+            $this->collabUrl($token),
+            ['metadata' => $this->declaring('CRUK', '1.0.0')],
+            ['Accept' => 'application/json', 'x-partner-context' => 'CRUK'],
+        )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertSame($before, Dataset::find($datasetId)->partner_context);
     }
 
     /**
