@@ -365,6 +365,33 @@ class DatasetVersioningTest extends TestCase
         $this->assertSame('Published v3', $this->reconstructedTitle($datasetId, 3));
     }
 
+    public function test_history_of_a_published_dataset_being_edited_lists_only_published_versions(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        $this->saveViaV3($datasetId, $userId, 'Working copy', Dataset::STATUS_DRAFT);
+
+        $this->assertSame([1], $this->listedVersionNumbers($datasetId));
+        $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/2')
+            ->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+
+        $this->saveViaV3($datasetId, $userId, 'Republished', Dataset::STATUS_ACTIVE);
+
+        $this->assertSame([1, 2], $this->listedVersionNumbers($datasetId));
+        $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/2')
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    public function test_history_of_a_never_published_dataset_is_empty(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata, Dataset::STATUS_DRAFT);
+
+        $this->assertSame([], $this->listedVersionNumbers($datasetId));
+        $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/1')
+            ->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    }
+
     public function test_versions_after_a_replaced_one_rebuild_from_its_final_content(): void
     {
         [$teamId, $userId] = $this->createTeamAndUser();
@@ -684,6 +711,17 @@ class DatasetVersioningTest extends TestCase
             ],
             $this->header,
         )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function listedVersionNumbers(int $datasetId): array
+    {
+        $response = $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/versions');
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        return array_column($response->json('data'), 'version');
     }
 
     private function versionRow(int $datasetId, int $version): DatasetVersion
