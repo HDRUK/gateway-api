@@ -100,6 +100,9 @@ class DatasetCollabTest extends TestCase
         // here instead, so the web app has a fallback for the hidden
         // required "contact point" fields.
         $this->assertEquals($team->contact_point, $data['team_contact_point']);
+        // The form shows the custodian (forced to this team on save) by name,
+        // read-only, since collaborators can't search teams.
+        $this->assertEquals($team->name, $data['team_name']);
     }
 
     /**

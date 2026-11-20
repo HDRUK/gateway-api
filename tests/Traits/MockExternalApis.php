@@ -23,6 +23,7 @@ trait MockExternalApis
     protected array $traserInvalidSchemas = [];
     protected array $traserSchemaProperties = [];
     protected array $traserSchemaRequired = [];
+    protected array $traserSchemaDefs = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
     public function getMetadataV1p0()
@@ -1068,7 +1069,7 @@ trait MockExternalApis
                     'properties' => array_merge([
                         'summary' => ['$ref' => '#/$defs/Summary'],
                     ], $this->traserSchemaProperties),
-                    '$defs' => [
+                    '$defs' => array_merge([
                         'Summary' => [
                             'type' => 'object',
                             'properties' => [
@@ -1077,7 +1078,7 @@ trait MockExternalApis
                                 'populationSize' => ['type' => 'integer'],
                             ],
                         ],
-                    ],
+                    ], $this->traserSchemaDefs),
                 ],
             ]);
         MMC::makePartial();

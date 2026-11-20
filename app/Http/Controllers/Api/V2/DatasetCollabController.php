@@ -101,6 +101,9 @@ class DatasetCollabController extends Controller
                 // "contact point" fields - surface just this one field here
                 // rather than exposing the full team record publicly.
                 'team_contact_point' => $team->contact_point,
+                // Shown read-only as the data custodian, which the save forces
+                // to this team. Team names are already public on the Gateway.
+                'team_name' => $team->name,
                 'metadata' => $dataset->lastMetadata(),
                 'schema' => [
                     'model' => Config::get('metadata.GWDM.name'),

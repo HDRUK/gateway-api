@@ -23,15 +23,21 @@ final class JsonSchema
     /** Whether a dot-separated property path exists in the schema, following $refs. */
     public static function hasPath(array $schema, string $path): bool
     {
+        return self::nodeAt($schema, $path) !== null;
+    }
+
+    /** The resolved schema node at a dot-separated property path, or null if there isn't one. */
+    public static function nodeAt(array $schema, string $path): ?array
+    {
         $node = ['properties' => $schema['properties'] ?? []];
         foreach (explode('.', $path) as $key) {
             if (!isset($node['properties'][$key])) {
-                return false;
+                return null;
             }
             $node = self::resolveNode($schema, $node['properties'][$key]);
         }
 
-        return true;
+        return $node;
     }
 
     /** A required list of values left empty; a required list of records may be. */
