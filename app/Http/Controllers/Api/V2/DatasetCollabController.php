@@ -21,6 +21,8 @@ use App\Services\OnboardingForm\OnboardingFormService;
 use App\Services\OnboardingForm\OnboardingSchemaCatalogueService;
 use MetadataManagementController as MMC;
 use Laravel\Pennant\Feature;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Public, unauthenticated endpoints for collaborative dataset onboarding.
@@ -62,6 +64,13 @@ class DatasetCollabController extends Controller
             return null;
         }
 
+        // Tokens are only revoked on activation, so a link must also die with
+        // its draft: once the team archives or deletes it (soft-deleted rows
+        // aren't loaded), the collaborator can no longer read or write it.
+        if (!$shareToken->dataset || $shareToken->dataset->status !== Dataset::STATUS_DRAFT) {
+            return null;
+        }
+
         return $shareToken;
     }
 
@@ -74,7 +83,7 @@ class DatasetCollabController extends Controller
             ], 404);
         }
 
-        $dataset = Dataset::where('id', $shareToken->dataset_id)->first();
+        $dataset = $shareToken->dataset;
         $team = Team::where('id', $dataset->team_id)->first();
 
         // The same hydrated form the authenticated form_hydration endpoint
@@ -152,10 +161,27 @@ class DatasetCollabController extends Controller
             ], 404);
         }
 
+        // Validated here rather than in a FormRequest so that, like every other
+        // failure on this public endpoint, a disabled feature or dead token
+        // still reads as a 404 before anything about the body is revealed.
+        $validator = Validator::make($request->all(), [
+            'metadata' => ['required', 'array'],
+            'metadata.metadata' => ['required', 'array'],
+            'metadata.schemaModel' => ['nullable', 'string', 'required_with:metadata.schemaVersion'],
+            'metadata.schemaVersion' => ['nullable', 'string', 'required_with:metadata.schemaModel'],
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'INVALID_ARGUMENT',
+                'message' => 'Invalid argument(s)',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
         $input = $request->all();
 
         try {
-            $dataset = Dataset::where('id', $shareToken->dataset_id)->first();
+            $dataset = $shareToken->dataset;
             $team = Team::where('id', $dataset->team_id)->first();
 
             // Fields normally set server-side by MetadataOnboard::metadataOnboard()
@@ -224,21 +250,37 @@ class DatasetCollabController extends Controller
                 false
             );
 
+            // The raw Traser response isn't returned to anonymous callers.
             if (!$traserResponse['wasTranslated']) {
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed.',
-                    'details' => $traserResponse,
                 ], 400);
             }
 
-            $this->updateMetadataVersion(
-                $dataset,
-                $traserResponse['metadata'],
-                $submittedMetadata,
-                SourceSchema::declared($inputSchema, $inputVersion),
-            );
+            // Re-checked under a lock: the team may have activated or archived
+            // the draft while this request was translating it.
+            $written = DB::transaction(function () use ($dataset, $traserResponse, $submittedMetadata, $inputSchema, $inputVersion, $shareToken) {
+                $status = Dataset::whereKey($dataset->id)->lockForUpdate()->value('status');
+                if ($status !== Dataset::STATUS_DRAFT) {
+                    return false;
+                }
 
-            $shareToken->update(['last_submitted_at' => now()]);
+                $this->updateMetadataVersion(
+                    $dataset,
+                    $traserResponse['metadata'],
+                    $submittedMetadata,
+                    SourceSchema::declared($inputSchema, $inputVersion),
+                );
+                $shareToken->update(['last_submitted_at' => now()]);
+
+                return true;
+            });
+
+            if (!$written) {
+                return response()->json([
+                    'message' => 'invalid or expired token',
+                ], 404);
+            }
 
             Auditor::log([
                 'team_id' => $dataset->team_id,

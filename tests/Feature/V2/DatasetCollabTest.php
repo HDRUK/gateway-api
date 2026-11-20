@@ -161,6 +161,76 @@ class DatasetCollabTest extends TestCase
             ->assertStatus(404);
     }
 
+    /**
+     * Regression (review): tokens are only revoked on activation, so a link
+     * stayed live for a draft the team archived or deleted. An anonymous
+     * holder could keep overwriting the archived dataset, and a deleted one
+     * made every endpoint 500.
+     */
+    public function test_public_endpoints_return_404_once_the_draft_is_archived(): void
+    {
+        [$token, $datasetId] = $this->createShareToken();
+        Dataset::where('id', $datasetId)->update(['status' => Dataset::STATUS_ARCHIVED]);
+        $before = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata;
+
+        $this->json('GET', $this->collabUrl($token), [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+        $this->json('PUT', $this->collabUrl($token), ['metadata' => $this->metadata], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+        $this->json('PATCH', $this->collabUrl($token).'/ready', [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+
+        $this->assertEquals($before, DatasetVersion::where('dataset_id', $datasetId)->first()->metadata);
+    }
+
+    public function test_public_endpoints_return_404_once_the_draft_is_deleted(): void
+    {
+        [$token, $datasetId] = $this->createShareToken();
+        Dataset::where('id', $datasetId)->first()->delete();
+
+        $this->json('GET', $this->collabUrl($token), [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+        $this->json('PUT', $this->collabUrl($token), ['metadata' => $this->metadata], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+        $this->json('PATCH', $this->collabUrl($token).'/ready', [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
+    }
+
+    /**
+     * Regression (review): malformed bodies reached array access and typed
+     * calls on this public endpoint and came back as 500s.
+     */
+    public function test_public_update_rejects_a_malformed_body_and_writes_nothing(): void
+    {
+        [$token, $datasetId] = $this->createShareToken();
+        $before = DatasetVersion::where('dataset_id', $datasetId)->first()->metadata;
+
+        foreach ([
+            [],
+            ['metadata' => 'not an object'],
+            ['metadata' => ['metadata' => 'not an object']],
+            ['metadata' => ['metadata' => [], 'schemaModel' => ['HDRUK'], 'schemaVersion' => '4.1.0']],
+        ] as $body) {
+            $this->json('PUT', $this->collabUrl($token), $body, ['Accept' => 'application/json'])
+                ->assertStatus(400)
+                ->assertJsonPath('status', 'INVALID_ARGUMENT');
+        }
+
+        $this->assertEquals($before, DatasetVersion::where('dataset_id', $datasetId)->first()->metadata);
+    }
+
+    /** Regression (review): the raw Traser response went back to anonymous callers. */
+    public function test_public_update_does_not_expose_the_translation_response(): void
+    {
+        [$token] = $this->createShareToken();
+        $this->traserUntranslatable = [Config::get('metadata.GWDM.name')];
+
+        $response = $this->json('PUT', $this->collabUrl($token), ['metadata' => $this->metadata], ['Accept' => 'application/json'])
+            ->assertStatus(400);
+
+        $this->assertArrayNotHasKey('details', $response->json());
+    }
+
     public function test_public_show_returns_404_for_unknown_token(): void
     {
         $response = $this->json('GET', $this->collabUrl('does-not-exist'), [], ['Accept' => 'application/json']);

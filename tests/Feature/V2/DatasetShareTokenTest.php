@@ -212,6 +212,28 @@ class DatasetShareTokenTest extends TestCase
         $this->assertNotNull(DatasetShareToken::where('id', $tokenId)->first()->revoked_at);
     }
 
+    /**
+     * Regression (review): the draft dataset, its version and the token were
+     * separate writes, so a failure part-way left an orphaned COLLAB draft
+     * with no link to reach or revoke it.
+     */
+    public function test_failed_link_creation_leaves_no_orphaned_draft(): void
+    {
+        $notificationId = $this->createNotification();
+        $teamId = $this->createTeam([$this->nonAdminUser['id']], [$notificationId]);
+        DatasetShareToken::creating(function () {
+            throw new \RuntimeException('token insert failed');
+        });
+
+        $this->json('POST', $this->shareTokensUrl($teamId), [], $this->headerNonAdmin)
+            ->assertStatus(500);
+
+        $this->assertSame(
+            0,
+            Dataset::where('team_id', $teamId)->where('create_origin', Dataset::ORIGIN_COLLAB)->count()
+        );
+    }
+
     public function test_list_share_tokens_returns_404_when_feature_flag_disabled(): void
     {
         $notificationId = $this->createNotification();

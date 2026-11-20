@@ -16,6 +16,7 @@ use App\Http\Traits\CollabMetadataSeed;
 use App\Http\Controllers\Controller;
 use App\Context\PartnerContext;
 use Laravel\Pennant\Feature;
+use Illuminate\Support\Facades\DB;
 
 class DatasetShareTokenController extends Controller
 {
@@ -73,49 +74,53 @@ class DatasetShareTokenController extends Controller
         try {
             $team = Team::where('id', $teamId)->first();
 
-            $dataset = Dataset::create([
-                'user_id' => $jwtUser['id'] ?? null,
-                'team_id' => $teamId,
-                'created' => now(),
-                'updated' => now(),
-                'submitted' => now(),
-                'pid' => (string) \Illuminate\Support\Str::uuid(),
-                'create_origin' => Dataset::ORIGIN_COLLAB,
-                'status' => Dataset::STATUS_DRAFT,
-                'is_cohort_discovery' => false,
-                'partner_context' => $this->partnerContext->getPartner(),
-            ]);
+            // One unit: a failure part-way must not leave an orphaned COLLAB
+            // draft with no version, or no link to reach or revoke it.
+            $token = DB::transaction(function () use ($team, $teamId, $jwtUser) {
+                $dataset = Dataset::create([
+                    'user_id' => $jwtUser['id'] ?? null,
+                    'team_id' => $teamId,
+                    'created' => now(),
+                    'updated' => now(),
+                    'submitted' => now(),
+                    'pid' => (string) \Illuminate\Support\Str::uuid(),
+                    'create_origin' => Dataset::ORIGIN_COLLAB,
+                    'status' => Dataset::STATUS_DRAFT,
+                    'is_cohort_discovery' => false,
+                    'partner_context' => $this->partnerContext->getPartner(),
+                ]);
 
-            $seed = $this->collabMetadataSeed($team, $dataset->id);
-            $seed['summary']['title'] = 'Untitled draft';
+                $seed = $this->collabMetadataSeed($team, $dataset->id);
+                $seed['summary']['title'] = 'Untitled draft';
 
-            DatasetVersion::create([
-                'dataset_id' => $dataset->id,
-                'version' => 1,
-                'title' => 'Untitled draft',
-                'short_title' => null,
-                'metadata' => [
-                    'metadata' => $seed,
-                    'original_metadata' => $seed,
-                    'gwdmVersion' => Config::get('metadata.GWDM.version'),
-                ],
-                'gwdm_version' => Config::get('metadata.GWDM.version'),
-            ]);
+                DatasetVersion::create([
+                    'dataset_id' => $dataset->id,
+                    'version' => 1,
+                    'title' => 'Untitled draft',
+                    'short_title' => null,
+                    'metadata' => [
+                        'metadata' => $seed,
+                        'original_metadata' => $seed,
+                        'gwdmVersion' => Config::get('metadata.GWDM.version'),
+                    ],
+                    'gwdm_version' => Config::get('metadata.GWDM.version'),
+                ]);
 
-            $token = DatasetShareToken::create([
-                'team_id' => $teamId,
-                'dataset_id' => $dataset->id,
-                'created_by' => $jwtUser['id'] ?? null,
-                'token' => DatasetShareToken::generateToken(),
-                'expires_at' => now()->addWeeks(self::EXPIRY_WEEKS),
-            ]);
+                return DatasetShareToken::create([
+                    'team_id' => $teamId,
+                    'dataset_id' => $dataset->id,
+                    'created_by' => $jwtUser['id'] ?? null,
+                    'token' => DatasetShareToken::generateToken(),
+                    'expires_at' => now()->addWeeks(self::EXPIRY_WEEKS),
+                ]);
+            });
 
             Auditor::log([
                 'user_id' => $jwtUser['id'] ?? null,
                 'team_id' => $teamId,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'Dataset share token created for dataset ' . $dataset->id,
+                'description' => 'Dataset share token created for dataset ' . $token->dataset_id,
             ]);
 
             return response()->json([
