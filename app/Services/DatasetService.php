@@ -383,6 +383,7 @@ class DatasetService
                 'title' => $title,
                 'short_title' => $shortTitle,
                 'gwdm_version' => $targetGwdmVersion,
+                'active_date' => $dataset->status === Dataset::STATUS_ACTIVE ? now() : null,
             ]);
 
             $handler->afterStore($dataset, $version, $gwdm);
@@ -450,8 +451,8 @@ class DatasetService
             throw new \RuntimeException('metadata is in an unknown format and cannot be processed');
         }
 
-        $versionNumber = $dataset->lastMetadataVersionNumber()->version;
-        $newVersionNumber = $versionNumber + 1;
+        $latest = DatasetVersion::where('dataset_id', $dataset->id)->orderByDesc('version')->firstOrFail();
+        $newVersionNumber = self::replacesLatest($latest) ? $latest->version : $latest->version + 1;
 
         $handler = $this->handlerFactory->resolve($targetGwdmVersion);
         $gwdm = $handler->prepareMetadata(
@@ -475,8 +476,9 @@ class DatasetService
             $dataset,
             $gwdm,
             $submittedMetadata,
-            $versionNumber,
+            $latest,
             SourceSchema::declared($inputSchema, $inputVersion),
+            $input['status'] === Dataset::STATUS_ACTIVE,
         );
 
         // Dispatch LinkageExtraction + TermExtraction. These are complementary to
@@ -795,95 +797,80 @@ class DatasetService
     }
 
     /**
-     * Write a new DatasetVersion row for an update, choosing between a delta
-     * and a materialised snapshot based on SnapshotRule::INTERVAL.
+     * A version that has never been published is a working copy: the next save
+     * replaces it rather than adding a version. A published version never changes.
+     */
+    private static function replacesLatest(DatasetVersion $latest): bool
+    {
+        return $latest->active_date === null;
+    }
+
+    /**
+     * Write the metadata for an update: replace the latest version when it has
+     * never been published, otherwise add the next version. Either way the row is
+     * a full snapshot or an RFC 6902 delta against the version before it, as
+     * SnapshotRule decides; reconstruction never walks more than
+     * (SnapshotRule::INTERVAL - 1) deltas.
      *
-     * Delta row    : stores only a reduced metadata envelope + the RFC 6902 patch describing
-     *                 the change from the previous version.
-     * Snapshot row : stores the COMPLETE reconstructed GWDM state at that version (patch = null).
-     *                 This is NOT a rollup of accumulated patches — it is the fully-materialised
-     *                 metadata object, identical in shape to v1. Storing the final state (rather
-     *                 than a diff) means reconstruction can start here with zero patch applications,
-     *                 capping the forward-walk cost at ≤ (SnapshotRule::INTERVAL - 1) deltas for any
-     *                 version in the next window.
+     * Only the latest version can be replaced, so no later delta depends on it.
      *
-     * @return int The ID of the newly created DatasetVersion row.
+     * @return int The ID of the written DatasetVersion row.
      */
     private function persistMetadataVersion(
         Dataset $dataset,
         array $newGwdmMetadata,
         array $previousMetadata,
-        int $versionNumber,
+        DatasetVersion $latest,
         SourceSchema $sourceSchema,
+        bool $publish,
     ): int {
-        $newVersionNumber = $versionNumber + 1;
+        $replaceLatest = self::replacesLatest($latest);
+        $newVersionNumber = $replaceLatest ? $latest->version : $latest->version + 1;
+        $baseVersionNumber = $newVersionNumber - 1;
         $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
         $handler = $this->handlerFactory->resolve($targetGwdmVersion);
 
         [$title, $shortTitle] = $handler->extractTitleFields($newGwdmMetadata);
 
-        // Force a full snapshot when the GWDM schema version changes from the
-        // previous version to this one. A delta patch computed across differing
-        // schemas would be meaningless — and reconstruction resolves the handler
-        // from the nearest snapshot's gwdm_version — so every delta window must
-        // remain schema-homogeneous. The backfill applies the same rule.
-        $previousGwdmVersion = DatasetVersion::where('dataset_id', $dataset->id)
-            ->where('version', $versionNumber)
+        $baseGwdmVersion = DatasetVersion::where('dataset_id', $dataset->id)
+            ->where('version', $baseVersionNumber)
             ->value('gwdm_version');
 
-        $isSnapshot = SnapshotRule::shouldSnapshot($newVersionNumber, $previousGwdmVersion, $targetGwdmVersion);
+        $isSnapshot = SnapshotRule::shouldSnapshot($newVersionNumber, $baseGwdmVersion, $targetGwdmVersion);
+
+        $attributes = [
+            ...$sourceSchema->toColumns(),
+            'metadata' => $isSnapshot ? json_encode($handler->buildEnvelope($newGwdmMetadata, $previousMetadata)) : [],
+            'patch' => $isSnapshot
+                ? null
+                : $this->computePatch($this->reconstructGwdmMetadata($dataset->id, $baseVersionNumber), $newGwdmMetadata),
+            'title' => $title,
+            'short_title' => $shortTitle,
+            'gwdm_version' => $targetGwdmVersion,
+            ...($publish ? ['active_date' => now()] : []),
+        ];
 
         // Persist the version row and its handler-owned structured tables in a
         // single transaction. Without this, a failure inside afterStore() (e.g.
         // GWDM 3.0 SQL section writes) would leave a committed version row with
         // no — or partial — section data. Gwdm30Handler::persist() opens its own
         // transaction; nested here it becomes a savepoint of this outer one.
-        $dv = DB::transaction(function () use (
-            $isSnapshot,
-            $handler,
-            $dataset,
-            $newGwdmMetadata,
-            $previousMetadata,
-            $newVersionNumber,
-            $versionNumber,
-            $title,
-            $shortTitle,
-            $targetGwdmVersion,
-            $sourceSchema,
-        ) {
-            if ($isSnapshot) {
-                // For every SnapshotRule::INTERVAL version we write a full snapshot so that
-                // reconstruction never has to walk more than (SnapshotRule::INTERVAL - 1)
-                // deltas. The shape is identical to the base (v1) row.
-                $envelope = $handler->buildEnvelope($newGwdmMetadata, $previousMetadata);
+        $dv = DB::transaction(function () use ($replaceLatest, $latest, $attributes, $dataset, $newVersionNumber, $handler, $newGwdmMetadata) {
+            if ($replaceLatest) {
+                $dv = DatasetVersion::lockForUpdate()->findOrFail($latest->id);
 
-                $dv = DatasetVersion::create([
-                    ...$sourceSchema->toColumns(),
-                    'dataset_id' => $dataset->id,
-                    'metadata' => json_encode($envelope),
-                    // Snapshot version, thus full rebuild of metadata and no patch.
-                    'patch' => null,
-                    'version' => $newVersionNumber,
-                    'title' => $title,
-                    'short_title' => $shortTitle,
-                    'gwdm_version' => $targetGwdmVersion,
-                ]);
+                if (! self::replacesLatest($dv)) {
+                    throw new \RuntimeException(
+                        "Version {$dv->version} of dataset {$dataset->id} was published while this save was in progress; save again to add a new version."
+                    );
+                }
+
+                $dv->fill($attributes)->save();
             } else {
-                // Delta row: reconstruct the current full GWDM object, diff against
-                // the new metadata to produce a minimal RFC 6902 patch.
-                $currentGwdm = $this->reconstructGwdmMetadata($dataset->id, $versionNumber);
-                $patch = $this->computePatch($currentGwdm, $newGwdmMetadata);
-
                 $dv = DatasetVersion::create([
-                    ...$sourceSchema->toColumns(),
+                    ...$attributes,
                     'dataset_id' => $dataset->id,
-                    // Patch delta, therefore no metadata stored.
-                    'metadata' => [],
-                    'patch' => $patch,   // array — the cast handles JSON encoding
                     'version' => $newVersionNumber,
-                    'title' => $title,
-                    'short_title' => $shortTitle,
-                    'gwdm_version' => $targetGwdmVersion,
                 ]);
             }
 

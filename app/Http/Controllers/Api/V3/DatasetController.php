@@ -15,7 +15,7 @@ use App\Services\DatasetService;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Requests\V2\Dataset\UpdateDataset;
+use App\Http\Requests\V3\Dataset\UpdateDataset;
 
 /**
  * V3 Dataset controller.
