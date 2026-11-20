@@ -122,7 +122,7 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $versions = $this->datasetService->listVersions($dataset);
+            $versions = $this->datasetService->listPublishedVersions($dataset);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -161,7 +161,7 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $metadata = $this->datasetService->getVersion($dataset, $version);
+            $metadata = $this->datasetService->getPublishedVersion($dataset, $version);
 
             if ($metadata === null) {
                 return response()->json(['message' => 'Version not found'], 404);
