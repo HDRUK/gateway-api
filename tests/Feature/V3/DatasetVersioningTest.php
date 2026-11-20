@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\V2;
+namespace Tests\Feature\V3;
 
 use Config;
 use Tests\TestCase;
