@@ -81,9 +81,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            $team->id,
             Dataset::ORIGIN_MANUAL,
-            $team,
         );
 
         $v2 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 2)->first();
@@ -96,9 +94,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $this->getMetadataV2p1(), 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            $team->id,
             Dataset::ORIGIN_MANUAL,
-            $team,
         );
 
         $v3 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 3)->first();

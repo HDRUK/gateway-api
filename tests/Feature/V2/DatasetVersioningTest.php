@@ -282,6 +282,50 @@ class DatasetVersioningTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
+    public function test_update_does_not_move_dataset_to_the_team_named_in_the_body(): void
+    {
+        [$owningTeamId, $userId] = $this->createTeamAndUser();
+        [$otherTeamId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($owningTeamId, $userId, $this->metadata);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'team_id' => $otherTeamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSame($owningTeamId, Dataset::findOrFail($datasetId)->team_id);
+    }
+
+    public function test_update_without_a_team_in_the_body_keeps_the_dataset_team(): void
+    {
+        [$owningTeamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($owningTeamId, $userId, $this->metadata);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSame($owningTeamId, Dataset::findOrFail($datasetId)->team_id);
+    }
+
     // -------------------------------------------------------------------------
     // Test 4 — 10th version materialises as a full snapshot
     // -------------------------------------------------------------------------

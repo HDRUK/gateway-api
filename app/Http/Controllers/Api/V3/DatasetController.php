@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V3;
 use Config;
 use Auditor;
 use Exception;
-use App\Models\Team;
 use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -44,27 +43,24 @@ class DatasetController extends Controller
     public function update(UpdateDataset $request, int $id): JsonResponse
     {
         $input = $request->all();
-        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
+        [$userId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
         $jwtUser = $request->jwtUser();
         $dataset = Dataset::where('id', $id)->first();
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 
         try {
-            $team          = Team::where('id', $teamId)->first();
             $versionNumber = $this->datasetService->update(
                 dataset: $dataset,
                 input: $input,
                 userId: $userId,
-                teamId: $teamId,
                 createOrigin: $createOrigin,
-                team: $team,
                 validateInput: $request->boolean('validate_input', true),
                 validateOutput: $request->boolean('validate_output', true),
             );
 
             Auditor::log([
                 'user_id'     => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
-                'team_id'     => $teamId,
+                'team_id'     => $dataset->team_id,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dataset ' . $id . ' updated to version ' . $versionNumber,
