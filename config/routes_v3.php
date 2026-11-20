@@ -43,23 +43,6 @@ return [
         ],
     ],
 
-    // v3 team datasets — delta versioning update
-    [
-        'name'                => 'datasets',
-        'method'              => 'put',
-        'path'                => '/teams/{teamId}/datasets/{id}',
-        'methodController'    => 'TeamDatasetController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V3',
-        'middleware'          => [
-            'jwt.verify',
-            'check.access:permissions,datasets.update',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
-        ],
-    ],
-
     // dasboard endpoints for data custodian/team
 
     [
