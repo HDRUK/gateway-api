@@ -6,6 +6,9 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Dataset;
+use App\Context\PartnerContext;
+use App\Enums\Partner;
+use Laravel\Pennant\Feature;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Services\DatasetService;
@@ -55,12 +58,24 @@ class DatasetController extends Controller
 
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 
+        $partnerHeader = Feature::active(PartnerContext::SELECTOR_FLAG)
+            ? $request->header('x-partner-context')
+            : null;
+        $requestedPartner = $partnerHeader !== null ? Partner::tryFrom($partnerHeader) : null;
+
+        if ($partnerHeader !== null && $requestedPartner === null) {
+            return response()->json([
+                'message' => 'Unknown partner context',
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
+
         try {
             $versionNumber = $this->datasetService->update(
                 dataset: $dataset,
                 input: $input,
                 userId: $userId,
                 createOrigin: $createOrigin,
+                partnerContext: $requestedPartner,
                 validateInput: $request->boolean('validate_input', true),
                 validateOutput: $request->boolean('validate_output', true),
             );
