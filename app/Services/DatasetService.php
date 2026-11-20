@@ -258,15 +258,31 @@ class DatasetService
     }
 
     /**
-     * Return a lightweight version index for a dataset: id, version number,
-     * title, short_title, created_at — no metadata payloads.
+     * Return a lightweight index of a dataset's published versions: id, version
+     * number, title, short_title, created_at — no metadata payloads. An
+     * unpublished working copy is not a version yet, so it is left out.
      */
-    public function listVersions(Dataset $dataset): Collection
+    public function listPublishedVersions(Dataset $dataset): Collection
     {
         return DatasetVersion::where('dataset_id', $dataset->id)
+            ->whereNotNull('active_date')
             ->select(['id', 'version', 'title', 'short_title', 'created_at'])
             ->orderBy('version')
             ->get();
+    }
+
+    /**
+     * Return the reconstructed metadata envelope for a published version, or
+     * null when the version doesn't exist or has never been published.
+     */
+    public function getPublishedVersion(Dataset $dataset, int $version): ?array
+    {
+        $published = DatasetVersion::where('dataset_id', $dataset->id)
+            ->where('version', $version)
+            ->whereNotNull('active_date')
+            ->exists();
+
+        return $published ? $this->getReconstructedMetadataEnvelope($dataset->id, $version) : null;
     }
 
     public function getMetadataVersionSummary(Dataset $dataset): array
