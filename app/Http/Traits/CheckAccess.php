@@ -162,6 +162,12 @@ trait CheckAccess
         return in_array($jwtUserId, $dbUserIds);
     }
 
+    public function isSuperAdmin(array $jwtUser): bool
+    {
+        return (bool) ($jwtUser['is_admin'] ?? false)
+            || in_array('hdruk.superadmin', $jwtUser['role_perms']['summary']['roles'] ?? [], true);
+    }
+
     public function getAccessorUserAndTeam(Request $request): array
     {
         $headers = $request->header();
