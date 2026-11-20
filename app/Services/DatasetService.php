@@ -7,6 +7,7 @@ use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use App\Models\DataAccessTemplate;
 use App\Models\Dataset;
+use App\Models\DatasetShareToken;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
@@ -471,6 +472,8 @@ class DatasetService
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
         ]);
 
+        DatasetShareToken::revokeForActivatedDataset($dataset->id, $input['status']);
+
         $datasetVersionId = $this->persistMetadataVersion(
             $dataset,
             $gwdm,
@@ -557,6 +560,8 @@ class DatasetService
             'is_cohort_discovery' => $input['is_cohort_discovery'] ?? false,
         ]);
 
+        DatasetShareToken::revokeForActivatedDataset($dataset->id, $input['status']);
+
         $datasetVersionId = $this->persistMetadataVersionLegacy(
             $dataset,
             $gwdm,
@@ -577,6 +582,8 @@ class DatasetService
     {
         $dataset->status = $status;
         $dataset->save();
+
+        DatasetShareToken::revokeForActivatedDataset($dataset->id, $status);
 
         if ($status === Dataset::STATUS_ACTIVE) {
             $metadata = DatasetVersion::where('dataset_id', $dataset->id)->latest()->first();

@@ -73,6 +73,57 @@ class FormHydrationTest extends TestCase
         $this->assertArrayNotHasKey('metadata', $response->json('data'));
     }
 
+    /**
+     * Teams store member_of as the TeamMemberOf enum (e.g. OTHER), but a
+     * schema has its own spelling (HDRUK 4.1.0: Hub/Alliance/Other/NCS). The
+     * raw value used to be defaulted in as-is, failing validation on a field
+     * the custodian can't see.
+     */
+    public function test_form_hydration_defaults_member_of_in_the_schema_s_spelling(): void
+    {
+        $this->givenCustodianMemberOfEnum(['Hub', 'Alliance', 'Other', 'NCS']);
+        [$teamId] = $this->createTeamAndUser();
+
+        $this->json('GET', $this->url($teamId), [], $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonPath('data.defaultValues.summary.dataCustodian.memberOf', 'Other');
+    }
+
+    public function test_form_hydration_leaves_member_of_unset_when_the_schema_has_no_match(): void
+    {
+        $this->givenCustodianMemberOfEnum(['Hub', 'Alliance']);
+        [$teamId] = $this->createTeamAndUser();
+
+        $response = $this->json('GET', $this->url($teamId), [], $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertNull($response->json('data.defaultValues.summary.dataCustodian.memberOf'));
+    }
+
+    private function givenCustodianMemberOfEnum(array $enum): void
+    {
+        $this->traserSchemaProperties = [
+            'summary' => [
+                'type' => 'object',
+                'properties' => [
+                    'title' => ['type' => 'string'],
+                    'dataCustodian' => [
+                        'allOf' => [['$ref' => '#/$defs/Organisation']],
+                    ],
+                ],
+            ],
+        ];
+        $this->traserSchemaDefs = [
+            'Organisation' => [
+                'type' => 'object',
+                'properties' => [
+                    'name' => ['type' => 'string'],
+                    'memberOf' => ['anyOf' => [['enum' => $enum], ['type' => 'null']]],
+                ],
+            ],
+        ];
+    }
+
     public function test_form_hydration_for_a_requested_schema(): void
     {
         [$teamId] = $this->createTeamAndUser();
