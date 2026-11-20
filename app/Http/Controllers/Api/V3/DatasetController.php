@@ -15,7 +15,7 @@ use App\Services\DatasetService;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Requests\V2\Dataset\UpdateDataset;
+use App\Http\Requests\V3\Dataset\UpdateDataset;
 
 /**
  * V3 Dataset controller.
@@ -41,7 +41,7 @@ class DatasetController extends Controller
      *
      * Update dataset metadata using the delta-versioning strategy: each save
      * creates an immutable version row (RFC 6902 patch for deltas, full
-     * snapshot every SNAPSHOT_INTERVAL versions).
+     * snapshot every SnapshotRule::INTERVAL versions).
      */
     public function update(UpdateDataset $request, int $id): JsonResponse
     {
@@ -122,7 +122,7 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $versions = $this->datasetService->listVersions($dataset);
+            $versions = $this->datasetService->listPublishedVersions($dataset);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -161,7 +161,7 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $metadata = $this->datasetService->getVersion($dataset, $version);
+            $metadata = $this->datasetService->getPublishedVersion($dataset, $version);
 
             if ($metadata === null) {
                 return response()->json(['message' => 'Version not found'], 404);
