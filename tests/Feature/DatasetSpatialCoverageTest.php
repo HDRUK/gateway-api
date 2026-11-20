@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Dataset;
 use App\Enums\Partner;
+use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\DatasetService;
@@ -64,6 +65,32 @@ class DatasetSpatialCoverageTest extends TestCase
         $this->assertTrue($created['translated']);
 
         return [$created['dataset_id'], $created['version_id']];
+    }
+
+    public function test_replacing_a_working_version_replaces_its_coverage(): void
+    {
+        $this->disableObservers();
+
+        $user = User::first();
+        $metadata = $this->getMetadataV2p0();
+        $metadata['metadata']['coverage']['spatial'] = 'England';
+        [$datasetId] = $this->createDataset($metadata, Dataset::STATUS_DRAFT);
+
+        $replacement = $this->getMetadataV2p0();
+        $replacement['metadata']['coverage']['spatial'] = 'Scotland';
+        $this->setGwdmHeader('2.0');
+        $this->service()->update(
+            Dataset::find($datasetId),
+            ['metadata' => $replacement, 'status' => Dataset::STATUS_DRAFT],
+            $user->id,
+            Dataset::ORIGIN_MANUAL,
+            Partner::HDRUK,
+        );
+
+        $regions = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
+        $this->assertSame(1, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertContains('Scotland', $regions);
+        $this->assertNotContains('England', $regions);
     }
 
     public function test_spatial_coverage_is_scoped_to_latest_version(): void

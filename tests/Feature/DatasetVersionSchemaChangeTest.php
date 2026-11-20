@@ -44,6 +44,55 @@ class DatasetVersionSchemaChangeTest extends TestCase
         return app(DatasetService::class);
     }
 
+    public function test_a_replaced_working_version_follows_the_schema_of_its_latest_content(): void
+    {
+        $this->disableObservers();
+
+        $team = Team::first();
+        $user = User::first();
+
+        $this->setGwdmHeader('2.0');
+        $created = $this->service()->create(
+            [
+                'metadata' => $this->getMetadataV2p0(),
+                'status' => Dataset::STATUS_ACTIVE,
+                'user_id' => $user->id,
+                'team_id' => $team->id,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+            ],
+            $team,
+            null,
+            null,
+        );
+        $datasetId = $created['dataset_id'];
+
+        $saveDraft = function (string $gwdmVersion, array $metadata) use ($datasetId, $user): DatasetVersion {
+            $this->setGwdmHeader($gwdmVersion);
+            $this->service()->update(
+                Dataset::findOrFail($datasetId),
+                ['metadata' => $metadata, 'status' => Dataset::STATUS_DRAFT],
+                $user->id,
+                Dataset::ORIGIN_MANUAL,
+                Partner::HDRUK,
+            );
+
+            return DatasetVersion::where('dataset_id', $datasetId)->where('version', 2)->firstOrFail();
+        };
+
+        $working = $saveDraft('2.0', $this->getMetadataV2p0());
+        $this->assertNotNull($working->patch, 'same schema as v1 is a diff');
+
+        $working = $saveDraft('2.1', $this->getMetadataV2p1());
+        $this->assertNull($working->patch, 'a schema change from v1 makes the working version a full copy');
+        $this->assertSame('2.1', $working->gwdm_version);
+
+        $working = $saveDraft('2.0', $this->getMetadataV2p0());
+        $this->assertNotNull($working->patch, 'back on v1\'s schema it is a diff again');
+        $this->assertSame('2.0', $working->gwdm_version);
+
+        $this->assertSame(2, DatasetVersion::where('dataset_id', $datasetId)->count());
+    }
+
     public function test_schema_change_forces_snapshot_while_same_schema_stays_delta(): void
     {
         // This test asserts the service's snapshot/delta versioning decision.
