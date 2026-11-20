@@ -87,6 +87,7 @@ class DatasetVersion extends BaseTypesenseModel
         'gwdm_version',
         'source_schema_model',
         'source_schema_version',
+        'active_date',
     ];
 
     /**
