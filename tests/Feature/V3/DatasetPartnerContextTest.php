@@ -102,6 +102,39 @@ class DatasetPartnerContextTest extends TestCase
         $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
     }
 
+    public function test_v3_create_stamps_the_partner_context_from_the_header(): void
+    {
+        Feature::activate(PartnerContext::SELECTOR_FLAG);
+        [$teamId] = $this->createTeamAndUser();
+
+        $response = $this->createViaV3($teamId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $this->assertSame('CRUK', Dataset::find($response->json('data'))->partner_context);
+    }
+
+    public function test_v3_create_rejects_an_unknown_partner_context(): void
+    {
+        Feature::activate(PartnerContext::SELECTOR_FLAG);
+        [$teamId] = $this->createTeamAndUser();
+
+        $this->createViaV3($teamId, array_merge($this->header, ['x-partner-context' => 'PRUKK']))
+            ->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'))
+            ->assertJson(['message' => 'Unknown partner context']);
+
+        $this->assertSame(0, Dataset::where('team_id', $teamId)->count());
+    }
+
+    public function test_v3_create_ignores_the_header_when_selector_flag_is_off(): void
+    {
+        [$teamId] = $this->createTeamAndUser();
+
+        $response = $this->createViaV3($teamId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $this->assertSame('HDRUK', Dataset::find($response->json('data'))->partner_context);
+    }
+
     /**
      * Create a team and user, returning [$teamId, $userId].
      */
@@ -190,6 +223,20 @@ class DatasetPartnerContextTest extends TestCase
             self::DATASETS_V3_URL . '/' . $datasetId,
             [
                 'user_id'       => $userId,
+                'metadata'      => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status'        => Dataset::STATUS_ACTIVE,
+            ],
+            $headers,
+        );
+    }
+
+    private function createViaV3(int $teamId, array $headers): TestResponse
+    {
+        return $this->json(
+            'POST',
+            '/api/v3/teams/' . $teamId . '/datasets',
+            [
                 'metadata'      => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status'        => Dataset::STATUS_ACTIVE,
