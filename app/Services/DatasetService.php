@@ -316,6 +316,7 @@ class DatasetService
         Team $team,
         ?string $inputSchema,
         ?string $inputVersion,
+        string $targetGwdmVersion,
         string $partnerContext = 'HDRUK',
     ): array {
         $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -329,7 +330,6 @@ class DatasetService
             'publisherName' => $team->name,
         ];
 
-        $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
         $isDraft = $input['status'] === Dataset::STATUS_DRAFT;
         $traserResponse = MMC::translateDataModelType(
             json_encode($payload),
@@ -435,6 +435,7 @@ class DatasetService
         int $userId,
         string $createOrigin,
         ?Partner $partnerContext,
+        string $targetGwdmVersion,
         bool $validateInput = true,
         bool $validateOutput = true,
     ): int {
@@ -452,7 +453,6 @@ class DatasetService
         $inputVersion = $input['metadata']['schemaVersion'] ?? null;
         $submittedMetadata = $input['metadata'];
         $isDraft = $input['status'] === Dataset::STATUS_DRAFT;
-        $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
 
         $traserResponse = MMC::translateDataModelType(
             json_encode($payload),
@@ -490,6 +490,7 @@ class DatasetService
             $latest,
             $inputSchema,
             $inputVersion,
+            $targetGwdmVersion,
         ) {
             $dataset->update([
                 'user_id' => $userId,
@@ -510,6 +511,7 @@ class DatasetService
                 $latest,
                 SourceSchema::declared($inputSchema, $inputVersion),
                 $input['status'] === Dataset::STATUS_ACTIVE,
+                $targetGwdmVersion,
             );
         });
 
@@ -859,11 +861,11 @@ class DatasetService
         DatasetVersion $latest,
         SourceSchema $sourceSchema,
         bool $publish,
+        string $targetGwdmVersion,
     ): int {
         $replaceLatest = self::replacesLatest($latest);
         $newVersionNumber = $replaceLatest ? $latest->version : $latest->version + 1;
         $baseVersionNumber = $newVersionNumber - 1;
-        $targetGwdmVersion = $this->gwdmVersionContext->targetVersion();
         $handler = $this->handlerFactory->resolve($targetGwdmVersion);
 
         [$title, $shortTitle] = $handler->extractTitleFields($newGwdmMetadata);

@@ -6,6 +6,7 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Dataset;
+use App\Context\GwdmVersionContext;
 use App\Context\PartnerContext;
 use App\Enums\Partner;
 use Laravel\Pennant\Feature;
@@ -33,6 +34,7 @@ class DatasetController extends Controller
 
     public function __construct(
         private readonly DatasetService $datasetService,
+        private readonly GwdmVersionContext $gwdmVersionContext,
     ) {
     }
 
@@ -76,6 +78,7 @@ class DatasetController extends Controller
                 userId: $userId,
                 createOrigin: $createOrigin,
                 partnerContext: $requestedPartner,
+                targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
                 validateInput: $request->boolean('validate_input', true),
                 validateOutput: $request->boolean('validate_output', true),
             );

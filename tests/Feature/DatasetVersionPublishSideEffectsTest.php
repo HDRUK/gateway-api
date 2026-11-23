@@ -32,7 +32,6 @@ class DatasetVersionPublishSideEffectsTest extends TestCase
     protected function setUp(): void
     {
         $this->commonSetUp();
-        request()->headers->set('x-gwdm-version', '2.0');
     }
 
     public function test_publishing_a_draft_in_place_queues_metadata_extraction(): void
@@ -52,6 +51,7 @@ class DatasetVersionPublishSideEffectsTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
 
         foreach (self::EXTRACTION_JOBS as $job) {
@@ -64,6 +64,7 @@ class DatasetVersionPublishSideEffectsTest extends TestCase
             $user->id,
             Dataset::ORIGIN_MANUAL,
             Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
 
         $this->assertSame(1, DatasetVersion::where('dataset_id', $created['dataset_id'])->count());

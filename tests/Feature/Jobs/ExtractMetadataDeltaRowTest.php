@@ -39,11 +39,6 @@ class ExtractMetadataDeltaRowTest extends TestCase
         $this->disableObservers();
     }
 
-    private function setGwdmHeader(string $version): void
-    {
-        request()->headers->set('x-gwdm-version', $version);
-    }
-
     private function service(): DatasetService
     {
         return app(DatasetService::class);
@@ -54,7 +49,6 @@ class ExtractMetadataDeltaRowTest extends TestCase
      */
     private function createDatasetWithDeltaVersion(Team $team, User $user, array $metadata): array
     {
-        $this->setGwdmHeader('2.0');
 
         $created = $this->service()->create(
             [
@@ -67,6 +61,7 @@ class ExtractMetadataDeltaRowTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
         $datasetId = $created['dataset_id'];
 
@@ -78,6 +73,7 @@ class ExtractMetadataDeltaRowTest extends TestCase
             $user->id,
             Dataset::ORIGIN_MANUAL,
             Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
 
         $v2 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 2)->first();

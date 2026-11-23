@@ -24,7 +24,6 @@ class DatasetServiceUpdateTest extends TestCase
     {
         $this->commonSetUp();
         $this->disableObservers();
-        request()->headers->set('x-gwdm-version', '2.0');
     }
 
     private function service(): DatasetService
@@ -48,6 +47,7 @@ class DatasetServiceUpdateTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
         $datasetId = $created['dataset_id'];
         $fields = ['status', 'user_id', 'partner_context'];
@@ -70,6 +70,7 @@ class DatasetServiceUpdateTest extends TestCase
                 $otherUser->id,
                 Dataset::ORIGIN_MANUAL,
                 Partner::CRUK,
+                targetGwdmVersion: '2.0',
             );
             $this->fail('Expected the update to refuse to replace a version published mid-save.');
         } catch (\RuntimeException $e) {
@@ -94,6 +95,7 @@ class DatasetServiceUpdateTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
         $datasetId = $created['dataset_id'];
         $before = DatasetVersion::where('dataset_id', $datasetId)->where('version', 1)->firstOrFail()->getAttributes();
@@ -118,6 +120,7 @@ class DatasetServiceUpdateTest extends TestCase
                 $user->id,
                 Dataset::ORIGIN_MANUAL,
                 Partner::HDRUK,
+                targetGwdmVersion: '2.0',
             );
             $this->fail('Expected the update to refuse to replace a version published mid-save.');
         } catch (\RuntimeException $e) {
@@ -130,6 +133,39 @@ class DatasetServiceUpdateTest extends TestCase
             array_diff_key($before, ['active_date' => true]),
             array_diff_key($after, ['active_date' => true]),
         );
+    }
+
+    public function test_a_dataset_is_saved_at_the_gwdm_version_its_caller_asks_for(): void
+    {
+        request()->headers->set('x-gwdm-version', '2.0');
+        $team = Team::first();
+        $user = User::first();
+        $created = $this->service()->create(
+            [
+                'metadata' => $this->getMetadataV2p0(),
+                'status' => Dataset::STATUS_ACTIVE,
+                'user_id' => $user->id,
+                'team_id' => $team->id,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+            ],
+            $team,
+            null,
+            null,
+            targetGwdmVersion: '2.0',
+        );
+
+        $this->service()->update(
+            dataset: Dataset::findOrFail($created['dataset_id']),
+            input: ['metadata' => $this->getMetadataV2p1(), 'status' => Dataset::STATUS_ACTIVE],
+            userId: $user->id,
+            createOrigin: Dataset::ORIGIN_MANUAL,
+            partnerContext: null,
+            targetGwdmVersion: '2.1',
+        );
+
+        $saved = DatasetVersion::where('dataset_id', $created['dataset_id'])->where('version', 2)->firstOrFail();
+        $this->assertSame('2.1', $saved->gwdm_version);
+        $this->assertNull($saved->patch, 'a schema change from version 1 is stored as a full copy');
     }
 
     public function test_update_with_cohort_discovery_sets_it(): void
@@ -150,6 +186,7 @@ class DatasetServiceUpdateTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
 
         $this->service()->update(
@@ -162,6 +199,7 @@ class DatasetServiceUpdateTest extends TestCase
             $user->id,
             Dataset::ORIGIN_MANUAL,
             Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
 
         $this->assertTrue((bool) Dataset::findOrFail($created['dataset_id'])->is_cohort_discovery);
