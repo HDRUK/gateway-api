@@ -81,4 +81,21 @@ return [
         'import_timeout'     => (int) env('TYPESENSE_VARIABLES_IMPORT_TIMEOUT', 120),
     ],
 
+
+    // metadata.summary search: one document per summary field, matched
+    // by meaning through Typesense's built-in embedding model.
+    'summary_embedding_config' => [
+        'enabled'            => env('TYPESENSE_SUMMARY_EMBEDDING_ENABLED', false),
+        'collection'         => 'metadata_summary',
+        'model'              => env('TYPESENSE_SUMMARY_EMBEDDING_MODEL', 'ts/all-MiniLM-L12-v2'),
+        'distance_threshold' => (float) env('TYPESENSE_SUMMARY_EMBEDDING_DISTANCE', 0.70),
+        'partners'           => '', //empty indexes every partner
+
+        // Typesense embeds as it imports, so a large dataset in one request
+        // can outlast a proxy's timeout. Documents go in batches instead,
+        // each allowed this many seconds.
+        'import_batch_size'  => (int) env('TYPESENSE_SUMMARY_EMBEDDING_IMPORT_BATCH_SIZE', 100),
+        'import_timeout'     => (int) env('TYPESENSE_SUMMARY_EMBEDDING_IMPORT_TIMEOUT', 120),
+    ],
+
 ];
