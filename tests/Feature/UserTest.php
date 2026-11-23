@@ -253,6 +253,55 @@ class UserTest extends TestCase
         $this->assertNotNull($user['providerid']);
     }
 
+    private function profilePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'firstname' => 'Jane',
+            'lastname' => 'Doe',
+            'secondary_email' => 'jane.doe@example.com',
+            'preferred_email' => 'secondary',
+            'sector_id' => 1,
+            'organisation' => 'Example Organisation',
+            'bio' => null,
+            'domain' => null,
+            'link' => null,
+            'orcid' => null,
+            'contact_feedback' => 0,
+            'contact_news' => 0,
+        ], $overrides);
+    }
+
+    public function test_openathens_user_with_a_legacy_invalid_sso_email_can_save_their_profile(): void
+    {
+        // GAT-9881: pre-fix logins stored "<scoped pairwiseID><affiliation>"
+        // and the web client sends the whole user back on save.
+        $legacyEmail = '7SZGYv/K+L87kp6QmcPrAko0DC8=@example.ac.ukmember@example.ac.uk';
+        $user = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'email' => $legacyEmail]);
+
+        $response = $this->json('PUT', self::TEST_URL . '/' . $user->id, $this->profilePayload(['email' => $legacyEmail]), $this->header);
+
+        $response->assertStatus(202);
+        $this->assertSame('Jane', $user->fresh()->firstname);
+    }
+
+    public function test_openathens_user_cannot_change_their_sso_email_through_a_profile_update(): void
+    {
+        $user = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'email' => 'abc.member@example.ac.uk.invalid']);
+
+        $this->json('PUT', self::TEST_URL . '/' . $user->id, $this->profilePayload(['email' => 'someone.else@example.com']), $this->header)
+            ->assertStatus(202);
+
+        $this->assertSame('abc.member@example.ac.uk.invalid', $user->fresh()->email);
+    }
+
+    public function test_non_openathens_profile_update_still_rejects_an_invalid_email(): void
+    {
+        $user = User::factory()->create(['provider' => 'google', 'providerid' => 'google-id']);
+
+        $this->json('PUT', self::TEST_URL . '/' . $user->id, $this->profilePayload(['email' => 'a@b.comc@d.com', 'preferred_email' => 'primary']), $this->header)
+            ->assertStatus(400);
+    }
+
     public function test_it_can_update_a_user(): void
     {
         // Create a notification to be used by the new user

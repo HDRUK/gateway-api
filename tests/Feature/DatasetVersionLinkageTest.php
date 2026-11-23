@@ -88,7 +88,6 @@ class DatasetVersionLinkageTest extends TestCase
             $team,
             null,
             null,
-            false,
         );
 
         $this->assertTrue($created['translated']);

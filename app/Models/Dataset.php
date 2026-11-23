@@ -66,8 +66,8 @@ class Dataset extends Model
     public const ORIGIN_MANUAL = 'MANUAL';
     public const ORIGIN_API = 'API';
     public const ORIGIN_GMI = 'GMI';
+    public const ORIGIN_COLLAB = 'COLLAB';
 
-    public string $prevStatus = '';
 
     /**
      * Cached version IDs to avoid repeated `versions()->pluck('id')` queries

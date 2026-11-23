@@ -19,11 +19,9 @@ use App\Models\Dur;
 use App\Models\Publication;
 use App\Models\Tool;
 use App\Http\Traits\GetValueByPossibleKeys;
-use App\Http\Traits\IndexElastic;
 
 class DataProviderCollController extends Controller
 {
-    use IndexElastic;
     use GetValueByPossibleKeys;
 
     private $datasets = [];
@@ -429,8 +427,6 @@ class DataProviderCollController extends Controller
                 ]);
             }
 
-            $this->indexElasticDataProviderColl((int) $dpc->id);
-
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $dpc->id,
@@ -541,8 +537,6 @@ class DataProviderCollController extends Controller
                     ]);
                 }
             }
-
-            $this->indexElasticDataProviderColl((int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -656,8 +650,6 @@ class DataProviderCollController extends Controller
                 }
             }
 
-            $this->indexElasticDataProviderColl((int) $id);
-
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $dpc,
@@ -727,8 +719,6 @@ class DataProviderCollController extends Controller
         try {
             DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();
             DataProviderColl::where(['id' => $id])->delete();
-
-            $this->deleteDataProviderCollFromElastic($id);
 
             Auditor::log([
                 'user_id' => (int)$jwtUser['id'],

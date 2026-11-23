@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Http\Traits\IndexElastic;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -26,7 +25,6 @@ class ExtractPublicationsFromMetadata implements ShouldQueue
     use Queueable;
     use SerializesModels;
     use LoggingContext;
-    use IndexElastic;
 
     public $tries   = 3;
     public $backoff = 30;

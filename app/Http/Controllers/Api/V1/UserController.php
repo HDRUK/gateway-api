@@ -458,7 +458,8 @@ class UserController extends Controller
                     'name' => $input['firstname'] . " " . $input['lastname'],
                     'firstname' => $input['firstname'],
                     'lastname' => $input['lastname'],
-                    'email' => $input['email'],
+                    // OpenAthens SSO email is set by login only (GAT-9881)
+                    'email' => $user->provider === 'open-athens' ? $user->email : $input['email'],
                     'provider' => array_key_exists('provider', $input) ? $input['provider'] : $user->provider,
                     'providerid' => array_key_exists('providerid', $input) ? $input['providerid'] : $user->providerid,
                     'sector_id' => $input['sector_id'],

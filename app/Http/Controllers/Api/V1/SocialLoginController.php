@@ -630,21 +630,80 @@ class SocialLoginController extends Controller
      *
      * @param array $data
      * @param string $provider
-     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, provider: string, password: string}
+     * @return array{providerid: non-empty-string, name: string, firstname: string, lastname: string, email: string, email_is_placeholder: bool, legacy_email: string, provider: string, password: string}
      */
     private function openathensResponse(array $data, string $provider): array
     {
         $providerId = $this->openAthensIdentifier($data);
-        $affiliation = is_array($data['eduPersonScopedAffiliation']) ? $data['eduPersonScopedAffiliation'][0] : $data['eduPersonScopedAffiliation'];
+        $releasedEmail = $this->openAthensEmail($data);
+
         return [
             'providerid' => $providerId,
             'name' => '',
             'firstname' => '',
             'lastname' => '',
-            'email' => $providerId . $affiliation,
+            'email' => $releasedEmail ?? $this->openAthensPlaceholderEmail($providerId, $data),
+            'email_is_placeholder' => $releasedEmail === null,
+            'legacy_email' => $this->openAthensLegacyEmail($providerId, $data),
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
+    }
+
+    /**
+     * What logins before GAT-9881 stored as the email: the identifier with
+     * the affiliation appended. Only used to recognise and replace it.
+     *
+     * @param non-empty-string $providerId
+     * @param array $data
+     * @return string
+     */
+    private function openAthensLegacyEmail(string $providerId, array $data): string
+    {
+        $affiliation = $data['eduPersonScopedAffiliation'] ?? '';
+        if (is_array($affiliation)) {
+            $affiliation = $affiliation[0] ?? '';
+        }
+
+        return $providerId . (is_string($affiliation) ? $affiliation : '');
+    }
+
+    /**
+     * Bring an existing OpenAthens user's SSO email up to date on login:
+     * take a newly released real email, or swap a legacy concatenated one
+     * for the placeholder. Never downgrades a real email to a placeholder,
+     * and never blocks login over an email another account already has.
+     *
+     * @param User $user
+     * @param array $data
+     * @return void
+     */
+    private function refreshOpenAthensEmail(User $user, array $data): void
+    {
+        $current = $user->email;
+        $isLegacy = $current === $data['legacy_email'] || !filter_var($current, FILTER_VALIDATE_EMAIL);
+        $isPlaceholder = str_ends_with((string) $current, '.invalid');
+
+        $shouldReplace = $data['email_is_placeholder']
+            ? $isLegacy
+            : ($isLegacy || $isPlaceholder || $current !== $data['email']);
+
+        if (!$shouldReplace || $current === $data['email']) {
+            return;
+        }
+
+        $taken = User::withTrashed()->where('email', $data['email'])->where('id', '<>', $user->id)->exists();
+        if ($taken) {
+            Auditor::log([
+                'target_user_id' => $user->id,
+                'action_type' => 'UPDATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'OpenAthens email for user ' . $user->id . ' not updated: already in use by another account',
+            ]);
+            return;
+        }
+
+        $user->email = $data['email'];
     }
 
     /**
@@ -671,6 +730,60 @@ class SocialLoginController extends Controller
         }
 
         throw new Exception('OpenAthens response has no usable eduPersonTargetedID or pairwiseID');
+    }
+
+    /**
+     * The user's real email, if the identity provider released one. Only
+     * sent when the Keystone application requests it and the institution's
+     * attribute release policy allows it - absent for most IdPs today.
+     *
+     * @param array $data
+     * @return string|null
+     */
+    private function openAthensEmail(array $data): ?string
+    {
+        foreach (['email', 'mail'] as $claim) {
+            $value = $data[$claim] ?? null;
+            if (is_array($value) && array_is_list($value)) {
+                $value = $value[0] ?? null;
+            }
+
+            if (is_string($value) && filter_var(trim($value), FILTER_VALIDATE_EMAIL)) {
+                return trim($value);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * users.email is NOT NULL + unique, so users without a released email
+     * need a stand-in. It is a hash of the persistent identifier (which may
+     * itself contain an '@', e.g. a scoped pairwiseID - GAT-9881) under the
+     * reserved .invalid TLD (RFC 2606), so it validates but can never be
+     * delivered to. The affiliation is kept in the local part because
+     * gateway-web-2 ProfileForm isScrambled() detects these by "member@" etc.
+     *
+     * @param non-empty-string $providerId
+     * @param array $data
+     * @return string
+     */
+    private function openAthensPlaceholderEmail(string $providerId, array $data): string
+    {
+        $affiliation = $data['eduPersonScopedAffiliation'] ?? null;
+        if (is_array($affiliation)) {
+            $affiliation = $affiliation[0] ?? null;
+        }
+
+        $hash = substr(hash('sha256', $providerId), 0, 40);
+        $parts = is_string($affiliation) ? explode('@', strtolower(trim($affiliation))) : [];
+        $isScoped = count($parts) === 2
+            && preg_match('/^[a-z0-9-]+$/', $parts[0])
+            && preg_match('/^[a-z0-9.-]+$/', $parts[1]);
+
+        return $isScoped
+            ? "{$hash}.{$parts[0]}@{$parts[1]}.invalid"
+            : "{$hash}@openathens.invalid";
     }
 
     /**
@@ -780,6 +893,7 @@ class SocialLoginController extends Controller
         if ($provider == 'open-athens') {
             $user->providerid = $data['providerid'];
             $user->preferred_email = 'secondary';
+            $this->refreshOpenAthensEmail($user, $data);
             $user->update();
         } else {
             $user->providerid = $data['providerid'];

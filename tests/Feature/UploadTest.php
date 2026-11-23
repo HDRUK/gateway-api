@@ -10,8 +10,12 @@ use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\DataAccessApplication;
 use App\Models\QuestionBank;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\UserHasRole;
 use Tests\Traits\Authorization;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Tests\Traits\MockExternalApis;
 
 class UploadTest extends TestCase
@@ -606,6 +610,134 @@ class UploadTest extends TestCase
 
         $this->assertEquals($content['data']['status'], 'FAILED');
         $this->assertNotNull($content['data']['error']);
+    }
+
+    /**
+     * Upload an experiment image with success
+     *
+     * @return void
+     */
+    public function test_experiment_image_from_upload_with_success(): void
+    {
+        $file = UploadedFile::fake()->image('experiment_design.png', 320, 480);
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '?entity_flag=experiments-media',
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+
+        $response->assertStatus(200);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['data']['status'], 'PROCESSED');
+        $this->assertTrue(str_starts_with($content['data']['file_location'], '/experiments/'));
+
+        $show = $this->json(
+            'GET',
+            self::TEST_URL . '/' . $content['data']['uuid'],
+            [],
+            $this->header
+        );
+        $show->assertStatus(200);
+        $this->assertSame(
+            Config::get('services.media.base_url') . $content['data']['file_location'],
+            $show->json('data.url')
+        );
+    }
+
+    /**
+     * Upload an experiment image with failure
+     *
+     * @return void
+     */
+    public function test_experiment_image_from_upload_failure(): void
+    {
+        $file = UploadedFile::fake()->create('experiment_design.png', 10, 'text/plain');
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '?entity_flag=experiments-media',
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+
+        $response->assertStatus(200);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['data']['status'], 'FAILED');
+        $this->assertNotNull($content['data']['error']);
+    }
+
+    /**
+     * Only superadmins can upload experiment images
+     *
+     * @return void
+     */
+    public function test_experiment_image_upload_requires_superadmin(): void
+    {
+        Config::set('app.debug', false);
+        $this->authorisationUser(false);
+        $userJwt = $this->getAuthorisationJwt(false);
+        $file = UploadedFile::fake()->image('experiment_design.png', 320, 480);
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '?entity_flag=experiments-media',
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => 'Bearer ' . $userJwt
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    /**
+     * A user with the superadmin role can upload experiment images
+     *
+     * @return void
+     */
+    public function test_experiment_image_upload_allows_the_superadmin_role(): void
+    {
+        $this->authorisationUser(false);
+        $userJwt = $this->getAuthorisationJwt(false);
+        UserHasRole::create([
+            'user_id' => User::where('email', Config::get('constants.test.non_admin.email'))->value('id'),
+            'role_id' => Role::where('name', 'hdruk.superadmin')->value('id'),
+        ]);
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '?entity_flag=experiments-media',
+            [
+                'file' => UploadedFile::fake()->image('experiment_design.png', 320, 480)
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => 'Bearer ' . $userJwt
+            ]
+        );
+
+        $response->assertStatus(200);
     }
 
     /**

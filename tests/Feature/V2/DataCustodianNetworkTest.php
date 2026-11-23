@@ -5,7 +5,6 @@ namespace Tests\Feature\V2;
 use Tests\TestCase;
 use App\Models\DataProviderColl;
 use Tests\Traits\MockExternalApis;
-use ElasticClientController as ECC;
 use App\Models\DataProviderCollHasTeam;
 
 class DataCustodianNetworkTest extends TestCase
@@ -25,10 +24,6 @@ class DataCustodianNetworkTest extends TestCase
 
     public function test_admin_index_includes_disabled_networks_that_public_index_excludes(): void
     {
-        // A disabled network is skipped by indexElasticDataCustodianNetwork
-        // rather than indexed, so no Elastic call should happen here.
-        ECC::shouldReceive("indexDocument")
-            ->times(0);
 
         $payload = [
             'enabled' => false,
@@ -249,8 +244,6 @@ class DataCustodianNetworkTest extends TestCase
     public function test_create_data_custodian_network_with_success(): void
     {
 
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
         $payload = [
             'enabled' => true,
@@ -288,8 +281,6 @@ class DataCustodianNetworkTest extends TestCase
 
     public function test_update_data_provider_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(2);
 
         $payload = [
             'enabled' => true,
@@ -339,10 +330,6 @@ class DataCustodianNetworkTest extends TestCase
 
     public function test_delete_data_custodian_network_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
 
         $payload = [
             'enabled' => true,

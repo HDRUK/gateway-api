@@ -144,10 +144,134 @@ class SocialLoginControllerTest extends TestCase
         $this->assertSame($existingUser->id, $this->loggedInUserId($response));
     }
 
+    public static function identifiersWithoutAnEmailClaim(): array
+    {
+        return [
+            // GAT-9881: a scoped pairwiseID already contains an '@'; appending
+            // the affiliation produced "<id>@rhul.ac.ukmember@rhul.ac.uk".
+            'scoped pairwise id' => ['{"pairwiseID": "7SZGYv/K+L87kp6QmcPrAko0DC8=@example.ac.uk", "eduPersonScopedAffiliation": "member@example.ac.uk"}', '7SZGYv/K+L87kp6QmcPrAko0DC8=@example.ac.uk'],
+            'unscoped targeted id' => ['{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": ["staff@example.ac.uk"]}', 'the-id'],
+            'no affiliation' => ['{"eduPersonTargetedID": "the-id"}', 'the-id'],
+        ];
+    }
+
+    #[DataProvider('identifiersWithoutAnEmailClaim')]
+    public function test_openathens_user_without_an_email_claim_gets_a_valid_undeliverable_placeholder(string $userInfoJson, string $providerId): void
+    {
+        $this->fakeOpenAthensUserInfo($userInfoJson);
+
+        $this->openAthensCallback()->assertRedirect('https://gateway.test/account/profile');
+
+        $email = User::where('provider', 'open-athens')->where('providerid', $providerId)->sole()->email;
+        $this->assertTrue(validator(['email' => $email], ['email' => 'email'])->passes(), "Placeholder '$email' must pass the profile update validation");
+        $this->assertStringEndsWith('.invalid', $email, 'Placeholder must use the reserved .invalid TLD so mail can never be delivered');
+        $this->assertStringNotContainsString($providerId, $email, 'Placeholder must not expose the persistent identifier');
+    }
+
+    public function test_openathens_placeholder_keeps_the_affiliation_the_web_client_detects(): void
+    {
+        $this->fakeOpenAthensUserInfo('{"pairwiseID": "abc@example.ac.uk", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $this->openAthensCallback();
+
+        // gateway-web-2 ProfileForm isScrambled() matches on "member@", "staff@", ...
+        $this->assertStringContainsString('member@', User::where('providerid', 'abc@example.ac.uk')->sole()->email);
+    }
+
+    public function test_openathens_placeholders_are_distinct_per_identifier(): void
+    {
+        foreach (['first-id', 'second-id'] as $i => $id) {
+            $this->fakeOpenAthensUserInfo('{"pairwiseID": "' . $id . '", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+            $this->openAthensCallback();
+        }
+
+        $this->assertSame(2, User::where('provider', 'open-athens')->distinct()->count('email'));
+    }
+
+    public static function emailClaims(): array
+    {
+        return [
+            'oidc email claim' => ['"email": "jane.doe@example.ac.uk"'],
+            'saml mail claim' => ['"mail": "jane.doe@example.ac.uk"'],
+            'mail claim in a list' => ['"mail": ["jane.doe@example.ac.uk"]'],
+        ];
+    }
+
+    #[DataProvider('emailClaims')]
+    public function test_openathens_user_with_an_email_claim_is_created_with_that_email(string $emailClaim): void
+    {
+        $this->fakeOpenAthensUserInfo('{"pairwiseID": "the-id@example.ac.uk", "eduPersonScopedAffiliation": "member@example.ac.uk", ' . $emailClaim . '}');
+
+        $this->openAthensCallback();
+
+        $this->assertSame('jane.doe@example.ac.uk', User::where('providerid', 'the-id@example.ac.uk')->sole()->email);
+    }
+
+    public function test_openathens_invalid_email_claim_falls_back_to_the_placeholder(): void
+    {
+        $this->fakeOpenAthensUserInfo('{"pairwiseID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk", "mail": "not an email"}');
+
+        $this->openAthensCallback();
+
+        $this->assertStringEndsWith('.invalid', User::where('providerid', 'the-id')->sole()->email);
+    }
+
+    public static function legacyOpenAthensEmails(): array
+    {
+        return [
+            'invalid, from a scoped pairwise id' => ['the-id@example.ac.uk', 'the-id@example.ac.ukmember@example.ac.uk'],
+            'valid-looking, from an unscoped targeted id' => ['the-id', 'the-idmember@example.ac.uk'],
+        ];
+    }
+
+    #[DataProvider('legacyOpenAthensEmails')]
+    public function test_openathens_login_replaces_a_legacy_concatenated_email_with_the_placeholder(string $providerId, string $legacyEmail): void
+    {
+        $user = User::factory()->create(['provider' => 'open-athens', 'providerid' => $providerId, 'email' => $legacyEmail]);
+        $this->fakeOpenAthensUserInfo('{"pairwiseID": "' . $providerId . '", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $this->openAthensCallback()->assertRedirect('https://gateway.test/search');
+
+        $this->assertStringEndsWith('member@example.ac.uk.invalid', $user->fresh()->email);
+    }
+
+    public function test_openathens_login_stores_a_newly_released_email_claim(): void
+    {
+        $user = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'email' => 'the-idmember@example.ac.uk']);
+        $this->fakeOpenAthensUserInfo('{"pairwiseID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk", "email": "jane.doe@example.ac.uk"}');
+
+        $this->openAthensCallback()->assertRedirect('https://gateway.test/search');
+
+        $this->assertSame('jane.doe@example.ac.uk', $user->fresh()->email);
+    }
+
+    public function test_openathens_login_does_not_replace_a_real_email_with_the_placeholder_when_the_claim_disappears(): void
+    {
+        $user = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'email' => 'jane.doe@example.ac.uk']);
+        $this->fakeOpenAthensUserInfo('{"pairwiseID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk"}');
+
+        $this->openAthensCallback();
+
+        $this->assertSame('jane.doe@example.ac.uk', $user->fresh()->email);
+    }
+
+    public function test_openathens_login_still_succeeds_when_the_released_email_belongs_to_another_account(): void
+    {
+        User::factory()->create(['provider' => 'google', 'email' => 'jane.doe@example.ac.uk']);
+        $user = User::factory()->create(['provider' => 'open-athens', 'providerid' => 'the-id', 'email' => 'abc.member@example.ac.uk.invalid']);
+        $this->fakeOpenAthensUserInfo('{"pairwiseID": "the-id", "eduPersonScopedAffiliation": "member@example.ac.uk", "email": "jane.doe@example.ac.uk"}');
+
+        $response = $this->openAthensCallback();
+
+        $response->assertRedirect('https://gateway.test/search');
+        $this->assertSame($user->id, $this->loggedInUserId($response));
+        $this->assertSame('abc.member@example.ac.uk.invalid', $user->fresh()->email);
+    }
+
     public function test_dta_callback_redirects_to_conflict_page_on_duplicate_email(): void
     {
         $existingUser = User::factory()->create(['email' => 'collision@example.com']);
-        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "collision@example.com", "eduPersonScopedAffiliation": ""}');
+        $this->fakeOpenAthensUserInfo('{"eduPersonTargetedID": "the-id", "eduPersonScopedAffiliation": "", "email": "collision@example.com"}');
 
         $response = $this->openAthensCallback('/api/v1/auth/dta/openathens/callback');
 

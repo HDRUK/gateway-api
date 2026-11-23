@@ -3,13 +3,11 @@
 namespace App\SearchProviders;
 
 use Auditor;
-use Http;
 use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
 use App\Jobs\LogSearchAnalytics;
 use App\Jobs\SearchAnalyticsData;
 use App\Services\Search\AdvancedQueryCompiler;
-use App\Services\Search\FilterCache;
 use App\Services\Search\CollectionHydrator;
 use App\Services\Search\DataCustodianHydrator;
 use App\Services\Search\DataCustodianNetworkHydrator;
@@ -19,20 +17,9 @@ use App\Services\Search\PublicationHydrator;
 use App\Services\Search\ToolHydrator;
 use App\Services\TypesenseService;
 use Illuminate\Support\Str;
-use Laravel\Pennant\Feature;
 
 class HDRUK implements SearchProvider
 {
-    private const SERVICE_PATH_MAP = [
-        'datasets'                => 'datasets',
-        'tools'                   => 'tools',
-        'collections'             => 'collections',
-        'dur'                     => 'dur',
-        'publications'            => 'publications',
-        'data_custodian_networks' => 'data_custodian_networks',
-        'data_custodians'         => 'data_providers',
-    ];
-
     private const FILTER_TYPE_MAP = [
         'datasets'                => ['type' => 'dataset',          'enabledOnly' => true],
         'tools'                   => ['type' => 'tool',             'enabledOnly' => false],
@@ -60,6 +47,10 @@ class HDRUK implements SearchProvider
         ['key' => '1.0E8-1.0E9',        'from' => 100000000, 'to' => 1000000000],
     ];
 
+    private const MAX_SIMILARITY_TERMS = 10;
+
+    private const SIMILAR_CANDIDATES_PER_TERM = 50;
+
     private const TYPESENSE_MODEL_MAP = [
         'datasets'                => \App\Models\DatasetVersion::class,
         'tools'                   => \App\Models\Tool::class,
@@ -69,15 +60,6 @@ class HDRUK implements SearchProvider
         'data_custodian_networks' => \App\Models\DataProviderColl::class,
         'data_custodians'         => \App\Models\Team::class,
     ];
-
-    public function __construct(private readonly ?PartnerContext $partnerContext = null)
-    {
-    }
-
-    private function resolvePartnerContext(): PartnerContext
-    {
-        return $this->partnerContext ?? app(PartnerContext::class);
-    }
 
     public function isDeferred(): bool
     {
@@ -104,20 +86,9 @@ class HDRUK implements SearchProvider
         return null;
     }
 
-    public function getSearchURI(string $type): string
-    {
-        $path = self::SERVICE_PATH_MAP[$type] ?? $type;
-        return config('gateway.search_service_url') . "/search/{$path}";
-    }
-
     public function getSupportedTypes(): array
     {
-        return array_keys(self::SERVICE_PATH_MAP);
-    }
-
-    public function isTypesenseEnabled(): bool
-    {
-        return Feature::active('TypesenseSearch');
+        return array_keys(self::TYPESENSE_MODEL_MAP);
     }
 
     /**
@@ -143,8 +114,7 @@ class HDRUK implements SearchProvider
      * Resolves a Filter model's (type, keys) pair — e.g. ('dataset', 'dataType')
      * — to the Typesense collection name backing it, but only if that field is
      * actually facet-enabled in the model's typesenseCollectionSchema(). Fields
-     * not yet flattened/faceted for Typesense return null so callers can fall
-     * back to the legacy Elasticsearch filter service.
+     * not yet flattened/faceted for Typesense return null.
      */
     public function collectionForFacetableFilter(string $filterType, string $field): ?string
     {
@@ -163,11 +133,6 @@ class HDRUK implements SearchProvider
     public function search(string $query, string $type, array $params = []): array
     {
         try {
-            // Always offer a fallback in case of mismatched model map
-            if (!$this->isTypesenseEnabled() || !array_key_exists($type, self::TYPESENSE_MODEL_MAP)) {
-                return $this->searchViaElastic($query, $type, $params);
-            }
-
             return $this->searchViaTypesense($query, $type, $params);
         } catch (\Throwable $e) {
             Auditor::log([
@@ -181,14 +146,108 @@ class HDRUK implements SearchProvider
         return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
     }
 
-    private function searchViaTypesense(string $query, string $type, array $params): array
+    /**
+     * The first $limit rows of the search, hydrated for the CSV exports, in
+     * relevance order. Unlike search(), a Typesense failure is thrown, so the
+     * caller can't mistake an outage for an empty result.
+     */
+    public function export(string $query, string $type, array $params, int $limit): array
     {
         $modelClass = self::TYPESENSE_MODEL_MAP[$type];
         $model      = new $modelClass();
-        $collection = $model->searchableAs();
-        $q          = $query ?: '*';
+        $filterBy   = implode(' && ', $this->filterClauses($type, $params));
 
-        $searchParams = array_merge([
+        $result = app(TypesenseService::class)->rawSearch(
+            $model->searchableAs(),
+            $query,
+            array_merge(
+                $this->baseSearchParameters($model),
+                ['per_page' => $limit, 'page' => 1],
+                $filterBy !== '' ? ['filter_by' => $filterBy] : []
+            )
+        );
+
+        return array_values($this->hydrate($this->mapHitsToElastic($result['hits'] ?? [], $type), $type));
+    }
+
+    public function similarDatasets(int $datasetId, int $limit): array
+    {
+        $modelClass = self::TYPESENSE_MODEL_MAP['datasets'];
+        $model      = new $modelClass();
+        $collection = $model->searchableAs();
+        $typesense  = app(TypesenseService::class);
+
+        $partnerFilter = $this->buildPartnerContextFilter('datasets');
+        $scoped        = fn (string $clause) => implode(' && ', array_filter([$clause, $partnerFilter]));
+
+        $source = $typesense->rawSearch($collection, '*', [
+            'filter_by' => $scoped("dataset_id:={$datasetId}"),
+            'per_page'  => 1,
+        ])['hits'][0]['document'] ?? null;
+
+        if ($source === null) {
+            return [];
+        }
+
+        $terms = $this->similarityTerms($source);
+        if ($terms === []) {
+            return [];
+        }
+
+        $termSearch = array_merge($this->baseSearchParameters($model), [
+            'collection' => $collection,
+            'filter_by'  => $scoped("dataset_id:!={$datasetId}"),
+            'per_page'   => self::SIMILAR_CANDIDATES_PER_TERM,
+        ]);
+        $results = $typesense->multiSearch(
+            array_map(fn (string $term) => ['q' => $term] + $termSearch, $terms)
+        )['results'];
+
+        $hits = $this->rankByTermsMatched($results, $limit);
+
+        return array_values($this->hydrate($this->mapHitsToElastic($hits, 'datasets'), 'datasets'));
+    }
+
+    /** @return string[] */
+    private function similarityTerms(array $document): array
+    {
+        $text  = mb_strtolower(implode(' ', [...($document['keywords'] ?? []), $document['title'] ?? '']));
+        $words = preg_split('/[^\p{L}\p{N}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+        $terms = array_diff(array_unique($words), TypesenseService::DEFAULT_STOPWORDS);
+
+        return array_slice(array_values($terms), 0, self::MAX_SIMILARITY_TERMS);
+    }
+
+    private function rankByTermsMatched(array $results, int $limit): array
+    {
+        $candidates = [];
+        foreach ($results as $result) {
+            if (isset($result['error'])) {
+                throw new \RuntimeException("Typesense similar datasets search failed: {$result['error']}");
+            }
+
+            foreach ($result['hits'] ?? [] as $hit) {
+                $id = (int) $hit['document']['dataset_id'];
+                $candidates[$id] = [
+                    'hit'          => $candidates[$id]['hit'] ?? $hit,
+                    'termsMatched' => ($candidates[$id]['termsMatched'] ?? 0) + 1,
+                    'bestMatch'    => max($candidates[$id]['bestMatch'] ?? 0, $hit['text_match'] ?? 0),
+                ];
+            }
+        }
+
+        uksort($candidates, fn (int $a, int $b) => [
+            $candidates[$b]['termsMatched'], $candidates[$b]['bestMatch'], $a,
+        ] <=> [
+            $candidates[$a]['termsMatched'], $candidates[$a]['bestMatch'], $b,
+        ]);
+
+        return array_column(array_slice($candidates, 0, $limit), 'hit');
+    }
+
+    private function baseSearchParameters(object $model): array
+    {
+        return array_merge([
             // Typesense's default (1) stops widening the query as soon as ANY
             // result is found, so a query spanning multiple distinct terms
             // (e.g. "TOWNSEND_2011_QUINTILE, AGEM Derived...", pasted from two
@@ -198,16 +257,15 @@ class HDRUK implements SearchProvider
             // tokens until it has found a reasonable number of results across
             // ALL the query's distinct terms, not just the first one matched.
             'drop_tokens_threshold' => 15,
-        ], $model->typesenseSearchParameters(), [
-            'per_page' => (int) ($params['per_page'] ?? 20),
-            'page'     => (int) ($params['page'] ?? 1),
-        ]);
+        ], $model->typesenseSearchParameters());
+    }
 
-        $facetFields = array_values(array_filter(explode(',', config("typesense.facet_map.{$type}", ''))));
-        if (!empty($facetFields)) {
-            $searchParams = array_merge($searchParams, TypesenseService::facetParams($facetFields));
-        }
-
+    /**
+     * Every filter_by clause for a search, keyed by field: the filter panel's
+     * filters, the advanced rule tree and the partner scope.
+     */
+    private function filterClauses(string $type, array $params): array
+    {
         $clauses = $this->buildFilterClauses($type, $params);
 
         // The advanced rule tree compiles to one bracketed clause. Keyed apart
@@ -229,6 +287,28 @@ class HDRUK implements SearchProvider
         if ($partnerFilter !== null) {
             $clauses['partnerContext'] = $partnerFilter;
         }
+
+        return $clauses;
+    }
+
+    private function searchViaTypesense(string $query, string $type, array $params): array
+    {
+        $modelClass = self::TYPESENSE_MODEL_MAP[$type];
+        $model      = new $modelClass();
+        $collection = $model->searchableAs();
+        $q          = $query ?: '*';
+
+        $searchParams = array_merge($this->baseSearchParameters($model), [
+            'per_page' => (int) ($params['per_page'] ?? 20),
+            'page'     => (int) ($params['page'] ?? 1),
+        ]);
+
+        $facetFields = array_values(array_filter(explode(',', config("typesense.facet_map.{$type}", ''))));
+        if (!empty($facetFields)) {
+            $searchParams = array_merge($searchParams, TypesenseService::facetParams($facetFields));
+        }
+
+        $clauses = $this->filterClauses($type, $params);
 
         $combinedFilterBy = implode(' && ', $clauses);
         if ($combinedFilterBy !== '') {
@@ -366,55 +446,6 @@ class HDRUK implements SearchProvider
             'total'        => $total,
             'aggregations' => array_merge($this->mapFacetsToAggregations($facetCounts), $dateRangeAggs, $popSizeAgg),
             'ids'          => $entityIds,
-        ];
-    }
-
-    private function searchViaElastic(string $query, string $type, array $params): array
-    {
-        $filterConfig = self::FILTER_TYPE_MAP[$type] ?? ['type' => $type, 'enabledOnly' => false];
-
-        $input         = $params;
-        $input['aggs'] = FilterCache::get($filterConfig['type'], $filterConfig['enabledOnly']);
-
-        if ($query !== '') {
-            $input['query'] = $query;
-        }
-
-        if ($filterConfig['type'] === 'dataset') {
-            $partner = $this->resolvePartnerContext()->getPartner();
-            $shouldScope = $partner !== 'HDRUK' || !config('partners.allow_cross_context_read', true);
-            $input['partnerContext'] = $shouldScope ? $partner : null;
-        }
-
-        $response = Http::post($this->getSearchURI($type), $input);
-
-        if (!$response->successful()) {
-            return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
-        }
-
-        $body = $response->json();
-
-        if (
-            !isset($body['hits']) || !is_array($body['hits']) ||
-            !isset($body['hits']['hits']) || !is_array($body['hits']['hits']) ||
-            !isset($body['hits']['total']['value'])
-        ) {
-            return ['hits' => [], 'total' => 0, 'aggregations' => [], 'ids' => []];
-        }
-
-        $rawHits = $body['hits']['hits'];
-        $total   = $body['hits']['total']['value'];
-        $ids     = array_column($rawHits, '_id');
-        $aggs    = $body['aggregations'] ?? [];
-
-        $hydrated = $this->hydrate($rawHits, $type, $params['view_type'] ?? 'full');
-        $sorted   = $this->sort($hydrated, $type, $params['sort'] ?? 'score:desc');
-
-        return [
-            'hits'         => $sorted,
-            'total'        => $total,
-            'aggregations' => $aggs,
-            'ids'          => $ids,
         ];
     }
 

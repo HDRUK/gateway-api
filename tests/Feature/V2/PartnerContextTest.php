@@ -50,6 +50,7 @@ class PartnerContextTest extends TestCase
 
         Feature::flushCache();
         Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
+        Feature::deactivate(PartnerContext::SELECTOR_FLAG);
     }
 
     // -------------------------------------------------------------------------
@@ -144,6 +145,70 @@ class PartnerContextTest extends TestCase
         $datasetId = $response->json('data');
 
         $this->assertSame('HDRUK', Dataset::find($datasetId)->partner_context);
+    }
+
+    public function test_team_update_restamps_cruk_partner_context_when_header_present(): void
+    {
+        Feature::activate(PartnerContext::SELECTOR_FLAG);
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createViaTeam($teamId, $userId, $this->header);
+
+        $this->updateViaTeam($teamId, $userId, $datasetId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
+
+        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
+    }
+
+    public function test_team_update_restamps_hdruk_partner_context_when_hdruk_header_present(): void
+    {
+        Feature::activate(PartnerContext::SELECTOR_FLAG);
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
+
+        $this->updateViaTeam($teamId, $userId, $datasetId, array_merge($this->header, ['x-partner-context' => 'HDRUK']));
+
+        $this->assertSame('HDRUK', Dataset::find($datasetId)->partner_context);
+    }
+
+    public function test_team_update_rejects_an_unknown_partner_context(): void
+    {
+        Feature::activate(PartnerContext::SELECTOR_FLAG);
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
+
+        $this->json(
+            'PUT',
+            $this->teamDatasetsUrl($teamId) . '/' . $datasetId,
+            [
+                'user_id'       => $userId,
+                'metadata'      => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status'        => Dataset::STATUS_ACTIVE,
+            ],
+            array_merge($this->header, ['x-partner-context' => 'PRUKK']),
+        )->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
+    }
+
+    public function test_team_update_leaves_partner_context_when_no_header(): void
+    {
+        Feature::activate(PartnerContext::SELECTOR_FLAG);
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
+
+        $this->updateViaTeam($teamId, $userId, $datasetId, $this->header);
+
+        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
+    }
+
+    public function test_team_update_ignores_the_header_when_selector_flag_is_off(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createViaTeam($teamId, $userId, array_merge($this->header, ['x-partner-context' => 'CRUK']));
+
+        $this->updateViaTeam($teamId, $userId, $datasetId, array_merge($this->header, ['x-partner-context' => 'PRUKK']));
+
+        $this->assertSame('CRUK', Dataset::find($datasetId)->partner_context);
     }
 
     // -------------------------------------------------------------------------
@@ -610,6 +675,39 @@ class PartnerContextTest extends TestCase
         )->json('data');
 
         return [$teamId, $userId];
+    }
+
+    private function createViaTeam(int $teamId, int $userId, array $headers): int
+    {
+        $response = $this->json(
+            'POST',
+            $this->teamDatasetsUrl($teamId),
+            [
+                'user_id'       => $userId,
+                'metadata'      => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status'        => Dataset::STATUS_ACTIVE,
+            ],
+            $headers,
+        );
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return $response->json('data');
+    }
+
+    private function updateViaTeam(int $teamId, int $userId, int $datasetId, array $headers): void
+    {
+        $this->json(
+            'PUT',
+            $this->teamDatasetsUrl($teamId) . '/' . $datasetId,
+            [
+                'user_id'       => $userId,
+                'metadata'      => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status'        => Dataset::STATUS_ACTIVE,
+            ],
+            $headers,
+        )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     private function teamDatasetsUrl(int $teamId): string

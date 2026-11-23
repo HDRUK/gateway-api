@@ -15,17 +15,25 @@ class FeatureSeeder extends Seeder
         'Widgets' => false,
         'RQuest' => true,
         'CohortDiscoveryService' => false,
-        'V2_SearchAggregation' => false,
         'V3_CustodianDashboard' => false,
-        'TypesenseSearch' => false,
         // Renders /dataset/{id} from native GWDM (gateway-web). Off = the
         // existing HDRUK-translated page.
         'GwdmDatasetPage' => false,
+        // Generates the metadata onboarding form from the selected input
+        // schema (gateway-web) and validates GWDM on activation. Off = the
+        // existing form hydration flow.
+        'SchemaOnboardingForm' => false,
+        // Lets users switch input schema on the onboarding form (gateway-web).
+        // Off = the default schema only.
+        'SchemaOnboardingFormSelector' => false,
         // Let the HDRUK context read and render each partner's datasets
         // (PartnerContext::CROSS_CONTEXT_FLAGS). Off = HDRUK datasets only.
         'RenderSchemaCRUK' => false,
         'RenderSchemaPRUK' => false,
         'RenderSchemaCROCOD' => false,
+        // In-app feedback prompts and the search admin Experiments tab
+        // (gateway-web). Off = no prompts served and responses rejected.
+        'POC_FeedbackExperiments' => false,
         'SafePeopleRegistrySSOEnabled' => false,
         'LoginDisabled' => false,
         'LoginGoogleEnabled' => true,
@@ -33,6 +41,9 @@ class FeatureSeeder extends Seeder
         'LoginLinkedInEnabled' => true,
         'LoginOpenAthensEnabled' => true,
         'LoginRegistryEnabled' => true,
+        // Tokenised share links for anonymous collaborative dataset
+        // onboarding (DatasetCollabController). Off = collab routes 404.
+        'CollaborativeMetadataOnboarding' => false,
     ];
 
     public function run(): void

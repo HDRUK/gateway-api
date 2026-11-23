@@ -42,7 +42,6 @@ class GatewayMetadataIngestionService
             Team::where('id', $this->teamId)->first()->toArray(),
             null,
             null,
-            false,
             $handler,
             // GMI pull ingestion is HDRUK-only.
             sourceSchema: SourceSchema::gmi(),

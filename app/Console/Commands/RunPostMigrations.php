@@ -11,7 +11,7 @@ class RunPostMigrations extends Command
      *
      * @var string
      */
-    protected $signature = 'app:run-post-migrations {sleep=1} {--term-extraction}';
+    protected $signature = 'app:run-post-migrations {--term-extraction}';
 
     /**
      * The console command description.
@@ -27,7 +27,6 @@ class RunPostMigrations extends Command
      */
     public function handle()
     {
-        $sleep = $this->argument("sleep");
         $termExtraction = $this->option('term-extraction');
 
         $commands = [
@@ -81,55 +80,6 @@ class RunPostMigrations extends Command
                 'arguments' => [],
             ], // add team dar modal content
             [
-                'command' => 'app:reindex-entities',
-                'arguments' => [
-                    'entity' => 'datasets',
-                    '--sleep' => $sleep,
-                    '--chunkSize' => 20,
-                    '--term-extraction' => $termExtraction
-                ],
-            ],
-            [
-                'command' => 'app:reindex-entities',
-                'arguments' => [
-                    'entity' => 'tools',
-                    '--chunkSize' => 100,
-                    '--sleep' => $sleep,
-                ],
-            ],
-            [
-                'command' => 'app:reindex-entities',
-                'arguments' => [
-                    'entity' => 'publications',
-                    '--chunkSize' => 100,
-                    '--sleep' => $sleep,
-                ],
-            ],
-            [
-                'command' => 'app:reindex-entities',
-                'arguments' => [
-                    'entity' => 'durs',
-                    '--chunkSize' => 50,
-                    '--sleep' => $sleep,
-                ],
-            ],
-            [
-                'command' => 'app:reindex-entities',
-                'arguments' => [
-                    'entity' => 'collections',
-                    '--sleep' => $sleep,
-                    '--chunkSize' => 20,
-                ],
-            ],
-            [
-                'command' => 'app:reindex-entities',
-                'arguments' => [
-                    'entity' => 'dataCustodianNetworks',
-                    '--sleep' => $sleep,
-                    '--chunkSize' => 1,
-                ],
-            ],
-            [
                 'command' => 'app:data-custodian-network-post-migration',
                 'arguments' => [],
             ], // update data custodian network with details and relations with teams
@@ -149,14 +99,17 @@ class RunPostMigrations extends Command
                 'command' => 'app:update-collections-user-id',
                 'arguments' => [],
             ], // update collections.user_id
-            [
+        ];
+
+        if ($termExtraction) {
+            $commands[] = [
                 'command' => 'app:reindex-entities',
                 'arguments' => [
-                    'entity' => 'dataProviders',
-                    'sleep' => $sleep,
+                    'entity' => 'datasets',
+                    '--term-extraction' => true,
                 ],
-            ],
-        ];
+            ];
+        }
 
         foreach ($commands as $commandInfo) {
             $this->call($commandInfo['command'], $commandInfo['arguments']);

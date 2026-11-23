@@ -89,7 +89,6 @@ class Dur extends BaseTypesenseModel
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
 
-    public string $prevStatus = '';
 
     public $timestamps = true;
 

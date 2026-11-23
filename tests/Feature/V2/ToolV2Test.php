@@ -22,7 +22,6 @@ use App\Models\CollectionHasTool;
 use App\Models\PublicationHasTool;
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
-use ElasticClientController as ECC;
 use App\Models\DatasetVersionHasTool;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
@@ -960,8 +959,6 @@ class ToolV2Test extends TestCase
 
     public function test_v2_add_new_tool_by_team_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
         $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
         $teamId = Team::all()->random()->id;
@@ -1058,8 +1055,6 @@ class ToolV2Test extends TestCase
 
     public function test_v2_add_new_tool_by_user_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
         $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
         $this->assertNotNull($licenseId, 'No valid license ID found');
@@ -1115,11 +1110,7 @@ class ToolV2Test extends TestCase
 
     public function test_v2_update_tool_by_team_with_success(): void
     {
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
-        ECC::shouldReceive("deleteDocument")
-            ->times(1);
 
 
         $licenseId = License::where('valid_until', null)->get()->random()->id;
@@ -1455,11 +1446,7 @@ class ToolV2Test extends TestCase
     public function test_v2_update_tool_by_user_with_success(): void
     {
 
-        ECC::shouldReceive("indexDocument")
-            ->times(1);
 
-        ECC::shouldReceive("deleteDocument")
-            ->times(2);
 
 
         $licenseId = License::where('valid_until', null)->get()->random()->id;

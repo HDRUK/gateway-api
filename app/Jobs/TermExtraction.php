@@ -7,7 +7,6 @@ use Exception;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersionHasNamedEntities;
-use App\Http\Traits\IndexElastic;
 use App\Http\Traits\LoggingContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +17,6 @@ use Illuminate\Support\Facades\Http;
 
 class TermExtraction implements ShouldQueue
 {
-    use IndexElastic;
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
@@ -35,14 +33,12 @@ class TermExtraction implements ShouldQueue
     protected string $data = '';
     protected bool $usePartialExtraction = true;
 
-    protected bool $reIndexElastic = true;
-
     private ?array $loggingContext = null;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, string $datasetVersionId, int $version, string $data, ?bool $elasticIndex = true, ?bool $usePartialExtraction = true)
+    public function __construct(string $datasetId, string $datasetVersionId, int $version, string $data, ?bool $usePartialExtraction = true)
     {
         $this->onQueue('enrichment');
         $this->timeout = config('jobs.default_timeout', 600);
@@ -53,7 +49,6 @@ class TermExtraction implements ShouldQueue
         $this->version = $version;
         $this->data = $data;
         $this->tedUrl = config('ted.url');
-        $this->reIndexElastic = is_null($elasticIndex) ? true : $elasticIndex;
         $this->loggingContext = $this->getLoggingContext(\request());
         $this->loggingContext['method_name'] = class_basename($this);
     }
@@ -82,10 +77,6 @@ class TermExtraction implements ShouldQueue
             $this->postSummaryToTermExtractionDirector(json_encode($data));
         } else {
             $this->postToTermExtractionDirector(json_encode($data));
-        }
-
-        if ($this->reIndexElastic) {
-            $this->reindexElastic($this->datasetId);
         }
     }
 

@@ -7,7 +7,7 @@ use Tests\TestCase;
 
 /**
  * getMaterialTypes() is version-specific and lives on the GWDM handlers (the
- * version_compare() that used to gate it in IndexElastic/DatasetHydrator was
+ * version_compare() that used to gate it in DatasetHydrator was
  * removed). Legacy (< 1.1) exposes no material types; 1.1+ reads
  * tissuesSampleCollection.
  */

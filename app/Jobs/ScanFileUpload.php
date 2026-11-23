@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Exceptions\DecoderException;
 use Maatwebsite\Excel\Facades\Excel;
 use MetadataManagementController as MMC;
 
@@ -53,7 +54,6 @@ class ScanFileUpload implements ShouldQueue
     private ?string $inputVersion = null;
     private ?string $outputSchema = null;
     private ?string $outputVersion = null;
-    private bool $elasticIndexing = true;
     private ?int $datasetId = null;
     private ?int $collectionId = null;
     private ?int $applicationId = null;
@@ -79,7 +79,6 @@ class ScanFileUpload implements ShouldQueue
         ?string $inputVersion,
         ?string $outputSchema,
         ?string $outputVersion,
-        bool $elasticIndexing,
         ?int $datasetId,
         ?int $collectionId,
         ?int $applicationId,
@@ -96,7 +95,6 @@ class ScanFileUpload implements ShouldQueue
         $this->inputVersion = $inputVersion;
         $this->outputSchema = $outputSchema;
         $this->outputVersion = $outputVersion;
-        $this->elasticIndexing = $elasticIndexing;
         $this->datasetId = $datasetId;
         $this->collectionId = $collectionId;
         $this->applicationId = $applicationId;
@@ -208,6 +206,9 @@ class ScanFileUpload implements ShouldQueue
                         break;
                     case 'collections-media':
                         $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
+                        break;
+                    case 'experiments-media':
+                        $this->uploadExperimentMedia($loc, $upload);
                         break;
                     case 'dar-application-upload':
                         $this->darApplicationUpload($loc, $upload);
@@ -406,7 +407,6 @@ class ScanFileUpload implements ShouldQueue
                 $team,
                 $defineInputSchema,
                 $defineInputVersion,
-                $this->elasticIndexing,
                 $gwdmHandler,
             );
 
@@ -656,7 +656,7 @@ class ScanFileUpload implements ShouldQueue
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc,
-                'entity_type' => 'dataAccessApplication',
+                'entity_type' => Upload::ENTITY_TYPE_DATA_ACCESS_APPLICATION,
                 'entity_id' => $this->applicationId,
                 'question_id' => $this->questionId,
                 'answer_index' => $this->answerIndex,
@@ -757,6 +757,46 @@ class ScanFileUpload implements ShouldQueue
                 'description' => $e->getMessage(),
             ]);
 
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function uploadExperimentMedia(string $loc, Upload $upload): void
+    {
+        try {
+            $content = Storage::disk($this->fileSystem . '_scanned')->get($loc);
+            (new ImageManager(Driver::class))->read($content);
+
+            $newPath = '/experiments/' . $loc;
+            Storage::disk($this->fileSystem . '_media')->put($newPath, $content);
+
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $newPath,
+                'entity_type' => 'experiments',
+            ]);
+
+            \Log::info('Post processing ' . $this->entityFlag . ' completed', $this->loggingContext);
+        } catch (DecoderException $e) {
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => 'The file you uploaded is not an image.'
+            ]);
+            \Log::info(
+                'Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage(),
+                $this->loggingContext
+            );
+        } catch (Exception $e) {
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+            \Log::info(
+                'Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage(),
+                $this->loggingContext
+            );
             throw new Exception($e->getMessage());
         }
     }

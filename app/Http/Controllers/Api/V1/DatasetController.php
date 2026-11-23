@@ -19,6 +19,7 @@ use App\Services\Gwdm\GwdmMetadataHandler;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use App\Models\Dataset;
+use App\Models\DatasetShareToken;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\Team;
@@ -685,8 +686,6 @@ class DatasetController extends Controller
         $this->checkAccess($input, $teamId, null, 'team', $request->header());
 
         // try {
-        $elasticIndexing = $request->boolean('elastic_indexing', false);
-
         $team = Team::where('id', $teamId)->first()->toArray();
 
         $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -710,7 +709,6 @@ class DatasetController extends Controller
             $team,
             $inputSchema,
             $inputVersion,
-            $elasticIndexing,
             $this->gwdmHandler,
         );
 
@@ -815,7 +813,6 @@ class DatasetController extends Controller
         $this->checkAccess($input, $initDataset->team_id, null, 'team', $request->header());
 
         try {
-            $elasticIndexing = $request->boolean('elastic_indexing', false);
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $user = User::where('id', $userId)->first();
@@ -873,6 +870,8 @@ class DatasetController extends Controller
                 'is_cohort_discovery' => $isCohortDiscovery,
             ]);
 
+            DatasetShareToken::revokeForActivatedDataset($currDataset->id, $input['status'] ?? 'ACTIVE');
+
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
             if (!is_array($submittedMetadata)) {
@@ -902,7 +901,6 @@ class DatasetController extends Controller
                         $datasetVersionId,
                         $versionNumber,
                         base64_encode(gzcompress(gzencode(json_encode($tedData), 6))),
-                        $elasticIndexing,
                         Config::get('ted.use_partial')
                     );
                 }
@@ -999,6 +997,8 @@ class DatasetController extends Controller
                     $datasetModel->deleted_at = null;
                     $datasetModel->save();
 
+                    DatasetShareToken::revokeForActivatedDataset($datasetModel->id, $request['status']);
+
                     $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
                     $metadata->deleted_at = null;
                     $metadata->save();
@@ -1045,6 +1045,8 @@ class DatasetController extends Controller
                 ])) {
                     $datasetModel->status = $request['status'];
                     $datasetModel->save();
+
+                    DatasetShareToken::revokeForActivatedDataset($datasetModel->id, $request['status']);
 
                     $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
 

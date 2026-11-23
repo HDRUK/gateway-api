@@ -13,8 +13,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
+ * @property ?Pivot $pivot
+ *
  * @OA\Schema(
  *   schema="User",
  *   description="A registered Gateway user",
@@ -272,5 +275,12 @@ class User extends Authenticatable
         return $this->belongsToMany(Workgroup::class, 'user_has_workgroups')
             ->withPivot('user_id', 'workgroup_id')
             ->orderBy('user_has_workgroups.workgroup_id');
+    }
+
+    public function preferredEmailAddress(): ?string
+    {
+        return ($this->provider === 'open-athens' || $this->preferred_email === 'secondary')
+            ? ($this->secondary_email ?: $this->email)
+            : $this->email;
     }
 }

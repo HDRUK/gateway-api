@@ -4,6 +4,7 @@ namespace Tests\Feature\V2;
 
 use Config;
 use Tests\TestCase;
+use Laravel\Pennant\Feature;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Http\Enums\TeamMemberOf;
@@ -222,6 +223,32 @@ class DatasetSourceSchemaTest extends TestCase
 
         $row = collect($response->json('data'))->firstWhere('id', $datasetId);
         $this->assertSame(['model' => 'CRUK', 'version' => '1.0.0'], $row['source_schema']);
+    }
+
+    public function test_team_index_reports_the_source_schema(): void
+    {
+        Feature::activate('SchemaOnboardingForm');
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createViaDatasets($teamId, $userId, $this->declared('PRUK', '1.0.0'));
+
+        $response = $this->json('GET', '/api/v2/teams/' . $teamId . '/datasets/status/active?per_page=1000', [], $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $row = collect($response->json('data'))->firstWhere('id', $datasetId);
+        $this->assertSame(['model' => 'PRUK', 'version' => '1.0.0'], $row['source_schema']);
+    }
+
+    public function test_team_index_omits_the_source_schema_when_the_flag_is_off(): void
+    {
+        Feature::deactivate('SchemaOnboardingForm');
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createViaDatasets($teamId, $userId, $this->declared('PRUK', '1.0.0'));
+
+        $response = $this->json('GET', '/api/v2/teams/' . $teamId . '/datasets/status/active?per_page=1000', [], $this->header);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $row = collect($response->json('data'))->firstWhere('id', $datasetId);
+        $this->assertArrayNotHasKey('source_schema', $row);
     }
 
     // -------------------------------------------------------------------------

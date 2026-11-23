@@ -80,13 +80,6 @@ return [
         'search_analytics_table' => env('GOOGLE_CLOUD_BIGQUERY_SEARCH_ANALYTICS_TABLE', 'search_analytics'),
     ],
 
-    'elasticclient' => [
-        'verify_ssl' => env('ELASTICSEARCH_VERIFY_SSL', false),
-        'user' => env('ELASTICSEARCH_USER'),
-        'password' => env('ELASTICSEARCH_PASS'),
-        'timeout' => env('ELASTICSEARCH_TIMEOUT', 10),
-    ],
-
     'hubspot' => [
         'enabled' => env('HUBSPOT_ENABLED', false),
         'base_url' => env('HUBSPOT_BASE_URL', 'http://hub.local'),
@@ -144,5 +137,35 @@ return [
 
     'slack' => [
         'feature_flag_webhook_url' => env('SLACK_FEATURE_FLAG_WEBHOOK_URL', ''),
+    ],
+
+    'recaptcha' => [
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+        'min_score' => (float)env('RECAPTCHA_MIN_SCORE', 0.5),
+    ],
+
+    'jsm' => [
+        'base_url' => env('JSM_BASE_URL', 'https://api.atlassian.com/ex/jira'),
+        'email' => env('JSM_EMAIL'),
+        'api_token' => env('JSM_API_TOKEN'),
+        'cloud_id' => env('JSM_CLOUD_ID'),
+        'service_desk_id' => env('JSM_SERVICE_DESK_ID', '7'),
+        'request_type_id' => env('JSM_REQUEST_TYPE_ID', '78'),
+        // Feedback Log (desk 7) > Gateway Enquiry (request type 78) fields.
+        'fields' => [
+            'enquiry_type' => [
+                'id' => env('JSM_FIELD_ENQUIRY_TYPE', 'customfield_10752'),
+                'share_feedback' => env('JSM_OPTION_SHARE_FEEDBACK', '11728'),
+            ],
+            'future_contact' => [
+                'id' => env('JSM_FIELD_FUTURE_CONTACT', 'customfield_11447'),
+                'no' => env('JSM_OPTION_FUTURE_CONTACT_NO', '13138'),
+            ],
+            'user_type' => [
+                'id' => env('JSM_FIELD_USER_TYPE', 'customfield_10223'),
+                'user' => env('JSM_OPTION_USER_TYPE_USER', '10397'),
+                'data_custodian' => env('JSM_OPTION_USER_TYPE_DATA_CUSTODIAN', '10394'),
+            ],
+        ],
     ],
 ];

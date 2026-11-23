@@ -21,6 +21,8 @@ class FilterTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+
+        $this->app->instance(TypesenseService::class, new FakeTypesenseService());
     }
 
     /**
@@ -349,8 +351,26 @@ class FilterTest extends TestCase
                 array_map(fn ($name) => ['publisherName' => $name], $publishers)
             )
         );
+        $response = $this->get('api/v1/filters?per_page=500', $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $filter = collect($response->json('data'))
+            ->first(fn ($f) => $f['type'] === 'dataset' && $f['keys'] === 'publisherName');
+        $this->assertEqualsCanonicalizing($publishers, array_column($filter['buckets'], 'key'));
+    }
+
+    public function test_typesense_serves_filters_when_the_stored_typesense_flag_is_off()
+    {
+        $publishers = array_map(fn ($i) => "Publisher {$i}", range(1, 11));
+        $this->app->instance(
+            TypesenseService::class,
+            (new FakeTypesenseService())->withDocuments(
+                (new DatasetVersion())->searchableAs(),
+                array_map(fn ($name) => ['publisherName' => $name], $publishers)
+            )
+        );
         Feature::flushCache();
-        Feature::activate('TypesenseSearch');
+        Feature::deactivate('TypesenseSearch');
 
         $response = $this->get('api/v1/filters?per_page=500', $this->header);
 

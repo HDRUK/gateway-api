@@ -10,11 +10,12 @@ use App\Models\Dur;
 use App\Services\DatasetService;
 use Config;
 use Exception;
-use Illuminate\Support\Arr;
 use MetadataManagementController as MMC;
 
 trait DatasetsV2Helpers
 {
+    use MetadataExtraction;
+
     private function getDatasetDetails(Dataset $dataset, GetDataset $request)
     {
         // Get only the very latest metadata version ID, and process all related
@@ -104,37 +105,5 @@ trait DatasetsV2Helpers
         $dataset['team']['has_published_dar_template'] = ! $teamPublishedDARTemplates->isEmpty();
 
         return [$dataset, null];
-    }
-
-    /**
-     * Extracts metadata from the given mixed input.
-     *
-     * @return array
-     */
-    private function extractMetadata(mixed $metadata)
-    {
-        if (is_array($metadata) && Arr::has($metadata, 'metadata.metadata')) {
-            $metadata = $metadata['metadata'];
-        } elseif (is_array($metadata) && ! Arr::has($metadata, 'metadata')) {
-            $metadata = [
-                'metadata' => $metadata,
-            ];
-        }
-
-        if (is_string($metadata) && isJsonString($metadata)) {
-            $metadata = json_decode($metadata, true);
-        }
-
-        // Pre-process check for incoming data from a resource that passes strings
-        // when we expect an associative array. FMA passes strings, this
-        // is a safe-guard to ensure execution is unaffected by other data types.
-
-        if (isset($metadata['metadata']) && is_string($metadata['metadata']) && isJsonString($metadata['metadata'])) {
-            $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
-            unset($metadata['metadata']);
-            $metadata = $tmpMetadata;
-        }
-
-        return $metadata;
     }
 }

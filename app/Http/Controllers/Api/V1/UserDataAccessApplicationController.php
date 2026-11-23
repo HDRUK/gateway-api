@@ -621,7 +621,7 @@ class UserDataAccessApplicationController extends Controller
             if (($jwtUser['id'] != $userId) || ($jwtUser['id'] != $application->applicant_id)) {
                 throw new UnauthorizedException('User does not have permission to use this endpoint to view these files.');
             }
-            $uploads = Upload::where('entity_id', $id)->get();
+            $uploads = Upload::forDataAccessApplication($id)->get();
 
             if ($uploads) {
                 Auditor::log([

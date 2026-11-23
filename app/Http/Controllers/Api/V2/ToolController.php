@@ -9,7 +9,6 @@ use App\Models\Tool;
 use App\Models\Collection;
 use Illuminate\Http\Request;
 use App\Http\Traits\CheckAccess;
-use App\Http\Traits\IndexElastic;
 use Illuminate\Http\JsonResponse;
 use App\Http\Traits\ToolsV2Helper;
 use App\Http\Controllers\Controller;
@@ -18,7 +17,6 @@ use App\Http\Traits\RequestTransformation;
 
 class ToolController extends Controller
 {
-    use IndexElastic;
     use RequestTransformation;
     use CheckAccess;
     use ToolsV2Helper;
