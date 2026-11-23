@@ -224,5 +224,54 @@ class MetadataSummaryIndexTest extends TestCase
         $this->assertSame('adhd, autism', $documents['7-keywords']['text']);
         $this->assertSame('EBC', $documents['7-aliases']['text']);
     }
+
+    public function test_empty_fields_are_left_out(): void
+    {
+        $documents = collect($this->index->documentsFor($this->version(['abstract' => 'An abstract.', 'description' => '   '])))->keyBy('id');
+        $this->assertSame(['7-title', '7-abstract'], $documents->keys()->all());
+    }
+
+    public function test_keywords_are_trimmed_and_repeats_ignoring_case_are_dropped(): void
+    {
+        $documents = collect($this->index->documentsFor($this->version(['keywords' => 'Asthma;,; asthma ;,;COPD;,;'])))->keyBy('id');
+        $this->assertSame('Asthma, COPD', $documents['7-keywords']['text']);
+    }
+
+    public function test_email_addresses_are_removed(): void
+    {
+        $documents = collect($this->index->documentsFor($this->version([
+            'abstract' => 'For access email testing@example.com or the team.',
+        ])))->keyBy('id');
+
+        $this->assertSame('For access email [email removed] or the team.', $documents['7-abstract']['text']);
+    }
+
+    public function test_html_and_markdown_are_stripped(): void
+    {
+        $documents = collect($this->index->documentsFor($this->version(['abstract' => '<p>**Asthma** &amp; eczema</p>'])))->keyBy('id');
+        $this->assertSame('Asthma & eczema', $documents['7-abstract']['text']);
+    }
+
+    public function test_every_document_carries_the_dataset_context(): void
+    {
+        $documents = collect($this->index->documentsFor($this->version([
+            'abstract' => 'An abstract.',
+            'publisher' => ['name' => 'Health Data Centre', 'gatewayId' => 'uk.health.example'],
+            'datasetType' => 'Health and disease;,;Imaging',
+            'populationSize' => 4200,
+            'inPipeline' => 'Available',
+        ])))->keyBy('id');
+
+        foreach ($documents as $doc) {
+            $this->assertSame('7', $doc['dataset_id']);
+            $this->assertSame('Study', $doc['datasetTitle']);
+            $this->assertSame('Health Data Centre', $doc['publisherName']);
+            $this->assertSame('uk.health.example', $doc['publisherGatewayId']);
+            $this->assertSame(['Health and disease', 'Imaging'], $doc['datasetType']);
+            $this->assertSame(4200, $doc['populationSize']);
+            $this->assertSame('Available', $doc['inPipeline']);
+            $this->assertSame('HDRUK', $doc['partnerContext']);
+        }
+    }
 }
 
