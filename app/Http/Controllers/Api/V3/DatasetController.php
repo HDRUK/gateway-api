@@ -16,9 +16,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use App\Services\DatasetService;
+use App\Exceptions\DatasetNotPublishableException;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\V3\Dataset\ChangeDatasetStatus;
 use App\Http\Requests\V3\Dataset\CreateDataset;
 use App\Http\Requests\V3\Dataset\UpdateDataset;
 
@@ -190,6 +192,40 @@ class DatasetController extends Controller
 
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * PATCH /api/v3/datasets/{id}
+     */
+    public function changeStatus(ChangeDatasetStatus $request, int $id): JsonResponse
+    {
+        $jwtUser = $request->jwtUser();
+        [$accessorUserId] = $this->getAccessorUserAndTeam($request);
+        $dataset = Dataset::find($id);
+
+        if (!$dataset) {
+            return response()->json(['message' => 'Dataset not found'], 404);
+        }
+
+        $this->checkAccess($request->all(), $dataset->team_id, null, 'team', $request->header());
+
+        try {
+            $this->datasetService->changeStatus($dataset, $request->input('status'));
+        } catch (DatasetNotPublishableException $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
+        }
+
+        Auditor::log([
+            'user_id'     => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $accessorUserId,
+            'team_id'     => $dataset->team_id,
+            'action_type' => 'UPDATE',
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'description' => 'Dataset ' . $id . ' marked as ' . $request->input('status'),
+        ]);
+
+        return response()->json([
+            'message' => Config::get('statuscodes.STATUS_OK.message'),
+        ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**

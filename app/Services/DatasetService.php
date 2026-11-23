@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Context\GwdmVersionContext;
 use App\Enums\Partner;
+use App\Exceptions\DatasetNotPublishableException;
 use App\Jobs\LinkageExtraction;
 use App\Jobs\TermExtraction;
 use App\Models\DataAccessTemplate;
@@ -622,6 +623,66 @@ class DatasetService
             $metadata = DatasetVersion::where('dataset_id', $dataset->id)->latest()->first();
             LinkageExtraction::dispatch($dataset->id, $metadata->id);
         }
+    }
+
+    /**
+     * Change a dataset's status without saving new metadata. Publishing a
+     * version that has never been published runs the checks a published save
+     * runs, and refuses one that fails them.
+     *
+     * @throws DatasetNotPublishableException
+     */
+    public function changeStatus(Dataset $dataset, string $status): void
+    {
+        $latest = DatasetVersion::where('dataset_id', $dataset->id)->orderByDesc('version')->firstOrFail();
+        $publishing = $status === Dataset::STATUS_ACTIVE;
+        $publishesWorkingCopy = $publishing && self::replacesLatest($latest);
+        $envelope = $publishing
+            ? $this->getReconstructedMetadataEnvelope($dataset->id, $latest->version, false, $latest)
+            : null;
+
+        if ($publishesWorkingCopy && ! self::isPublishable($latest, $envelope)) {
+            throw new DatasetNotPublishableException();
+        }
+
+        DB::transaction(function () use ($dataset, $status, $latest, $publishesWorkingCopy) {
+            $dataset->update([
+                'status' => $status,
+                'updated' => now(),
+            ]);
+
+            DatasetShareToken::revokeForActivatedDataset($dataset->id, $status);
+
+            if ($publishesWorkingCopy) {
+                $version = DatasetVersion::lockForUpdate()->findOrFail($latest->id);
+
+                if (self::replacesLatest($version)) {
+                    $version->active_date = now();
+                    $version->save();
+                }
+            }
+        });
+
+        if ($envelope !== null) {
+            $this->dispatchJobs($dataset, $latest->id, $envelope['metadata'], $status);
+        }
+    }
+
+    private static function isPublishable(DatasetVersion $version, array $envelope): bool
+    {
+        $gwdm = Config::get('metadata.GWDM.name');
+        $source = SourceSchema::fromVersion($version);
+        $submitted = DatasetVersion::submittedMetadata($envelope);
+        $checksSource = $source->model !== null
+            && $source->version !== null
+            && $source->model !== $gwdm
+            && ! empty($submitted);
+
+        if ($checksSource && ! MMC::validateDataModelType(json_encode(['metadata' => $submitted]), $source->model, $source->version)) {
+            return false;
+        }
+
+        return MMC::validateDataModelType(json_encode(['metadata' => $envelope['metadata']]), $gwdm, $envelope['gwdmVersion']);
     }
 
     /**
