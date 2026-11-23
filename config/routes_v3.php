@@ -1,6 +1,21 @@
 <?php
 
 return [
+    [
+        'name'                => 'datasets',
+        'method'              => 'post',
+        'path'                => '/teams/{teamId}/datasets',
+        'methodController'    => 'DatasetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+
     // v3 datasets — delta versioning update
     [
         'name'                => 'datasets',

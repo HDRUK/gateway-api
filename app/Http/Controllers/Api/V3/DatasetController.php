@@ -6,16 +6,20 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Dataset;
+use App\Models\Team;
 use App\Context\GwdmVersionContext;
 use App\Context\PartnerContext;
 use App\Enums\Partner;
 use Laravel\Pennant\Feature;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use App\Services\DatasetService;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\V3\Dataset\CreateDataset;
 use App\Http\Requests\V3\Dataset\UpdateDataset;
 
 /**
@@ -36,6 +40,86 @@ class DatasetController extends Controller
         private readonly DatasetService $datasetService,
         private readonly GwdmVersionContext $gwdmVersionContext,
     ) {
+    }
+
+    /**
+     * POST /api/v3/teams/{teamId}/datasets
+     */
+    public function store(CreateDataset $request, int $teamId): JsonResponse
+    {
+        $jwtUser = $request->jwtUser();
+        $input = $this->isSuperAdmin($jwtUser)
+            ? $request->validated()
+            : Arr::except($request->validated(), 'is_cohort_discovery');
+        [$accessorUserId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
+        $userId = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $accessorUserId;
+        $team = Team::find($teamId);
+
+        if (!$team) {
+            return response()->json(['message' => 'Team not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $this->checkAccess($input, $team->id, null, 'team', $request->header());
+
+        $partnerContext = Feature::active(PartnerContext::SELECTOR_FLAG)
+            ? $request->header('x-partner-context')
+            : null;
+        $requestedPartner = $partnerContext !== null ? Partner::tryFrom($partnerContext) : null;
+
+        if ($partnerContext !== null && $requestedPartner === null) {
+            return response()->json([
+                'message' => 'Unknown partner context',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (empty($input['metadata']['metadata']['summary']['title'])) {
+            return response()->json(['message' => 'Title is required to save a dataset'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $this->datasetService->create(
+                input: [
+                    ...$input,
+                    'user_id' => $userId,
+                    'team_id' => $team->id,
+                    'create_origin' => $createOrigin,
+                ],
+                team: $team,
+                inputSchema: $request->query('input_schema'),
+                inputVersion: $request->query('input_version'),
+                targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
+                partnerContext: ($requestedPartner ?? Partner::HDRUK)->value,
+            );
+
+            if (!$result['translated']) {
+                return response()->json([
+                    'message' => 'metadata is in an unknown format and cannot be processed',
+                    'details' => $result['response'],
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            Auditor::log([
+                'user_id'     => $userId,
+                'team_id'     => $team->id,
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dataset ' . $result['dataset_id'] . ' with version ' . $result['version_id'] . ' created',
+            ]);
+
+            return response()->json([
+                'message' => 'created',
+                'data'    => $result['dataset_id'],
+                'version' => $result['version_id'],
+            ], Response::HTTP_CREATED);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
