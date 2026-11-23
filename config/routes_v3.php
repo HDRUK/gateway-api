@@ -32,6 +32,21 @@ return [
         ],
     ],
 
+    [
+        'name'                => 'datasets',
+        'method'              => 'patch',
+        'path'                => '/datasets/{id}',
+        'methodController'    => 'DatasetController@changeStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+            'check.access:permissions,datasets.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // v3 dataset version history — public endpoints (no JWT), consistent with showActive
     [
         'name'                => 'datasets',
