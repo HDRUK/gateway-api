@@ -16,9 +16,6 @@ use Tests\Traits\MockExternalApis;
  * Covers Dataset::allSpatialCoverages being scoped to the latest version only,
  * so editing coverage (e.g. England -> Scotland) reflects just the new value
  * rather than a growing union across every version ever written.
- *
- * Drives DatasetService directly; the x-gwdm-version header steers the target
- * GWDM version via GwdmVersionContext.
  */
 class DatasetSpatialCoverageTest extends TestCase
 {
@@ -32,11 +29,6 @@ class DatasetSpatialCoverageTest extends TestCase
         $this->commonSetUp();
     }
 
-    private function setGwdmHeader(string $version): void
-    {
-        request()->headers->set('x-gwdm-version', $version);
-    }
-
     private function service(): DatasetService
     {
         return app(DatasetService::class);
@@ -48,7 +40,6 @@ class DatasetSpatialCoverageTest extends TestCase
         $team = Team::first();
         $user = User::first();
 
-        $this->setGwdmHeader('2.0');
         $created = $this->service()->create(
             [
                 'metadata' => $metadata,
@@ -60,6 +51,7 @@ class DatasetSpatialCoverageTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
 
         $this->assertTrue($created['translated']);
@@ -78,13 +70,13 @@ class DatasetSpatialCoverageTest extends TestCase
 
         $replacement = $this->getMetadataV2p0();
         $replacement['metadata']['coverage']['spatial'] = 'Scotland';
-        $this->setGwdmHeader('2.0');
         $this->service()->update(
             Dataset::find($datasetId),
             ['metadata' => $replacement, 'status' => Dataset::STATUS_DRAFT],
             $user->id,
             Dataset::ORIGIN_MANUAL,
             Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
 
         $regions = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
@@ -113,13 +105,13 @@ class DatasetSpatialCoverageTest extends TestCase
         $updateMetadata = $this->getMetadataV2p0();
         $updateMetadata['metadata']['coverage']['spatial'] = 'Scotland';
 
-        $this->setGwdmHeader('2.0');
         $this->service()->update(
             Dataset::find($datasetId),
             ['metadata' => $updateMetadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
             Dataset::ORIGIN_MANUAL,
             Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
 
         $regionsV2 = collect(Dataset::find($datasetId)->allSpatialCoverages)->pluck('region')->all();
@@ -139,13 +131,13 @@ class DatasetSpatialCoverageTest extends TestCase
         $metadata = $this->getMetadataV2p0();
         $metadata['metadata']['coverage']['spatial'] = $spatial;
 
-        $this->setGwdmHeader('2.0');
         $this->service()->update(
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
             Dataset::ORIGIN_MANUAL,
             Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
     }
 

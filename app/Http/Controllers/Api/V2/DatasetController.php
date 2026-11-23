@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Context\GwdmVersionContext;
 use App\Context\OutputSchemaContext;
 use App\Context\PartnerContext;
 use App\Services\DatasetService;
@@ -35,6 +36,7 @@ class DatasetController extends Controller
         private readonly DatasetService $datasetService,
         private readonly PartnerContext $partnerContext,
         private readonly OutputSchemaContext $outputSchemaContext,
+        private readonly GwdmVersionContext $gwdmVersionContext,
     ) {
     }
 
@@ -286,6 +288,7 @@ class DatasetController extends Controller
                 team: $team,
                 inputSchema: $request->query('input_schema'),
                 inputVersion: $request->query('input_version'),
+                targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
                 partnerContext: $this->partnerContext->getPartner(),
             );
 
