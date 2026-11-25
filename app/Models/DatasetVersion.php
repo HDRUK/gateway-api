@@ -279,6 +279,12 @@ class DatasetVersion extends BaseTypesenseModel
             ->select(['id', 'status', 'is_cohort_discovery', 'team_id']);
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function savedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function linkedCollections(): BelongsToMany
     {
         return $this->belongsToMany(

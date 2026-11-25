@@ -8,9 +8,11 @@ use App\Enums\DatasetOrigin;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
+use App\Models\TeamHasUser;
 use App\Models\User;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Arr;
 use Illuminate\Testing\TestResponse;
 
 class DatasetSavedByTest extends TestCase
@@ -185,6 +187,83 @@ class DatasetSavedByTest extends TestCase
                 ->assertJsonMissingPath('data.versions.0.user_id')
                 ->assertJsonMissingPath('data.versions.0.origin');
         }
+    }
+
+    public function test_anyone_can_see_where_each_version_came_from_but_not_who_saved_it(): void
+    {
+        $dataset = $this->datasetWithAManualAndAnApiVersion();
+
+        $response = $this->versionHistory($dataset->id, []);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSame(['MANUAL', 'API'], array_column($response->json('data'), 'origin'));
+        $this->assertSame([], array_merge(...array_map(
+            fn (array $version) => array_intersect(['saved_by', 'user_id'], array_keys($version)),
+            $response->json('data'),
+        )));
+    }
+
+    public function test_a_team_member_sees_who_saved_each_version(): void
+    {
+        $dataset = $this->datasetWithAManualAndAnApiVersion();
+        $integrationOwner = User::findOrFail($dataset->fresh()->user_id);
+        $signedInUser = User::findOrFail($this->signedInUserId());
+        TeamHasUser::create(['team_id' => $dataset->team_id, 'user_id' => $signedInUser->id]);
+
+        $response = $this->versionHistory($dataset->id, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSame(
+            [
+                ['id' => $signedInUser->id, 'name' => $signedInUser->name],
+                ['id' => $integrationOwner->id, 'name' => $integrationOwner->name],
+            ],
+            array_column($response->json('data'), 'saved_by'),
+        );
+    }
+
+    public function test_a_signed_in_user_outside_the_team_does_not_see_who_saved_a_version(): void
+    {
+        $dataset = $this->datasetWithAManualAndAnApiVersion();
+
+        $response = $this->versionHistory($dataset->id, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $response->assertJsonPath('data.0.origin', 'MANUAL');
+        $response->assertJsonMissingPath('data.0.saved_by');
+    }
+
+    public function test_a_team_member_sees_an_unrecorded_saver_as_unknown(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->createdDataset($team);
+        $this->json('PUT', '/api/v2/datasets/' . $dataset->id, $this->v2UpdateBody($team->id), $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        TeamHasUser::create(['team_id' => $team->id, 'user_id' => $this->signedInUserId()]);
+
+        $response = $this->versionHistory($dataset->id, $this->header);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSame(['origin' => null, 'saved_by' => null], Arr::only($response->json('data.0'), ['origin', 'saved_by']));
+    }
+
+    private function versionHistory(int $datasetId, array $headers): TestResponse
+    {
+        $this->app['auth']->forgetGuards();
+
+        return $this->json('GET', '/api/v3/datasets/' . $datasetId . '/versions', [], $headers);
+    }
+
+    private function datasetWithAManualAndAnApiVersion(): Dataset
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->createdDataset($team);
+        $integrationOwner = User::where('id', '!=', $this->signedInUserId())->firstOrFail();
+
+        $this->updateViaV3($dataset->id, [], $this->createApp($team->id, $integrationOwner->id))
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        return $dataset;
     }
 
     private function assertVersionSavedBy(int $datasetId, int $version, int $userId, DatasetOrigin $origin): void

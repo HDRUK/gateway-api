@@ -270,7 +270,8 @@ class DatasetService
     {
         return DatasetVersion::where('dataset_id', $dataset->id)
             ->whereNotNull('active_date')
-            ->select(['id', 'version', 'title', 'short_title', 'created_at'])
+            ->select(['id', 'version', 'title', 'short_title', 'created_at', 'user_id', 'origin'])
+            ->with('savedByUser:id,name')
             ->orderBy('version')
             ->get();
     }
