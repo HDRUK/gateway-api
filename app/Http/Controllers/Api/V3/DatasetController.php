@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use App\Services\DatasetService;
+use App\Services\Gwdm\SavedBy;
 use App\Exceptions\DatasetNotPublishableException;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CheckAccess;
@@ -88,6 +89,7 @@ class DatasetController extends Controller
                     'create_origin' => $origin->value,
                 ],
                 team: $team,
+                savedBy: SavedBy::person($userId, $origin),
                 inputSchema: $request->query('input_schema'),
                 inputVersion: $request->query('input_version'),
                 targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
@@ -163,7 +165,7 @@ class DatasetController extends Controller
                 dataset: $dataset,
                 input: $input,
                 userId: $userId,
-                createOrigin: $origin->value,
+                origin: $origin,
                 partnerContext: $requestedPartner,
                 targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
                 validateInput: $request->boolean('validate_input', true),

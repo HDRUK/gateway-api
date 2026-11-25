@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\Partner;
+use App\Services\Gwdm\SavedBy;
+use App\Enums\DatasetOrigin;
 use App\Jobs\ExtractProjectGrantsFromMetadata;
 use App\Jobs\ExtractPublicationsFromMetadata;
 use App\Jobs\ExtractToolsFromMetadata;
@@ -50,6 +52,7 @@ class DatasetVersionPublishSideEffectsTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -63,7 +66,7 @@ class DatasetVersionPublishSideEffectsTest extends TestCase
             Dataset::findOrFail($created['dataset_id']),
             ['metadata' => $this->getMetadataV2p0(), 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.0',
         );
@@ -89,6 +92,7 @@ class DatasetVersionPublishSideEffectsTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',

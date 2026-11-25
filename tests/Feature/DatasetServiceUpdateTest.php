@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Services\Gwdm\SavedBy;
+use App\Enums\DatasetOrigin;
 use App\Models\DatasetVersion;
 use App\Enums\Partner;
 use App\Models\Team;
@@ -45,6 +47,7 @@ class DatasetServiceUpdateTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -68,7 +71,7 @@ class DatasetServiceUpdateTest extends TestCase
                 Dataset::findOrFail($datasetId),
                 ['metadata' => $this->getMetadataV2p0(), 'status' => Dataset::STATUS_ACTIVE],
                 $otherUser->id,
-                Dataset::ORIGIN_MANUAL,
+                DatasetOrigin::MANUAL,
                 Partner::CRUK,
                 targetGwdmVersion: '2.0',
             );
@@ -93,6 +96,7 @@ class DatasetServiceUpdateTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -118,7 +122,7 @@ class DatasetServiceUpdateTest extends TestCase
                 Dataset::findOrFail($datasetId),
                 ['metadata' => $metadata, 'status' => Dataset::STATUS_DRAFT],
                 $user->id,
-                Dataset::ORIGIN_MANUAL,
+                DatasetOrigin::MANUAL,
                 Partner::HDRUK,
                 targetGwdmVersion: '2.0',
             );
@@ -149,6 +153,7 @@ class DatasetServiceUpdateTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -158,7 +163,7 @@ class DatasetServiceUpdateTest extends TestCase
             dataset: Dataset::findOrFail($created['dataset_id']),
             input: ['metadata' => $this->getMetadataV2p1(), 'status' => Dataset::STATUS_ACTIVE],
             userId: $user->id,
-            createOrigin: Dataset::ORIGIN_MANUAL,
+            origin: DatasetOrigin::MANUAL,
             partnerContext: null,
             targetGwdmVersion: '2.1',
         );
@@ -184,6 +189,7 @@ class DatasetServiceUpdateTest extends TestCase
                 'is_cohort_discovery' => false,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -197,7 +203,7 @@ class DatasetServiceUpdateTest extends TestCase
                 'is_cohort_discovery' => true,
             ],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.0',
         );

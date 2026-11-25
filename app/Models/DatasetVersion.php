@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DatasetOrigin;
 use App\Models\Base\BaseTypesenseModel;
 use App\Observers\DatasetVersionObserver;
 use App\Services\DatasetService;
@@ -62,6 +63,13 @@ class DatasetVersion extends BaseTypesenseModel
     protected $casts = [
         'metadata' => 'array',
         'patch' => 'array',
+        'user_id' => 'integer',
+        'origin' => DatasetOrigin::class,
+    ];
+
+    protected $hidden = [
+        'user_id',
+        'origin',
     ];
 
     /**
@@ -88,6 +96,8 @@ class DatasetVersion extends BaseTypesenseModel
         'source_schema_model',
         'source_schema_version',
         'active_date',
+        'user_id',
+        'origin',
     ];
 
     /**

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Services\Gwdm\SavedBy;
+use App\Enums\DatasetOrigin;
 use App\Enums\Partner;
 use App\Models\DatasetVersion;
 use App\Models\Team;
@@ -52,6 +54,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -63,7 +66,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
                 Dataset::findOrFail($datasetId),
                 ['metadata' => $metadata, 'status' => Dataset::STATUS_DRAFT],
                 $user->id,
-                Dataset::ORIGIN_MANUAL,
+                DatasetOrigin::MANUAL,
                 Partner::HDRUK,
                 targetGwdmVersion: $gwdmVersion,
             );
@@ -105,6 +108,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -122,7 +126,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.0',
         );
@@ -136,7 +140,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $this->getMetadataV2p1(), 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.1',
         );
