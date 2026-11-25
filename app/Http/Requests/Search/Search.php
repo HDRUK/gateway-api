@@ -4,6 +4,8 @@ namespace App\Http\Requests\Search;
 
 use App\Http\Requests\BaseFormRequest;
 use App\Services\Search\AdvancedQueryCompiler;
+use App\Services\SearchAggregator;
+use Illuminate\Validation\Rule;
 use Closure;
 use InvalidArgumentException;
 
@@ -41,7 +43,7 @@ class Search extends BaseFormRequest
             'per_page' => 'integer',
             'download' => 'boolean',
             'providers' => ['nullable', 'array'],
-            'providers.*' => ['string'],
+            'providers.*' => ['string', Rule::notIn(app(SearchAggregator::class)->partnerShortNames())],
             'dataSource' => ['nullable', 'string', 'max:50'],
             // An and/or rule tree; see AdvancedQueryCompiler for its shape.
             // Compiled here so a malformed tree is a 422, not empty results.

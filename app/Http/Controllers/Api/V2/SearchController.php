@@ -42,6 +42,7 @@ class SearchController extends Controller
 
         $pending = [];
         $token   = null;
+        $ttl     = null;
 
         if (!empty($deferredProviders)) {
             $token        = 'srch_' . Str::random(32);
@@ -60,7 +61,7 @@ class SearchController extends Controller
                 );
             }
 
-            $pending = $pendingNames;
+            $pending = array_values(array_diff($pendingNames, $this->aggregator->partnerShortNames()));
 
             if (!empty($this->pendingPartners($pendingNames))) {
                 $pending[] = SearchAggregator::PARTNERS;
@@ -97,7 +98,7 @@ class SearchController extends Controller
         $results      = [];
         $stillPending = [];
 
-        foreach ($pendingNames as $shortName) {
+        foreach (array_diff($pendingNames, $this->aggregator->partnerShortNames()) as $shortName) {
             $result = Cache::get("search:deferred:{$token}:result:{$shortName}");
 
             if ($result !== null) {
