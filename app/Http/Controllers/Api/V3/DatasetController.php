@@ -7,9 +7,11 @@ use Auditor;
 use Exception;
 use App\Models\Dataset;
 use App\Models\Team;
+use App\Models\Application;
 use App\Context\GwdmVersionContext;
 use App\Context\PartnerContext;
 use App\Enums\Partner;
+use App\Enums\DatasetOrigin;
 use Laravel\Pennant\Feature;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
@@ -53,8 +55,7 @@ class DatasetController extends Controller
         $input = $this->isSuperAdmin($jwtUser)
             ? $request->validated()
             : Arr::except($request->validated(), 'is_cohort_discovery');
-        [$accessorUserId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
-        $userId = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $accessorUserId;
+        [$userId, $origin] = $this->savedBy($request);
         $team = Team::find($teamId);
 
         if (!$team) {
@@ -84,7 +85,7 @@ class DatasetController extends Controller
                     ...$input,
                     'user_id' => $userId,
                     'team_id' => $team->id,
-                    'create_origin' => $createOrigin,
+                    'create_origin' => $origin->value,
                 ],
                 team: $team,
                 inputSchema: $request->query('input_schema'),
@@ -137,7 +138,7 @@ class DatasetController extends Controller
         $input = $this->isSuperAdmin($jwtUser)
             ? $request->all()
             : $request->except('is_cohort_discovery');
-        [$userId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
+        [$userId, $origin] = $this->savedBy($request);
         $dataset = Dataset::find($id);
 
         if (!$dataset) {
@@ -162,7 +163,7 @@ class DatasetController extends Controller
                 dataset: $dataset,
                 input: $input,
                 userId: $userId,
-                createOrigin: $createOrigin,
+                createOrigin: $origin->value,
                 partnerContext: $requestedPartner,
                 targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
                 validateInput: $request->boolean('validate_input', true),
@@ -170,7 +171,7 @@ class DatasetController extends Controller
             );
 
             Auditor::log([
-                'user_id'     => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
+                'user_id'     => $userId,
                 'team_id'     => $dataset->team_id,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
@@ -309,5 +310,23 @@ class DatasetController extends Controller
             ]);
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * @return array{int, DatasetOrigin}
+     */
+    private function savedBy(Request $request): array
+    {
+        $jwtUser = $request->jwtUser();
+
+        if (isset($jwtUser['id'])) {
+            return [(int) $jwtUser['id'], DatasetOrigin::MANUAL];
+        }
+
+        $application = Application::where('app_id', $request->header('x-application-id'))
+            ->where('client_id', $request->header('x-client-id'))
+            ->firstOrFail();
+
+        return [(int) $application->user_id, DatasetOrigin::API];
     }
 }

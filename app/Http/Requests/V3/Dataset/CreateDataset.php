@@ -15,10 +15,6 @@ class CreateDataset extends BaseFormRequest
             'metadata' => [
                 'required',
             ],
-            'create_origin' => [
-                'string',
-                'in:MANUAL,API,GMI',
-            ],
             'status' => [
                 'required',
                 'string',

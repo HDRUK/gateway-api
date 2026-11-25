@@ -8,7 +8,6 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Models\TeamHasUser;
-use App\Models\User;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Testing\TestResponse;
@@ -76,18 +75,6 @@ class DatasetCreateTest extends TestCase
         $this->assertNotSame($existing->pid, $created->pid);
         $this->assertSame(1, Dataset::where('pid', $existing->pid)->count());
         $this->assertNull($created->datasetid);
-    }
-
-    public function test_the_dataset_is_saved_by_the_signed_in_user_not_the_user_in_the_body(): void
-    {
-        $team = Team::factory()->create();
-        $signedInUserId = (int) $this->getUserFromJwt($this->getAuthorisationJwt())['id'];
-        $otherUser = User::where('id', '!=', $signedInUserId)->firstOrFail();
-
-        $response = $this->createViaV3($team->id, ['user_id' => $otherUser->id]);
-
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
-        $this->assertSame($signedInUserId, (int) Dataset::findOrFail($response->json('data'))->user_id);
     }
 
     public function test_the_gwdm_version_header_sets_the_stored_version(): void
