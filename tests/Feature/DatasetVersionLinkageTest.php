@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Services\Gwdm\SavedBy;
+use App\Enums\DatasetOrigin;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\Publication;
@@ -77,6 +79,7 @@ class DatasetVersionLinkageTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',

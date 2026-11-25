@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Context\GwdmVersionContext;
+use App\Enums\DatasetOrigin;
 use App\Enums\Partner;
 use App\Exceptions\DatasetNotPublishableException;
 use App\Jobs\LinkageExtraction;
@@ -15,6 +16,7 @@ use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 use App\Models\Team;
 use App\Services\Gwdm\GwdmHandlerFactory;
+use App\Services\Gwdm\SavedBy;
 use App\Services\Gwdm\SnapshotRule;
 use App\Services\Gwdm\SourceSchema;
 use Config;
@@ -315,6 +317,7 @@ class DatasetService
     public function create(
         array $input,
         Team $team,
+        SavedBy $savedBy,
         ?string $inputSchema,
         ?string $inputVersion,
         string $targetGwdmVersion,
@@ -389,9 +392,11 @@ class DatasetService
             $handler,
             $gwdm,
             $sourceSchema,
+            $savedBy,
         ) {
             $version = MMC::createDatasetVersion([
                 ...$sourceSchema->toColumns(),
+                ...$savedBy->toColumns(),
                 'dataset_id' => $dataset->id,
                 'metadata' => json_encode($envelope),
                 'version' => 1,
@@ -434,7 +439,7 @@ class DatasetService
         Dataset $dataset,
         array $input,
         int $userId,
-        string $createOrigin,
+        DatasetOrigin $origin,
         ?Partner $partnerContext,
         string $targetGwdmVersion,
         bool $validateInput = true,
@@ -483,7 +488,7 @@ class DatasetService
         $datasetVersionId = DB::transaction(function () use (
             $dataset,
             $userId,
-            $createOrigin,
+            $origin,
             $input,
             $partnerContext,
             $gwdm,
@@ -497,7 +502,7 @@ class DatasetService
                 'user_id' => $userId,
                 'updated' => now(),
                 'pid' => $dataset->pid,
-                'create_origin' => $createOrigin,
+                'create_origin' => $origin->value,
                 'status' => $input['status'],
                 'is_cohort_discovery' => $input['is_cohort_discovery'] ?? $dataset->is_cohort_discovery,
                 'partner_context' => $partnerContext?->value ?? $dataset->partner_context,
@@ -511,6 +516,7 @@ class DatasetService
                 $submittedMetadata,
                 $latest,
                 SourceSchema::declared($inputSchema, $inputVersion),
+                SavedBy::person($userId, $origin),
                 $input['status'] === Dataset::STATUS_ACTIVE,
                 $targetGwdmVersion,
             );
@@ -735,6 +741,7 @@ class DatasetService
             $dv->short_title = $shortTitle;
             $dv->gwdm_version = $targetGwdmVersion;
             $dv->fill($sourceSchema->toColumns());
+            $dv->fill(SavedBy::unknown()->toColumns());
             $dv->save();
 
             $handler->afterStore($dataset, $dv, $newMetadata);
@@ -921,6 +928,7 @@ class DatasetService
         array $previousMetadata,
         DatasetVersion $latest,
         SourceSchema $sourceSchema,
+        SavedBy $savedBy,
         bool $publish,
         string $targetGwdmVersion,
     ): int {
@@ -939,6 +947,7 @@ class DatasetService
 
         $attributes = [
             ...$sourceSchema->toColumns(),
+            ...$savedBy->toColumns(),
             'metadata' => $isSnapshot ? json_encode($handler->buildEnvelope($newGwdmMetadata, $previousMetadata)) : [],
             'patch' => $isSnapshot
                 ? null

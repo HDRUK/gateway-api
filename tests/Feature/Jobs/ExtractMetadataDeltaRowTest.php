@@ -3,6 +3,8 @@
 namespace Tests\Feature\Jobs;
 
 use App\Jobs\ExtractPublicationsFromMetadata;
+use App\Services\Gwdm\SavedBy;
+use App\Enums\DatasetOrigin;
 use App\Jobs\ExtractToolsFromMetadata;
 use App\Models\Dataset;
 use App\Enums\Partner;
@@ -59,6 +61,7 @@ class ExtractMetadataDeltaRowTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -71,7 +74,7 @@ class ExtractMetadataDeltaRowTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.0',
         );

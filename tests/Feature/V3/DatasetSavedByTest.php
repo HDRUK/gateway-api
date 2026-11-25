@@ -4,6 +4,7 @@ namespace Tests\Feature\V3;
 
 use Config;
 use Tests\TestCase;
+use App\Enums\DatasetOrigin;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Team;
@@ -103,6 +104,114 @@ class DatasetSavedByTest extends TestCase
         $dataset->refresh();
         $this->assertSame($integrationOwner->id, (int) $dataset->user_id);
         $this->assertSame(Dataset::ORIGIN_API, $dataset->create_origin);
+    }
+
+    public function test_the_first_version_records_the_signed_in_user_as_a_manual_save(): void
+    {
+        $dataset = $this->createdDataset(Team::factory()->create());
+
+        $this->assertVersionSavedBy($dataset->id, 1, $this->signedInUserId(), DatasetOrigin::MANUAL);
+    }
+
+    public function test_the_first_version_records_the_integration_owner_as_an_api_save(): void
+    {
+        $team = Team::factory()->create();
+        $integrationOwner = User::where('id', '!=', $this->signedInUserId())->firstOrFail();
+        $integrationHeader = $this->createApp($team->id, $integrationOwner->id);
+
+        $response = $this->createViaV3($team->id, [], $integrationHeader);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+        $this->assertVersionSavedBy($response->json('data'), 1, $integrationOwner->id, DatasetOrigin::API);
+    }
+
+    public function test_each_version_keeps_who_saved_it(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->createdDataset($team);
+        $integrationOwner = User::where('id', '!=', $this->signedInUserId())->firstOrFail();
+        $integrationHeader = $this->createApp($team->id, $integrationOwner->id);
+
+        $this->updateViaV3($dataset->id, [], $integrationHeader)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertVersionSavedBy($dataset->id, 1, $this->signedInUserId(), DatasetOrigin::MANUAL);
+        $this->assertVersionSavedBy($dataset->id, 2, $integrationOwner->id, DatasetOrigin::API);
+    }
+
+    public function test_a_replaced_working_copy_records_who_saved_it_last(): void
+    {
+        $team = Team::factory()->create();
+        $draft = Dataset::findOrFail($this->createViaV3($team->id, ['status' => Dataset::STATUS_DRAFT])->json('data'));
+        $integrationOwner = User::where('id', '!=', $this->signedInUserId())->firstOrFail();
+        $integrationHeader = $this->createApp($team->id, $integrationOwner->id);
+
+        $this->updateViaV3($draft->id, ['status' => Dataset::STATUS_DRAFT], $integrationHeader)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertVersionSavedBy($draft->id, 1, $integrationOwner->id, DatasetOrigin::API);
+    }
+
+    public function test_a_version_overwritten_by_a_v2_dataset_update_no_longer_names_its_v3_saver(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->createdDataset($team);
+
+        $this->json('PUT', '/api/v2/datasets/' . $dataset->id, $this->v2UpdateBody($team->id), $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertVersionSaverUnknown($dataset->id, 1);
+    }
+
+    public function test_a_version_overwritten_by_a_v2_team_update_no_longer_names_its_v3_saver(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->createdDataset($team);
+
+        $this->json('PUT', '/api/v2/teams/' . $team->id . '/datasets/' . $dataset->id, $this->v2UpdateBody($team->id), $this->header)
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $this->assertVersionSaverUnknown($dataset->id, 1);
+    }
+
+    public function test_the_v1_and_v2_dataset_responses_do_not_show_who_saved_a_version(): void
+    {
+        $dataset = $this->createdDataset(Team::factory()->create());
+
+        foreach (['/api/v1/datasets/', '/api/v2/datasets/'] as $url) {
+            $this->json('GET', $url . $dataset->id, [], $this->header)
+                ->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+                ->assertJsonPath('data.versions.0.version', 1)
+                ->assertJsonMissingPath('data.versions.0.user_id')
+                ->assertJsonMissingPath('data.versions.0.origin');
+        }
+    }
+
+    private function assertVersionSavedBy(int $datasetId, int $version, int $userId, DatasetOrigin $origin): void
+    {
+        $row = DatasetVersion::where('dataset_id', $datasetId)->where('version', $version)->firstOrFail();
+
+        $this->assertSame($userId, $row->user_id);
+        $this->assertSame($origin, $row->origin);
+    }
+
+    private function assertVersionSaverUnknown(int $datasetId, int $version): void
+    {
+        $row = DatasetVersion::where('dataset_id', $datasetId)->where('version', $version)->firstOrFail();
+
+        $this->assertNull($row->user_id);
+        $this->assertNull($row->origin);
+    }
+
+    private function v2UpdateBody(int $teamId): array
+    {
+        return [
+            'team_id' => $teamId,
+            'user_id' => $this->signedInUserId(),
+            'metadata' => $this->getMetadata(),
+            'create_origin' => Dataset::ORIGIN_MANUAL,
+            'status' => Dataset::STATUS_ACTIVE,
+        ];
     }
 
     private function signedInUserId(): int

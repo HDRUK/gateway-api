@@ -11,6 +11,7 @@ use App\Context\GwdmVersionContext;
 use App\Context\OutputSchemaContext;
 use App\Context\PartnerContext;
 use App\Services\DatasetService;
+use App\Services\Gwdm\SavedBy;
 use App\Http\Traits\CheckAccess;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V2\Dataset\GetDataset;
@@ -286,6 +287,7 @@ class DatasetController extends Controller
             $result = $this->datasetService->create(
                 input: $input,
                 team: $team,
+                savedBy: SavedBy::unknown(),
                 inputSchema: $request->query('input_schema'),
                 inputVersion: $request->query('input_version'),
                 targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),

@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Services\Gwdm\SavedBy;
+use App\Enums\DatasetOrigin;
 use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Models\User;
@@ -49,6 +51,7 @@ class DatasetServiceCreateTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             team: $team,
+            savedBy: SavedBy::person($user->id, DatasetOrigin::MANUAL),
             inputSchema: null,
             inputVersion: null,
             targetGwdmVersion: '2.1',
@@ -74,6 +77,7 @@ class DatasetServiceCreateTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',

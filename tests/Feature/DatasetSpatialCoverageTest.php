@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Services\Gwdm\SavedBy;
+use App\Enums\DatasetOrigin;
 use App\Enums\Partner;
 use App\Models\DatasetVersion;
 use App\Models\Team;
@@ -49,6 +51,7 @@ class DatasetSpatialCoverageTest extends TestCase
                 'create_origin' => Dataset::ORIGIN_MANUAL,
             ],
             $team,
+            SavedBy::person($user->id, DatasetOrigin::MANUAL),
             null,
             null,
             targetGwdmVersion: '2.0',
@@ -74,7 +77,7 @@ class DatasetSpatialCoverageTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $replacement, 'status' => Dataset::STATUS_DRAFT],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.0',
         );
@@ -109,7 +112,7 @@ class DatasetSpatialCoverageTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $updateMetadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.0',
         );
@@ -135,7 +138,7 @@ class DatasetSpatialCoverageTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            Dataset::ORIGIN_MANUAL,
+            DatasetOrigin::MANUAL,
             Partner::HDRUK,
             targetGwdmVersion: '2.0',
         );

@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Services\Gwdm\SavedBy;
 use App\Services\Gwdm\SourceSchema;
 use Config;
 use App\Models\Dataset;
@@ -143,6 +144,7 @@ trait MetadataVersioning
         $dv->metadata     = json_encode($metadataSaveObject);
         $dv->gwdm_version = $gwdmVersion;
         $dv->fill($sourceSchema->toColumns());
+        $dv->fill(SavedBy::unknown()->toColumns());
         $dv->title        = $newMetadata['summary']['title'] ?? null;
         $dv->short_title  = $newMetadata['summary']['shortTitle'] ?? ($newMetadata['summary']['title'] ?? null);
         $dv->save();
