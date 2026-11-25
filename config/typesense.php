@@ -98,6 +98,9 @@ return [
         'model'              => env('TYPESENSE_SUMMARY_EMBEDDING_MODEL', 'ts/all-MiniLM-L12-v2'),
         'distance_threshold' => (float) env('TYPESENSE_SUMMARY_EMBEDDING_DISTANCE', 0.70),
         'partners'           => '', //empty indexes every partner
+        'max_terms'          => 6,
+        'max_datasets'       => 50,
+        'per_dataset'        => 5,
 
         // Typesense embeds as it imports, so a large dataset in one request
         // can outlast a proxy's timeout. Documents go in batches instead,
