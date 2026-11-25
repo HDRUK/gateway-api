@@ -6,6 +6,9 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\TeamHasUser;
+use App\Models\User;
 use App\Models\Team;
 use App\Models\Application;
 use App\Context\GwdmVersionContext;
@@ -248,7 +251,13 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $versions = $this->datasetService->listPublishedVersions($dataset);
+            $showSaver = $this->isTeamMember(auth('jwt')->user(), $dataset);
+            $versions = $this->datasetService->listPublishedVersions($dataset)
+                ->map(fn (DatasetVersion $version) => [
+                    ...$version->attributesToArray(),
+                    'origin' => $version->origin?->value,
+                    ...($showSaver ? ['saved_by' => $version->savedByUser?->only(['id', 'name'])] : []),
+                ]);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -312,6 +321,12 @@ class DatasetController extends Controller
             ]);
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function isTeamMember(?User $user, Dataset $dataset): bool
+    {
+        return $user !== null
+            && TeamHasUser::where(['team_id' => $dataset->team_id, 'user_id' => $user->id])->exists();
     }
 
     /**
