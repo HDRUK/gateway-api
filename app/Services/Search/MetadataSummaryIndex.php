@@ -249,37 +249,37 @@ class MetadataSummaryIndex
     }
 
     /**
-     * Replaces one dataset's variables with those of its indexed version,
+     * Replaces one dataset's summary documents with those of its indexed version,
      * or removes them when no version is indexed or its partner isn't.
      */
-    // public function syncDataset(int $datasetId): int
-    // {
-    //     $this->ensureCollection();
-    //     $this->removeDataset($datasetId);
+    public function syncDataset(int $datasetId): int
+    {
+        $this->ensureCollection();
+        $this->removeDataset($datasetId);
 
-    //     // Read directly: the dataset() relation doesn't select partner_context.
-    //     $partner = Dataset::where('id', $datasetId)->value('partner_context');
-    //     if ($partner === null || ! self::indexesPartner($partner)) {
-    //         return 0;
-    //     }
+        // Read directly: the dataset() relation doesn't select partner_context.
+        $partner = Dataset::where('id', $datasetId)->value('partner_context');
+        if ($partner === null || ! self::indexesPartner($partner)) {
+            return 0;
+        }
 
-    //     $version = DatasetVersion::query()
-    //         ->where('dataset_id', $datasetId)
-    //         ->with(self::documentRelations())
-    //         ->orderByDesc('version')
-    //         ->first();
+        $version = DatasetVersion::query()
+            ->where('dataset_id', $datasetId)
+            ->with(self::documentRelations())
+            ->orderByDesc('version')
+            ->first();
 
-    //     if (! $version || ! $version->shouldBeSearchable()) {
-    //         return 0;
-    //     }
+        if (! $version || ! $version->shouldBeSearchable()) {
+            return 0;
+        }
 
-    //     return $this->import($this->documentsFor($version));
-    // }
+        return $this->import($this->documentsFor($version));
+    }
 
     /**
      * What documentsFor() reads from a version's dataset. Eager-loaded
      * because the dataset() relation alone doesn't select partner_context,
-     * and every variable would be filed under HDRUK.
+     * and every document would be filed under HDRUK.
      */
     private static function documentRelations(): array
     {
@@ -426,10 +426,10 @@ class MetadataSummaryIndex
         );
     }
 
-    // private function ensureCollection(): void
-    // {
-    //     if (! $this->typesense->collectionExists(self::collectionName())) {
-    //         $this->typesense->createCollection($this->schema());
-    //     }
-    // }
+    private function ensureCollection(): void
+    {
+        if (! $this->typesense->collectionExists(self::collectionName())) {
+            $this->typesense->createCollection($this->schema());
+        }
+    }
 }

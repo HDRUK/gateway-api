@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Jobs\ExtractProjectGrantsFromMetadata;
 use App\Jobs\ExtractPublicationsFromMetadata;
 use App\Jobs\ExtractToolsFromMetadata;
+use App\Jobs\SyncDatasetMetadataSummary;
 use App\Jobs\SyncDatasetVariables;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -37,6 +38,8 @@ class DatasetVersionObserver
 
     private function handleDatasetVersionChange(DatasetVersion $datasetVersion, bool $extractLinks): void
     {
+        SyncDatasetMetadataSummary::dispatch((int) $datasetVersion->dataset_id);
+            
         $dataset = Dataset::where([
             'id' => $datasetVersion->dataset_id,
         ])->select('id', 'status', 'team_id')->first();
