@@ -32,7 +32,7 @@ class CloserClientTest extends TestCase
             'closer.example.test/api/v1/*' => Http::response(['ok' => true]),
         ]);
 
-        $client = new CloserClient;
+        $client = new CloserClient();
         $client->get('item/example.agency/abc-123');
         $client->get('item/example.agency/abc-123/history');
 
@@ -52,7 +52,7 @@ class CloserClientTest extends TestCase
                 ->push(['ok' => true]),
         ]);
 
-        $response = (new CloserClient)->get('item/example.agency/abc-123');
+        $response = (new CloserClient())->get('item/example.agency/abc-123');
 
         $this->assertTrue($response->successful());
         Http::assertSent(fn (Request $r) => $r->url() === self::ITEM_URL
@@ -64,7 +64,7 @@ class CloserClientTest extends TestCase
         Http::fake(['closer.example.test/token/createtoken' => Http::response('', 403)]);
 
         try {
-            (new CloserClient)->get('item/example.agency/abc-123');
+            (new CloserClient())->get('item/example.agency/abc-123');
             $this->fail('Expected an exception');
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('403', $e->getMessage());
