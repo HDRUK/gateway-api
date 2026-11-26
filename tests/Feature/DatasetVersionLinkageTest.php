@@ -19,9 +19,6 @@ use Tests\Traits\MockExternalApis;
 /**
  * Covers dataset/publication linkage extraction, free-text fallback, and
  * resolved-title read-back via DatasetService/Gwdm2xHandler.
- *
- * Drives DatasetService/handlers directly; the x-gwdm-version header steers
- * the target GWDM version via GwdmVersionContext.
  */
 class DatasetVersionLinkageTest extends TestCase
 {
@@ -33,11 +30,6 @@ class DatasetVersionLinkageTest extends TestCase
     protected function setUp(): void
     {
         $this->commonSetUp();
-    }
-
-    private function setGwdmHeader(string $version): void
-    {
-        request()->headers->set('x-gwdm-version', $version);
     }
 
     private function service(): DatasetService
@@ -76,7 +68,6 @@ class DatasetVersionLinkageTest extends TestCase
         $team = Team::first();
         $user = User::first();
 
-        $this->setGwdmHeader('2.0');
         $created = $this->service()->create(
             [
                 'metadata' => $metadata,
@@ -88,6 +79,7 @@ class DatasetVersionLinkageTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
 
         $this->assertTrue($created['translated']);

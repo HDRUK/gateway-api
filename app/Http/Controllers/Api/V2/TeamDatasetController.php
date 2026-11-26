@@ -9,6 +9,7 @@ use Exception;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\DatasetShareToken;
 use App\Jobs\LinkageExtraction;
 use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
@@ -683,6 +684,8 @@ class TeamDatasetController extends Controller
                 ...($requestedPartner !== null ? ['partner_context' => $requestedPartner] : []),
             ]);
 
+            DatasetShareToken::revokeForActivatedDataset($currDataset->id, $request['status']);
+
             $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
             $datasetVersionId = $this->updateMetadataVersion(
@@ -823,6 +826,8 @@ class TeamDatasetController extends Controller
 
             $datasetModel->status = $request['status'];
             $datasetModel->save();
+
+            DatasetShareToken::revokeForActivatedDataset($datasetModel->id, $request['status']);
 
             $metadata = DatasetVersion::where('dataset_id', $id)->latest()->first();
 

@@ -16,6 +16,13 @@ class UpdateUser extends BaseFormRequest
     {
         $id = $this->route('id');
 
+        // OpenAthens SSO emails are owned by the login flow, not the profile
+        // form: the controller ignores the submitted value, so don't reject
+        // the save over a legacy invalid address the client echoes back (GAT-9881).
+        if (User::where('id', $id)->value('provider') === 'open-athens') {
+            $emailRules = ['nullable'];
+        }
+
         return [
             'id' => [
                 'int',
@@ -30,7 +37,7 @@ class UpdateUser extends BaseFormRequest
                 'required',
                 'string',
             ],
-            'email' => [
+            'email' => $emailRules ?? [
                 'required',
                 'string',
                 'email',

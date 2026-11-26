@@ -32,7 +32,7 @@ trait TeamTransformation
 
         $teamIds = $teams->pluck('id')->all();
 
-        $teamHasUserIds = $teams->map(fn($team) => $this->getTeamHasUsers($team))->flatten()->all();
+        $teamHasUserIds = $teams->map(fn ($team) => $this->getTeamHasUsers($team))->flatten()->all();
 
         $rolesByTeamHasUserId = TeamHasUser::whereIn('id', $teamHasUserIds)
             ->with('roles', 'roles.permissions')
@@ -57,14 +57,13 @@ trait TeamTransformation
 
         $aliasesById = Alias::whereIn('id', $allAliasIds)->get()->keyBy('id');
 
-        return $teams->map(function ($team) 
-            use (
-                $notificationsByTeamId, 
-                $notificationsById, 
-                $aliasIdsByTeamId,
-                $aliasesById,
-                $rolesByTeamHasUserId,
-            ) {
+        return $teams->map(function ($team) use (
+            $notificationsByTeamId,
+            $notificationsById,
+            $aliasIdsByTeamId,
+            $aliasesById,
+            $rolesByTeamHasUserId,
+        ) {
 
             $notificationIds = $notificationsByTeamId->get($team['id'], collect())->pluck('notification_id')->unique()->values()->all();
 
@@ -93,7 +92,7 @@ trait TeamTransformation
         if (!$team) {
             return [];
         }
-           
+
         return $this->getTeams(collect([$team]))[0];
     }
 
@@ -253,7 +252,7 @@ trait TeamTransformation
 
         $teamHasUserId = (int) $userArray['pivot']['id'];
 
-        $tmpUser['roles'] = $teamUserRoles->get($teamHasUserId)->roles->map(fn(Role $role) => $role)->toArray();
+        $tmpUser['roles'] = $teamUserRoles->get($teamHasUserId)->roles->map(fn (Role $role) => $role)->toArray();
 
         return $tmpUser;
     }

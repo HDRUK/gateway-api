@@ -539,6 +539,80 @@ return [
         ],
     ],
 
+    // v2 dataset share tokens (collaborative onboarding)
+    [
+        'name' => 'dataset_share_tokens.index',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/datasets/share-tokens',
+        'methodController' => 'DatasetShareTokenController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dataset_share_tokens.store',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/datasets/share-tokens',
+        'methodController' => 'DatasetShareTokenController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dataset_share_tokens.destroy',
+        'method' => 'delete',
+        'path' => '/teams/{teamId}/datasets/share-tokens/{id}',
+        'methodController' => 'DatasetShareTokenController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
+        ],
+    ],
+
+    // v2 public collaborative dataset onboarding (accessed via share token, no auth)
+    [
+        'name' => 'dataset_collab.show',
+        'method' => 'get',
+        'path' => '/collab/{token}',
+        'methodController' => 'DatasetCollabController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dataset_collab.update',
+        'method' => 'put',
+        'path' => '/collab/{token}',
+        'methodController' => 'DatasetCollabController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dataset_collab.ready',
+        'method' => 'patch',
+        'path' => '/collab/{token}/ready',
+        'methodController' => 'DatasetCollabController@markReadyForReview',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
     // v2 data uses
     [
         'name' => 'durs.get.active',

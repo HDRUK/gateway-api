@@ -1,11 +1,13 @@
 <?php
 
-namespace Tests\Feature\V2;
+namespace Tests\Feature\V3;
 
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\TeamHasUser;
+use App\Services\DatasetService;
 use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -282,6 +284,307 @@ class DatasetVersioningTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
+    public function test_update_without_a_status_is_rejected(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+
+        $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+            ],
+            $this->header,
+        )->assertStatus(Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+
+        $this->assertSame(1, DatasetVersion::where('dataset_id', $datasetId)->count());
+    }
+
+    public function test_draft_saves_of_a_never_published_dataset_replace_its_only_version(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata, Dataset::STATUS_DRAFT);
+
+        $this->saveViaV3($datasetId, $userId, 'Draft one', Dataset::STATUS_DRAFT);
+        $this->saveViaV3($datasetId, $userId, 'Draft two', Dataset::STATUS_DRAFT);
+        $this->saveViaV3($datasetId, $userId, 'Draft three', Dataset::STATUS_DRAFT);
+
+        $this->assertSame(1, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertNull($this->versionRow($datasetId, 1)->active_date);
+        $this->assertSame('Draft three', $this->reconstructedTitle($datasetId, 1));
+    }
+
+    public function test_first_publish_keeps_the_draft_version_number_and_marks_it_published(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata, Dataset::STATUS_DRAFT);
+
+        $this->saveViaV3($datasetId, $userId, 'Published title', Dataset::STATUS_ACTIVE);
+
+        $this->assertSame(1, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertNotNull($this->versionRow($datasetId, 1)->active_date);
+        $this->assertSame('Published title', $this->reconstructedTitle($datasetId, 1));
+    }
+
+    public function test_draft_edits_of_a_published_dataset_share_one_working_version_and_leave_the_published_one_alone(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        $publishedBefore = $this->versionRow($datasetId, 1)->getAttributes();
+
+        $this->saveViaV3($datasetId, $userId, 'Working copy one', Dataset::STATUS_DRAFT);
+        $this->saveViaV3($datasetId, $userId, 'Working copy two', Dataset::STATUS_DRAFT);
+
+        $this->assertSame(2, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertNull($this->versionRow($datasetId, 2)->active_date);
+        $this->assertSame('Working copy two', $this->reconstructedTitle($datasetId, 2));
+        $this->assertSame($publishedBefore, $this->versionRow($datasetId, 1)->getAttributes());
+
+        $this->saveViaV3($datasetId, $userId, 'Republished', Dataset::STATUS_ACTIVE);
+
+        $this->assertSame(2, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertNotNull($this->versionRow($datasetId, 2)->active_date);
+        $this->assertSame('Republished', $this->reconstructedTitle($datasetId, 2));
+    }
+
+    public function test_replacing_a_working_version_diffs_against_the_published_one_before_it(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        $this->saveViaV3($datasetId, $userId, 'Published v2', Dataset::STATUS_ACTIVE);
+        $this->saveViaV3($datasetId, $userId, 'Published v3', Dataset::STATUS_ACTIVE);
+
+        $this->saveViaV3($datasetId, $userId, 'Working A', Dataset::STATUS_DRAFT);
+        $this->saveViaV3($datasetId, $userId, 'Working B', Dataset::STATUS_DRAFT);
+
+        $this->assertNotNull($this->versionRow($datasetId, 4)->patch);
+        $this->assertSame('Working B', $this->reconstructedTitle($datasetId, 4));
+        $this->assertSame('Published v3', $this->reconstructedTitle($datasetId, 3));
+    }
+
+    public function test_history_of_a_published_dataset_being_edited_lists_only_published_versions(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        $this->saveViaV3($datasetId, $userId, 'Working copy', Dataset::STATUS_DRAFT);
+
+        $this->assertSame([1], $this->listedVersionNumbers($datasetId));
+        $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/2')
+            ->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+
+        $this->saveViaV3($datasetId, $userId, 'Republished', Dataset::STATUS_ACTIVE);
+
+        $this->assertSame([1, 2], $this->listedVersionNumbers($datasetId));
+        $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/2')
+            ->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    public function test_history_of_a_never_published_dataset_is_empty(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata, Dataset::STATUS_DRAFT);
+
+        $this->assertSame([], $this->listedVersionNumbers($datasetId));
+        $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/version/1')
+            ->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    }
+
+    public function test_versions_after_a_replaced_one_rebuild_from_its_final_content(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        $fixtureAbstract = $this->metadata['metadata']['summary']['abstract'];
+
+        $this->saveViaV3($datasetId, $userId, 'Working', Dataset::STATUS_DRAFT, 'Working abstract');
+        $this->saveViaV3($datasetId, $userId, 'Published v2', Dataset::STATUS_ACTIVE, 'Final abstract');
+        $this->saveViaV3($datasetId, $userId, 'Published v3', Dataset::STATUS_ACTIVE);
+
+        $v2 = app(DatasetService::class)->getReconstructedMetadataEnvelope($datasetId, 2, false)['metadata']['summary'];
+        $v3 = app(DatasetService::class)->getReconstructedMetadataEnvelope($datasetId, 3, false)['metadata']['summary'];
+
+        $this->assertSame(3, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertSame(['Published v2', 'Final abstract'], [$v2['title'], $v2['abstract']]);
+        $this->assertSame(['Published v3', $fixtureAbstract], [$v3['title'], $v3['abstract']]);
+    }
+
+    public function test_replacing_a_working_version_keeps_its_row(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata, Dataset::STATUS_DRAFT);
+        $rowId = $this->versionRow($datasetId, 1)->id;
+
+        $this->saveViaV3($datasetId, $userId, 'Replaced', Dataset::STATUS_DRAFT);
+
+        $this->assertSame(1, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertSame($rowId, $this->versionRow($datasetId, 1)->id);
+    }
+
+    public function test_archived_saves_add_one_unpublished_version_and_then_replace_it(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+
+        $this->saveViaV3($datasetId, $userId, 'Archived A', Dataset::STATUS_ARCHIVED);
+        $this->saveViaV3($datasetId, $userId, 'Archived B', Dataset::STATUS_ARCHIVED);
+
+        $this->assertSame(2, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertNull($this->versionRow($datasetId, 2)->active_date);
+        $this->assertSame('Archived B', $this->reconstructedTitle($datasetId, 2));
+    }
+
+    public function test_a_replaced_tenth_version_stays_a_full_copy(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        for ($version = 2; $version <= 9; $version++) {
+            $this->saveViaV3($datasetId, $userId, "Published v{$version}", Dataset::STATUS_ACTIVE);
+        }
+
+        $this->saveViaV3($datasetId, $userId, 'Working A', Dataset::STATUS_DRAFT);
+        $this->saveViaV3($datasetId, $userId, 'Working B', Dataset::STATUS_DRAFT);
+
+        $this->assertSame(10, DatasetVersion::where('dataset_id', $datasetId)->count());
+        $this->assertNull($this->versionRow($datasetId, 10)->patch);
+        $this->assertSame('Working B', $this->reconstructedTitle($datasetId, 10));
+    }
+
+    public function test_update_without_cohort_discovery_keeps_the_current_setting(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        Dataset::findOrFail($datasetId)->update(['is_cohort_discovery' => true]);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertTrue((bool) Dataset::findOrFail($datasetId)->is_cohort_discovery);
+    }
+
+    public function test_non_admin_update_cannot_change_cohort_discovery(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        Dataset::findOrFail($datasetId)->update(['is_cohort_discovery' => true]);
+        $metadataManagerHeader = $this->metadataManagerHeaderForTeam($teamId);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+                'is_cohort_discovery' => false,
+            ],
+            $metadataManagerHeader,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertTrue((bool) Dataset::findOrFail($datasetId)->is_cohort_discovery);
+    }
+
+    public function test_admin_update_can_change_cohort_discovery(): void
+    {
+        [$teamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($teamId, $userId, $this->metadata);
+        Dataset::findOrFail($datasetId)->update(['is_cohort_discovery' => true]);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+                'is_cohort_discovery' => false,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertFalse((bool) Dataset::findOrFail($datasetId)->is_cohort_discovery);
+    }
+
+    public function test_update_returns_404_for_nonexistent_dataset(): void
+    {
+        [, $userId] = $this->createTeamAndUser();
+        $missingDatasetId = Dataset::withTrashed()->max('id') + 1;
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $missingDatasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        $response->assertJson(['message' => 'Dataset not found']);
+    }
+
+    public function test_update_does_not_move_dataset_to_the_team_named_in_the_body(): void
+    {
+        [$owningTeamId, $userId] = $this->createTeamAndUser();
+        [$otherTeamId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($owningTeamId, $userId, $this->metadata);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'team_id' => $otherTeamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSame($owningTeamId, Dataset::findOrFail($datasetId)->team_id);
+    }
+
+    public function test_update_without_a_team_in_the_body_keeps_the_dataset_team(): void
+    {
+        [$owningTeamId, $userId] = $this->createTeamAndUser();
+        $datasetId = $this->createDataset($owningTeamId, $userId, $this->metadata);
+
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $this->assertSame($owningTeamId, Dataset::findOrFail($datasetId)->team_id);
+    }
+
     // -------------------------------------------------------------------------
     // Test 4 — 10th version materialises as a full snapshot
     // -------------------------------------------------------------------------
@@ -351,6 +654,33 @@ class DatasetVersioningTest extends TestCase
      * Create a notification, team, and user in one call.
      * Returns [$teamId, $userId].
      */
+    private function metadataManagerHeaderForTeam(int $teamId): array
+    {
+        $this->authorisationUser(false);
+        $jwt = $this->getAuthorisationJwt(false);
+        $metadataManager = $this->getUserFromJwt($jwt);
+
+        TeamHasUser::create([
+            'team_id' => $teamId,
+            'user_id' => (int) $metadataManager['id'],
+        ]);
+
+        $this->json(
+            'POST',
+            self::TEST_URL_TEAM . '/' . $teamId . '/users',
+            [
+                'userId' => $metadataManager['id'],
+                'roles' => ['custodian.metadata.manager'],
+            ],
+            $this->header,
+        )->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'));
+
+        return [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
+    }
+
     private function createTeamAndUser(): array
     {
         $notificationId = $this->createNotification();
@@ -362,7 +692,51 @@ class DatasetVersioningTest extends TestCase
     /**
      * POST /api/v2/datasets and return the new dataset ID.
      */
-    private function createDataset(int $teamId, int $userId, array $metadata): int
+    private function saveViaV3(int $datasetId, int $userId, string $title, string $status, ?string $abstract = null): void
+    {
+        $metadata = $this->metadata;
+        $metadata['metadata']['summary']['title'] = $title;
+        if ($abstract !== null) {
+            $metadata['metadata']['summary']['abstract'] = $abstract;
+        }
+
+        $this->json(
+            'PUT',
+            self::TEST_URL_DATASET_V3 . '/' . $datasetId,
+            [
+                'user_id' => $userId,
+                'metadata' => $metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => $status,
+            ],
+            $this->header,
+        )->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function listedVersionNumbers(int $datasetId): array
+    {
+        $response = $this->json('GET', self::TEST_URL_DATASET_V3 . '/' . $datasetId . '/versions');
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        return array_column($response->json('data'), 'version');
+    }
+
+    private function versionRow(int $datasetId, int $version): DatasetVersion
+    {
+        return DatasetVersion::where('dataset_id', $datasetId)->where('version', $version)->firstOrFail();
+    }
+
+    private function reconstructedTitle(int $datasetId, int $version): ?string
+    {
+        $envelope = app(DatasetService::class)->getReconstructedMetadataEnvelope($datasetId, $version, false);
+
+        return $envelope['metadata']['summary']['title'] ?? null;
+    }
+
+    private function createDataset(int $teamId, int $userId, array $metadata, string $status = Dataset::STATUS_ACTIVE): int
     {
         $response = $this->json(
             'POST',
@@ -372,7 +746,7 @@ class DatasetVersioningTest extends TestCase
                 'user_id' => $userId,
                 'metadata' => $metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_ACTIVE,
+                'status' => $status,
             ],
             $this->header,
         );

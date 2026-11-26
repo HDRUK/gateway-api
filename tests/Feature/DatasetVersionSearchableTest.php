@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Enums\Partner;
 use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Models\User;
@@ -46,7 +47,6 @@ class DatasetVersionSearchableTest extends TestCase
      */
     private function createDeltaVersion(Team $team, User $user, array $metadata): DatasetVersion
     {
-        request()->headers->set('x-gwdm-version', '2.0');
 
         $created = $this->service()->create(
             [
@@ -59,6 +59,7 @@ class DatasetVersionSearchableTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
         $datasetId = $created['dataset_id'];
 
@@ -67,9 +68,9 @@ class DatasetVersionSearchableTest extends TestCase
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            $team->id,
             Dataset::ORIGIN_MANUAL,
-            $team,
+            Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
 
         $v2 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 2)->first();
@@ -151,7 +152,6 @@ class DatasetVersionSearchableTest extends TestCase
         ];
         $this->assertNotSame('Example Publisher Ltd', $team->name);
 
-        request()->headers->set('x-gwdm-version', '2.0');
         $created = $this->service()->create(
             [
                 'metadata' => $metadata,
@@ -163,6 +163,7 @@ class DatasetVersionSearchableTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
 
         $version = DatasetVersion::where('dataset_id', $created['dataset_id'])->first();

@@ -5,15 +5,24 @@ namespace App\Http\Controllers\Api\V3;
 use Config;
 use Auditor;
 use Exception;
-use App\Models\Team;
 use App\Models\Dataset;
+use App\Models\Team;
+use App\Context\GwdmVersionContext;
+use App\Context\PartnerContext;
+use App\Enums\Partner;
+use Laravel\Pennant\Feature;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use App\Services\DatasetService;
+use App\Exceptions\DatasetNotPublishableException;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Requests\V2\Dataset\UpdateDataset;
+use App\Http\Requests\V3\Dataset\ChangeDatasetStatus;
+use App\Http\Requests\V3\Dataset\CreateDataset;
+use App\Http\Requests\V3\Dataset\UpdateDataset;
 
 /**
  * V3 Dataset controller.
@@ -31,7 +40,88 @@ class DatasetController extends Controller
 
     public function __construct(
         private readonly DatasetService $datasetService,
+        private readonly GwdmVersionContext $gwdmVersionContext,
     ) {
+    }
+
+    /**
+     * POST /api/v3/teams/{teamId}/datasets
+     */
+    public function store(CreateDataset $request, int $teamId): JsonResponse
+    {
+        $jwtUser = $request->jwtUser();
+        $input = $this->isSuperAdmin($jwtUser)
+            ? $request->validated()
+            : Arr::except($request->validated(), 'is_cohort_discovery');
+        [$accessorUserId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
+        $userId = isset($jwtUser['id']) ? (int) $jwtUser['id'] : $accessorUserId;
+        $team = Team::find($teamId);
+
+        if (!$team) {
+            return response()->json(['message' => 'Team not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $this->checkAccess($input, $team->id, null, 'team', $request->header());
+
+        $partnerContext = Feature::active(PartnerContext::SELECTOR_FLAG)
+            ? $request->header('x-partner-context')
+            : null;
+        $requestedPartner = $partnerContext !== null ? Partner::tryFrom($partnerContext) : null;
+
+        if ($partnerContext !== null && $requestedPartner === null) {
+            return response()->json([
+                'message' => 'Unknown partner context',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (empty($input['metadata']['metadata']['summary']['title'])) {
+            return response()->json(['message' => 'Title is required to save a dataset'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $this->datasetService->create(
+                input: [
+                    ...$input,
+                    'user_id' => $userId,
+                    'team_id' => $team->id,
+                    'create_origin' => $createOrigin,
+                ],
+                team: $team,
+                inputSchema: $request->query('input_schema'),
+                inputVersion: $request->query('input_version'),
+                targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
+                partnerContext: ($requestedPartner ?? Partner::HDRUK)->value,
+            );
+
+            if (!$result['translated']) {
+                return response()->json([
+                    'message' => 'metadata is in an unknown format and cannot be processed',
+                    'details' => $result['response'],
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            Auditor::log([
+                'user_id'     => $userId,
+                'team_id'     => $team->id,
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dataset ' . $result['dataset_id'] . ' with version ' . $result['version_id'] . ' created',
+            ]);
+
+            return response()->json([
+                'message' => 'created',
+                'data'    => $result['dataset_id'],
+                'version' => $result['version_id'],
+            ], Response::HTTP_CREATED);
+        } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -39,32 +129,49 @@ class DatasetController extends Controller
      *
      * Update dataset metadata using the delta-versioning strategy: each save
      * creates an immutable version row (RFC 6902 patch for deltas, full
-     * snapshot every SNAPSHOT_INTERVAL versions).
+     * snapshot every SnapshotRule::INTERVAL versions).
      */
     public function update(UpdateDataset $request, int $id): JsonResponse
     {
-        $input = $request->all();
-        list($userId, $teamId, $createOrigin) = $this->getAccessorUserAndTeam($request);
         $jwtUser = $request->jwtUser();
-        $dataset = Dataset::where('id', $id)->first();
+        $input = $this->isSuperAdmin($jwtUser)
+            ? $request->all()
+            : $request->except('is_cohort_discovery');
+        [$userId, , $createOrigin] = $this->getAccessorUserAndTeam($request);
+        $dataset = Dataset::find($id);
+
+        if (!$dataset) {
+            return response()->json(['message' => 'Dataset not found'], 404);
+        }
+
         $this->checkAccess($input, $dataset->team_id, null, 'team', $request->header());
 
+        $partnerHeader = Feature::active(PartnerContext::SELECTOR_FLAG)
+            ? $request->header('x-partner-context')
+            : null;
+        $requestedPartner = $partnerHeader !== null ? Partner::tryFrom($partnerHeader) : null;
+
+        if ($partnerHeader !== null && $requestedPartner === null) {
+            return response()->json([
+                'message' => 'Unknown partner context',
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
+
         try {
-            $team          = Team::where('id', $teamId)->first();
             $versionNumber = $this->datasetService->update(
                 dataset: $dataset,
                 input: $input,
                 userId: $userId,
-                teamId: $teamId,
                 createOrigin: $createOrigin,
-                team: $team,
+                partnerContext: $requestedPartner,
+                targetGwdmVersion: $this->gwdmVersionContext->targetVersion(),
                 validateInput: $request->boolean('validate_input', true),
                 validateOutput: $request->boolean('validate_output', true),
             );
 
             Auditor::log([
                 'user_id'     => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $userId,
-                'team_id'     => $teamId,
+                'team_id'     => $dataset->team_id,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'Dataset ' . $id . ' updated to version ' . $versionNumber,
@@ -88,6 +195,40 @@ class DatasetController extends Controller
     }
 
     /**
+     * PATCH /api/v3/datasets/{id}
+     */
+    public function changeStatus(ChangeDatasetStatus $request, int $id): JsonResponse
+    {
+        $jwtUser = $request->jwtUser();
+        [$accessorUserId] = $this->getAccessorUserAndTeam($request);
+        $dataset = Dataset::find($id);
+
+        if (!$dataset) {
+            return response()->json(['message' => 'Dataset not found'], 404);
+        }
+
+        $this->checkAccess($request->all(), $dataset->team_id, null, 'team', $request->header());
+
+        try {
+            $this->datasetService->changeStatus($dataset, $request->input('status'));
+        } catch (DatasetNotPublishableException $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode());
+        }
+
+        Auditor::log([
+            'user_id'     => isset($jwtUser['id']) ? (int) $jwtUser['id'] : $accessorUserId,
+            'team_id'     => $dataset->team_id,
+            'action_type' => 'UPDATE',
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'description' => 'Dataset ' . $id . ' marked as ' . $request->input('status'),
+        ]);
+
+        return response()->json([
+            'message' => Config::get('statuscodes.STATUS_OK.message'),
+        ], Config::get('statuscodes.STATUS_OK.code'));
+    }
+
+    /**
      * GET /api/v3/datasets/{id}/versions
      *
      * Return a lightweight version index (id, version, title, short_title,
@@ -104,7 +245,7 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $versions = $this->datasetService->listVersions($dataset);
+            $versions = $this->datasetService->listPublishedVersions($dataset);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -143,7 +284,7 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            $metadata = $this->datasetService->getVersion($dataset, $version);
+            $metadata = $this->datasetService->getPublishedVersion($dataset, $version);
 
             if ($metadata === null) {
                 return response()->json(['message' => 'Version not found'], 404);

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Dataset;
+use App\Enums\Partner;
 use App\Models\DatasetVersion;
 use App\Models\Team;
 use App\Models\User;
@@ -17,9 +18,6 @@ use Tests\Traits\MockExternalApis;
  * delta window stays schema-homogeneous — a patch diffed across differing
  * schemas would be meaningless, and reconstruction resolves its handler from
  * the nearest snapshot's gwdm_version.
- *
- * Drives DatasetService directly rather than an HTTP route; the
- * x-gwdm-version header steers the target version via GwdmVersionContext.
  */
 class DatasetVersionSchemaChangeTest extends TestCase
 {
@@ -33,14 +31,58 @@ class DatasetVersionSchemaChangeTest extends TestCase
         $this->commonSetUp();
     }
 
-    private function setGwdmHeader(string $version): void
-    {
-        request()->headers->set('x-gwdm-version', $version);
-    }
-
     private function service(): DatasetService
     {
         return app(DatasetService::class);
+    }
+
+    public function test_a_replaced_working_version_follows_the_schema_of_its_latest_content(): void
+    {
+        $this->disableObservers();
+
+        $team = Team::first();
+        $user = User::first();
+
+        $created = $this->service()->create(
+            [
+                'metadata' => $this->getMetadataV2p0(),
+                'status' => Dataset::STATUS_ACTIVE,
+                'user_id' => $user->id,
+                'team_id' => $team->id,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+            ],
+            $team,
+            null,
+            null,
+            targetGwdmVersion: '2.0',
+        );
+        $datasetId = $created['dataset_id'];
+
+        $saveDraft = function (string $gwdmVersion, array $metadata) use ($datasetId, $user): DatasetVersion {
+            $this->service()->update(
+                Dataset::findOrFail($datasetId),
+                ['metadata' => $metadata, 'status' => Dataset::STATUS_DRAFT],
+                $user->id,
+                Dataset::ORIGIN_MANUAL,
+                Partner::HDRUK,
+                targetGwdmVersion: $gwdmVersion,
+            );
+
+            return DatasetVersion::where('dataset_id', $datasetId)->where('version', 2)->firstOrFail();
+        };
+
+        $working = $saveDraft('2.0', $this->getMetadataV2p0());
+        $this->assertNotNull($working->patch, 'same schema as v1 is a diff');
+
+        $working = $saveDraft('2.1', $this->getMetadataV2p1());
+        $this->assertNull($working->patch, 'a schema change from v1 makes the working version a full copy');
+        $this->assertSame('2.1', $working->gwdm_version);
+
+        $working = $saveDraft('2.0', $this->getMetadataV2p0());
+        $this->assertNotNull($working->patch, 'back on v1\'s schema it is a diff again');
+        $this->assertSame('2.0', $working->gwdm_version);
+
+        $this->assertSame(2, DatasetVersion::where('dataset_id', $datasetId)->count());
     }
 
     public function test_schema_change_forces_snapshot_while_same_schema_stays_delta(): void
@@ -54,7 +96,6 @@ class DatasetVersionSchemaChangeTest extends TestCase
         $metadata = $this->getMetadataV2p0();
 
         // --- v1 @ GWDM 2.0 : base row is always a snapshot ---
-        $this->setGwdmHeader('2.0');
         $created = $this->service()->create(
             [
                 'metadata' => $metadata,
@@ -66,6 +107,7 @@ class DatasetVersionSchemaChangeTest extends TestCase
             $team,
             null,
             null,
+            targetGwdmVersion: '2.0',
         );
 
         $this->assertTrue($created['translated']);
@@ -76,14 +118,13 @@ class DatasetVersionSchemaChangeTest extends TestCase
         $this->assertSame('2.0', $v1->gwdm_version);
 
         // --- v2 @ GWDM 2.0 : schema unchanged -> delta row ---
-        $this->setGwdmHeader('2.0');
         $this->service()->update(
             Dataset::find($datasetId),
             ['metadata' => $metadata, 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            $team->id,
             Dataset::ORIGIN_MANUAL,
-            $team,
+            Partner::HDRUK,
+            targetGwdmVersion: '2.0',
         );
 
         $v2 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 2)->first();
@@ -91,14 +132,13 @@ class DatasetVersionSchemaChangeTest extends TestCase
         $this->assertSame('2.0', $v2->gwdm_version);
 
         // --- v3 @ GWDM 2.1 : schema change -> forced snapshot ---
-        $this->setGwdmHeader('2.1');
         $this->service()->update(
             Dataset::find($datasetId),
             ['metadata' => $this->getMetadataV2p1(), 'status' => Dataset::STATUS_ACTIVE],
             $user->id,
-            $team->id,
             Dataset::ORIGIN_MANUAL,
-            $team,
+            Partner::HDRUK,
+            targetGwdmVersion: '2.1',
         );
 
         $v3 = DatasetVersion::where('dataset_id', $datasetId)->where('version', 3)->first();

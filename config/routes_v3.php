@@ -1,6 +1,21 @@
 <?php
 
 return [
+    [
+        'name'                => 'datasets',
+        'method'              => 'post',
+        'path'                => '/teams/{teamId}/datasets',
+        'methodController'    => 'DatasetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+
     // v3 datasets — delta versioning update
     [
         'name'                => 'datasets',
@@ -14,6 +29,21 @@ return [
         ],
         'constraint' => [
             'id', '[0-9]+'
+        ],
+    ],
+
+    [
+        'name'                => 'datasets',
+        'method'              => 'patch',
+        'path'                => '/datasets/{id}',
+        'methodController'    => 'DatasetController@changeStatus',
+        'namespaceController' => 'App\Http\Controllers\Api\V3',
+        'middleware'          => [
+            'jwt.verify',
+            'check.access:permissions,datasets.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
         ],
     ],
 
@@ -40,23 +70,6 @@ return [
         ],
         'constraint' => [
             'id', '[0-9]+'
-        ],
-    ],
-
-    // v3 team datasets — delta versioning update
-    [
-        'name'                => 'datasets',
-        'method'              => 'put',
-        'path'                => '/teams/{teamId}/datasets/{id}',
-        'methodController'    => 'TeamDatasetController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V3',
-        'middleware'          => [
-            'jwt.verify',
-            'check.access:permissions,datasets.update',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'id' => '[0-9]+',
         ],
     ],
 

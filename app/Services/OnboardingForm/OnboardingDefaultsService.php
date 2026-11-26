@@ -71,7 +71,9 @@ class OnboardingDefaultsService
         $defaults = $this->withoutPlaceholders($translated, $placeholders, $schema, $schema['properties'] ?? []);
 
         foreach ($this->formDefaults($team) as $path => $value) {
-            if ($value !== null && $this->hasPath($schema, $path)) {
+            $node = JsonSchema::nodeAt($schema, $path);
+            $value = $node === null ? null : $this->inSchemaSpelling($node, $value);
+            if ($value !== null) {
                 data_set($defaults, $path, $value);
             }
         }
@@ -98,17 +100,23 @@ class OnboardingDefaultsService
         ];
     }
 
-    private function hasPath(array $schema, string $path): bool
+    /**
+     * A team value for an enum field in the schema's own spelling: team
+     * member_of is stored as e.g. OTHER, where HDRUK 4.1.0 allows "Other".
+     * Null when the schema allows no such value, so no invalid default is set.
+     */
+    private function inSchemaSpelling(array $node, mixed $value): mixed
     {
-        $node = ['properties' => $schema['properties'] ?? []];
-        foreach (explode('.', $path) as $key) {
-            if (!isset($node['properties'][$key])) {
-                return false;
+        if (!is_string($value) || !isset($node['enum']) || !is_array($node['enum'])) {
+            return $value;
+        }
+        foreach ($node['enum'] as $allowed) {
+            if (is_string($allowed) && strcasecmp($allowed, $value) === 0) {
+                return $allowed;
             }
-            $node = JsonSchema::resolveNode($schema, $node['properties'][$key]);
         }
 
-        return true;
+        return null;
     }
 
     private function translate(array|\stdClass $gwdm, string $model, string $version, string $gwdmVersion): array
