@@ -18,10 +18,11 @@ return new class () extends Migration {
             ->all();
 
         DB::table('dataset_versions')
+            ->select('id')
             ->whereNull('active_date')
             ->whereNotIn('id', $openVersionIds)
             ->orderBy('id')
-            ->chunkById(1000, function ($versions) {
+            ->chunkById(500, function ($versions) {
                 DB::table('dataset_versions')
                     ->whereIn('id', $versions->pluck('id'))
                     ->update(['active_date' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)')]);
