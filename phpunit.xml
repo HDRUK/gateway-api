@@ -19,6 +19,7 @@
     <env name="FEATURE_FLAGGING_CONFIG_URL" value="https://raw.githubusercontent.com/HDRUK/hdruk-feature-configurations/refs/heads/main/dev/features.json" />
     <env name="BCRYPT_ROUNDS" value="4"/>
     <env name="CACHE_DRIVER" value="array"/>
+    <env name="CLOSER_RETRY_SLEEP_MS" value="0"/>
     <env name="DB_CONNECTION" value="sqlite"/>
     <env name="DB_DATABASE" value=":memory:"/>
     <!-- <env name="DB_DEFAULT" value="sqlite_testing" /> -->

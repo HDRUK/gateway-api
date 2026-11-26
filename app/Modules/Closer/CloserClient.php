@@ -3,7 +3,9 @@
 namespace App\Modules\Closer;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -32,6 +34,9 @@ class CloserClient
     /** Used when CLOSER's `expires` value can't be read. */
     private const FALLBACK_TTL = 600;
 
+    /** Tries per data request, for connection errors and 5xx responses. */
+    private const ATTEMPTS = 3;
+
     private string $baseUrl;
 
     public function __construct()
@@ -47,6 +52,19 @@ class CloserClient
         if ($response->status() === 401) {
             Cache::forget(self::TOKEN_CACHE_KEY);
             $response = $this->api()->get(ltrim($path, '/'), $query);
+        }
+
+        return $response;
+    }
+
+    /** POST JSON to a path under /api/v1, e.g. "item/_getList". */
+    public function post(string $path, array $body): Response
+    {
+        $response = $this->api()->post(ltrim($path, '/'), $body);
+
+        if ($response->status() === 401) {
+            Cache::forget(self::TOKEN_CACHE_KEY);
+            $response = $this->api()->post(ltrim($path, '/'), $body);
         }
 
         return $response;
@@ -80,7 +98,16 @@ class CloserClient
         return Http::acceptJson()
             ->baseUrl($this->baseUrl.self::API_PREFIX)
             ->withToken($this->token())
-            ->timeout(30);
+            ->timeout(30)
+            // A wave harvest makes hundreds of calls; ride out the odd stalled
+            // or 5xx response. The last response is returned, not thrown.
+            ->retry(
+                self::ATTEMPTS,
+                (int) config('services.closer.retry_sleep_ms', 1000),
+                fn (Throwable $e) => $e instanceof ConnectionException
+                    || ($e instanceof RequestException && $e->response->serverError()),
+                throw: false,
+            );
     }
 
     private function token(): string

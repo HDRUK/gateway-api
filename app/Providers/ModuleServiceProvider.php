@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Modules\Contracts\EnrichmentStore;
 use App\Modules\ModuleManager;
 use App\Modules\ModuleRegistry;
-use App\Modules\Stores\NullEnrichmentStore;
+use App\Modules\Stores\EloquentEnrichmentStore;
 use Illuminate\Support\ServiceProvider;
 
 class ModuleServiceProvider extends ServiceProvider
@@ -18,6 +18,6 @@ class ModuleServiceProvider extends ServiceProvider
         // Per request under Octane. Never make this a singleton.
         $this->app->scoped(ModuleManager::class);
 
-        $this->app->singleton(EnrichmentStore::class, NullEnrichmentStore::class);
+        $this->app->singleton(EnrichmentStore::class, EloquentEnrichmentStore::class);
     }
 }

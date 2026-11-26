@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Everything a module needs to know about one enrichment: the subject, the
- * partner it is for, any params (e.g. a wave) and who asked.
+ * partners involved, any params (e.g. a wave) and who asked.
  *
- * The partner is captured when the context is made, so a queued job runs for
- * the partner of the original request rather than whatever is current.
+ * Two partners are recorded, both captured when the context is made:
+ *   - $partner: the requesting partner (x-partner-context, or the default),
+ *   - $subjectPartner: the subject's own `partner_context`, if it has one.
+ * The subject's partner owns the data; see owningPartner().
+ *
  * Only the subject's type and id are serialised; the model is reloaded lazily.
  */
 final class EnrichmentContext
@@ -22,15 +25,31 @@ final class EnrichmentContext
         public readonly string $partner,
         public readonly array $params = [],
         public readonly string $origin = 'unknown',
+        public readonly ?string $subjectPartner = null,
     ) {
     }
 
     public static function forModel(Model $subject, string $partner, array $params = [], string $origin = 'unknown'): self
     {
-        $context = new self($subject::class, $subject->getKey(), $partner, $params, $origin);
+        $subjectPartner = $subject->getAttribute('partner_context');
+
+        $context = new self(
+            $subject::class,
+            $subject->getKey(),
+            $partner,
+            $params,
+            $origin,
+            is_string($subjectPartner) && $subjectPartner !== '' ? $subjectPartner : null,
+        );
         $context->subject = $subject;
 
         return $context;
+    }
+
+    /** The partner the data belongs to: the subject's own, else the requester's. */
+    public function owningPartner(): string
+    {
+        return $this->subjectPartner ?? $this->partner;
     }
 
     public function subject(): ?Model
@@ -52,6 +71,7 @@ final class EnrichmentContext
             'partner' => $this->partner,
             'params' => $this->params,
             'origin' => $this->origin,
+            'subjectPartner' => $this->subjectPartner,
         ];
     }
 
@@ -62,6 +82,7 @@ final class EnrichmentContext
         $this->partner = $data['partner'];
         $this->params = $data['params'];
         $this->origin = $data['origin'];
+        $this->subjectPartner = $data['subjectPartner'] ?? null;
     }
 
     private static function sortKeys(array $value): array

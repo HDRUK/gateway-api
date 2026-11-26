@@ -16,7 +16,8 @@ interface EnrichmentModule
 {
     /**
      * Whether this subject can be enriched at all (e.g. it carries a CLOSER
-     * identifier). Called on reads, so it must be cheap: no I/O.
+     * identifier). Called on reads and saves, so it must be cheap: a local
+     * database read at most, never a call to the external source.
      */
     public function supports(EnrichmentContext $context): bool;
 

@@ -12,6 +12,7 @@ use InvalidArgumentException;
  *
  *   $dataset->modules()->only('closer')->resolve();   // read stored results
  *   $dataset->modules(params: ['wave' => 3])->refresh(); // queue a pull
+ *   $this->modules($dataset)->refreshMissing();       // queue only if nothing stored
  *   $this->modules($dataset)->within(fn ($scope) => ...); // with log context
  */
 final class ModuleScope
@@ -51,6 +52,15 @@ final class ModuleScope
     public function refresh(bool $force = false): int
     {
         return $this->manager->queue($this->context, $this->only, $force);
+    }
+
+    /**
+     * Queue a pull only for modules with no usable data stored yet (nothing,
+     * or a failed first pull). Cheap enough to call on every save.
+     */
+    public function refreshMissing(): int
+    {
+        return $this->manager->queue($this->context, $this->only, missingOnly: true);
     }
 
     /**

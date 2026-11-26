@@ -1,0 +1,166 @@
+{
+    "identifier": "5f0c8a52-9b8e-4c1e-a7d4-3e2b1c9d0a11",
+    "gwdmVersion": "2.3",
+    "metadata": {
+        "required": {
+            "gatewayId": "5f0c8a52-9b8e-4c1e-a7d4-3e2b1c9d0a11",
+            "gatewayPid": "5f0c8a52-9b8e-4c1e-a7d4-3e2b1c9d0a11",
+            "issued": "2026-11-26T00:00:00.000Z",
+            "modified": "2026-11-26T00:00:00.000Z",
+            "version": "1.0.0",
+            "revisions": [],
+            "recordType": "dataset"
+        },
+        "summary": {
+            "abstract": "ALSPAC questionnaire data based on answers from the mother and partner about pregnancy, birth, health, environment, feelings and beliefs, from pregnancy to the child's first birthday. Sample record: wave metadata is described in CLOSER Discovery.",
+            "contactPoint": "user@example.com",
+            "keywords": "birth cohort;,;pregnancy;,;infancy;,;longitudinal;,;Avon",
+            "populationSize": 14541,
+            "description": "Questionnaires completed by the mother and her partner during pregnancy and the child's first year. Variable-level documentation, questions and summary statistics for this wave are held in CLOSER Discovery (see the wave identifier).",
+            "shortTitle": "ALSPAC Pregnancy, Birth and Infancy (pregnancy to 12 months)",
+            "title": "ALSPAC Pregnancy, Birth and Infancy (pregnancy to 12 months)",
+            "publisher": {
+                "name": "University of Bristol",
+                "gatewayId": "uk.alspac"
+            },
+            "inPipeline": "Not available"
+        },
+        "coverage": {
+            "spatial": "Avon, England",
+            "followUp": "Unknown"
+        },
+        "provenance": {
+            "temporal": {
+                "endDate": "1993-10-31",
+                "startDate": "1990-09-01",
+                "timeLag": "Not applicable",
+                "accrualPeriodicity": "Static"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://www.bristol.ac.uk/alspac/researchers/access/"
+            },
+            "usage": {
+                "resourceCreator": {},
+                "patientRecontact": "Yes"
+            },
+            "formatAndStandards": {}
+        },
+        "linkage": {
+            "datasetLinkage": {
+                "waveOf": [
+                    {
+                        "pid": "0b7e4f3a-2d61-4a9c-8e15-7c3f9a6b2d40",
+                        "title": "Avon Longitudinal Study of Parents and Children (ALSPAC)",
+                        "url": "https://www.bristol.ac.uk/alspac/"
+                    }
+                ]
+            }
+        },
+        "observations": [],
+        "tissuesSampleCollection": [],
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "urn:ddi:uk.alspac:e9ae5d70-a3db-470f-9e9e-e1ed4636f1e6:57",
+                "waveType": "Contact wave",
+                "waveNumber": 1,
+                "label": "Pregnancy, birth and infancy (pregnancy to 12 months)"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "samplingMethod": "Population-based: all eligible pregnant women in the study area were invited to take part."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Mothers, partners and children have been followed up through questionnaires and clinic visits since recruitment."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant women resident in the former county of Avon with an expected delivery date between 1 April 1991 and 31 December 1992."
+            }
+        }
+    },
+    "original_metadata": {
+        "identifier": "5f0c8a52-9b8e-4c1e-a7d4-3e2b1c9d0a11",
+        "version": "1.0.0",
+        "issued": "2026-11-26T00:00:00.000Z",
+        "modified": "2026-11-26T00:00:00.000Z",
+        "summary": {
+            "title": "ALSPAC Pregnancy, Birth and Infancy (pregnancy to 12 months)",
+            "abstract": "ALSPAC questionnaire data based on answers from the mother and partner about pregnancy, birth, health, environment, feelings and beliefs, from pregnancy to the child's first birthday. Sample record: wave metadata is described in CLOSER Discovery.",
+            "dataCustodian": {
+                "identifier": "uk.alspac",
+                "name": "University of Bristol",
+                "description": "https://www.bristol.ac.uk/alspac/",
+                "contactPoint": "alspac.enquiries@example.ac.uk"
+            },
+            "populationSize": 14541,
+            "keywords": [
+                "birth cohort",
+                "pregnancy",
+                "infancy",
+                "longitudinal",
+                "Avon"
+            ],
+            "contactPoint": "user@example.com"
+        },
+        "population": {
+            "studyDesign": {
+                "isLongitudinal": true,
+                "isFamilyBased": true,
+                "isClinicalBased": false
+            },
+            "wave": {
+                "waveId": "urn:ddi:uk.alspac:e9ae5d70-a3db-470f-9e9e-e1ed4636f1e6:57",
+                "waveType": "Contact wave",
+                "waveNumber": 1,
+                "label": "Pregnancy, birth and infancy (pregnancy to 12 months)"
+            },
+            "recruitment": {
+                "status": "Closed",
+                "samplingMethod": "Population-based: all eligible pregnant women in the study area were invited to take part."
+            },
+            "followUpSchedule": {
+                "frequency": "Irregular",
+                "note": "Mothers, partners and children have been followed up through questionnaires and clinic visits since recruitment."
+            },
+            "eligibility": {
+                "inclusionCriteria": "Pregnant women resident in the former county of Avon with an expected delivery date between 1 April 1991 and 31 December 1992."
+            }
+        },
+        "documentation": {
+            "description": "Questionnaires completed by the mother and her partner during pregnancy and the child's first year. Variable-level documentation, questions and summary statistics for this wave are held in CLOSER Discovery (see the wave identifier)."
+        },
+        "coverage": {
+            "spatial": "Avon, England"
+        },
+        "provenance": {
+            "temporal": {
+                "publishingFrequency": "Static",
+                "timeLag": "Not applicable",
+                "startDate": "1990-09-01",
+                "endDate": "1993-10-31"
+            }
+        },
+        "accessibility": {
+            "access": {
+                "accessRights": "https://www.bristol.ac.uk/alspac/researchers/access/"
+            },
+            "usage": {
+                "patientRecontact": "Yes"
+            }
+        },
+        "linkage": {
+            "waveOf": {
+                "pid": "0b7e4f3a-2d61-4a9c-8e15-7c3f9a6b2d40",
+                "title": "Avon Longitudinal Study of Parents and Children (ALSPAC)",
+                "url": "https://www.bristol.ac.uk/alspac/"
+            }
+        }
+    }
+}

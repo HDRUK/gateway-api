@@ -17,11 +17,18 @@ use Throwable;
 /**
  * Runs enrichment modules for a subject.
  *
- * A module runs only when all of these hold:
+ * A module applies only when all of these hold:
  *   1. the ModuleManager flag is on (Pennant; unstored resolves false),
- *   2. the partner context is listed for the module in config/modules.php,
- *   3. the subject's type is listed for the module,
- *   4. the module's supports() accepts the subject.
+ *   2. the owning partner (the subject's `partner_context`, else the
+ *      requester's) is listed for the module in config/modules.php,
+ *   3. for reads only, the requesting partner is listed too, so the HDRUK
+ *      Gateway never shows a partner's enrichment even where it can show
+ *      the partner's dataset,
+ *   4. the subject's type is listed for the module,
+ *   5. the module's supports() accepts the subject.
+ *
+ * Pulls are gated on the owning partner alone, so a partner's dataset saved
+ * by an import, command or Gateway admin request is still enriched.
  *
  * Reads (resolve) only return stored results. Pulls (run) happen in a queued
  * job via refresh(). Nothing a module throws reaches the caller.
@@ -68,7 +75,7 @@ class ModuleManager
      */
     public function resolve(EnrichmentContext $context, ?array $only = null): Collection
     {
-        return collect($this->available($context, $only))->map(function (ModuleDefinition $definition) use ($context) {
+        return collect($this->available($context, $only, forRead: true))->map(function (ModuleDefinition $definition) use ($context) {
             try {
                 if ($reason = $this->unsupportedReason($definition, $context)) {
                     return EnrichmentResult::skipped($reason)->forModule($definition->key);
@@ -84,19 +91,34 @@ class ModuleManager
 
     /**
      * Queue a pull for each module that applies. Returns how many were queued.
+     * With $missingOnly, skip modules that already hold usable data, so it is
+     * cheap to call on every save. Never throws: it runs inside observers.
      *
      * @param  string[]|null  $only
      */
-    public function queue(EnrichmentContext $context, ?array $only = null, bool $force = false): int
+    public function queue(EnrichmentContext $context, ?array $only = null, bool $force = false, bool $missingOnly = false): int
     {
         $queued = 0;
 
-        foreach ($this->available($context, $only) as $definition) {
+        try {
+            $definitions = $this->available($context, $only);
+        } catch (Throwable $e) {
+            $this->failure('*', $context, $e);
+
+            return 0;
+        }
+
+        foreach ($definitions as $definition) {
             try {
-                if ($this->unsupportedReason($definition, $context) === null) {
-                    RunModuleEnrichment::dispatch($definition->key, $context, $force);
-                    $queued++;
+                if ($this->unsupportedReason($definition, $context) !== null) {
+                    continue;
                 }
+                if ($missingOnly && $this->store->find($definition->key, $context)?->hasData()) {
+                    continue;
+                }
+
+                RunModuleEnrichment::dispatch($definition->key, $context, $force);
+                $queued++;
             } catch (Throwable $e) {
                 $this->failure($definition->key, $context, $e);
             }
@@ -153,7 +175,7 @@ class ModuleManager
      * @param  string[]|null  $only
      * @return array<string, ModuleDefinition>
      */
-    private function available(EnrichmentContext $context, ?array $only): array
+    private function available(EnrichmentContext $context, ?array $only, bool $forRead = false): array
     {
         if (! $this->enabled()) {
             return [];
@@ -162,7 +184,8 @@ class ModuleManager
         return array_filter(
             $this->registry->all(),
             fn (ModuleDefinition $d) => ($only === null || in_array($d->key, $only, true))
-                && $d->allowsPartner($context->partner)
+                && $d->allowsPartner($context->owningPartner())
+                && (! $forRead || $d->allowsPartner($context->partner))
                 && $d->allowsSubject($context->subjectType),
         );
     }

@@ -109,6 +109,51 @@ class ModuleManagerTest extends TestCase
         Queue::assertPushed(RunModuleEnrichment::class, fn ($job) => $job->context->partner === 'PRUK');
     }
 
+    // --- Gating: the subject's own partner_context -------------------------
+
+    private function datasetFor(string $partner): Dataset
+    {
+        return (new Dataset())->forceFill(['id' => 43, 'partner_context' => $partner]);
+    }
+
+    public function test_the_gateway_cannot_read_enrichment_for_a_partner_dataset_it_can_view(): void
+    {
+        $this->asPartner('HDRUK');
+
+        $this->assertTrue($this->manager()->for($this->datasetFor('PRUK'))->resolve()->isEmpty());
+    }
+
+    public function test_a_partner_dataset_is_still_pulled_when_saved_from_a_gateway_request(): void
+    {
+        $this->asPartner('HDRUK');
+
+        $this->assertSame(1, $this->manager()->for($this->datasetFor('PRUK'))->refresh());
+    }
+
+    public function test_a_partner_dataset_is_pulled_when_there_is_no_partner_header_at_all(): void
+    {
+        request()->headers->remove('x-partner-context');
+        $context = $this->manager()->for($this->datasetFor('PRUK'))->context();
+
+        $result = $this->manager()->run('fake', $context);
+
+        $this->assertSame(EnrichmentStatus::Ok, $result->status);
+        $this->assertSame('PRUK', $this->module->contexts[0]->owningPartner());
+    }
+
+    public function test_a_gateway_dataset_gets_nothing_even_through_an_enabled_partner(): void
+    {
+        $scope = $this->manager()->for($this->datasetFor('HDRUK'));
+
+        $this->assertTrue($scope->resolve()->isEmpty());
+        $this->assertSame(0, $scope->refresh());
+    }
+
+    public function test_the_owning_partner_reads_its_own_enrichment(): void
+    {
+        $this->assertSame(['fake'], $this->manager()->for($this->datasetFor('PRUK'))->resolve()->keys()->all());
+    }
+
     public function test_an_unsupported_subject_is_skipped_with_a_reason_and_never_enriched(): void
     {
         $this->module->supports = false;
@@ -257,6 +302,37 @@ class ModuleManagerTest extends TestCase
             (new RunModuleEnrichment('fake', $context(['wave' => 1])))->uniqueId(),
             (new RunModuleEnrichment('fake', $context(['wave' => 2])))->uniqueId(),
         );
+    }
+
+    public function test_refresh_missing_queues_only_modules_with_nothing_usable_stored(): void
+    {
+        config(['modules.modules.other' => ['class' => FakeModule::class, 'partners' => ['PRUK'], 'subjects' => [Dataset::class]]]);
+        $this->storeResult(EnrichmentResult::ok(['have' => true], '1')->forModule('fake'));
+
+        $this->assertSame(1, $this->manager()->for($this->dataset)->refreshMissing());
+
+        Queue::assertPushed(RunModuleEnrichment::class, 1);
+        Queue::assertPushed(RunModuleEnrichment::class, fn ($job) => $job->module === 'other');
+    }
+
+    public function test_refresh_missing_retries_a_failed_pull(): void
+    {
+        $this->storeResult(EnrichmentResult::failed('earlier failure')->forModule('fake'));
+
+        $this->assertSame(1, $this->manager()->for($this->dataset)->refreshMissing());
+    }
+
+    public function test_queueing_never_throws_even_when_the_store_does(): void
+    {
+        $this->app->instance(\App\Modules\Contracts\EnrichmentStore::class, new class () extends InMemoryEnrichmentStore {
+            public function find(string $module, \App\Modules\EnrichmentContext $context): ?EnrichmentResult
+            {
+                throw new RuntimeException('database down');
+            }
+        });
+        $this->app->forgetScopedInstances();
+
+        $this->assertSame(0, $this->manager()->for($this->dataset)->refreshMissing());
     }
 
     // --- Scope ---------------------------------------------------------------
