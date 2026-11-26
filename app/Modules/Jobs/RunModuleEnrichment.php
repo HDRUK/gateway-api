@@ -30,6 +30,10 @@ class RunModuleEnrichment implements ShouldBeUnique, ShouldQueue
         public readonly EnrichmentContext $context,
         public readonly bool $force = false,
     ) {
+        // Dispatched from model observers inside save transactions: wait for
+        // the commit so the job sees the new metadata, and never runs for a
+        // save that rolled back.
+        $this->afterCommit = true;
     }
 
     /** One queued pull per module, subject and params. */

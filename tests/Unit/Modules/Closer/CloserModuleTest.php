@@ -117,7 +117,24 @@ class CloserModuleTest extends TestCase
     {
         $this->fakeCloser([self::ITEM.'/history' => Http::response([['Version' => 55], ['Version' => 57], ['Version' => 56]])]);
 
-        $this->assertSame('57', $this->module()->sourceVersion($this->context(1, ['identifier' => self::URN])));
+        $this->assertSame(
+            'uk.example/11111111-2222-3333-4444-555555555555:57',
+            $this->module()->sourceVersion($this->context(1, ['identifier' => self::URN])),
+        );
+    }
+
+    public function test_pointing_a_dataset_at_a_different_wave_changes_the_source_version(): void
+    {
+        $other = 'closer.example.test/api/v1/item/uk.example/99999999-2222-3333-4444-555555555555';
+        $this->fakeCloser([
+            self::ITEM.'/history' => Http::response([['Version' => 57]]),
+            $other.'/history' => Http::response([['Version' => 57]]),
+        ]);
+
+        $this->assertNotSame(
+            $this->module()->sourceVersion($this->context(1, ['identifier' => self::URN])),
+            $this->module()->sourceVersion($this->context(1, ['identifier' => 'urn:ddi:uk.example:99999999-2222-3333-4444-555555555555'])),
+        );
     }
 
     // --- Enrichment ------------------------------------------------------------
@@ -135,7 +152,7 @@ class CloserModuleTest extends TestCase
         $result = $this->module()->enrich($this->context(1, ['identifier' => self::URN]));
 
         $this->assertSame(EnrichmentStatus::Ok, $result->status);
-        $this->assertSame('57', $result->sourceVersion);
+        $this->assertSame('uk.example/11111111-2222-3333-4444-555555555555:57', $result->sourceVersion);
         $this->assertSame([
             'identifier' => self::URN.':57',
             'url' => 'https://discovery.closer.ac.uk/item/uk.example/11111111-2222-3333-4444-555555555555',

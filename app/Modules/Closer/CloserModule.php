@@ -55,7 +55,7 @@ class CloserModule implements EnrichmentModule
 
         $versions = array_filter(array_column($response->json() ?? [], 'Version'), 'is_numeric');
 
-        return $versions ? (string) max($versions) : null;
+        return $versions ? self::sourceVersionFor($agency, $id, max($versions)) : null;
     }
 
     public function enrich(EnrichmentContext $context): EnrichmentResult
@@ -71,7 +71,7 @@ class CloserModule implements EnrichmentModule
         }
 
         $version = $response->json('Version');
-        $version = is_numeric($version) ? (string) $version : null;
+        $version = is_numeric($version) ? (int) $version : null;
 
         $payload = [
             'identifier' => "urn:ddi:{$agency}:{$id}".($version !== null ? ":{$version}" : ''),
@@ -86,8 +86,18 @@ class CloserModule implements EnrichmentModule
 
         return EnrichmentResult::ok(
             array_filter($payload, fn ($value) => $value !== null && $value !== '' && $value !== []),
-            $version,
+            $version !== null ? self::sourceVersionFor($agency, $id, $version) : null,
         );
+    }
+
+    /**
+     * Names the item as well as its version, e.g. "uk.alspac/e9ae…:57", so a
+     * dataset pointed at a different wave is pulled again even when the two
+     * waves happen to share a version number.
+     */
+    private static function sourceVersionFor(string $agency, string $id, int $version): string
+    {
+        return "{$agency}/{$id}:{$version}";
     }
 
     /**

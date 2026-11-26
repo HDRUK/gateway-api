@@ -10,7 +10,7 @@ use App\Modules\Closer\CloserClient;
 use App\Modules\EnrichmentStatus;
 use App\Modules\Jobs\RunModuleEnrichment;
 use App\Modules\ModuleManager;
-use App\Observers\DatasetObserver;
+use App\Observers\DatasetVersionObserver;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -72,7 +72,7 @@ class CloserEnrichmentFlowTest extends TestCase
         $dataset = $this->prukDatasetLinkedToCloser();
 
         // The suite detaches model observers, so call the hook as a save would.
-        (new DatasetObserver())->updated($dataset);
+        (new DatasetVersionObserver())->created($dataset->versions()->sole());
 
         $job = Queue::pushed(RunModuleEnrichment::class)->first();
         $this->assertNotNull($job, 'the observer did not queue a pull');
@@ -81,7 +81,7 @@ class CloserEnrichmentFlowTest extends TestCase
         $row = ModuleEnrichment::where('enrichable_id', $dataset->id)->sole();
         $this->assertSame('closer', $row->module);
         $this->assertSame(EnrichmentStatus::Ok, $row->status);
-        $this->assertSame('57', $row->source_version);
+        $this->assertSame('uk.example/11111111-2222-3333-4444-555555555555:57', $row->source_version);
         $this->assertSame('PRUK', $row->partner);
         $this->assertSame('Example Cohort Pregnancy to 12 months', $row->payload['title']);
 
