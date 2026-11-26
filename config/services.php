@@ -168,4 +168,11 @@ return [
             ],
         ],
     ],
+
+    // CLOSER Discovery (Colectica). Token at {base_url}/token/createtoken; data under {base_url}/api/v1.
+    'closer' => [
+        'base_url' => env('CLOSER_API_BASE_URL', 'https://discovery.closer.ac.uk'),
+        'username' => env('CLOSER_API_USERNAME'),
+        'password' => env('CLOSER_API_PASSWORD'),
+    ],
 ];
