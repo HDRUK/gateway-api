@@ -1,3 +1,29 @@
+## [2.59.0](https://github.com/HDRUK/gateway-api/compare/v2.58.0...v2.59.0) (2026-11-26)
+
+### ✨ Features
+
+* **GAT-0000:** add write endpoints for project grants and cancer type filters (#1892) ([73fc844](https://github.com/HDRUK/gateway-api/commit/73fc84462cd6ee9149961bfb33b4c046f1ee1fef)), closes [GAT-0000](undefinedGAT-0000)
+* **GAT-9630:** a draft save replaces the unpublished latest version ([339e429](https://github.com/HDRUK/gateway-api/commit/339e429b6eecf17197ec4eb6f1bf6d2da10a7502)), closes [GAT-9630](undefinedGAT-9630) [GAT-9632](undefinedGAT-9632) [GAT-9631](undefinedGAT-9631)
+* **GAT-9630:** backfill published markers on dataset versions ([a39102a](https://github.com/HDRUK/gateway-api/commit/a39102ab8bee3ceeef5465c903319f8209b1674b)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9630:** datasets can be created through the V3 API ([9253d74](https://github.com/HDRUK/gateway-api/commit/9253d746cf4d68ccb2c9aa0aec6a41e058503d2d)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9630:** datasets can be published and archived through the V3 API ([c8ab764](https://github.com/HDRUK/gateway-api/commit/c8ab7642d209939b202d68013fe8eda3a5780e28)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9630:** remove the team-scoped V3 dataset update route ([97d5b36](https://github.com/HDRUK/gateway-api/commit/97d5b36010ea4c36bd2d1b82b2a311f315072642)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9630:** version history lists only published versions ([b1acbad](https://github.com/HDRUK/gateway-api/commit/b1acbadb9cda57f9fd412bc84c1d5d0dbcc83281)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9906:** Collaborative dataset onboarding on the schema-driven form (#1932) ([07c0920](https://github.com/HDRUK/gateway-api/commit/07c09206bb04708c4491e376290417cbd806cbd8)), closes [GAT-9906](undefinedGAT-9906)
+
+### 🐛 Bug Fixes
+
+* **GAT-9630:** honour x-partner-context on V3 dataset update ([5a3b524](https://github.com/HDRUK/gateway-api/commit/5a3b52484d975194fdc356c5aba01798c9876713)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9630:** only super-admins can change cohort discovery via V3 update ([f430fe0](https://github.com/HDRUK/gateway-api/commit/f430fe0d4a4d4a5def221e79f3dc823530da3790)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9630:** return 404 when updating an unknown dataset on V3 ([8a27d72](https://github.com/HDRUK/gateway-api/commit/8a27d727c62abc330143916edd2b2e99c6d73e0a)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9630:** stop V3 dataset updates changing the dataset's team ([c824b4b](https://github.com/HDRUK/gateway-api/commit/c824b4bde06295039fcfe4d89020aff43d2bc76f)), closes [GAT-9630](undefinedGAT-9630)
+* **GAT-9881:**  remove sunset middleware from project_grants routes (#1922) ([6d0cec1](https://github.com/HDRUK/gateway-api/commit/6d0cec1bd491b008cec2a9ce0b340ec5355528f4)), closes [GAT-9881](undefinedGAT-9881)
+* **GAT-9881:** Slightly re-work OA SSO to not create potentially garb… (#1921) ([1f9e81a](https://github.com/HDRUK/gateway-api/commit/1f9e81a5b97551aa7ff602cad29d529eb19343cd)), closes [GAT-9881](undefinedGAT-9881)
+
+### 📖 Documentation
+
+* **GAT-9630:** document the dataset pipeline and its versioning ([6618781](https://github.com/HDRUK/gateway-api/commit/66187810316a595845b611f46c981b6b44198116)), closes [GAT-9630](undefinedGAT-9630)
+
 ## [2.58.0](https://github.com/HDRUK/gateway-api/compare/v2.57.2...v2.58.0) (2026-11-19)
 
 ### ✨ Features
