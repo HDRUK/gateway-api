@@ -168,4 +168,20 @@ return [
             ],
         ],
     ],
+
+    // CLOSER Discovery (Colectica). Token at {base_url}/token/createtoken; data under {base_url}/api/v1.
+    'closer' => [
+        'base_url' => env('CLOSER_API_BASE_URL', 'https://discovery.closer.ac.uk'),
+        'username' => env('CLOSER_API_USERNAME'),
+        'password' => env('CLOSER_API_PASSWORD'),
+        // Public site used for links in enrichment payloads.
+        'discovery_url' => env('CLOSER_DISCOVERY_URL', 'https://discovery.closer.ac.uk'),
+        // Manual dataset id => CLOSER identifier (agency/id or DDI URN) overrides,
+        // used before searching the dataset's metadata for a URN.
+        'dataset_identifiers' => [],
+        // Items per _getList call when harvesting a wave; ~200 was fastest in probing.
+        'batch_size' => (int) env('CLOSER_BATCH_SIZE', 200),
+        // Pause between retries of a failed CLOSER request (3 tries in total).
+        'retry_sleep_ms' => (int) env('CLOSER_RETRY_SLEEP_MS', 1000),
+    ],
 ];

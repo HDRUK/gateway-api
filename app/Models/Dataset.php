@@ -5,6 +5,7 @@ namespace App\Models;
 use DB;
 use App\Context\PartnerContext;
 use App\Models\Traits\EntityCounter;
+use App\Modules\Concerns\HasModules;
 use App\Observers\DatasetObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
@@ -58,6 +59,7 @@ class Dataset extends Model
     use SoftDeletes;
     use Prunable;
     use EntityCounter;
+    use HasModules;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';

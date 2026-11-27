@@ -16,5 +16,6 @@ return [
     App\Providers\HelperServiceProvider::class,
     App\Providers\AppFeatureServiceProvider::class,
     App\Providers\SearchServiceProvider::class,
+    App\Providers\ModuleServiceProvider::class,
     App\Providers\ExceptionProfileServiceProvider::class,
 ];
