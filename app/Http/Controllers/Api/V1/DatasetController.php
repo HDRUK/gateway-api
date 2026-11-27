@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use App\Services\Gwdm\SourceSchema;
 use App\Exports\DatasetStructuralMetadataExport;
 use App\Http\Controllers\Controller;
@@ -65,8 +66,10 @@ class DatasetController extends Controller
         'state_id',
     ];
 
-    public function __construct(private readonly GwdmMetadataHandler $gwdmHandler)
-    {
+    public function __construct(
+        private readonly GwdmMetadataHandler $gwdmHandler,
+        private readonly DatasetReader $datasetReader,
+    ) {
     }
 
     /**
@@ -254,6 +257,7 @@ class DatasetController extends Controller
                     fn ($query) => $query->orderBy($sortField, $sortDirection)
                 )
                 ->paginate($perPage, ['*'], 'page');
+            $this->datasetReader->fillLatestMetadata($datasets);
 
             Auditor::log([
                 'user_id' => $userId,

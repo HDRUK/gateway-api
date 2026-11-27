@@ -32,7 +32,7 @@ class DatasetReaderTest extends TestCase
         $first = $this->datasetEditedThroughThePipeline($team->id, 'First edited title', 'First short');
         $second = $this->datasetEditedThroughThePipeline($team->id, 'Second edited title', 'Second short');
 
-        $titles = (new DatasetReader())->titles([$first->id, $second->id]);
+        $titles = app(DatasetReader::class)->titles([$first->id, $second->id]);
 
         $this->assertSame(['First edited title', 'First short'], [$titles[$first->id]->title, $titles[$first->id]->shortTitle]);
         $this->assertSame(['Second edited title', 'Second short'], [$titles[$second->id]->title, $titles[$second->id]->shortTitle]);
@@ -45,7 +45,7 @@ class DatasetReaderTest extends TestCase
         $this->makeVersion($untitled, 1, null);
         $titled = $this->datasetEditedThroughThePipeline($team->id, 'A title', 'A short title');
 
-        $titles = (new DatasetReader())->titles([$untitled->id, $titled->id]);
+        $titles = app(DatasetReader::class)->titles([$untitled->id, $titled->id]);
 
         $this->assertNull($titles[$untitled->id]->title);
         $this->assertSame('A title', $titles[$titled->id]->title);
@@ -55,12 +55,12 @@ class DatasetReaderTest extends TestCase
     {
         $this->expectException(ModelNotFoundException::class);
 
-        (new DatasetReader())->titlesOf((int) Dataset::withTrashed()->max('id') + 1000);
+        app(DatasetReader::class)->titlesOf((int) Dataset::withTrashed()->max('id') + 1000);
     }
 
     public function test_titles_for_pids_returns_empty_array_for_empty_input(): void
     {
-        $this->assertSame([], (new DatasetReader())->titlesForPids([]));
+        $this->assertSame([], app(DatasetReader::class)->titlesForPids([]));
     }
 
     public function test_titles_for_pids_returns_title_for_a_known_pid(): void
@@ -72,14 +72,14 @@ class DatasetReaderTest extends TestCase
         ]);
         $this->makeVersion($dataset, 1, 'My Dataset Title');
 
-        $result = (new DatasetReader())->titlesForPids(['PID-KNOWN']);
+        $result = app(DatasetReader::class)->titlesForPids(['PID-KNOWN']);
 
         $this->assertSame(['PID-KNOWN' => 'My Dataset Title'], $result);
     }
 
     public function test_titles_for_pids_returns_null_for_pid_with_no_dataset(): void
     {
-        $result = (new DatasetReader())->titlesForPids(['PID-DOES-NOT-EXIST']);
+        $result = app(DatasetReader::class)->titlesForPids(['PID-DOES-NOT-EXIST']);
 
         $this->assertArrayHasKey('PID-DOES-NOT-EXIST', $result);
         $this->assertNull($result['PID-DOES-NOT-EXIST']);
@@ -95,7 +95,7 @@ class DatasetReaderTest extends TestCase
         $this->makeVersion($dataset, 1, 'Old Title');
         $this->makeVersion($dataset, 2, 'New Title');
 
-        $result = (new DatasetReader())->titlesForPids(['PID-MULTI-VERSION']);
+        $result = app(DatasetReader::class)->titlesForPids(['PID-MULTI-VERSION']);
 
         $this->assertSame('New Title', $result['PID-MULTI-VERSION']);
     }
@@ -108,7 +108,7 @@ class DatasetReaderTest extends TestCase
             'pid'    => 'PID-NO-VERSION',
         ]);
 
-        $result = (new DatasetReader())->titlesForPids(['PID-NO-VERSION']);
+        $result = app(DatasetReader::class)->titlesForPids(['PID-NO-VERSION']);
 
         $this->assertArrayHasKey('PID-NO-VERSION', $result);
         $this->assertNull($result['PID-NO-VERSION']);
@@ -123,7 +123,7 @@ class DatasetReaderTest extends TestCase
         ]);
         $this->makeVersion($dataset, 1, 'Found Title');
 
-        $result = (new DatasetReader())->titlesForPids(['PID-FOUND', 'PID-MISSING']);
+        $result = app(DatasetReader::class)->titlesForPids(['PID-FOUND', 'PID-MISSING']);
 
         $this->assertSame(['PID-FOUND', 'PID-MISSING'], array_keys($result));
         $this->assertSame('Found Title', $result['PID-FOUND']);

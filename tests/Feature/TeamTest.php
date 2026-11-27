@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Config;
 use Tests\TestCase;
+use Tests\Traits\PipelineDatasets;
 use App\Jobs\AuditLogJob;
 use Illuminate\Support\Facades\Bus;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -20,6 +21,7 @@ class TeamTest extends TestCase
     use MockExternalApis {
         setUp as commonSetUp;
     }
+    use PipelineDatasets;
 
     protected $header = [];
     protected $metadata;
@@ -1021,5 +1023,18 @@ class TeamTest extends TestCase
             'active' => [Dataset::STATUS_ACTIVE],
             'draft' => [Dataset::STATUS_DRAFT],
         ];
+    }
+
+    public function test_a_teams_dataset_list_shows_an_edited_dataset_with_its_current_details(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->datasetSavedThroughThePipeline($team->id);
+        $this->renameThroughThePipeline($dataset, 'Listcheck v1 team list', 'Listcheck');
+
+        $response = $this->json('GET', '/api/v1/teams/' . $team->id . '/datasets?title=Listcheck', [], $this->header);
+
+        $response->assertOk();
+        $this->assertSame([$dataset->id], array_column($response->json('data'), 'id'));
+        $this->assertSame('Listcheck v1 team list', $response->json('data.0.latest_metadata.summary.title'));
     }
 }

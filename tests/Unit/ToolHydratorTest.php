@@ -6,7 +6,6 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
 use App\Models\Team;
-use App\Services\DatasetReader;
 use App\Services\Search\ToolHydrator;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
@@ -37,7 +36,7 @@ class ToolHydratorTest extends TestCase
 
         $this->renameThroughThePipeline($dataset, 'Renamed title', 'Renamed short title');
 
-        $results = (new ToolHydrator(new DatasetReader()))->hydrate([['_id' => (string) $tool->id, '_source' => []]]);
+        $results = app(ToolHydrator::class)->hydrate([['_id' => (string) $tool->id, '_source' => []]]);
 
         $this->assertSame(['Renamed short title'], $results[0]['datasets']);
     }
