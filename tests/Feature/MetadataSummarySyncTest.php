@@ -171,10 +171,11 @@ class MetadataSummarySyncTest extends TestCase
     public function test_saving_a_version_queues_a_sync_for_its_dataset(): void
     {
         Queue::fake();
+        config(['scout.driver' => 'typesense', 'typesense.summary_embedding_config.enabled' => true]);
         $dataset = $this->dataset();
 
+        $this->travel(1)->minutes();
         DatasetVersion::where('dataset_id', $dataset->id)->firstOrFail()->touch();
-
         Queue::assertPushed(SyncDatasetMetadataSummary::class, $this->pushedFor($dataset->id));
     }
 
@@ -183,6 +184,7 @@ class MetadataSummarySyncTest extends TestCase
         // Regression: the dataset is soft-deleted before its versions are saved,
         // so a dispatch placed after the observer's Dataset lookup never ran.
         Queue::fake();
+        config(['scout.driver' => 'typesense', 'typesense.summary_embedding_config.enabled' => true]);
         $dataset = $this->dataset();
         $version = DatasetVersion::where('dataset_id', $dataset->id)->firstOrFail();
 
