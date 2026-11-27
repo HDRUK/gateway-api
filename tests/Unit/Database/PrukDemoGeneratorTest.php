@@ -34,7 +34,7 @@ class PrukDemoGeneratorTest extends TestCase
     /** @return array<int, array{custodian: string, envelope: array}> */
     private function sample(): array
     {
-        return self::$sample ??= (new PrukDemoGenerator)->generate(300);
+        return self::$sample ??= (new PrukDemoGenerator())->generate(300);
     }
 
     private function metadata(array $item): array
@@ -45,14 +45,14 @@ class PrukDemoGeneratorTest extends TestCase
     public function test_it_generates_exactly_the_number_asked_for(): void
     {
         $this->assertCount(300, $this->sample());
-        $this->assertCount(7, (new PrukDemoGenerator)->generate(7));
+        $this->assertCount(7, (new PrukDemoGenerator())->generate(7));
     }
 
     public function test_the_same_seed_gives_the_same_data_and_a_smaller_run_is_a_prefix(): void
     {
         // The seeder is idempotent on pid, so reruns (at any size) must
         // regenerate the same datasets rather than new ones.
-        $this->assertSame((new PrukDemoGenerator)->generate(40), array_slice($this->sample(), 0, 40));
+        $this->assertSame((new PrukDemoGenerator())->generate(40), array_slice($this->sample(), 0, 40));
         $this->assertNotSame(
             (new PrukDemoGenerator(seed: 1))->generate(5),
             (new PrukDemoGenerator(seed: 2))->generate(5),
@@ -61,7 +61,7 @@ class PrukDemoGeneratorTest extends TestCase
 
     public function test_generating_twice_with_one_generator_gives_the_same_data(): void
     {
-        $generator = new PrukDemoGenerator;
+        $generator = new PrukDemoGenerator();
 
         $this->assertSame($generator->generate(10), $generator->generate(10));
     }

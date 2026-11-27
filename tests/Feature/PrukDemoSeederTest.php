@@ -32,7 +32,7 @@ class PrukDemoSeederTest extends TestCase
 
     private function seedDemo(int $count = self::COUNT): void
     {
-        (new PrukDemoSeeder)->count($count)->run();
+        (new PrukDemoSeeder())->count($count)->run();
     }
 
     private function demoDatasets()
@@ -71,7 +71,7 @@ class PrukDemoSeederTest extends TestCase
         $this->assertCount(self::COUNT, $ids);
         $this->assertSame(self::COUNT, DatasetVersion::whereIn('dataset_id', $ids)->count());
         $this->assertSame(count(array_unique(array_column(
-            (new \Database\Seeders\Demo\PrukDemoGenerator)->generate(self::COUNT),
+            (new \Database\Seeders\Demo\PrukDemoGenerator())->generate(self::COUNT),
             'custodian',
         ))), Team::whereIn('name', $this->custodians())->count());
     }

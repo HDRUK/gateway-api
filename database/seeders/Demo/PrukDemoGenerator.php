@@ -32,7 +32,9 @@ final class PrukDemoGenerator
 
     private int $index = 0;
 
-    public function __construct(private readonly int $seed = self::DEFAULT_SEED) {}
+    public function __construct(private readonly int $seed = self::DEFAULT_SEED)
+    {
+    }
 
     /**
      * @return array<int, array{custodian: string, envelope: array}>

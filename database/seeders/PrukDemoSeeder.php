@@ -58,7 +58,7 @@ class PrukDemoSeeder extends Seeder
     public function run(): void
     {
         $count = max(1, min(self::MAX_COUNT, $this->count ?? (int) (getenv('PRUK_DEMO_DATASETS') ?: self::DEFAULT_COUNT)));
-        $items = (new PrukDemoGenerator)->generate($count);
+        $items = (new PrukDemoGenerator())->generate($count);
 
         $userId = User::query()->orderBy('id')->value('id')
             ?? throw new RuntimeException('PrukDemoSeeder needs at least one user to own the datasets; run the base seeders first.');
