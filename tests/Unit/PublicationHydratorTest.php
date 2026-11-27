@@ -6,7 +6,6 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\Team;
-use App\Services\DatasetReader;
 use App\Services\Search\PublicationHydrator;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
@@ -37,7 +36,7 @@ class PublicationHydratorTest extends TestCase
 
         $this->renameThroughThePipeline($dataset, 'Renamed title', 'Renamed short title');
 
-        $results = (new PublicationHydrator(new DatasetReader()))->hydrate([['_id' => (string) $publication->id, '_source' => []]]);
+        $results = app(PublicationHydrator::class)->hydrate([['_id' => (string) $publication->id, '_source' => []]]);
 
         $this->assertSame('Renamed short title', $results[0]['datasetVersions'][0]['name']);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use App\Services\DatasetReader;
 use App\Services\Gwdm\SourceSchema;
 use Config;
 use Auditor;
@@ -53,6 +54,7 @@ class TeamDatasetController extends Controller
         private readonly PartnerContext $partnerContext,
         private readonly GwdmMetadataHandler $gwdmHandler,
         private readonly DatasetActivationService $datasetActivationService,
+        private readonly DatasetReader $datasetReader,
     ) {
     }
 
@@ -125,7 +127,6 @@ class TeamDatasetController extends Controller
         $this->checkAccess($request->all(), $teamId, null, 'team', $request->header());
 
         try {
-            $withMetadata = $request->boolean('with_metadata', true);
 
             $perPage = request('per_page', Config::get('constants.per_page'));
 
@@ -151,16 +152,17 @@ class TeamDatasetController extends Controller
             }
             // Fetch metadata
             $datasets = Dataset::whereIn("id", $datasetIds)
-                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
                 ->applySorting()
                 ->paginate((int) $perPage, ['*'], 'page');
 
             $metadataMissing = false;
-
+            $pageIds = $datasets->pluck('id')->all();
+            $envelopes = $this->datasetReader->latestEnvelopes($pageIds);
+            $sourceSchemas = Feature::active('SchemaOnboardingForm') ? $this->datasetReader->sourceSchemas($pageIds) : [];
 
             foreach ($datasets as $key => & $d) {
 
-                if (empty($d->latestMetadata) || !isset($d->latestMetadata['metadata'])) {
+                if (!isset($envelopes[$d->id])) {
                     // this needs refactoring to mark the metadata as corrupt or missing and
                     // then set them as draft and alert the FE
                     unset($datasets[$key]);
@@ -173,15 +175,13 @@ class TeamDatasetController extends Controller
                     $d->updated_at = $latestVersion->updated_at;
                 }
 
-                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
+                $miniMetadata = $this->trimDatasets($envelopes[$d->id], [
                     'summary',
                     'required',
                 ]);
 
                 if (Feature::active('SchemaOnboardingForm')) {
-                    $d['source_schema'] = SourceSchema::fromColumns(
-                        $d->latestMetadata->only(['source_schema_model', 'source_schema_version'])
-                    )->toArray();
+                    $d['source_schema'] = $sourceSchemas[$d->id]->toArray();
                 }
 
                 // latestMetadata is a relation and cannot be assigned at this

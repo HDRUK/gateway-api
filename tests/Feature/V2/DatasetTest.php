@@ -1952,4 +1952,43 @@ class DatasetTest extends TestCase
         $response->assertOk();
         $this->assertSame([$renamedToAlpha->id, $renamedToBeta->id], array_column($response->json('data'), 'id'));
     }
+
+    public function test_a_teams_dataset_list_shows_an_edited_dataset_with_its_current_details(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->datasetSavedThroughThePipeline($team->id);
+        $this->renameThroughThePipeline($dataset, 'Listcheck team list', 'Listcheck');
+
+        $response = $this->json('GET', $this->team_datasets_url($team->id) . '/status/active?title=Listcheck', [], $this->header);
+
+        $response->assertOk();
+        $this->assertSame([$dataset->id], array_column($response->json('data'), 'id'));
+        $this->assertSame('Listcheck team list', $response->json('data.0.latest_metadata.summary.title'));
+    }
+
+    public function test_a_teams_dataset_list_shows_the_latest_details_of_a_dataset_edited_many_times(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->datasetSavedThroughThePipeline($team->id);
+        foreach (range(1, 12) as $edit) {
+            $this->editThroughThePipeline($dataset, 'Listcheck edit ' . $edit, 'Listcheck');
+        }
+
+        $response = $this->json('GET', $this->team_datasets_url($team->id) . '/status/active?title=Listcheck', [], $this->header);
+
+        $response->assertOk();
+        $this->assertSame('Listcheck edit 12', $response->json('data.0.latest_metadata.summary.title'));
+    }
+
+    public function test_the_dataset_list_shows_an_edited_dataset_with_its_current_metadata(): void
+    {
+        $dataset = $this->datasetSavedThroughThePipeline(Team::factory()->create()->id);
+        $this->renameThroughThePipeline($dataset, 'Listcheck v2 index', 'Listcheck');
+
+        $response = $this->json('GET', self::TEST_URL_DATASET_V2 . '?title=Listcheck', [], $this->header);
+
+        $response->assertOk();
+        $this->assertSame([$dataset->id], array_column($response->json('data'), 'id'));
+        $this->assertSame('Listcheck v2 index', $response->json('data.0.latest_metadata.metadata.metadata.summary.title'));
+    }
 }

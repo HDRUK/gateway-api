@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use DB;
 use Config;
 use Auditor;
@@ -43,6 +44,10 @@ class TeamController extends Controller
     use TeamTransformation;
     use RequestTransformation;
     use TrimPayload;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     private $datasets = [];
     private $durs = [];
@@ -1765,7 +1770,6 @@ class TeamController extends Controller
         try {
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
-            $withMetadata = $request->boolean('with_metadata', true);
 
             $sort = $request->query('sort', 'created:desc');
 
@@ -1846,7 +1850,6 @@ class TeamController extends Controller
             $perPage = request('per_page', Config::get('constants.per_page'));
 
             $datasets = Dataset::whereIn('id', $matches)
-                ->when($withMetadata, fn ($query) => $query->with('latestMetadata'))
                 ->when(
                     $request->has('withTrashed'),
                     function ($query) {
@@ -1863,11 +1866,11 @@ class TeamController extends Controller
                 )
                 ->paginate($perPage, ['*'], 'page');
 
+            $envelopes = $this->datasetReader->latestEnvelopes($datasets->pluck('id')->all());
             foreach ($datasets as &$d) {
-                $miniMetadata = $this->trimDatasets($d->latestMetadata['metadata'], [
-                    'summary',
-                    'required',
-                ]);
+                $miniMetadata = isset($envelopes[$d->id])
+                    ? $this->trimDatasets($envelopes[$d->id], ['summary', 'required'])
+                    : null;
 
                 // latestMetadata is a relation and cannot be assigned at this
                 // level, safely. So, unset all forms of metadata on the object

@@ -27,7 +27,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use MetadataManagementController as MMC;
 use Swaggest\JsonDiff\JsonDiff;
-use Swaggest\JsonDiff\JsonPatch;
 
 class DatasetService
 {
@@ -40,6 +39,7 @@ class DatasetService
     public function __construct(
         private readonly GwdmVersionContext $gwdmVersionContext,
         private readonly GwdmHandlerFactory $handlerFactory,
+        private readonly DatasetReader $datasetReader,
     ) {
     }
 
@@ -79,7 +79,10 @@ class DatasetService
             $query->with('latestMetadata');
         }
 
-        return $query->applySorting()->paginate($perPage, ['*'], 'page');
+        $datasets = $query->applySorting()->paginate($perPage, ['*'], 'page');
+        $this->datasetReader->fillLatestMetadata($datasets);
+
+        return $datasets;
     }
 
     public function findActive(int $id, ?string $partnerContext = null): ?Dataset
@@ -183,7 +186,7 @@ class DatasetService
             // is not a hard dependency for every read.
 
             // TODO: Validation set to false because otherwise we force everything through TRASER validation.
-            $envelope = $this->getReconstructedMetadataEnvelope(
+            $envelope = $this->datasetReader->envelope(
                 $dataset->id,
                 $withLinks->version,
                 validate: false,
@@ -258,7 +261,7 @@ class DatasetService
             return null;
         }
 
-        return $this->getReconstructedMetadataEnvelope($dataset->id, $version);
+        return $this->datasetReader->envelope($dataset->id, $version);
     }
 
     /**
@@ -287,7 +290,7 @@ class DatasetService
             ->whereNotNull('active_date')
             ->exists();
 
-        return $published ? $this->getReconstructedMetadataEnvelope($dataset->id, $version) : null;
+        return $published ? $this->datasetReader->envelope($dataset->id, $version) : null;
     }
 
     public function getMetadataVersionSummary(Dataset $dataset): array
@@ -645,7 +648,7 @@ class DatasetService
         $publishing = $status === Dataset::STATUS_ACTIVE;
         $publishesWorkingCopy = $publishing && self::replacesLatest($latest);
         $envelope = $publishing
-            ? $this->getReconstructedMetadataEnvelope($dataset->id, $latest->version, false, $latest)
+            ? $this->datasetReader->envelope($dataset->id, $latest->version, false, $latest)
             : null;
 
         if ($publishesWorkingCopy && ! self::isPublishable($latest, $envelope)) {
@@ -751,73 +754,6 @@ class DatasetService
         return $dv->id;
     }
 
-    /**
-     * Reconstruct the full GWDM metadata object for any version of a dataset.
-     *
-     * Algorithm:
-     *  1. Find the nearest full snapshot at or below $targetVersion
-     *     (identified by patch IS NULL — both the base v1 and every SnapshotRule::INTERVAL
-     *     version are snapshots).
-     *  2. Apply each subsequent delta patch in ascending version order up to
-     *     and including $targetVersion.
-     *
-     * The worst-case forward walk is (SnapshotRule::INTERVAL - 1) delta applications.
-     *
-     * @return array The GWDM metadata object (i.e. the value of metadata.metadata
-     *               in a full snapshot row).
-     *
-     * @throws \RuntimeException when no base snapshot can be found.
-     */
-    private function reconstructGwdmMetadata(int $datasetId, int $targetVersion): array
-    {
-        // Step 1 — nearest snapshot at or below targetVersion.
-        $snapshot = DatasetVersion::where('dataset_id', $datasetId)
-            ->where('version', '<=', $targetVersion)
-            ->whereNull('patch')
-            ->orderBy('version', 'desc')
-            ->first();
-
-        if (! $snapshot) {
-            throw new \RuntimeException(
-                "No base snapshot found for dataset {$datasetId} at or before version {$targetVersion}."
-            );
-        }
-
-        $storedData = (array) $snapshot->metadata;
-        $gwdmVersion = $snapshot->gwdm_version
-            ?? $storedData['gwdmVersion']
-            ?? $this->gwdmVersionContext->targetVersion();
-
-        $gwdm = $this->handlerFactory->resolve($gwdmVersion)->extractStoredGwdm($storedData);
-
-        if ($snapshot->version === $targetVersion) {
-            return $gwdm;
-        }
-
-        // Step 2 — apply deltas from (snapshot.version + 1) to targetVersion.
-        $deltas = DatasetVersion::where('dataset_id', $datasetId)
-            ->where('version', '>', $snapshot->version)
-            ->where('version', '<=', $targetVersion)
-            ->whereNotNull('patch')
-            ->orderBy('version')
-            ->get(['version', 'patch']);
-
-        // swaggest/json-diff works with stdClass graphs, not PHP arrays.
-        // JsonPatch::apply() modifies the document in place (no return value).
-        $current = json_decode(json_encode($gwdm));
-
-        foreach ($deltas as $delta) {
-            $patch = JsonPatch::import(json_decode(json_encode($delta->patch)));
-            $patch->apply($current);
-        }
-
-        return json_decode(json_encode($current), true);
-    }
-
-    /**
-     * Build the full metadata envelope ({gwdmVersion, metadata, original_metadata})
-     * for a given version, suitable for returning in API responses or passing to TRASER.
-     */
     public function getReconstructedMetadataEnvelope(
         int $datasetId,
         int $targetVersion,
@@ -825,62 +761,7 @@ class DatasetService
         ?DatasetVersion $prefetched = null,
         bool $applySupplementary = true,
     ): array {
-        $row = $prefetched ?? DatasetVersion::where('dataset_id', $datasetId)
-            ->where('version', $targetVersion)
-            ->first();
-
-        // Prefer the indexed column; fall back to JSON envelope; then context default.
-        $storedVersion = $row->gwdm_version
-            ?? $row->metadata['gwdmVersion']
-            ?? $this->gwdmVersionContext->targetVersion();
-
-        $handler = $this->handlerFactory->resolve($storedVersion);
-
-        // Pre-populate section relations on $row so afterRead() can access them
-        // without firing individual per-section queries. No-op for 2.x handlers.
-        $handler->preloadSections($row);
-
-        // When the prefetched version is itself a full snapshot (patch IS NULL),
-        // extract the stored GWDM directly — skips the snapshot search query
-        // inside reconstructGwdmMetadata on every snapshot row.
-        if ($prefetched !== null && $prefetched->patch === null) {
-            $gwdm = $handler->extractStoredGwdm((array) $prefetched->metadata);
-        } else {
-            $gwdm = $this->reconstructGwdmMetadata($datasetId, $targetVersion);
-        }
-
-        // For 3.0+, afterRead() merges supplementary data from structured SQL tables.
-        // Skipped when the caller is itself the writer of those tables (e.g.
-        // extractLinkages()), to avoid a circular read that would feed stale
-        // junction-table data back into the very rows being rewritten.
-        if ($applySupplementary) {
-            $supplementary = $handler->afterRead($row);
-            if (! empty($supplementary)) {
-                $gwdm = array_merge($gwdm, $supplementary);
-            }
-        }
-
-        // Validate the reconstructed metadata only when explicitly requested.
-        // Data is validated at write time; re-validating on every read would make
-        // TRASER a hard dependency for all dataset show requests.
-        if ($validate) {
-            $metadataJson = json_encode(['metadata' => $gwdm]);
-            $isValid = MMC::validateDataModelType($metadataJson, Config::get('metadata.GWDM.name'), $storedVersion);
-            if (! $isValid) {
-                \Log::warning('GWDM read validation failed', [
-                    'dataset_id' => $datasetId,
-                    'version' => $targetVersion,
-                    'gwdm_version' => $storedVersion,
-                ]);
-                throw new \RuntimeException("Reconstructed GWDM for version {$storedVersion} failed schema validation.");
-            }
-        }
-
-        return [
-            'gwdmVersion' => $storedVersion,
-            'metadata' => $gwdm,
-            'original_metadata' => $row->metadata['original_metadata'] ?? [],
-        ];
+        return $this->datasetReader->envelope($datasetId, $targetVersion, $validate, $prefetched, $applySupplementary);
     }
 
     /**
@@ -952,7 +833,7 @@ class DatasetService
             'metadata' => $isSnapshot ? json_encode($handler->buildEnvelope($newGwdmMetadata, $previousMetadata)) : [],
             'patch' => $isSnapshot
                 ? null
-                : $this->computePatch($this->reconstructGwdmMetadata($dataset->id, $baseVersionNumber), $newGwdmMetadata),
+                : $this->computePatch($this->datasetReader->gwdm($dataset->id, $baseVersionNumber), $newGwdmMetadata),
             'title' => $title,
             'short_title' => $shortTitle,
             'gwdm_version' => $targetGwdmVersion,

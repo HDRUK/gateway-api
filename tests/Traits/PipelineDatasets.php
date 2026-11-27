@@ -43,6 +43,16 @@ trait PipelineDatasets
 
     protected function renameThroughThePipeline(Dataset $dataset, string $title, string $shortTitle): Dataset
     {
+        $this->editThroughThePipeline($dataset, $title, $shortTitle);
+
+        $latest = DatasetVersion::where('dataset_id', $dataset->id)->orderByDesc('version')->firstOrFail();
+        $this->assertNotNull($latest->patch, 'The latest version should be stored as changes from the one before');
+
+        return $dataset->refresh();
+    }
+
+    protected function editThroughThePipeline(Dataset $dataset, string $title, string $shortTitle): void
+    {
         $metadata = $this->getMetadata();
         $metadata['metadata']['summary']['title'] = $title;
         $metadata['metadata']['summary']['shortTitle'] = $shortTitle;
@@ -55,10 +65,5 @@ trait PipelineDatasets
             partnerContext: null,
             targetGwdmVersion: Config::get('metadata.GWDM.version'),
         );
-
-        $latest = DatasetVersion::where('dataset_id', $dataset->id)->orderByDesc('version')->firstOrFail();
-        $this->assertNotNull($latest->patch, 'The latest version should be stored as changes from the one before');
-
-        return $dataset->refresh();
     }
 }

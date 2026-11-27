@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Services\DatasetReader;
 use App\Context\PartnerContext;
 use App\Exports\DataProviderCollExport;
 use App\Exports\DataProviderExport;
@@ -364,7 +363,7 @@ class SearchController extends Controller
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = array_column($toolsArray, '_id');
 
-            $toolsArray = (new ToolHydrator(new DatasetReader()))->hydrate($toolsArray);
+            $toolsArray = app(ToolHydrator::class)->hydrate($toolsArray);
 
             $toolsArray = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
@@ -882,7 +881,7 @@ class SearchController extends Controller
                 $totalResults = $response['hits']['total']['value'];
                 $matchedIds = array_column($pubArray, '_id');
 
-                $pubArray = (new PublicationHydrator(new DatasetReader()))->hydrate($pubArray);
+                $pubArray = app(PublicationHydrator::class)->hydrate($pubArray);
             } else {
                 if (isset($input['query']) && is_array($input['query'])) {
                     $urlString = config('gateway.search_service_url') . '/search/federated_papers/field_search/array';

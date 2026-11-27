@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Tests\Traits\PipelineDatasets;
+use App\Models\Team;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
@@ -21,6 +23,7 @@ class DatasetTest extends TestCase
     use MockExternalApis {
         setUp as commonSetUp;
     }
+    use PipelineDatasets;
 
     public const TEST_URL_DATASET = '/api/v1/datasets';
     public const TEST_URL_TEAM = '/api/v1/teams';
@@ -1853,5 +1856,18 @@ class DatasetTest extends TestCase
             $this->header,
         );
         $responseNewRoles->assertStatus(201);
+    }
+
+    public function test_the_dataset_list_shows_an_edited_dataset_with_its_current_metadata(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->datasetSavedThroughThePipeline($team->id);
+        $this->renameThroughThePipeline($dataset, 'Listcheck v1 index', 'Listcheck');
+
+        $response = $this->json('GET', self::TEST_URL_DATASET . '?title=Listcheck', [], $this->header);
+
+        $response->assertOk();
+        $this->assertSame([$dataset->id], array_column($response->json('data'), 'id'));
+        $this->assertSame('Listcheck v1 index', $response->json('data.0.latest_metadata.metadata.metadata.summary.title'));
     }
 }
