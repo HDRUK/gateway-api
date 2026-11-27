@@ -17,17 +17,26 @@ class VariableSearch extends BaseFormRequest
         return [
             // The comparison view may list datasets before any term is added.
             'terms' => ['required_without:dataset_ids', 'array', 'max:'.(int) config('typesense.variables.max_terms', 6)],
-            'terms.*' => [
-                'required',
-                'string',
-                'min:2',
-                'max:100',
-                'distinct:ignore_case',
-                'regex:/^[^<>${}`\x00]*$/',
-            ],
+            'terms.*' => self::termRules(),
             'match' => ['nullable', 'in:'.VariableSearchService::MATCH_ALL.','.VariableSearchService::MATCH_ANY],
             'dataset_ids' => ['nullable', 'array', 'max:'.(int) config('typesense.variables.max_datasets', 50)],
             'dataset_ids.*' => ['integer', 'min:1'],
+        ];
+    }
+
+    /**
+     * Rules for one variable search term, shared with the main search's
+     * `variables` so the two can't drift apart.
+     */
+    public static function termRules(): array
+    {
+        return [
+            'required',
+            'string',
+            'min:2',
+            'max:100',
+            'distinct:ignore_case',
+            'regex:/^[^<>${}`\x00]*$/',
         ];
     }
 }

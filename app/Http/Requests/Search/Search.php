@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Search;
 
 use App\Http\Requests\BaseFormRequest;
+use App\Context\PartnerContext;
 use App\Services\Search\AdvancedQueryCompiler;
+use App\Services\Search\VariableIndex;
 use Closure;
 use InvalidArgumentException;
 
@@ -56,6 +58,28 @@ class Search extends BaseFormRequest
                     }
                 },
             ],
+            // Variable terms a dataset must all match (see
+            // VariableSearch::matchingDatasetIds()). Optional and additive:
+            // without them a search is unchanged.
+            'variables' => [
+                'nullable',
+                'array',
+                'max:'.(int) config('typesense.variables.max_terms', 6),
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if ($value === []) {
+                        return;
+                    }
+                    if ($this->input('type') !== 'datasets') {
+                        $fail('Variables can only be searched on datasets.');
+                    } elseif (! VariableIndex::enabled()
+                        || ! VariableIndex::indexesPartner(app(PartnerContext::class)->getPartner())) {
+                        // Searching would find nothing, which reads as "no
+                        // dataset matched" rather than "not available".
+                        $fail('Variable search is not available for this partner.');
+                    }
+                },
+            ],
+            'variables.*' => VariableSearch::termRules(),
         ];
     }
 }

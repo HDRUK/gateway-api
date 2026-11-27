@@ -11,6 +11,7 @@ use App\SearchProviders\HDRUK;
 use App\Models\DatasetVersion;
 use App\Models\Tool;
 use App\Models\DataProviderColl;
+use App\Services\Search\VariableSearch;
 use App\Services\TypesenseService;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Pennant\Feature;
@@ -888,5 +889,144 @@ class HDRUKTest extends TestCase
 
         $this->assertSame([], $result['hits']);
         $this->assertSame(3, $result['total']);
+    }
+
+    // -------------------------------------------------------------------------
+    // variables: datasets must hold variables matching every term
+    // -------------------------------------------------------------------------
+
+    /** Stands in for the variable index, returning $ids for any terms. */
+    private function mockVariableSearch(array $ids, ?array &$terms = null): void
+    {
+        $mock = Mockery::mock(VariableSearch::class);
+        $mock->shouldReceive('matchingDatasetIds')
+            ->once()
+            ->andReturnUsing(function (array $sent) use ($ids, &$terms) {
+                $terms = $sent;
+
+                return $ids;
+            });
+
+        $this->app->instance(VariableSearch::class, $mock);
+    }
+
+    private function expectNoVariableSearch(): void
+    {
+        $mock = Mockery::mock(VariableSearch::class);
+        $mock->shouldNotReceive('matchingDatasetIds');
+
+        $this->app->instance(VariableSearch::class, $mock);
+    }
+
+    public function test_search_without_variables_adds_no_clause_and_never_searches_variables(): void
+    {
+        $this->expectNoVariableSearch();
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'publisherName:=[`SAIL`]');
+
+        (new HDRUK())->search('asthma', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+        ]);
+    }
+
+    public function test_search_with_empty_variables_adds_no_clause(): void
+    {
+        $this->expectNoVariableSearch();
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !array_key_exists('filter_by', $searches[0]));
+
+        (new HDRUK())->search('asthma', 'datasets', ['variables' => []]);
+    }
+
+    public function test_search_ands_the_variables_clause_with_facet_and_advanced_filters(): void
+    {
+        $this->mockVariableSearch([7, 3], $terms);
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null)
+                === 'publisherName:=[`SAIL`] && ((isLongitudinal:=true)) && dataset_id:=[7,3]');
+
+        (new HDRUK())->search('pregnancy', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+            'advanced' => ['rules' => [['field' => 'isLongitudinal', 'op' => 'is', 'value' => true]]],
+            'variables' => ['birthweight', 'maternal depression'],
+        ]);
+
+        $this->assertSame(['birthweight', 'maternal depression'], $terms);
+    }
+
+    public function test_search_with_no_matching_datasets_finds_nothing_rather_than_everything(): void
+    {
+        // Dropping the clause would widen the search to every dataset.
+        $this->mockVariableSearch([]);
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'dataset_id:=[0]');
+
+        (new HDRUK())->search('pregnancy', 'datasets', ['variables' => ['birthweight']]);
+    }
+
+    public function test_search_keeps_the_variables_clause_in_every_supporting_query(): void
+    {
+        // Facet exclusion, date-span and population queries must all count
+        // within the variable-matched datasets.
+        $this->mockVariableSearch([7]);
+        $this->mockTypesenseServiceExpectingSearches(function ($searches) {
+            foreach ($searches as $search) {
+                if (!str_contains($search['filter_by'] ?? '', 'dataset_id:=[7]')) {
+                    return false;
+                }
+            }
+
+            return count($searches) > 1;
+        });
+
+        (new HDRUK())->search('pregnancy', 'datasets', [
+            'filters' => ['dataset' => ['publisherName' => ['SAIL']]],
+            'variables' => ['birthweight'],
+        ]);
+    }
+
+    public function test_search_keeps_the_variables_clause_inside_the_partner_scope(): void
+    {
+        Feature::deactivate(array_values(PartnerContext::CROSS_CONTEXT_FLAGS));
+        $this->mockVariableSearch([7]);
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            ($searches[0]['filter_by'] ?? null) === 'dataset_id:=[7] && partnerContext:=`HDRUK`', false);
+
+        (new HDRUK())->search('pregnancy', 'datasets', ['variables' => ['birthweight']]);
+    }
+
+    public function test_search_ignores_variables_for_types_other_than_datasets(): void
+    {
+        $this->expectNoVariableSearch();
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) =>
+            !str_contains($searches[0]['filter_by'] ?? '', 'dataset_id'));
+
+        (new HDRUK())->search('nlp', 'tools', ['variables' => ['birthweight']]);
+    }
+
+    public function test_search_logs_variable_terms_not_dataset_ids_to_analytics(): void
+    {
+        $this->mockVariableSearch(range(1, 200));
+        $this->mockTypesenseServiceExpectingSearches(fn ($searches) => true);
+
+        (new HDRUK())->search('pregnancy', 'datasets', ['variables' => ['birthweight']]);
+
+        Queue::assertPushed(LogSearchAnalytics::class, function ($job) {
+            return $this->getSearchAnalyticsData($job)->filters['variables'] === ['birthweight'];
+        });
+    }
+
+    public function test_export_applies_the_variables_clause(): void
+    {
+        $this->mockVariableSearch([7, 3]);
+        $mockService = Mockery::mock(TypesenseService::class);
+        $mockService->shouldReceive('rawSearch')
+            ->once()
+            ->with(Mockery::any(), 'pregnancy', Mockery::on(fn ($params) =>
+                str_contains($params['filter_by'] ?? '', 'dataset_id:=[7,3]')))
+            ->andReturn(['hits' => []]);
+        $this->app->instance(TypesenseService::class, $mockService);
+
+        (new HDRUK())->export('pregnancy', 'datasets', ['variables' => ['birthweight']], 100);
     }
 }

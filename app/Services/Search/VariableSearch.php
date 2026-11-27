@@ -34,15 +34,63 @@ class VariableSearch
     public function search(array $terms, string $match = self::MATCH_ALL, ?array $datasetIds = null): array
     {
         $terms = array_values($terms);
-        $baseFilter = $this->baseFilter($datasetIds);
+        [$matches, $details] = $this->collectMatches($terms, $this->baseFilter($datasetIds));
 
+        $ids = $datasetIds !== null
+            ? array_values(array_unique(array_map('intval', $datasetIds)))
+            : $this->rank($matches, count($terms), $match);
+
+        $ids = array_slice($ids, 0, (int) config('typesense.variables.max_datasets', 50));
+        $details += $this->datasetDetails(array_values(array_diff($ids, array_keys($details))));
+        // Requested ids outside the partner scope (or no longer indexed) drop out.
+        $ids = array_values(array_filter($ids, fn (int $id) => isset($details[$id])));
+
+        return [
+            'terms' => $terms,
+            'match' => $match,
+            'datasets' => array_map(fn (int $id) => [
+                'id' => $id,
+                'title' => $details[$id]['title'] ?? null,
+                'publisherName' => $details[$id]['publisherName'] ?? null,
+                'matches' => array_map(
+                    fn (int $termIndex) => $matches[$id][$termIndex] ?? [],
+                    array_keys($terms),
+                ),
+            ], $ids),
+        ];
+    }
+
+    /**
+     * Ids of every dataset, within the partner scope, holding a variable
+     * matching each term, best first. For narrowing another search, so not
+     * capped at max_datasets; each term still reaches at most 250 datasets
+     * (termSearch()'s per_page).
+     *
+     * @param  string[]  $terms
+     * @return int[]
+     */
+    public function matchingDatasetIds(array $terms): array
+    {
+        $terms = array_values($terms);
+        [$matches] = $this->collectMatches($terms, $this->baseFilter(null));
+
+        return $this->rank($matches, count($terms), self::MATCH_ALL);
+    }
+
+    /**
+     * Matches as [datasetId => [termIndex => variable[]]], plus each
+     * dataset's title and publisher from whichever hit carried them first.
+     *
+     * @param  string[]  $terms
+     * @return array{0: array, 1: array}
+     */
+    private function collectMatches(array $terms, string $baseFilter): array
+    {
         $response = $terms === [] ? [] : $this->typesense->multiSearch(array_map(
             fn (string $term) => $this->termSearch($term, $baseFilter),
             $terms,
         ));
 
-        // [datasetId => [termIndex => variable[]]], plus the dataset's title
-        // and publisher from whichever hit carried them first.
         $matches = [];
         $details = [];
         foreach ($response['results'] ?? [] as $termIndex => $result) {
@@ -72,28 +120,7 @@ class VariableSearch
         }
         unset($byTerm, $variables);
 
-        $ids = $datasetIds !== null
-            ? array_values(array_unique(array_map('intval', $datasetIds)))
-            : $this->rank($matches, count($terms), $match);
-
-        $ids = array_slice($ids, 0, (int) config('typesense.variables.max_datasets', 50));
-        $details += $this->datasetDetails(array_values(array_diff($ids, array_keys($details))));
-        // Requested ids outside the partner scope (or no longer indexed) drop out.
-        $ids = array_values(array_filter($ids, fn (int $id) => isset($details[$id])));
-
-        return [
-            'terms' => $terms,
-            'match' => $match,
-            'datasets' => array_map(fn (int $id) => [
-                'id' => $id,
-                'title' => $details[$id]['title'] ?? null,
-                'publisherName' => $details[$id]['publisherName'] ?? null,
-                'matches' => array_map(
-                    fn (int $termIndex) => $matches[$id][$termIndex] ?? [],
-                    array_keys($terms),
-                ),
-            ], $ids),
-        ];
+        return [$matches, $details];
     }
 
     private function termSearch(string $term, string $filter): array
