@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Services\DatasetReader;
 use App\Enums\FederationJobRunStatus;
-use App\Models\Dataset;
 use App\Models\Federation;
 use App\Models\FederationJobRun;
 use App\Services\EmailManager;
@@ -35,7 +35,7 @@ class SendEmailCustomIntegration implements ShouldQueue
         $this->errorMessage = $errorMessage;
     }
 
-    public function handle(): void
+    public function handle(DatasetReader $datasetReader): void
     {
         $federation    = $this->getDetails($this->federationId);
         $team          = $federation['team'];
@@ -44,7 +44,7 @@ class SendEmailCustomIntegration implements ShouldQueue
         $notifications = $federation['notifications'];
 
         $history = $this->jobUuid
-            ? $this->getFederationHistory()
+            ? $this->getFederationHistory($datasetReader)
             : ['integration_success' => '<ul></ul>', 'integration_errors' => '<ul></ul>', 'success_count' => 0];
 
         if ($this->outcome === 'success' && $history['success_count'] === 0) {
@@ -96,10 +96,10 @@ class SendEmailCustomIntegration implements ShouldQueue
         }
     }
 
-    public function getFederationHistory(): array
+    public function getFederationHistory(DatasetReader $datasetReader): array
     {
         $latestAttempts = FederationJobRun::latestPerPidForExecution($this->federationId, $this->jobUuid);
-        $titlesByPid    = Dataset::titlesForPids($latestAttempts->pluck('pid')->all());
+        $titlesByPid    = $datasetReader->titlesForPids($latestAttempts->pluck('pid')->all());
 
         $integrationSuccess = '<ul>';
         $integrationErrors  = '<ul>';

@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Services\DatasetReader;
 use Config;
 use Exception;
 use Carbon\Carbon;
@@ -30,7 +31,7 @@ trait DataAccessApplicationHelpers
     use QuestionBankHelpers;
     use RequestTransformation;
 
-    public function getDARHeader(string $id, ?string $teamId, ?string $userId, array $jwtUser): DataAccessApplication
+    public function getDARHeader(DatasetReader $datasetReader, string $id, ?string $teamId, ?string $userId, array $jwtUser): DataAccessApplication
     {
         if (!is_null($teamId)) {
             $this->checkTeamAccess($teamId, $id, 'view', (int)$jwtUser['id']);
@@ -43,6 +44,7 @@ trait DataAccessApplicationHelpers
         }
 
         $result = $this->dashboardIndex(
+            $datasetReader,
             [$id],
             null,
             null,
@@ -194,6 +196,7 @@ trait DataAccessApplicationHelpers
     }
 
     public function dashboardIndex(
+        DatasetReader $datasetReader,
         array $applicationIds,
         ?string $filterTitle,
         ?string $filterApproval,
@@ -265,7 +268,7 @@ trait DataAccessApplicationHelpers
         foreach ($applications as $app) {
             foreach ($app['datasets'] as $d) {
                 $dataset = Dataset::where('id', $d['dataset_id'])->first();
-                $title = $dataset->getTitle();
+                $title = $datasetReader->titlesOf($dataset->id)->title;
                 $custodian = Team::where('id', $dataset->team_id)->select(['id','name'])->first();
                 $d['dataset_title'] = $title;
                 $d['custodian'] = $custodian;

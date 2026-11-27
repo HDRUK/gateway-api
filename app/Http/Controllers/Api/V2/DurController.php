@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use App\Services\DatasetReader;
 use Config;
 use Auditor;
 use Exception;
 use App\Models\Dur;
-use App\Models\Dataset;
 use Illuminate\Http\Request;
 use App\Http\Traits\CheckAccess;
 use App\Http\Traits\DurV2Helpers;
@@ -25,6 +25,10 @@ class DurController extends Controller
     use MapOrganisationSector;
     use CheckAccess;
     use DurV2Helpers;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -408,23 +412,6 @@ class DurController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
-    }
-
-    /**
-     * Find dataset title associated with a given dataset id.
-     *
-     * @param int $id The dataset id
-     *
-     * @return string
-     */
-    private function getDatasetTitle(int $id): string
-    {
-        $metadata = Dataset::where(['id' => $id])
-            ->first()
-            ->latestVersion()
-            ->metadata;
-        $title = $metadata['metadata']['summary']['shortTitle'];
-        return $title;
     }
 
 }

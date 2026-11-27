@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\DatasetReader;
 use App\Enums\FederationJobRunStatus;
 use App\Events\FederationProcessed;
 use App\Events\FederationProcessingFailed;
@@ -1254,7 +1255,7 @@ class ProcessFederationJobTest extends TestCase
         $job = new ProcessFederation($federation);
         $job->handle();
 
-        $emailHistory = (new SendEmailCustomIntegration($federation->id, $job->jobUuid, 'success'))->getFederationHistory();
+        $emailHistory = (new SendEmailCustomIntegration($federation->id, $job->jobUuid, 'success'))->getFederationHistory(new DatasetReader());
 
         $this->assertSame(0, $emailHistory['success_count']);
     }

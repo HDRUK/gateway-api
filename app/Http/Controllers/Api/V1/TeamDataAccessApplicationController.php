@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use App\Exceptions\InternalServerErrorException;
 use Auditor;
 use Config;
@@ -35,6 +36,10 @@ class TeamDataAccessApplicationController extends Controller
 {
     use RequestTransformation;
     use DataAccessApplicationHelpers;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -91,6 +96,7 @@ class TeamDataAccessApplicationController extends Controller
                 $request->boolean('action_required', null) : null;
 
             $applications = $this->dashboardIndex(
+                $this->datasetReader,
                 $applicationIds->toArray(),
                 $filterTitle,
                 $filterApproval,
@@ -457,7 +463,7 @@ class TeamDataAccessApplicationController extends Controller
         $input = $request->all();
         $jwtUser = $request->jwtUser();
         try {
-            $result = $this->getDARHeader($id, $teamId, null, $jwtUser);
+            $result = $this->getDARHeader($this->datasetReader, $id, $teamId, null, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],

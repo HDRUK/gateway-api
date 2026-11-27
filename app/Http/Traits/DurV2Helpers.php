@@ -78,7 +78,7 @@ trait DurV2Helpers
         $datasets = $dur->allDatasets  ?? [];
 
         foreach ($datasets as &$dataset) {
-            $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
+            $dataset['shortTitle'] = $this->datasetReader->titlesOf($dataset['id'])->shortTitle ?? '';
         }
 
         // Update the relationship with the modified datasets

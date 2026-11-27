@@ -4,6 +4,8 @@ namespace Tests\Feature\V2;
 
 use Config;
 use Tests\TestCase;
+use Tests\Traits\PipelineDatasets;
+use App\Models\Team;
 use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Dataset;
@@ -22,6 +24,7 @@ class DurTest extends TestCase
     use MockExternalApis {
         setUp as commonSetUp;
     }
+    use PipelineDatasets;
 
     public const TEST_URL_DUR_V2 = '/api/v2/dur';
     public const TEST_URL_TEAM = '/api/v1/teams';
@@ -1588,5 +1591,23 @@ class DurTest extends TestCase
         }
 
         return $return;
+    }
+
+    public function test_a_data_use_lists_its_datasets_by_their_current_short_title(): void
+    {
+        $team = Team::factory()->create();
+        $dataset = $this->datasetSavedThroughThePipeline($team->id);
+        $durId = $this->json('POST', '/api/v1/dur', [
+            'datasets' => [['id' => $dataset->id, 'reason' => 'Linked for analysis', 'is_locked' => 0]],
+            'team_id' => $team->id,
+            'user_id' => (int) $this->currentUser['id'],
+            'status' => 'ACTIVE',
+        ], $this->header)->assertCreated()->json('data');
+
+        $this->renameThroughThePipeline($dataset, 'Renamed title', 'Renamed short title');
+
+        $this->json('GET', self::TEST_URL_DUR_V2 . '/' . $durId, [], $this->header)
+            ->assertOk()
+            ->assertJsonPath('data.datasets.0.shortTitle', 'Renamed short title');
     }
 }

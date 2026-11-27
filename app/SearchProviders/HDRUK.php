@@ -2,6 +2,7 @@
 
 namespace App\SearchProviders;
 
+use App\Services\DatasetReader;
 use Auditor;
 use App\Context\PartnerContext;
 use App\Contracts\SearchProvider;
@@ -875,10 +876,10 @@ class HDRUK implements SearchProvider
     {
         return match ($type) {
             'datasets'                => (new DatasetHydrator())->hydrate($hits, $viewType),
-            'tools'                   => (new ToolHydrator())->hydrate($hits),
+            'tools'                   => (new ToolHydrator(new DatasetReader()))->hydrate($hits),
             'collections'             => (new CollectionHydrator())->hydrate($hits),
             'dur'                     => (new DataUseHydrator())->hydrate($hits),
-            'publications'            => (new PublicationHydrator())->hydrate($hits),
+            'publications'            => (new PublicationHydrator(new DatasetReader()))->hydrate($hits),
             'data_custodian_networks' => (new DataCustodianNetworkHydrator())->hydrate($hits),
             'data_custodians'         => (new DataCustodianHydrator())->hydrate($hits),
             default                   => $hits,

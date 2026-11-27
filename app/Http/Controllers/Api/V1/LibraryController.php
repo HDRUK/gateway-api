@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use Config;
 use Auditor;
 use Exception;
@@ -23,6 +24,10 @@ use App\Http\Requests\Library\UpdateLibrary;
 class LibraryController extends Controller
 {
     use RequestTransformation;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -112,7 +117,7 @@ class LibraryController extends Controller
 
                 // Using dynamic attributes to avoid undefined property error
                 $library->setAttribute('dataset_id', (int)$dataset->id);
-                $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
+                $library->setAttribute('dataset_name', $this->datasetReader->titlesOf($dataset->id)->shortTitle);
                 $library->setAttribute('dataset_status', $dataset->status);
                 $library->setAttribute('data_provider_id', $team->id);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
@@ -236,7 +241,7 @@ class LibraryController extends Controller
             $library->setAttribute('data_provider_id', $team->id);
             $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
             $library->setAttribute('data_provider_name', $team->name);
-            $library->setAttribute('dataset_name', $dataset->versions[0]->metadata['metadata']['summary']['shortTitle']);
+            $library->setAttribute('dataset_name', $this->datasetReader->titlesOf($dataset->id)->shortTitle);
             $library->setAttribute('data_provider_dar_enabled', $team->is_question_bank);
             $library->setAttribute('data_provider_member_of', $team->member_of);
             $library->setAttribute('dataset_is_cohort_discovery', $dataset->is_cohort_discovery);

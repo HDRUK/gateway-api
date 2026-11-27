@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Services\DatasetService;
+use Tests\Traits\PipelineDatasets;
 use App\Models\Team;
 use App\Models\Widget;
 use App\Models\WidgetAnalytic;
@@ -16,6 +18,7 @@ class TeamWidgetTest extends TestCase
     use MockExternalApis {
         setUp as commonSetUp;
     }
+    use PipelineDatasets;
 
     protected $header = [];
     protected Team $team;
@@ -388,5 +391,61 @@ class TeamWidgetTest extends TestCase
         $property = $reflection->getProperty('data');
         $property->setAccessible(true);
         return $property->getValue($job);
+    }
+
+    public function test_the_widget_builder_lists_an_edited_dataset_by_its_current_title(): void
+    {
+        $dataset = $this->datasetSavedThroughThePipeline($this->team->id);
+        $this->renameThroughThePipeline($dataset, 'Renamed title', 'Renamed short title');
+
+        $response = $this->json('GET', "api/v1/teams/{$this->team->id}/widgets/data?team_ids={$this->team->id}", [], $this->header);
+
+        $response->assertOk();
+        $this->assertSame('Renamed title', collect($response->json('data.datasets'))->firstWhere('id', $dataset->id)['title']);
+    }
+
+    public function test_a_widget_names_a_data_uses_dataset_by_its_current_title(): void
+    {
+        $dataset = $this->datasetSavedThroughThePipeline($this->team->id);
+        $this->assertNotSame('Renamed title', $dataset->latestVersion(['id', 'title'])->title);
+        $durId = $this->json('POST', '/api/v1/dur', [
+            'datasets' => [['id' => $dataset->id, 'reason' => 'Linked for analysis', 'is_locked' => 0]],
+            'team_id' => $this->team->id,
+            'user_id' => (int) $this->currentUser['id'],
+            'status' => 'ACTIVE',
+        ], $this->header)->assertCreated()->json('data');
+        $widget = Widget::factory()->create([
+            'team_id' => $this->team->id,
+            'included_data_uses' => (string) $durId,
+            'permitted_domains' => 'example.com',
+        ]);
+
+        $this->renameThroughThePipeline($dataset, 'Renamed title', 'Renamed short title');
+
+        $response = $this->json('GET', "api/v1/teams/{$this->team->id}/widgets/{$widget->id}/data?domain_origin=example.com");
+
+        $response->assertOk()->assertJsonPath('data.data_uses.0.dataset.dataset_title', 'Renamed title');
+    }
+
+    public function test_a_widget_still_loads_when_a_data_uses_dataset_has_been_deleted(): void
+    {
+        $dataset = $this->datasetSavedThroughThePipeline($this->team->id);
+        $durId = $this->json('POST', '/api/v1/dur', [
+            'datasets' => [['id' => $dataset->id, 'reason' => 'Linked for analysis', 'is_locked' => 0]],
+            'team_id' => $this->team->id,
+            'user_id' => (int) $this->currentUser['id'],
+            'status' => 'ACTIVE',
+        ], $this->header)->assertCreated()->json('data');
+        $widget = Widget::factory()->create([
+            'team_id' => $this->team->id,
+            'included_data_uses' => (string) $durId,
+            'permitted_domains' => 'example.com',
+        ]);
+
+        app(DatasetService::class)->delete($dataset->id);
+
+        $this->json('GET', "api/v1/teams/{$this->team->id}/widgets/{$widget->id}/data?domain_origin=example.com")
+            ->assertOk()
+            ->assertJsonPath('data.data_uses.0.id', $durId);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use Auditor;
 use Config;
 use Exception;
@@ -34,6 +35,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class UserDataAccessApplicationController extends Controller
 {
     use DataAccessApplicationHelpers;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -89,6 +94,7 @@ class UserDataAccessApplicationController extends Controller
                 $request->boolean('action_required', null) : null;
 
             $applications = $this->dashboardIndex(
+                $this->datasetReader,
                 $applicationIds->toArray(),
                 $filterTitle,
                 $filterApproval,
@@ -432,7 +438,7 @@ class UserDataAccessApplicationController extends Controller
         $input = $request->all();
         $jwtUser = $request->jwtUser();
         try {
-            $result = $this->getDARHeader($id, null, $userId, $jwtUser);
+            $result = $this->getDARHeader($this->datasetReader, $id, null, $userId, $jwtUser);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],

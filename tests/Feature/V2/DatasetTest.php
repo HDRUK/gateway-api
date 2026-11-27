@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Pennant\Feature;
 use Tests\TestCase;
+use Tests\Traits\PipelineDatasets;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 
@@ -29,6 +30,7 @@ class DatasetTest extends TestCase
     use MockExternalApis {
         setUp as commonSetUp;
     }
+    use PipelineDatasets;
 
     public const TEST_URL_DATASET_V2 = '/api/v2/datasets';
 
@@ -1930,5 +1932,24 @@ class DatasetTest extends TestCase
             'x-application-id' => $app->app_id,
             'x-client-id' => $app->client_id,
         ];
+    }
+
+    public function test_datasets_sort_by_their_current_title(): void
+    {
+        $team = Team::factory()->create();
+        $renamedToBeta = $this->datasetSavedThroughThePipeline($team->id);
+        $renamedToAlpha = $this->datasetSavedThroughThePipeline($team->id);
+        $this->renameThroughThePipeline($renamedToBeta, 'Sortcheck Beta', 'Beta');
+        $this->renameThroughThePipeline($renamedToAlpha, 'Sortcheck Alpha', 'Alpha');
+
+        $response = $this->json(
+            'GET',
+            self::TEST_URL_DATASET_V2 . '?title=Sortcheck&with_metadata=false&sort=metadata.summary.title:asc',
+            [],
+            $this->header,
+        );
+
+        $response->assertOk();
+        $this->assertSame([$renamedToAlpha->id, $renamedToBeta->id], array_column($response->json('data'), 'id'));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use Config;
 use Auditor;
 use Exception;
@@ -33,6 +34,10 @@ class IntegrationDurController extends Controller
 {
     use RequestTransformation;
     use IntegrationOverride;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -1610,23 +1615,6 @@ class IntegrationDurController extends Controller
         return (!is_null($category)) ? $categories->where('name', $category)->first()['id'] : null;
     }
 
-    /**
-     * Find dataset title associated with a given dataset id.
-     *
-     * @param int $id The dataset id
-     *
-     * @return string
-     */
-    private function getDatasetTitle(int $id): string
-    {
-        $metadata = Dataset::where(['id' => $id])
-            ->first()
-            ->latestVersion()
-            ->metadata;
-        $title = $metadata['metadata']['summary']['shortTitle'];
-        return $title;
-    }
-
     //Get Durs
     private function getDurById(int $durId)
     {
@@ -1679,7 +1667,7 @@ class IntegrationDurController extends Controller
         $datasets = $dur->allDatasets  ?? [];
 
         foreach ($datasets as &$dataset) {
-            $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
+            $dataset['shortTitle'] = $this->datasetReader->titlesOf($dataset['id'])->shortTitle ?? '';
         }
 
         // Update the relationship with the modified datasets

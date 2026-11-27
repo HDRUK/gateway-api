@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Tests\Traits\PipelineDatasets;
+use App\Models\Team;
 use App\Models\Library;
 use App\Models\User;
 use Tests\Traits\MockExternalApis;
@@ -13,6 +15,7 @@ class LibraryTest extends TestCase
     use MockExternalApis {
         setUp as commonSetUp;
     }
+    use PipelineDatasets;
 
     public const TEST_URL = '/api/v1/libraries';
 
@@ -315,5 +318,20 @@ class LibraryTest extends TestCase
             'message',
         ]);
         $responseDelete->assertStatus(500);
+    }
+
+    public function test_the_library_lists_a_saved_dataset_by_its_current_short_title(): void
+    {
+        $dataset = $this->datasetSavedThroughThePipeline(Team::factory()->create()->id);
+        $this->assertNotSame('Renamed short title', $dataset->latestVersion(['id', 'short_title'])->short_title);
+        $libraryId = $this->json('POST', self::TEST_URL, ['dataset_id' => $dataset->id], $this->header)
+            ->assertCreated()
+            ->json('data');
+
+        $this->renameThroughThePipeline($dataset, 'Renamed title', 'Renamed short title');
+
+        $listed = collect($this->json('GET', self::TEST_URL . '?per_page=-1', [], $this->header)->assertOk()->json('data'))
+            ->firstWhere('id', $libraryId);
+        $this->assertSame('Renamed short title', $listed['dataset_name']);
     }
 }

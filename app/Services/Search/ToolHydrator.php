@@ -2,11 +2,16 @@
 
 namespace App\Services\Search;
 
-use App\Models\Dataset;
+use App\Services\DatasetReader;
+use App\Services\DatasetTitles;
 use App\Models\Tool;
 
 class ToolHydrator
 {
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
+
     public function hydrate(array $hits): array
     {
         $matchedIds = array_map(fn ($h) => (int)$h['_id'], $hits);
@@ -33,14 +38,9 @@ class ToolHydrator
             ->unique()
             ->all();
 
-        $datasetTitleMap = !empty($allDatasetIds)
-            ? Dataset::with('latestMetadata')
-                ->whereIn('id', $allDatasetIds)
-                ->get()
-                ->keyBy('id')
-                ->map(fn ($d) => $d->latestMetadata?->metadata['metadata']['summary']['shortTitle'] ?? '')
-                ->filter()
-            : collect();
+        $datasetTitleMap = collect($this->datasetReader->titles($allDatasetIds))
+            ->map(fn (DatasetTitles $titles) => $titles->shortTitle ?? '')
+            ->filter();
 
         // Batch-load DataProviderColl memberships
         $teamIds = $models->pluck('team_id')->unique()->filter()->values()->all();
