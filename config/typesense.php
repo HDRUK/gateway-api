@@ -93,7 +93,7 @@ return [
     // metadata.summary search: one document per summary field, matched
     // by meaning through Typesense's built-in embedding model.
     'summary_embedding_config' => [
-        'enabled'            => env('TYPESENSE_SUMMARY_EMBEDDING_ENABLED', false),
+        'enabled'            => env('TYPESENSE_SUMMARY_EMBEDDING_ENABLED', true),
         'collection'         => 'metadata_summary',
         'model'              => env('TYPESENSE_SUMMARY_EMBEDDING_MODEL', 'ts/all-MiniLM-L12-v2'),
         'distance_threshold' => (float) env('TYPESENSE_SUMMARY_EMBEDDING_DISTANCE', 0.70),
