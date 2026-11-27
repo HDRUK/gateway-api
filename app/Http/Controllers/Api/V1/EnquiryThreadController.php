@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\EnquiriesTrait;
 use App\Models\Dataset;
@@ -24,8 +25,10 @@ class EnquiryThreadController extends Controller
 
     protected SDEConciergeService $sdeConciergeService;
 
-    public function __construct(SDEConciergeService $sdeConciergeService)
-    {
+    public function __construct(
+        SDEConciergeService $sdeConciergeService,
+        private readonly DatasetReader $datasetReader,
+    ) {
         $this->sdeConciergeService = $sdeConciergeService;
     }
 
@@ -422,11 +425,11 @@ class EnquiryThreadController extends Controller
                     'team_id' => $dataset['team_id'],
                 ];
             } else {
-                $ds = Dataset::with('latestMetadata')->where('id', $dataset['dataset_id'])->first();
+                $ds = Dataset::findOrFail($dataset['dataset_id']);
                 $datasetUrl = config('gateway.gateway_url') . '/dataset/' . $ds->id . '?section=1';
 
                 $arr[] = [
-                    'title' => $ds->latestMetadata->metadata['metadata']['summary']['shortTitle'],
+                    'title' => $this->datasetReader->titlesOf($ds->id)->shortTitle,
                     'dataset_id' => $dataset['dataset_id'],
                     'url' => $datasetUrl,
                     'interest_type' => $dataset['interest_type'],

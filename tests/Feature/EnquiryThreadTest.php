@@ -6,10 +6,15 @@ use Config;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\Dataset;
 use App\Models\EnquiryThread;
+use App\Models\Role;
 use App\Models\Team;
+use App\Models\TeamHasUser;
+use App\Models\TeamUserHasRole;
+use App\Models\User;
 use App\Jobs\SendEmailJob;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
+use Tests\Traits\PipelineDatasets;
 use Laravel\Pennant\Feature;
 use Illuminate\Support\Facades\Queue;
 
@@ -18,6 +23,7 @@ class EnquiryThreadTest extends TestCase
     use MockExternalApis {
         setUp as commonSetUp;
     }
+    use PipelineDatasets;
 
     public const TEST_URL = '/api/v1/enquiry_threads';
 
@@ -651,5 +657,40 @@ class EnquiryThreadTest extends TestCase
         $content = $responseTeam->decodeResponseJson();
         $teamId = $content['data'];
         return $teamId;
+    }
+
+    public function test_an_enquiry_about_an_edited_dataset_reaches_the_datasets_team(): void
+    {
+        Feature::deactivate('SDEConciergeServiceEnquiry');
+        $team = $this->teamWithADarManager();
+        $dataset = $this->datasetSavedThroughThePipeline($team->id);
+        $this->renameThroughThePipeline($dataset, 'Renamed title', 'Renamed short title');
+
+        $response = $this->json('POST', self::TEST_URL, [
+            'project_title' => 'Enquiry project',
+            'from' => 'enquirer@example.com',
+            'contact_number' => '+44 7700 000000',
+            'is_dar_dialogue' => false,
+            'is_dar_status' => false,
+            'is_feasibility_enquiry' => false,
+            'is_general_enquiry' => true,
+            'datasets' => [['dataset_id' => $dataset->id, 'interest_type' => 'PRIMARY']],
+            'message' => 'Is this dataset available?',
+        ], $this->header);
+
+        $response->assertOk();
+        $this->assertSame($team->id, (int) EnquiryThread::findOrFail($response->json('data'))->team_id);
+    }
+
+    private function teamWithADarManager(): Team
+    {
+        $team = Team::factory()->create();
+        $teamHasUser = TeamHasUser::create(['team_id' => $team->id, 'user_id' => User::factory()->create()->id]);
+        TeamUserHasRole::create([
+            'team_has_user_id' => $teamHasUser->id,
+            'role_id' => Role::where('name', 'custodian.dar.manager')->firstOrFail()->id,
+        ]);
+
+        return $team;
     }
 }

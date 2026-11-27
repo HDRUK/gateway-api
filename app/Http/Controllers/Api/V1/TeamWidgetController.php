@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\DatasetReader;
 use Config;
 use Auditor;
 use Exception;
@@ -24,6 +25,10 @@ use App\Http\Traits\LoggingContext;
 class TeamWidgetController extends Controller
 {
     use LoggingContext;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
 
     /**
@@ -272,12 +277,14 @@ class TeamWidgetController extends Controller
 
             $teamIds = array_map('intval', $teamIds);
 
-            $datasets = Dataset::whereIn('team_id', $teamIds)
+            $teamDatasets = Dataset::whereIn('team_id', $teamIds)
                 ->where('status', 'ACTIVE')
-                ->get(['team_id', 'id'])
+                ->get(['team_id', 'id']);
+            $titles = $this->datasetReader->titles($teamDatasets->pluck('id')->all());
+            $datasets = $teamDatasets
                 ->map(fn ($dataset) => [
                     'id' => $dataset->id,
-                    'title' => $dataset->getTitle(),
+                    'title' => ($titles[$dataset->id] ?? null)?->title,
                     'team_id' => $dataset->team_id,
                     'team_name' => optional($dataset->team)->name,
                 ]);
@@ -500,19 +507,6 @@ class TeamWidgetController extends Controller
                             ->where('ds.status', 'ACTIVE')
                             ->select([
                                 'ds.id as dataset_id',
-                               DB::raw("
-                                JSON_UNQUOTE(
-                                    JSON_EXTRACT(
-                                        CASE
-                                            WHEN JSON_VALID(dv.metadata)
-                                                AND JSON_TYPE(JSON_EXTRACT(dv.metadata, '$')) = 'STRING'
-                                            THEN JSON_UNQUOTE(JSON_EXTRACT(dv.metadata, '$'))
-                                            ELSE dv.metadata
-                                        END,
-                                        '$.metadata.summary.title'
-                                    )
-                                ) AS dataset_title
-                            "),
                             DB::raw('(
                                     SELECT COUNT(DISTINCT ds2.id)
                                     FROM dur_has_dataset_version dhdv2
@@ -523,6 +517,9 @@ class TeamWidgetController extends Controller
                             ])
                             ->limit(1)
                             ->first();
+                        if ($dataset) {
+                            $dataset->dataset_title = ($this->datasetReader->titles([$dataset->dataset_id])[$dataset->dataset_id] ?? null)?->title;
+                        }
 
                         return [
                             'id' => $datause->id,

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Services\DatasetReader;
 use App\Jobs\SendEmailCustomIntegration;
 use App\Jobs\SendEmailJob;
 use App\Models\Dataset;
@@ -108,7 +109,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job = $this->makeJob('success');
         $job->method('checkUserPerms')->willReturn(true);
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -119,7 +120,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job = $this->makeJob('success');
         $job->method('checkUserPerms')->willReturn(false);
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -130,7 +131,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job = $this->makeJob('failure', self::JOB_UUID, 'Connection timed out');
         $job->method('checkUserPerms')->willReturn(true);
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -141,7 +142,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job = $this->makeJob('failure', self::JOB_UUID, 'Connection timed out');
         $job->method('checkUserPerms')->willReturn(false);
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -158,7 +159,7 @@ class SendEmailCustomIntegrationTest extends TestCase
             'notifications' => [['user_notification' => null]],
         ]);
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertNothingPushed();
     }
@@ -169,7 +170,7 @@ class SendEmailCustomIntegrationTest extends TestCase
             $this->federationDetails(['email' => null, 'preferred_email' => 'primary'])
         );
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertNothingPushed();
     }
@@ -180,7 +181,7 @@ class SendEmailCustomIntegrationTest extends TestCase
             $this->federationDetails(['secondary_email' => null, 'preferred_email' => 'secondary'])
         );
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertNothingPushed();
     }
@@ -190,7 +191,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $this->seedTemplate('integration.job.success.teamadmin_developer');
         $job = $this->makeJob('success', historyCount: 0);
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertNothingPushed();
     }
@@ -200,7 +201,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $this->seedTemplate('integration.job.success.teamadmin_developer');
         $job = $this->makeJob('success', historyCount: 1);
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -221,7 +222,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job->method('checkUserPerms')->willReturn(true);
         $job->method('getListOfUsers')->willReturn('');
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertNothingPushed();
         Log::shouldHaveReceived('warning')
@@ -247,7 +248,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         $job->method('getListOfUsers')->willReturn('');
         $job->expects($this->never())->method('getFederationHistory');
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -269,7 +270,7 @@ class SendEmailCustomIntegrationTest extends TestCase
             ])
         );
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -287,7 +288,7 @@ class SendEmailCustomIntegrationTest extends TestCase
             ])
         );
 
-        $job->handle();
+        $job->handle(new DatasetReader());
 
         Queue::assertPushed(SendEmailJob::class, 1);
     }
@@ -318,7 +319,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'success');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertSame(2, $result['success_count']);
         $this->assertStringContainsString('PID: AAA', $result['integration_success']);
@@ -354,7 +355,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertSame(1, $result['success_count']);
         $this->assertStringContainsString('PID: OK1', $result['integration_success']);
@@ -376,7 +377,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertSame(0, $result['success_count']);
         $this->assertStringContainsString('PID - ERR-STR', $result['integration_errors']);
@@ -386,7 +387,7 @@ class SendEmailCustomIntegrationTest extends TestCase
     public function test_history_returns_empty_lists_when_no_runs_exist(): void
     {
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, 'nonexistent-uuid', 'success');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertSame(0, $result['success_count']);
         $this->assertSame('<ul></ul>', $result['integration_success']);
@@ -415,7 +416,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $errors = $result['integration_errors'];
 
@@ -445,7 +446,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $errors = $result['integration_errors'];
 
@@ -474,7 +475,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'success');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertSame(0, $result['success_count']);
         $this->assertStringNotContainsString('ZZZ', $result['integration_success']);
@@ -514,7 +515,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'success');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertStringContainsString('My Dataset Title (PID: TITLED-OK)', $result['integration_success']);
     }
@@ -534,7 +535,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertStringContainsString('Existing Dataset (PID: TITLED-ERR)', $result['integration_errors']);
     }
@@ -552,7 +553,7 @@ class SendEmailCustomIntegrationTest extends TestCase
         ]);
 
         $job    = new SendEmailCustomIntegration(self::FEDERATION_ID, self::JOB_UUID, 'failure');
-        $result = $job->getFederationHistory();
+        $result = $job->getFederationHistory(new DatasetReader());
 
         $this->assertStringContainsString('PID - NEW-PID-NO-DATASET', $result['integration_errors']);
         $this->assertStringNotContainsString('(PID:', $result['integration_errors']);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\DatasetReader;
 use DB;
 use App\Context\PartnerContext;
 use App\Models\Traits\EntityCounter;
@@ -297,42 +298,6 @@ class Dataset extends Model
     }
 
     /**
-     * @param array<int, string> $pids
-     * @return array<string, string|null>
-     *
-     */
-    public static function titlesForPids(array $pids): array
-    {
-        if (empty($pids)) {
-            return [];
-        }
-
-        $found = static::whereIn('pid', $pids)
-            ->with(['latestMetadata' => fn ($q) => $q->selectRaw('dataset_versions.id, dataset_versions.dataset_id, dataset_versions.title')])
-            ->get(['id', 'pid'])
-            ->mapWithKeys(fn ($dataset) => [
-                $dataset->pid => filled($dataset->latestMetadata?->title) ? $dataset->latestMetadata->title : null,
-            ]);
-
-        return collect($pids)->mapWithKeys(fn ($pid) => [$pid => $found[$pid] ?? null])->all();
-    }
-
-    /**
-     * Helper function to grab dataset title from latest metadata.
-     */
-    public function getTitle(): string
-    {
-        $version = DatasetVersion::where('dataset_id', $this->id)
-            ->select(['version','id'])
-            ->orderBy('version', 'desc')
-            ->first()
-            ->id;
-        $datasetVersion = DatasetVersion::findOrFail($version)->toArray();
-
-        return $datasetVersion['metadata']['metadata']['summary']['title'];
-    }
-
-    /**
      * Restrict to datasets visible in the given partner context.
      * See PartnerContext::readableContextsFor() for the HDRUK flag rules;
      * other contexts are isolated. A null context applies no restriction.
@@ -386,9 +351,7 @@ class Dataset extends Model
             return $query->orderBy($field, $direction);
         }
 
-        return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')")
-            ->whereColumn('datasets.id', 'dataset_versions.dataset_id')
-            ->latest()->limit(1), $direction);
+        return $query->orderBy(DatasetReader::latestTitleOfEachDataset(), $direction);
     }
 
     /**

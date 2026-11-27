@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use App\Services\DatasetReader;
 use Config;
 use Auditor;
 use Exception;
@@ -38,6 +39,10 @@ class TeamDurController extends Controller
     use MapOrganisationSector;
     use CheckAccess;
     use DurV2Helpers;
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     /**
      * @OA\Get(
@@ -172,7 +177,7 @@ class TeamDurController extends Controller
                 $datasets = $dur->allDatasets  ?? [];
 
                 foreach ($datasets as &$dataset) {
-                    $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
+                    $dataset['shortTitle'] = $this->datasetReader->titlesOf($dataset['id'])->shortTitle ?? '';
                 }
                 // Update the relationship with the modified datasets
                 $dur->setAttribute('datasets', $datasets);
@@ -1553,22 +1558,5 @@ class TeamDurController extends Controller
         return array_map(function ($value) {
             return $value['id'];
         }, $input);
-    }
-
-    /**
-     * Find dataset title associated with a given dataset id.
-     *
-     * @param int $id The dataset id
-     *
-     * @return string
-     */
-    private function getDatasetTitle(int $id): string
-    {
-        $metadata = Dataset::where(['id' => $id])
-            ->first()
-            ->latestVersion()
-            ->metadata;
-        $title = $metadata['metadata']['summary']['shortTitle'];
-        return $title;
     }
 }

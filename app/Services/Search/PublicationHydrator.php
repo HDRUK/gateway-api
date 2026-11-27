@@ -2,6 +2,7 @@
 
 namespace App\Services\Search;
 
+use App\Services\DatasetReader;
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
@@ -20,6 +21,10 @@ class PublicationHydrator
         'ABOUT'   => 'About a dataset',
         'UNKNOWN' => 'Unknown',
     ];
+
+    public function __construct(private readonly DatasetReader $datasetReader)
+    {
+    }
 
     public function hydrate(array $hits): array
     {
@@ -86,9 +91,9 @@ class PublicationHydrator
 
         $datasets = Dataset::whereIn('id', $allDatasetIds)
             ->where('status', Dataset::STATUS_ACTIVE)
-            ->with('latestMetadata')
-            ->get()
+            ->get(['id'])
             ->keyBy('id');
+        $titles = $this->datasetReader->titles($datasets->keys()->all());
 
         $versionsByPub  = [];
         $linkTypesByPub = [];
@@ -104,7 +109,7 @@ class PublicationHydrator
                     continue;
                 }
 
-                $shortTitle = $dataset->latestMetadata?->metadata['metadata']['summary']['shortTitle'] ?? '';
+                $shortTitle = $titles[$dataset->id]->shortTitle ?? '';
                 $versionsByPub[$pubId][] = [
                     'id'         => $dv->id,
                     'dataset_id' => $dv->dataset_id,

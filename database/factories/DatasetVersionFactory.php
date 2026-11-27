@@ -3,7 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Dataset;
+use App\Services\Gwdm\GwdmHandlerFactory;
 use App\Services\Gwdm\SourceSchema;
+use Config;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Tests\Traits\MockExternalApis;
 
@@ -26,9 +28,15 @@ class DatasetVersionFactory extends Factory
     public function definition(): array
     {
         $dataset = Dataset::all()->random();
+        $metadata = $this->getMetadata();
+        [$title, $shortTitle] = app(GwdmHandlerFactory::class)
+            ->resolve(Config::get('metadata.GWDM.version'))
+            ->extractTitleFields($metadata['metadata']);
         return [
             'dataset_id' => $dataset->id,
-            'metadata' => json_encode($this->getMetadata()),
+            'metadata' => json_encode($metadata),
+            'title' => $title,
+            'short_title' => $shortTitle,
             'version' => fake()->numberBetween(1, 100),
             'provider_team_id' => $dataset->team_id,
             'application_type' => fake()->word(),
