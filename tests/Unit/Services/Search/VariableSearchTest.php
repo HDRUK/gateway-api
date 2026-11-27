@@ -181,6 +181,50 @@ class VariableSearchTest extends TestCase
         $this->assertSame('Birth weight g', VariableIndex::labelFor('Birth.weight-g'));
     }
 
+    public function test_matching_dataset_ids_keeps_only_datasets_matching_every_term(): void
+    {
+        $service = $this->service([
+            ['grouped_hits' => [
+                $this->group(1, [$this->hit(1, 'birthweight_g', 0.6)]),
+                $this->group(2, [$this->hit(2, 'gestation_weeks', 0.4)]),
+                $this->group(3, [$this->hit(3, 'preeclampsia', 0.5)]),
+            ]],
+            ['grouped_hits' => [
+                $this->group(2, [$this->hit(2, 'epds_total', 0.2)]),
+                $this->group(1, [$this->hit(1, 'phq9_total', 0.3)]),
+            ]],
+        ]);
+
+        $ids = $service->matchingDatasetIds(['pregnancy outcomes', 'depression measures']);
+
+        $this->assertEqualsCanonicalizing([1, 2], $ids);
+    }
+
+    public function test_matching_dataset_ids_is_not_capped_at_the_response_dataset_limit(): void
+    {
+        // max_datasets caps the variables response; as a search filter every
+        // matching dataset must count, or results beyond it would vanish.
+        config(['typesense.variables.max_datasets' => 1]);
+
+        $service = $this->service([
+            ['grouped_hits' => [
+                $this->group(1, [$this->hit(1, 'bmi', 0.3)]),
+                $this->group(2, [$this->hit(2, 'body_mass_index', 0.2)]),
+            ]],
+        ]);
+
+        $this->assertEqualsCanonicalizing([1, 2], $service->matchingDatasetIds(['bmi']));
+    }
+
+    public function test_matching_dataset_ids_are_scoped_to_the_partner(): void
+    {
+        $service = $this->service([['grouped_hits' => []]], $searches);
+
+        $this->assertSame([], $service->matchingDatasetIds(['bmi']));
+        $this->assertStringStartsWith('partnerContext:=', $searches[0]['filter_by']);
+        $this->assertStringNotContainsString('dataset_id:=', $searches[0]['filter_by']);
+    }
+
     #[DataProvider('requestCases')]
     public function test_request_validation(array $data, bool $passes): void
     {

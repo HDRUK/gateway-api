@@ -15,6 +15,7 @@ use App\Services\Search\DatasetHydrator;
 use App\Services\Search\DataUseHydrator;
 use App\Services\Search\PublicationHydrator;
 use App\Services\Search\ToolHydrator;
+use App\Services\Search\VariableSearch;
 use App\Services\TypesenseService;
 use Illuminate\Support\Str;
 
@@ -278,6 +279,16 @@ class HDRUK implements SearchProvider
             $clauses['advanced'] = $advancedFilter;
         }
 
+        // Datasets holding variables that match every term. Keyed apart from
+        // the facet fields like `advanced`, so every supporting query counts
+        // within it too. With no match it filters to nothing - dropping it
+        // would widen the search to every dataset.
+        $variableTerms = $this->variableTerms($type, $params);
+        if ($variableTerms !== []) {
+            $ids = app(VariableSearch::class)->matchingDatasetIds($variableTerms);
+            $clauses['variables'] = 'dataset_id:=[' . implode(',', array_map('intval', $ids ?: [0])) . ']';
+        }
+
         // Inject the partner context scope. Using $clauses ensures the filter
         // is automatically AND-ed into every downstream query (exclusion,
         // date-range min/max, population buckets) without touching any of that
@@ -289,6 +300,24 @@ class HDRUK implements SearchProvider
         }
 
         return $clauses;
+    }
+
+    /**
+     * The `variables` search terms, for datasets only (the variable index
+     * holds dataset variables); validated by the Search request.
+     *
+     * @return string[]
+     */
+    private function variableTerms(string $type, array $params): array
+    {
+        if ($type !== 'datasets' || !is_array($params['variables'] ?? null)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_map(fn ($term) => is_string($term) ? trim($term) : '', $params['variables']),
+            fn (string $term) => $term !== ''
+        ));
     }
 
     private function searchViaTypesense(string $query, string $type, array $params): array
@@ -434,7 +463,11 @@ class HDRUK implements SearchProvider
             uuid: (string) Str::uuid(),
             entityType: $type,
             searchTerm: $query,
-            filters: $clauses,
+            // The terms say what was asked; the clause's id list (up to 250
+            // per term) would only bloat the log.
+            filters: isset($clauses['variables'])
+                ? array_merge($clauses, ['variables' => $this->variableTerms($type, $params)])
+                : $clauses,
             dataSource: $params['dataSource'] ?? 'HDRUK',
             entityIds: $entityIds,
             entitiesReturned: $total,
