@@ -1389,5 +1389,14 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search_metadata_summary.post',
+        'method' => 'post',
+        'path' => '/search/metadata-summary',
+        'methodController' => 'MetadataSummarySearchController@search',
+        'namespaceController' => 'App\Http\Controllers\Api\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
 ];

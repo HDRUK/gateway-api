@@ -6,6 +6,7 @@ use App\Exceptions\TypesenseReindexException;
 use App\SearchProviders\HDRUK;
 use App\Services\Search\CollectionReindexer;
 use App\Services\Search\VariableIndex;
+use App\Services\Search\MetadataSummaryIndex;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -18,10 +19,10 @@ class TypesenseReindex extends Command
      * @var string
      */
     protected $signature = 'typesense:reindex
-        {entity? : One of: datasets, tools, collections, dur, publications, data_custodian_networks, data_custodians, variables}
+        {entity? : One of: datasets, tools, collections, dur, publications, data_custodian_networks, data_custodians, variables, metadata_summary}
         {--memory=1024M : memory_limit to apply for this command (bumped before the heavy import work runs)}
         {--list : List available entity types and exit}
-        {--resume : variables only: keep the collection and skip datasets already fully indexed}
+        {--resume : variables and summary only: keep the collection and skip datasets already fully indexed}
         {--upsert : Upsert into the live collection and prune stale documents, instead of rebuilding a new one behind the alias}';
 
     /**
@@ -31,7 +32,8 @@ class TypesenseReindex extends Command
      */
     protected $description = 'Rebuild a search entity\'s Typesense collection behind its alias (search stays up), or --upsert in place';
 
-    public function handle(CollectionReindexer $reindexer, VariableIndex $variables): int
+
+    public function handle(CollectionReindexer $reindexer, VariableIndex $variables, MetadataSummaryIndex $metadataSummary): int
     {
         $modelMap = HDRUK::typesenseModelMap();
 
@@ -41,6 +43,7 @@ class TypesenseReindex extends Command
                 $this->line("  {$entityKey} ({$modelClass})");
             }
             $this->line('  variables (' . VariableIndex::class . ')');
+            $this->line('  metadata_summary (' . MetadataSummaryIndex::class . ')');
             return self::SUCCESS;
         }
 
@@ -63,8 +66,13 @@ class TypesenseReindex extends Command
             return $this->rebuildVariables($variables);
         }
 
+        if ($entity === 'metadata_summary') {
+            ini_set('memory_limit', $this->option('memory'));
+            return $this->rebuildMetadataSummary($metadataSummary);
+        }
+
         if ($this->option('resume')) {
-            $this->error('--resume only applies to variables.');
+            $this->error('--resume only applies to variables and metadata_summary.');
             return self::FAILURE;
         }
 
@@ -227,6 +235,120 @@ class TypesenseReindex extends Command
 
         $this->info(sprintf(
             'Done in %s. %s variables indexed from %d %s.',
+            $this->duration(microtime(true) - $started),
+            number_format($total),
+            $tally['indexed'],
+            Str::plural('dataset', $tally['indexed']),
+        ));
+        foreach ($tally['skipped'] as $reason => $count) {
+            $this->line("  Skipped {$count}: {$reason}.");
+        }
+
+        if ($tally['failed'] > 0) {
+            $this->error("{$tally['failed']} datasets failed. Run again with --resume to retry only those.");
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
+    }
+
+    private function rebuildMetadataSummary(MetadataSummaryIndex $metadataSummaryIndex): int
+    {
+        $collection = MetadataSummaryIndex::collectionName();
+        $resume = (bool) $this->option('resume');
+        $started = microtime(true);
+        /** @var ProgressBar|null $bar Created by the 'started' event. */
+        $bar = null;
+        $datasetStarted = 0.0;
+        $tally = ['indexed' => 0, 'documents' => 0, 'failed' => 0, 'skipped' => []];
+
+        // Prints above the bar rather than through it.
+        $above = function (string $line, string $style = 'line') use (&$bar) {
+            $bar?->clear();
+            $this->{$style}($line);
+            $bar?->display();
+        };
+
+        $partners = MetadataSummaryIndex::partners();
+        $this->info(($resume ? 'Resuming' : 'Rebuilding') . " '{$collection}'.");
+        $this->line('  Partners: ' . ($partners === [] ? 'all' : implode(', ', $partners)) . ' (typesense.summary_embedding_config.partners).');
+        $this->line(sprintf(
+            '  %d documents per request, %ds timeout per request.',
+            config('typesense.summary_embedding_config.import_batch_size'),
+            config('typesense.summary_embedding_config.import_timeout'),
+        ));
+
+        $total = $metadataSummaryIndex->rebuild(function (string $event, array $context) use (&$bar, &$datasetStarted, &$tally, $above) {
+            switch ($event) {
+                case 'dropping':
+                    $this->line('  Dropping the existing collection.');
+                    break;
+                case 'creating':
+                    $this->line('  Creating the collection (the first build downloads the embedding model)...');
+                    break;
+                case 'pruned':
+                    $this->line('  Removed ' . number_format($context['documents']) . ' documents of partners no longer indexed.');
+                    break;
+                case 'resuming':
+                    $this->line("  Keeping the collection: {$context['indexed']} datasets already have documents indexed.");
+                    break;
+                case 'started':
+                    $this->line("  Checking {$context['datasets']} dataset versions for documents.");
+                    $bar = $this->output->createProgressBar($context['datasets']);
+                    $bar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %message%');
+                    $bar->setMessage('');
+                    $bar->start();
+                    break;
+                case 'dataset':
+                    $datasetStarted = microtime(true);
+                    $bar->setMessage("dataset {$context['dataset_id']}: 0/" . number_format($context['documents']) . ' documents');
+                    $bar->display();
+                    break;
+                case 'batch':
+                    $elapsed = max(microtime(true) - $datasetStarted, 0.001);
+                    $bar->setMessage(sprintf(
+                        'dataset %d: %s/%s documents (%d/s)',
+                        $context['dataset_id'],
+                        number_format($context['done']),
+                        number_format($context['documents']),
+                        $context['done'] / $elapsed,
+                    ));
+                    $bar->display();
+                    break;
+                case 'indexed':
+                    $tally['indexed']++;
+                    $tally['documents'] += $context['documents'];
+                    $above(sprintf(
+                        '  ✓ dataset %d: %s documents in %s%s',
+                        $context['dataset_id'],
+                        number_format($context['documents']),
+                        $this->duration(microtime(true) - $datasetStarted),
+                        $context['failed'] ? " ({$context['failed']} rejected, see the log)" : '',
+                    ));
+                    $bar->setMessage('');
+                    $bar->advance();
+                    break;
+                case 'skipped':
+                    $tally['skipped'][$context['reason']] = ($tally['skipped'][$context['reason']] ?? 0) + 1;
+                    if ($this->output->isVerbose()) {
+                        $above("  - dataset {$context['dataset_id']}: skipped, {$context['reason']}");
+                    }
+                    $bar->advance();
+                    break;
+                case 'failed':
+                    $tally['failed']++;
+                    $above("  ✗ dataset {$context['dataset_id']}: {$context['error']}", 'error');
+                    $bar->setMessage('');
+                    $bar->advance();
+                    break;
+            }
+        }, $resume);
+
+        $bar?->finish();
+        $this->newLine(2);
+
+        $this->info(sprintf(
+            'Done in %s. %s summary documents indexed from %d %s.',
             $this->duration(microtime(true) - $started),
             number_format($total),
             $tally['indexed'],
