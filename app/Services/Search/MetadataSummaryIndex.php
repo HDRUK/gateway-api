@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * The Typesense collection behind summary metadata search: one document per field in the summary section.metadata, embedded from its readable name and
- * description so a search for "depression measures" finds "PHQ-9 total".
+ * description.
  *
  * Only the dataset's indexed version (DatasetVersion::shouldBeSearchable)
- * contributes, so the variables always match what dataset search shows.
+ * contributes, so the documents always match what dataset search shows.
  */
 class MetadataSummaryIndex
 {
@@ -25,7 +25,7 @@ class MetadataSummaryIndex
     }
 
     /**
-     * Variable indexing follows Scout's driver, so tests and environments
+     * Document indexing follows Scout's driver, so tests and environments
      * without Typesense skip it rather than fail.
      */
     public static function enabled(): bool
@@ -40,7 +40,7 @@ class MetadataSummaryIndex
     }
 
     /**
-     * The partners whose variables are indexed (typesense.summary_embedding_config.partners);
+     * The partners whose documents are indexed (typesense.summary_embedding_config.partners);
      * empty means every partner.
      *
      * @return string[]
@@ -95,21 +95,21 @@ class MetadataSummaryIndex
      * dataset of the indexed partners (partners()). The first create
      * downloads the embedding model, which can take a minute or two.
      *
-     * With $resume the collection is kept and datasets whose variables are
+     * With $resume the collection is kept and datasets whose documents are
      * all indexed already are skipped, so an interrupted rebuild carries on
-     * rather than embedding everything again. Variables of partners no
+     * rather than embedding everything again. Documents of partners no
      * longer indexed are removed. A dataset that fails is reported and the
      * rebuild moves on; resuming retries it.
      *
      * $progress receives an event name and its context:
      *   dropping, creating                            the collection
      *   resuming   [indexed]                          datasets already complete
-     *   pruned     [variables]                        removed, partner not indexed
+     *   pruned     [documents]                        removed, partner not indexed
      *   started    [datasets]                         eligible dataset versions
-     *   dataset    [dataset_id, title, variables]     about to import
-     *   batch      [dataset_id, done, variables]      after each import request
-     *   indexed    [dataset_id, variables, failed]    dataset finished
-     *   skipped    [dataset_id, reason]               not searchable, no variables, already indexed
+     *   dataset    [dataset_id, title, documents]     about to import
+     *   batch      [dataset_id, done, documents]      after each import request
+     *   indexed    [dataset_id, documents, failed]    dataset finished
+     *   skipped    [dataset_id, reason]               not searchable, no documents, already indexed
      *   failed     [dataset_id, error]                dataset abandoned
      *
      * @param  callable(string $event, array $context): void|null  $progress
@@ -117,7 +117,6 @@ class MetadataSummaryIndex
     public function rebuild(?callable $progress = null, bool $resume = false): int
     {
         $progress ??= fn () => null;
-        // $progress = fn () => null;
         $name = self::collectionName();
         $partners = self::partners();
 
@@ -157,9 +156,9 @@ class MetadataSummaryIndex
     }
 
     /**
-     * One dataset's part of rebuild(); returns the variables it indexed.
+     * One dataset's part of rebuild(); returns the documents it indexed.
      *
-     * @param  array<int, int>  $alreadyIndexed  variables indexed, by dataset id
+     * @param  array<int, int>  $alreadyIndexed  documents indexed, by dataset id
      */
     private function rebuildDataset(DatasetVersion $version, callable $progress, array $alreadyIndexed): int
     {
@@ -221,7 +220,7 @@ class MetadataSummaryIndex
     }
 
     /**
-     * Variables already in the collection, by dataset id.
+     * Documents already in the collection, by dataset id.
      *
      * @return array<int, int>
      */
@@ -292,7 +291,7 @@ class MetadataSummaryIndex
     }
 
     /**
-     * The summary variable documents for a dataset version, read from the
+     * The summary documents for a dataset version, read from the
      * reconstructed GWDM envelope (delta versions carry no metadata).
      */
     public function documentsFor(DatasetVersion $version): array
@@ -338,7 +337,7 @@ class MetadataSummaryIndex
         return array_filter([
                 'title' => $title,
                 'keywords' => $this->listText((array) ($fields['keywords'] ?? [])),
-                'aliases' => $this->listText((array) $aliases), // check with Loki
+                'aliases' => $this->listText((array) $aliases),
                 'abstract' => $this->clean((string) ($fields['abstract'] ?? '')),
                 'description' => $this->clean((string) ($fields['description'] ?? '')),
             ], fn (string $text) => $text !== '');
@@ -370,16 +369,11 @@ class MetadataSummaryIndex
         return trim(preg_replace('/\s+/u', ' ', $text) ?? '');
     }
 
-
-
-
-
-
     /**
      * Upserts in batches of typesense.summary_embedding_config.import_batch_size, so no one
      * request runs long while Typesense embeds it.
      *
-     * @param  callable(int $done): void|null  $onBatch  variables sent so far
+     * @param  callable(int $done): void|null  $onBatch  documents sent so far
      */
     private function import(array $documents, ?callable $onBatch = null): int
     {
@@ -405,7 +399,7 @@ class MetadataSummaryIndex
         }
 
         if ($failed > 0) {
-            Log::warning('MetadataSummaryIndex: some variables failed to index', [
+            Log::warning('MetadataSummaryIndex: some documents failed to index', [
                 'dataset_id' => $documents[0]['dataset_id'],
                 'failed' => $failed,
                 'first_error' => $firstError,

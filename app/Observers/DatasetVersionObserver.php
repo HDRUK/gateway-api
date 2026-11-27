@@ -9,6 +9,7 @@ use App\Jobs\SyncDatasetMetadataSummary;
 use App\Jobs\SyncDatasetVariables;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Services\Search\MetadataSummaryIndex;
 
 class DatasetVersionObserver
 {
@@ -38,8 +39,10 @@ class DatasetVersionObserver
 
     private function handleDatasetVersionChange(DatasetVersion $datasetVersion, bool $extractLinks): void
     {
-        SyncDatasetMetadataSummary::dispatch((int) $datasetVersion->dataset_id);
-            
+        if (MetadataSummaryIndex::enabled()) {
+            SyncDatasetMetadataSummary::dispatch((int) $datasetVersion->dataset_id);
+        }
+                   
         $dataset = Dataset::where([
             'id' => $datasetVersion->dataset_id,
         ])->select('id', 'status', 'team_id')->first();

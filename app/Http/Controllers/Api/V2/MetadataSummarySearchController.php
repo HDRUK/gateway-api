@@ -15,7 +15,7 @@ class MetadataSummarySearchController extends Controller
     }
 
     /**
-     * Datasets whose summary fields holds docs matching the terms.
+     * Datasets whose summary fields hold docs matching the terms.
      * With dataset_ids, returns just those datasets (for comparing them).
      */
     public function search(MetadataSummarySearchRequest $request): JsonResponse

@@ -7,7 +7,6 @@ use App\SearchProviders\HDRUK;
 use App\Services\Search\CollectionReindexer;
 use App\Services\Search\VariableIndex;
 use App\Services\Search\MetadataSummaryIndex;
-use App\Services\TypesenseService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -44,7 +43,7 @@ class TypesenseReindex extends Command
                 $this->line("  {$entityKey} ({$modelClass})");
             }
             $this->line('  variables (' . VariableIndex::class . ')');
-            $this->line(' metadata_summary (' . MetadataSummaryIndex::class . ')');
+            $this->line('  metadata_summary (' . MetadataSummaryIndex::class . ')');
             return self::SUCCESS;
         }
 
@@ -253,7 +252,7 @@ class TypesenseReindex extends Command
         return self::SUCCESS;
     }
 
-    private function rebuildMetadataSummary(MetadataSummaryIndex $MetadataSummaryIndex): int
+    private function rebuildMetadataSummary(MetadataSummaryIndex $metadataSummaryIndex): int
     {
         $collection = MetadataSummaryIndex::collectionName();
         $resume = (bool) $this->option('resume');
@@ -279,7 +278,7 @@ class TypesenseReindex extends Command
             config('typesense.summary_embedding_config.import_timeout'),
         ));
 
-        $total = $MetadataSummaryIndex->rebuild(function (string $event, array $context) use (&$bar, &$datasetStarted, &$tally, $above) {
+        $total = $metadataSummaryIndex->rebuild(function (string $event, array $context) use (&$bar, &$datasetStarted, &$tally, $above) {
             switch ($event) {
                 case 'dropping':
                     $this->line('  Dropping the existing collection.');
