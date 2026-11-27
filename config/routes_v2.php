@@ -335,6 +335,15 @@ return [
 
     // v2 datasets
     [
+        'name' => 'datasets_compare.post',
+        'method' => 'post',
+        'path' => '/datasets/compare',
+        'methodController' => 'DatasetComparisonController@compare',
+        'namespaceController' => 'App\\Http\\Controllers\\Api\\V2',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'datasets',
         'method' => 'get',
         'path' => '/datasets',
